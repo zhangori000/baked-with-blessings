@@ -1,20 +1,26 @@
 'use client'
 
+import Link from 'next/link'
 import React, { Fragment, useCallback, useState, MouseEvent } from 'react'
 import { toast } from '@payloadcms/ui'
 
-import './index.scss'
+import styles from './index.module.css'
 
 const SuccessMessage: React.FC = () => (
   <div>
     Database seeded! You can now{' '}
-    <a target="_blank" href="/">
+    <Link href="/">
       visit your website
-    </a>
+    </Link>
   </div>
 )
 
-export const SeedButton: React.FC = () => {
+type SeedButtonProps = {
+  className?: string
+  messageClassName?: string
+}
+
+export const SeedButton: React.FC<SeedButtonProps> = ({ className, messageClassName }) => {
   const [loading, setLoading] = useState(false)
   const [seeded, setSeeded] = useState(false)
   const [error, setError] = useState<unknown>(null)
@@ -78,10 +84,19 @@ export const SeedButton: React.FC = () => {
 
   return (
     <Fragment>
-      <button className="seedButton" onClick={handleClick}>
+      <button
+        className={[styles.button, className].filter(Boolean).join(' ')}
+        disabled={loading}
+        onClick={handleClick}
+        type="button"
+      >
         Seed your database
       </button>
-      {message}
+      {message ? (
+        <span className={[styles.message, messageClassName].filter(Boolean).join(' ')}>
+          {message}
+        </span>
+      ) : null}
     </Fragment>
   )
 }
