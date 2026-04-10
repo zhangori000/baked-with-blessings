@@ -12,7 +12,7 @@ export const BeforeDashboard: React.FC = () => {
           <span className={styles.eyebrowDot} />
           CDS-inspired admin launchpad
         </div>
-        <h1 className={styles.title}>Welcome to Baked with Blessing admin.</h1>
+        <h1 className={styles.title}>Welcome to Baked with Blessings admin.</h1>
         <p className={styles.subtitle}>
           This intro panel sits above Payload&apos;s real widget dashboard. It now uses only local
           CSS modules, which keeps the admin route Turbopack-safe while still giving you a polished

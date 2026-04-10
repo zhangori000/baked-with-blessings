@@ -2,7 +2,7 @@
 
 ## Repo and environment
 
-- Repo: `learning-payload-cms/baked-with-blessing`
+- Repo: `learning-payload-cms/baked-with-blessings`
 - Stack at time of issue: Next `16.2.1`, React `19.2.4`, Payload `3.81.0`, `pnpm`, Windows
 - Docker only runs Postgres. The app itself runs locally via `pnpm dev`.
 

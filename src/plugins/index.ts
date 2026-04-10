@@ -111,7 +111,7 @@ const createGuestContactFields = () => [
 ]
 
 const generateTitle: GenerateTitle<Product | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Baked with Blessing` : 'Baked with Blessing'
+  return doc?.title ? `${doc.title} | Baked with Blessings` : 'Baked with Blessings'
 }
 
 const generateURL: GenerateURL<Product | Page> = ({ doc }) => {

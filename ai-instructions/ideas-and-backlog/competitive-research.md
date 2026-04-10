@@ -35,4 +35,4 @@ Looked at: Starbucks, McDonald's (via DoorDash), DoorDash home, Crumbl Cookies
 ### Overall takeaway
 - As a customer, sites like Starbucks and DoorDash feel like TOO MUCH STUFF
 - Crumbl's focused, simple approach feels nicer — fewer decisions, cleaner layout
-- Something to think about for Baked with Blessing's menu/ordering UX
+- Something to think about for Baked with Blessings' menu/ordering UX

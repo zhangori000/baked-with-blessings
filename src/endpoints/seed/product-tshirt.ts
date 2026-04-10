@@ -25,7 +25,7 @@ export const productTshirtData: (
     variantTypes: variantTypes,
     inventory: 0,
     meta: {
-      title: 'Tshirt | Baked with Blessing',
+      title: 'Tshirt | Baked with Blessings',
       image: metaImage,
       description:
         'Top off your look with our classic Tshirt, crafted for style and comfort. Made with breathable, high-quality materials and an adjustable strap for the perfect fit.',

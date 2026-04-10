@@ -1,7 +1,7 @@
 {
-  "name": "baked-with-blessing",
+  "name": "baked-with-blessings",
   "version": "1.0.0",
-  "description": "Cafe website for Baked with Blessing, based on the Payload ecommerce template",
+  "description": "Cafe website for Baked with Blessings, based on the Payload ecommerce template",
   "license": "MIT",
   "type": "module",
   "scripts": {
