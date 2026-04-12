@@ -7,6 +7,7 @@ import {
   VERIFIED_PHONE_CONTEXT_KEY,
 } from '@/collections/Customers/hooks/customerPhoneIdentity'
 import { findExistingCustomer, normalizeCustomerContact } from '@/utilities/customerAuth'
+import { sendCustomerWelcomeEmail } from '@/utilities/email/sendCustomerWelcomeEmail'
 import { isEmailIdentifier, maskPhoneNumber } from '@/utilities/phone'
 import { checkPhoneVerification, startPhoneVerification } from '@/utilities/twilioVerify'
 
@@ -117,6 +118,18 @@ export async function POST(request: Request) {
       draft: false,
       overrideAccess: true,
     })
+
+    if (email) {
+      try {
+        await sendCustomerWelcomeEmail({
+          email,
+          name,
+          payload,
+        })
+      } catch (emailError) {
+        payload.logger.error({ err: emailError, email }, 'Customer welcome email failed')
+      }
+    }
 
     return Response.json({
       doc: customer,

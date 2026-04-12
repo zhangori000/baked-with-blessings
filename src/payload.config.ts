@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 import {
   BoldFeature,
@@ -27,6 +28,23 @@ import { plugins } from './plugins'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+const resendFromAddress = process.env.RESEND_FROM_EMAIL?.trim()
+const resendApiKey = process.env.RESEND_API_KEY?.trim()
+const resendFromName =
+  process.env.RESEND_FROM_NAME?.trim() ||
+  process.env.COMPANY_NAME?.trim() ||
+  process.env.SITE_NAME?.trim() ||
+  'Baked with Blessings'
+
+const emailAdapter =
+  resendApiKey && resendFromAddress
+    ? resendAdapter({
+        apiKey: resendApiKey,
+        defaultFromAddress: resendFromAddress,
+        defaultFromName: resendFromName,
+      })
+    : undefined
 
 export default buildConfig({
   admin: {
@@ -84,7 +102,7 @@ export default buildConfig({
       ]
     },
   }),
-  //email: nodemailerAdapter(),
+  email: emailAdapter,
   endpoints: [],
   globals: [Header, Footer],
   plugins,
