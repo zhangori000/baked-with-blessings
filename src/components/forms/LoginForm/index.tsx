@@ -13,7 +13,7 @@ import React, { useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 
 type FormData = {
-  email: string
+  identifier: string
   password: string
 }
 
@@ -49,13 +49,13 @@ export const LoginForm: React.FC = () => {
       <Message className="classes.message" error={error} />
       <div className="flex flex-col gap-8">
         <FormItem>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="identifier">Email or phone</Label>
           <Input
-            id="email"
-            type="email"
-            {...register('email', { required: 'Email is required.' })}
+            id="identifier"
+            type="text"
+            {...register('identifier', { required: 'Email address or phone number is required.' })}
           />
-          {errors.email && <FormError message={errors.email.message} />}
+          {errors.identifier && <FormError message={errors.identifier.message} />}
         </FormItem>
 
         <FormItem>

@@ -5,6 +5,7 @@ import { draftMode } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import configPromise from '@payload-config'
+import { isAdminUser } from '@/access/utilities'
 
 export async function GET(req: Request): Promise<Response> {
   const payload = await getPayload({ config: configPromise })
@@ -42,7 +43,7 @@ export async function GET(req: Request): Promise<Response> {
 
   const draft = await draftMode()
 
-  if (!user) {
+  if (!user?.user || !isAdminUser(user.user)) {
     draft.disable()
     return new Response('You are not allowed to preview this page', { status: 403 })
   }

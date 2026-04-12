@@ -16,7 +16,7 @@ This note is written specifically for your current site at `learning-payload-cms
 ## Existing notes already in this repo
 
 - Storybook sidebar inventory: `ai-instructions/learnings/coinbase/storybook-sidebar-tabs.md`
-- Related app note: `ai-instructions/learnings/2026-04-10/before-dashboard-and-auth.md`
+- Related app note: `ai-instructions/learnings/2026-04-10/01-before-dashboard-and-auth.md`
 
 That earlier note already captured one important conclusion: the admin work used a CDS-inspired local implementation, not the `@coinbase/cds-web` package directly.
 

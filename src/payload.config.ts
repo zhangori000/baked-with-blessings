@@ -19,7 +19,8 @@ import { fileURLToPath } from 'url'
 import { Categories } from '@/collections/Categories'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
-import { Users } from '@/collections/Users'
+import { Admins } from '@/collections/Admins'
+import { Customers } from '@/collections/Customers'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { plugins } from './plugins'
@@ -40,9 +41,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    user: Users.slug,
+    user: Admins.slug,
   },
-  collections: [Users, Pages, Categories, Media],
+  collections: [Admins, Customers, Pages, Categories, Media],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',

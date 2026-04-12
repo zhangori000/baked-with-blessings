@@ -179,7 +179,7 @@ export const plugins: Plugin[] = [
       isDocumentOwner,
     },
     customers: {
-      slug: 'users',
+      slug: 'customers',
     },
     orders: {
       ordersCollectionOverride: ({ defaultCollection }) => ({

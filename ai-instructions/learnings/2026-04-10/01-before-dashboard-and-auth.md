@@ -1,5 +1,18 @@
 # 2026-04-10: BeforeDashboard, Turbopack, Auth
 
+## Table of contents
+
+- [Repo and environment](#repo-and-environment)
+- [What broke](#what-broke)
+- [Root cause](#root-cause)
+- [Important concepts](#important-concepts)
+- [What Payload admin was doing](#what-payload-admin-was-doing)
+- [What fixed it without leaving Turbopack](#what-fixed-it-without-leaving-turbopack)
+- [Why not install CDS directly](#why-not-install-cds-directly)
+- [Webpack vs Turbopack takeaway](#webpack-vs-turbopack-takeaway)
+- [Auth and users takeaway](#auth-and-users-takeaway)
+- [Practical notes](#practical-notes)
+
 ## Repo and environment
 
 - Repo: `learning-payload-cms/baked-with-blessings`

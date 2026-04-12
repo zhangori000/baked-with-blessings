@@ -1,0 +1,2247 @@
+
+1point3acres logo
+1P3A Interview
+Premium Version
+
+Interview Questions
+Software Engineer
+Data Scientist
+Product Manager
+
+Followed Companies
+scale.ai
+
+
+Bookmarks
+Reading History
+Popular Questions
+New
+Interview Blog
+1:1 Coaching
+Job Board
+Code Editor
+Share Interview Experience
+
+ByteByteGo 10% OFF
+
+Contact Support
+
+zhangori000
+zhangori000
+Membership active
+Toggle Sidebar
+Popular Questions
+Details
+Popular Questions
+Feature Tour
+
+
+中
+RBAC Role Resolver
+stripe · anonymous user · 2mon
+RBAC Role Resolver
+Problem Definition
+You need to build a Role-Based Access Control (RBAC) system. This system manages user roles across a structure of accounts. The accounts are organized like a tree (hierarchy).
+
+You have two inputs:
+
+Accounts: A list showing how accounts are connected (parents and children).
+User Role Assignments: A list showing which users have which roles on specific accounts.
+accounts = [
+    {"accountId": "org_1", "parent": None},
+    {"accountId": "wksp_1", "parent": "org_1"},
+    {"accountId": "wksp_2", "parent": "org_1"},
+    {"accountId": "team_1", "parent": "wksp_1"}
+]
+
+user_role_assignments = [
+    {"userId": "usr_1", "accountId": "org_1", "role": "admin"},
+    {"userId": "usr_2", "accountId": "wksp_1", "role": "editor"},
+    {"userId": "usr_3", "accountId": "wksp_1", "role": "viewer"},
+    {"userId": "usr_1", "accountId": "wksp_2", "role": "editor"}
+]
+The Rules
+An account has only one parent.
+There are no loops.
+The tree is small (max 3 levels deep: Organization → Workspace → Team).
+Inheritance: If a user has a role at a parent account, they automatically have that role on all child accounts.
+Example Logic
+# usr_1 is an admin at org_1
+# If we ask for usr_1's roles at wksp_1 (a child of org_1):
+# - usr_1 inherits "admin" from org_1
+
+rbac = RBACRoleResolver(accounts, user_role_assignments)
+rbac.getUserRoles("usr_1", "org_1")   # Returns: ["admin"]
+rbac.getUserRoles("usr_1", "wksp_1")  # Returns: ["admin"] (inherited)
+rbac.getUserRoles("usr_1", "wksp_2")  # Returns: ["admin", "editor"]
+rbac.getUserRoles("usr_2", "wksp_1")  # Returns: ["editor"]
+rbac.getUserRoles("usr_2", "org_1")   # Returns: [] (no role at the top level)
+Phase 1: Direct Role Lookup
+Task Requirements
+Write a class that finds roles assigned directly to a user for a specific account. Do not worry about inheritance yet.
+
+class RBACRoleResolver:
+    def __init__(self, accounts: list[dict], user_role_assignments: list[dict]):
+        """
+        Setup the resolver with accounts and assignments.
+
+        Args:
+            accounts: List of account objects
+            user_role_assignments: List of who has what role where
+        """
+        pass
+
+    def getUserRoles(self, userId: str, accountId: str) -> list[str]:
+        """
+        Get roles directly assigned to the user for this account.
+
+        Returns:
+            List of role names (e.g., ["admin", "editor"])
+        """
+        pass
+Usage Example
+rbac = RBACRoleResolver(accounts, user_role_assignments)
+rbac.getUserRoles("usr_1", "org_1")   # Returns: ["admin"]
+rbac.getUserRoles("usr_1", "wksp_2")  # Returns: ["editor"]
+rbac.getUserRoles("usr_2", "wksp_1")  # Returns: ["editor"]
+rbac.getUserRoles("usr_3", "org_1")   # Returns: []
+Questions to Ask
+does the order of the roles matter?
+Can a user have more than one role on one account?
+Are role names case-sensitive?
+What should happen if the user or account does not exist?
+Phase 2: Adding Inheritance
+Task Requirements
+Update your code to handle inheritance. When you check a user's roles for an account, you must also include roles from all ancestor accounts (parent, grandparent, etc.).
+
+def getUserRoles(self, userId: str, accountId: str) -> list[str]:
+    """
+    Get all roles for the user, including inherited ones.
+
+    If a user is an admin at the Organization level, they are
+    also an admin at all Workspaces and Teams below it.
+
+    Returns:
+        List of role names (direct + inherited)
+    """
+    pass
+Usage Example
+accounts = [
+    {"accountId": "org_1", "parent": None},
+    {"accountId": "wksp_1", "parent": "org_1"},
+    {"accountId": "team_1", "parent": "wksp_1"}
+]
+
+user_role_assignments = [
+    {"userId": "usr_1", "accountId": "org_1", "role": "admin"},
+    {"userId": "usr_1", "accountId": "wksp_1", "role": "editor"},
+    {"userId": "usr_2", "accountId": "wksp_1", "role": "viewer"}
+]
+
+rbac = RBACRoleResolver(accounts, user_role_assignments)
+rbac.getUserRoles("usr_1", "org_1")   # Returns: ["admin"]
+rbac.getUserRoles("usr_1", "wksp_1")  # Returns: ["admin", "editor"]
+rbac.getUserRoles("usr_1", "team_1")  # Returns: ["admin", "editor"] (inherited)
+rbac.getUserRoles("usr_2", "team_1")  # Returns: ["viewer"] (inherited from wksp_1)
+rbac.getUserRoles("usr_2", "org_1")   # Returns: []
+Interview Questions
+What is the Time Complexity of your function?
+How would you speed this up if we call it many times?
+Why did you choose these data structures?
+Phase 3: Finding Users with Access
+Task Requirements
+Write a function to find all users who have access to a specific account. This includes:
+
+Users assigned directly to this account.
+Users assigned to any parent account (because they inherit access).
+def getUsersForAccount(self, accountId: str) -> list[str]:
+    """
+    Get all users who have any role on this account.
+
+    Includes:
+    - Direct assignments
+    - Inherited access from ancestors
+
+    Returns:
+        List of user IDs
+    """
+    pass
+Usage Example
+accounts = [
+    {"accountId": "org_1", "parent": None},
+    {"accountId": "wksp_1", "parent": "org_1"},
+    {"accountId": "wksp_2", "parent": "org_1"}
+]
+
+user_role_assignments = [
+    {"userId": "usr_1", "accountId": "org_1", "role": "admin"},
+    {"userId": "usr_2", "accountId": "wksp_1", "role": "editor"},
+    {"userId": "usr_3", "accountId": "wksp_1", "role": "viewer"}
+]
+
+rbac = RBACRoleResolver(accounts, user_role_assignments)
+rbac.getUsersForAccount("org_1")   # Returns: ["usr_1"]
+rbac.getUsersForAccount("wksp_1")  # Returns: ["usr_1", "usr_2", "usr_3"]
+rbac.getUsersForAccount("wksp_2")  # Returns: ["usr_1"]
+Interview Questions
+How do you make sure a user isn't listed twice?
+What is the Time Complexity?
+How would you optimize this for frequent use?
+Phase 4: Filtering Users by Role
+Task Requirements
+Update the previous function to filter the users. Only return users who have ALL the required roles (either directly or inherited).
+
+def getUsersForAccountWithFilter(self, accountId: str, roleFilters: list[str]) -> list[str]:
+    """
+    Get users who have ALL specified roles on the account.
+
+    Args:
+        accountId: The account to check
+        roleFilters: List of roles they must have. If empty, return everyone.
+
+    Returns:
+        List of user IDs
+    """
+    pass
+Usage Example
+accounts = [
+    {"accountId": "org_1", "parent": None},
+    {"accountId": "wksp_1", "parent": "org_1"}
+]
+
+user_role_assignments = [
+    {"userId": "usr_1", "accountId": "org_1", "role": "admin"},
+    {"userId": "usr_1", "accountId": "wksp_1", "role": "editor"},
+    {"userId": "usr_2", "accountId": "wksp_1", "role": "editor"},
+    {"userId": "usr_3", "accountId": "wksp_1", "role": "viewer"}
+]
+
+rbac = RBACRoleResolver(accounts, user_role_assignments)
+
+# No filter - return everyone
+rbac.getUsersForAccountWithFilter("wksp_1", [])
+# Returns: ["usr_1", "usr_2", "usr_3"]
+
+# Filter: Must be "admin"
+rbac.getUsersForAccountWithFilter("wksp_1", ["admin"])
+# Returns: ["usr_1"] (inherited from org_1)
+
+# Filter: Must be "editor"
+rbac.getUsersForAccountWithFilter("wksp_1", ["editor"])
+# Returns: ["usr_1", "usr_2"]
+
+# Filter: Must be "admin" AND "editor"
+rbac.getUsersForAccountWithFilter("wksp_1", ["admin", "editor"])
+# Returns: ["usr_1"]
+
+# Filter: Must be "superadmin" (nobody has this)
+rbac.getUsersForAccountWithFilter("wksp_1", ["superadmin"])
+# Returns: []
+Solution Details
+Phase 1: Direct Lookup Strategy
+Plan:
+
+Create a map (Dictionary).
+The key is (userId, accountId).
+The value is a set of roles.
+This allows O(1) access time.
+from collections import defaultdict
+
+class RBACRoleResolver:
+    def __init__(self, accounts: list[dict], user_role_assignments: list[dict]):
+        # Map account to its parent
+        self.parent_map = {}
+        for account in accounts:
+            self.parent_map[account["accountId"]] = account["parent"]
+
+        # Map (userId, accountId) -> set of roles
+        self.role_map = defaultdict(set)
+        for assignment in user_role_assignments:
+            key = (assignment["userId"], assignment["accountId"])
+            self.role_map[key].add(assignment["role"])
+
+    def getUserRoles(self, userId: str, accountId: str) -> list[str]:
+        return list(self.role_map.get((userId, accountId), set()))
+Time Complexity: O(1) Space Complexity: O(A + R) (A = accounts, R = assignments)
+
+Phase 2: Inheritance Strategy
+Plan:
+
+Start at the requested account.
+Check for roles.
+Move to the parent account.
+Repeat until you reach the top (where parent is None).
+def getUserRoles(self, userId: str, accountId: str) -> list[str]:
+    """Get roles from this account and all parents."""
+    roles = set()
+    current_account = accountId
+
+    while current_account is not None:
+        key = (userId, current_account)
+        if key in self.role_map:
+            roles.update(self.role_map[key])
+        current_account = self.parent_map.get(current_account)
+
+    return list(roles)
+Time Complexity: O(D) (D = depth of tree, usually small) Space Complexity: O(R)
+
+Phase 3: Finding Users Strategy
+Plan:
+
+Find the list of all ancestors for the account.
+Look at every user who has a role on any of those ancestors.
+Collect them in a Set to avoid duplicates.
+Optimization: When initializing the class, create a second index that maps accountId -> Set of Users.
+
+def __init__(self, accounts: list[dict], user_role_assignments: list[dict]):
+    # ... previous setup ...
+
+    # Index: accountId -> set of userIds directly assigned
+    self.users_by_account = defaultdict(set)
+    for assignment in user_role_assignments:
+        self.users_by_account[assignment["accountId"]].add(assignment["userId"])
+
+def _getAncestors(self, accountId: str) -> list[str]:
+    """Get list of account + all parents."""
+    ancestors = []
+    current = accountId
+    while current is not None:
+        ancestors.append(current)
+        current = self.parent_map.get(current)
+    return ancestors
+
+def getUsersForAccount(self, accountId: str) -> list[str]:
+    users = set()
+    for ancestor in self._getAncestors(accountId):
+        users.update(self.users_by_account.get(ancestor, set()))
+    return list(users)
+Time Complexity: O(D × U) (D = depth, U = users per account) Space Complexity: O(U)
+
+Phase 4: Filtering Strategy
+Plan:
+
+Get all users who have access (using Phase 3).
+For each user, calculate their full role list (using Phase 2).
+Check if their roles include all the required roles.
+def getUsersForAccountWithFilter(self, accountId: str, roleFilters: list[str]) -> list[str]:
+    """Get users who match the role filter."""
+    # Get everyone with access
+    all_users = self.getUsersForAccount(accountId)
+
+    # If no filter, return everyone
+    if not roleFilters:
+        return all_users
+
+    required_roles = set(roleFilters)
+    result = []
+
+    for user_id in all_users:
+        # Get full roles for this user
+        user_roles = set(self.getUserRoles(user_id, accountId))
+
+        # Check if they have all required roles
+        if required_roles.issubset(user_roles):
+            result.append(user_id)
+
+    return result
+Time Complexity: O(U × D × F) (U = users, D = depth, F = number of filters) Space Complexity: O(U)
+
+Full Code Solution
+from collections import defaultdict
+
+class RBACRoleResolver:
+    def __init__(self, accounts: list[dict], user_role_assignments: list[dict]):
+        # Map account to parent
+        self.parent_map = {}
+        for account in accounts:
+            self.parent_map[account["accountId"]] = account["parent"]
+
+        # Map: (userId, accountId) -> set of roles
+        self.role_map = defaultdict(set)
+        for assignment in user_role_assignments:
+            key = (assignment["userId"], assignment["accountId"])
+            self.role_map[key].add(assignment["role"])
+
+        # Index: accountId -> set of userIds
+        self.users_by_account = defaultdict(set)
+        for assignment in user_role_assignments:
+            self.users_by_account[assignment["accountId"]].add(assignment["userId"])
+
+    def _getAncestors(self, accountId: str) -> list[str]:
+        """Helper: Get account and all parents."""
+        ancestors = []
+        current = accountId
+        while current is not None:
+            ancestors.append(current)
+            current = self.parent_map.get(current)
+        return ancestors
+
+    def getUserRoles(self, userId: str, accountId: str) -> list[str]:
+        """Get all roles including inherited ones."""
+        roles = set()
+        for ancestor in self._getAncestors(accountId):
+            key = (userId, ancestor)
+            if key in self.role_map:
+                roles.update(self.role_map[key])
+        return list(roles)
+
+    def getUsersForAccount(self, accountId: str) -> list[str]:
+        """Get all users with any role on this account."""
+        users = set()
+        for ancestor in self._getAncestors(accountId):
+            users.update(self.users_by_account.get(ancestor, set()))
+        return list(users)
+
+    def getUsersForAccountWithFilter(self, accountId: str, roleFilters: list[str]) -> list[str]:
+        """Get users who have all specified roles."""
+        all_users = self.getUsersForAccount(accountId)
+
+        if not roleFilters:
+            return all_users
+
+        required_roles = set(roleFilters)
+        return [
+            user_id for user_id in all_users
+            if required_roles.issubset(set(self.getUserRoles(user_id, accountId)))
+        ]
+
+# Test Execution
+if __name__ == "__main__":
+    accounts = [
+        {"accountId": "org_1", "parent": None},
+        {"accountId": "wksp_1", "parent": "org_1"},
+        {"accountId": "wksp_2", "parent": "org_1"}
+    ]
+
+    user_role_assignments = [
+        {"userId": "usr_1", "accountId": "org_1", "role": "admin"},
+        {"userId": "usr_1", "accountId": "wksp_1", "role": "editor"},
+        {"userId": "usr_2", "accountId": "wksp_1", "role": "editor"},
+        {"userId": "usr_3", "accountId": "wksp_1", "role": "viewer"}
+    ]
+
+    rbac = RBACRoleResolver(accounts, user_role_assignments)
+
+    # Phase 1 & 2: Get roles
+    print("getUserRoles('usr_1', 'org_1'):", rbac.getUserRoles("usr_1", "org_1"))
+    print("getUserRoles('usr_1', 'wksp_1'):", rbac.getUserRoles("usr_1", "wksp_1"))
+
+    # Phase 3: Get users
+    print("getUsersForAccount('wksp_1'):", rbac.getUsersForAccount("wksp_1"))
+
+    # Phase 4: Filter users
+    print("getUsersForAccountWithFilter('wksp_1', []):",
+          rbac.getUsersForAccountWithFilter("wksp_1", []))
+    print("getUsersForAccountWithFilter('wksp_1', ['admin']):",
+          rbac.getUsersForAccountWithFilter("wksp_1", ["admin"]))
+    print("getUsersForAccountWithFilter('wksp_1', ['admin', 'editor']):",
+          rbac.getUsersForAccountWithFilter("wksp_1", ["admin", "editor"]))
+Optimization and Scaling
+Caching
+Problem: Asking for the same user roles repeatedly is slow.
+
+Solution: Use caching (Memoization). Store the result so you don't have to calculate it again.
+
+from functools import lru_cache
+
+@lru_cache(maxsize=1000)
+def getUserRoles(self, userId: str, accountId: str) -> tuple[str, ...]:
+    # Return tuple because lists cannot be hashed/cached
+    roles = set()
+    for ancestor in self._getAncestors(accountId):
+        key = (userId, ancestor)
+        if key in self.role_map:
+            roles.update(self.role_map[key])
+    return tuple(sorted(roles))
+Handling Updates
+Problem: What if a role is added while the system is running?
+
+Solution: You must clear the cache.
+
+Update the role_map.
+Invalidate (clear) the specific cache entries.
+In a distributed system, you might need an event system to tell other servers to clear their cache.
+def addRoleAssignment(self, userId: str, accountId: str, role: str):
+    """Add a role and clear cache."""
+    key = (userId, accountId)
+    self.role_map[key].add(role)
+    self.users_by_account[accountId].add(userId)
+    # Clear the cache because data changed
+    self.getUserRoles.cache_clear()
+Scaling Challenges
+| Challenge | Impact | Solution | | --- | --- | --- | | Deep Hierarchy | Traversal takes too long | Pre-calculate ancestor lists. | | Many Users | Too many users per account | Use Sharding (split data by account). | | High Read Load | Too many queries | Use Redis as a caching layer. | | Real-time Updates | Data becomes stale | Use event-driven updates. |
+
+Table of Contents
+RBAC Role Resolver
+Problem Definition
+The Rules
+Example Logic
+Phase 1: Direct Role Lookup
+Task Requirements
+Usage Example
+Questions to Ask
+Phase 2: Adding Inheritance
+Task Requirements
+Usage Example
+Interview Questions
+Phase 3: Finding Users with Access
+Task Requirements
+Usage Example
+Interview Questions
+Phase 4: Filtering Users by Role
+Task Requirements
+Usage Example
+Solution Details
+Phase 1: Direct Lookup Strategy
+Phase 2: Inheritance Strategy
+Phase 3: Finding Users Strategy
+Phase 4: Filtering Strategy
+Full Code Solution
+Optimization and Scaling
+Caching
+Handling Updates
+Scaling Challenges
+
+Practice in Code Editor
+RBAC Role Resolver | 1Point3Acres
+
+
+1point3acres logo
+1P3A Interview
+Premium Version
+
+Interview Questions
+Software Engineer
+Data Scientist
+Product Manager
+
+Followed Companies
+scale.ai
+
+
+Bookmarks
+Reading History
+Popular Questions
+New
+Interview Blog
+1:1 Coaching
+Job Board
+Code Editor
+Share Interview Experience
+
+ByteByteGo 10% OFF
+
+Contact Support
+
+zhangori000
+zhangori000
+Membership active
+Toggle Sidebar
+Popular Questions
+Details
+Popular Questions
+Feature Tour
+
+
+中
+Payment Webhook System
+stripe · anonymous user · 4mon
+Payment Webhook System
+The Challenge
+You need to design a webhook service for a payment platform. The goal is to notify merchants whenever a payment event happens. For example, when a customer pays, gets a refund, or disputes a charge, the platform must send this information to the merchant's server immediately.
+
+Think about the workflow: An online store connects to a payment platform to handle money. The store needs to know right away when a payment succeeds so they can ship the product. They also need to know about refunds to update their stock. A webhook system does this by sending HTTP POST requests to a specific URL that the merchant sets up.
+
+What the System Needs
+Your system must handle three main things:
+
+Merchant Registration: Allow merchants to save a webhook URL and choose which types of events they want to receive.
+Sending Events: When a payment event happens, send an HTTP POST request with the data to all registered webhooks.
+Reliability: Ensure the message gets delivered, even if the merchant's server is down for a short time.
+Code Example
+// Save a new webhook endpoint
+WebhookRegistration registerWebhook(
+    String merchantId,
+    String callbackUrl,
+    List<String> eventTypes  // Example: ["payment.success", "refund.created"]
+)
+When an event happens, the system sends an HTTP POST request to the merchant's URL:
+
+{
+    "id": "evt_1234567890",
+    "type": "payment.success",
+    "created_at": "2024-12-15T10:30:00Z",
+    "data": {
+        "payment_id": "pay_abc123",
+        "amount": 5000,
+        "currency": "usd",
+        "customer_id": "cus_xyz789"
+    }
+}
+The merchant must reply with an HTTP 200 code to confirm they got the message.
+
+Things to Think About
+Delivery Guarantees: How do you make sure every message is delivered at least once? How should merchants handle it if they get the same message twice?
+Retry Strategy: What do you do if the merchant's server is down? How many times do you try again, and for how long?
+Latency: Some merchant servers might take 10-15 seconds to reply. How do you handle this without slowing down your system?
+Security: How can the merchant prove that the request really came from your platform?
+Scale: The system might create millions of events every day. How do you handle this huge amount of traffic?
+Topics for Discussion
+In the interview, the interviewer may ask deeper questions about these specific technical areas:
+
+Idempotency: How do merchants safely process the same webhook twice without errors? What unique ID should they use?
+Signature Verification: How do you sign the requests? Should you use Symmetric (HMAC) or Asymmetric (RSA) keys so merchants can check the signature?
+Circuit Breaking: When do you stop trying to send data to a broken URL? How do you tell the merchant there is a problem?
+Event Ordering: Is it possible for events to arrive in the wrong order? How should the merchant handle that?
+Endpoint Validation: How do you verify that the merchant actually owns the URL they entered before you send them sensitive payment data?
+SSRF Prevention: How do you stop attackers from using your webhook system to hit your internal servers?
+Observability: How do merchants see logs or debug why a delivery failed?
+Backpressure: If one merchant has millions of stuck events, how do you make sure it doesn't slow down delivery for other merchants?
+Helpful Links
+This is a very common system design problem. Here are some resources to help you understand the architecture:
+
+Designing Payment Webhook - Tianpan.co - Explains the architecture, security, and retry logic.
+Webhook System Design - System Design School - A step-by-step guide to the components and how to handle failures.
+Webhook System Design - YouTube - A video that draws out the system design visually.
+Real World Context
+This question was asked during a remote interview for a Software Engineer role at Stripe. The interview focuses on building a system that is very reliable. They care a lot about how you handle the asynchronous nature of webhooks and how you ensure merchants never miss a payment notification.
+
+You should be ready to talk about the whole lifecycle: from the merchant signing up and verifying their URL, to creating the event, putting it in a queue, and sending it out. Because reliability is a priority, expect detailed questions about retry logic, idempotency, and how to deal with merchant servers that are slow or broken.
+
+Table of Contents
+Payment Webhook System
+The Challenge
+What the System Needs
+Code Example
+Things to Think About
+Topics for Discussion
+Helpful Links
+Real World Context
+
+Practice in Code Editor
+Payment Webhook System | 1Point3Acres
+
+
+
+
+1point3acres logo
+1P3A Interview
+Premium Version
+
+Interview Questions
+Software Engineer
+Data Scientist
+Product Manager
+
+Followed Companies
+scale.ai
+
+
+Bookmarks
+Reading History
+Popular Questions
+New
+Interview Blog
+1:1 Coaching
+Job Board
+Code Editor
+Share Interview Experience
+
+ByteByteGo 10% OFF
+
+Contact Support
+
+zhangori000
+zhangori000
+Membership active
+Toggle Sidebar
+Popular Questions
+Details
+Popular Questions
+Feature Tour
+
+
+中
+Shipping Cost Calculator
+stripe · anonymous user · 4mon
+Interview Problem: Shipping Cost Calculator
+Problem Summary
+You need to write code to calculate shipping costs for an online store. The cost depends on the country and the type of product.
+
+This interview problem has three steps. It starts simple and gets harder:
+
+Simple Fixed Price: Each item has a set price.
+Volume Discounts: The price changes based on how many items you buy (tiers).
+Mixed Pricing Types: Some ranges charge per item, while others charge a flat fee.
+Data Format
+You get two pieces of data:
+
+1. Order Object: This tells you the country and the list of items being bought.
+
+{
+    "country": "US",
+    "items": [
+        {"product": "mouse", "quantity": 20},
+        {"product": "laptop", "quantity": 5}
+    ]
+}
+2. Shipping Cost Rules: This is a dictionary that holds the price rules for each country and product. The format changes slightly in each step.
+
+Step 1: Simple Fixed Price
+The Task
+Write a function called calculate_shipping_cost(order, shipping_cost). It must calculate the total cost when every product has one fixed price per unit.
+
+Example Case
+Input:
+
+order_us = {
+    "country": "US",
+    "items": [
+        {"product": "mouse", "quantity": 20},
+        {"product": "laptop", "quantity": 5}
+    ]
+}
+
+order_ca = {
+    "country": "CA",
+    "items": [
+        {"product": "mouse", "quantity": 20},
+        {"product": "laptop", "quantity": 5}
+    ]
+}
+
+shipping_cost = {
+    "US": [
+        {"product": "mouse", "cost": 550},
+        {"product": "laptop", "cost": 1000}
+    ],
+    "CA": [
+        {"product": "mouse", "cost": 750},
+        {"product": "laptop", "cost": 1100}
+    ]
+}
+Output:
+
+calculate_shipping_cost(order_us, shipping_cost) == 16000
+# Math: (20 × 550) + (5 × 1000) = 11000 + 5000 = 16000
+
+calculate_shipping_cost(order_ca, shipping_cost) == 20500
+# Math: (20 × 750) + (5 × 1100) = 15000 + 5500 = 20500
+Key Requirements
+Handle orders with multiple different products.
+Use the correct prices for the specific country.
+Return the answer as an integer (whole number).
+Step 2: Volume Discounts
+The Task
+Update your function to handle "tiered pricing." This means the cost per unit changes based on the quantity.
+
+Each tier has a start number (minQuantity) and an end number (maxQuantity). This works like a bulk discount—buying more units might lower the price for the extra items.
+
+Example Case
+Input:
+
+# Orders remain the same as Part 1
+
+shipping_cost = {
+    "US": [
+        {
+            "product": "mouse",
+            "costs": [
+                {"minQuantity": 0, "maxQuantity": None, "cost": 550}
+            ]
+        },
+        {
+            "product": "laptop",
+            "costs": [
+                {"minQuantity": 0, "maxQuantity": 2, "cost": 1000},
+                {"minQuantity": 3, "maxQuantity": None, "cost": 900}
+            ]
+        }
+    ],
+    "CA": [
+        {
+            "product": "mouse",
+            "costs": [
+                {"minQuantity": 0, "maxQuantity": None, "cost": 750}
+            ]
+        },
+        {
+            "product": "laptop",
+            "costs": [
+                {"minQuantity": 0, "maxQuantity": 2, "cost": 1100},
+                {"minQuantity": 3, "maxQuantity": None, "cost": 1000}
+            ]
+        }
+    ]
+}
+Output:
+
+calculate_shipping_cost(order_us, shipping_cost) == 15700
+# Math:
+# mouse: 20 × 550 = 11000 (standard rate)
+# laptop: (2 × 1000) + (3 × 900) = 2000 + 2700 = 4700
+# Total: 11000 + 4700 = 15700
+
+calculate_shipping_cost(order_ca, shipping_cost) == 20200
+# Math:
+# mouse: 20 × 750 = 15000
+# laptop: (2 × 1100) + (3 × 1000) = 2200 + 3000 = 5200
+# Total: 15000 + 5200 = 20200
+Key Requirements
+Process the rules in order from lowest quantity to highest.
+If maxQuantity is None, it means there is no limit for that tier.
+The range includes the start number but stops before the end number ( [min, max) ).
+Calculate the cost for each tier separately and add them up.
+Clarification Questions
+Are the tiers always sorted by minQuantity?
+Do the ranges include the maxQuantity number or exclude it?
+Are there gaps between tiers, or do they overlap?
+What should happen if the quantity is zero?
+Step 3: Mixed Pricing Types
+The Task
+Now, the system needs to support two different ways to charge for a tier:
+
+incremental: Charge per unit (Quantity × Cost). This is the same as Step 2.
+fixed: Charge one flat fee for the whole tier, no matter how many items are in it.
+A single product can mix these types. For example, the first 2 items might be a fixed fee, and the rest are per unit.
+
+Example Case
+Input:
+
+# Orders remain the same
+
+shipping_cost = {
+    "US": [
+        {
+            "product": "mouse",
+            "costs": [
+                {
+                    "type": "incremental",
+                    "minQuantity": 0,
+                    "maxQuantity": None,
+                    "cost": 550
+                }
+            ]
+        },
+        {
+            "product": "laptop",
+            "costs": [
+                {
+                    "type": "fixed",
+                    "minQuantity": 0,
+                    "maxQuantity": 2,
+                    "cost": 1000
+                },
+                {
+                    "type": "incremental",
+                    "minQuantity": 3,
+                    "maxQuantity": None,
+                    "cost": 900
+                }
+            ]
+        }
+    ],
+    "CA": [
+        {
+            "product": "mouse",
+            "costs": [
+                {
+                    "type": "incremental",
+                    "minQuantity": 0,
+                    "maxQuantity": None,
+                    "cost": 750
+                }
+            ]
+        },
+        {
+            "product": "laptop",
+            "costs": [
+                {
+                    "type": "fixed",
+                    "minQuantity": 0,
+                    "maxQuantity": 2,
+                    "cost": 1100
+                },
+                {
+                    "type": "incremental",
+                    "minQuantity": 3,
+                    "maxQuantity": None,
+                    "cost": 1000
+                }
+            ]
+        }
+    ]
+}
+Output:
+
+calculate_shipping_cost(order_us, shipping_cost) == 14700
+# Math:
+# mouse: 20 × 550 = 11000 (incremental)
+# laptop: 1000 (fixed fee for first 2) + (3 × 900) = 1000 + 2700 = 3700
+# Total: 11000 + 3700 = 14700
+
+calculate_shipping_cost(order_ca, shipping_cost) == 19100
+# Math:
+# mouse: 20 × 750 = 15000 (incremental)
+# laptop: 1100 (fixed fee for first 2) + (3 × 1000) = 1100 + 3000 = 4100
+# Total: 15000 + 4100 = 19100
+Key Requirements
+Check the pricing type (fixed or incremental).
+Fixed: Add the cost once if the items fall into this tier.
+Incremental: Multiply the quantity by the cost.
+Handle patterns that switch back and forth between types.
+How to Solve It
+Solution for Step 1
+Plan:
+
+Get the country code from the order.
+Make a lookup table (Dictionary) to find the cost for each product quickly.
+Loop through the items in the order.
+For each item, do: quantity × cost and add it to the total.
+Time Complexity: O(n + m) (where n is the number of price rules and m is the number of items ordered). Space Complexity: O(n) (to store the price lookup table).
+
+Code Implementation:
+
+def calculate_shipping_cost(order, shipping_cost):
+    country = order["country"]
+    cost_map = {}
+
+    # Create a quick way to find price by product name
+    for product_info in shipping_cost[country]:
+        cost_map[product_info["product"]] = product_info["cost"]
+
+    total = 0
+    for item in order["items"]:
+        product = item["product"]
+        quantity = item["quantity"]
+        total += quantity * cost_map[product]
+
+    return total
+Edge Cases:
+
+What if the items list is empty?
+What if a product is missing from the price list?
+What if the quantity is negative?
+Solution for Step 2
+Plan:
+
+Create a lookup table that maps product names to their list of tiers.
+For each item, keep track of how many units you still need to pay for (remaining).
+Loop through the tiers in order:
+Figure out how many units fit into the current tier.
+Calculate the cost for those specific units.
+Subtract those units from remaining.
+Stop when all units are paid for.
+Math Detail: The "capacity" of a tier is maxQuantity - minQuantity. The number of units that fall in a tier is the smaller number between remaining and capacity.
+
+Time Complexity: O(n × t + m × t) (where t is the average number of tiers).
+
+Code Implementation:
+
+def calculate_shipping_cost(order, shipping_cost):
+    country = order["country"]
+    cost_map = {}
+
+    # Map product to its list of cost tiers
+    for product_info in shipping_cost[country]:
+        cost_map[product_info["product"]] = product_info["costs"]
+
+    total = 0
+    for item in order["items"]:
+        product = item["product"]
+        quantity = item["quantity"]
+        remaining = quantity
+
+        for tier in cost_map[product]:
+            if remaining <= 0:
+                break
+
+            min_qty = tier["minQuantity"]
+            max_qty = tier["maxQuantity"]
+            cost = tier["cost"]
+
+            # Figure out how many items fit in this tier
+            if max_qty is None:
+                tier_units = remaining
+            else:
+                tier_capacity = max_qty - min_qty
+                tier_units = min(remaining, tier_capacity)
+
+            total += tier_units * cost
+            remaining -= tier_units
+
+    return total
+Important Notes:
+
+Make sure you understand if the ranges are inclusive or exclusive.
+Handle the maxQuantity: None case carefully—it acts as an infinity.
+Solution for Step 3
+Plan:
+
+Use the same logic as Step 2.
+Add an if statement to check the type.
+If type is "fixed", add the cost directly. Do not multiply by quantity.
+If type is "incremental", multiply quantity × cost.
+Code Implementation:
+
+def calculate_shipping_cost(order, shipping_cost):
+    country = order["country"]
+    cost_map = {}
+
+    for product_info in shipping_cost[country]:
+        cost_map[product_info["product"]] = product_info["costs"]
+
+    total = 0
+    for item in order["items"]:
+        product = item["product"]
+        quantity = item["quantity"]
+        remaining = quantity
+
+        for tier in cost_map[product]:
+            if remaining <= 0:
+                break
+
+            min_qty = tier["minQuantity"]
+            max_qty = tier["maxQuantity"]
+            cost = tier["cost"]
+            pricing_type = tier["type"]
+
+            # Figure out how many items fit in this tier
+            if max_qty is None:
+                tier_units = remaining
+            else:
+                tier_capacity = max_qty - min_qty
+                tier_units = min(remaining, tier_capacity)
+
+            # Apply logic based on the type
+            if pricing_type == "fixed":
+                total += cost
+            else:  # incremental
+                total += tier_units * cost
+
+            remaining -= tier_units
+
+    return total
+Bonus Discussion Topics
+Improving the Code
+Question: How would you make this code better for a real production system?
+
+Ideas:
+
+Split it up: Move the logic for calculating a single tier into its own function.
+Add Types: Use Python type hints so it is easier to read and debug.
+Handle Errors: Make sure the code does not crash if data is missing.
+Testing: Write tests to check edge cases.
+Refactoring Example:
+
+from typing import Dict, List, Optional
+from dataclasses import dataclass
+
+@dataclass
+class TierCost:
+    type: str
+    min_quantity: int
+    max_quantity: Optional[int]
+    cost: int
+
+def calculate_tier_cost(quantity: int, tier: TierCost) -> tuple[int, int]:
+    """
+    Calculate cost for a single tier and return (cost, units_consumed).
+    """
+    if tier.max_quantity is None:
+        tier_units = quantity
+    else:
+        tier_capacity = tier.max_quantity - tier.min_quantity
+        tier_units = min(quantity, tier_capacity)
+
+    if tier.type == "fixed":
+        calculated_cost = tier.cost
+    else:
+        calculated_cost = tier_units * tier.cost
+
+    return calculated_cost, tier_units
+
+def calculate_product_cost(quantity: int, tiers: List[TierCost]) -> int:
+    """
+    Calculate total cost for a product given its quantity and tier structure.
+    """
+    total = 0
+    remaining = quantity
+
+    for tier in tiers:
+        if remaining <= 0:
+            break
+
+        tier_cost, units_consumed = calculate_tier_cost(remaining, tier)
+        total += tier_cost
+        remaining -= units_consumed
+
+    return total
+Unsorted Tiers
+Question: What if the tier list is not in order?
+
+Answer:
+
+Sort the list yourself before processing. Use minQuantity to decide the order.
+Example: sorted(tiers, key=lambda t: t["minQuantity"]).
+This makes the code slightly slower (O(t log t)) but safer.
+Table of Contents
+Interview Problem: Shipping Cost Calculator
+Problem Summary
+Data Format
+Step 1: Simple Fixed Price
+The Task
+Example Case
+Key Requirements
+Step 2: Volume Discounts
+The Task
+Example Case
+Key Requirements
+Clarification Questions
+Step 3: Mixed Pricing Types
+The Task
+Example Case
+Key Requirements
+How to Solve It
+Solution for Step 1
+Solution for Step 2
+Solution for Step 3
+Bonus Discussion Topics
+Improving the Code
+Unsorted Tiers
+
+Practice in Code Editor
+Shipping Cost Calculator | 1Point3Acres
+
+
+
+1point3acres logo
+1P3A Interview
+Premium Version
+
+Interview Questions
+Software Engineer
+Data Scientist
+Product Manager
+
+Followed Companies
+scale.ai
+
+
+Bookmarks
+Reading History
+Popular Questions
+New
+Interview Blog
+1:1 Coaching
+Job Board
+Code Editor
+Share Interview Experience
+
+ByteByteGo 10% OFF
+
+Contact Support
+
+zhangori000
+zhangori000
+Membership active
+Toggle Sidebar
+Popular Questions
+Details
+Popular Questions
+Feature Tour
+
+
+中
+Debug: Mako Template Engine
+stripe · anonymous user · 4mon
+Debug: Mako Template Engine
+Challenge Description
+In this test, you need to find and fix errors in a Python template library. You will get a link to a GitHub folder. This folder has a version of the Mako template engine that contains hidden bugs. Your job is to find these bugs using the test suite and fix them.
+
+This test checks if you can:
+
+Work with new code you haven't seen before.
+Understand complex logic quickly.
+Use debugging tools well.
+Explain your thoughts clearly while you work.
+Repository: Google Drive
+
+Interview Details
+Time: About 45-60 minutes
+Setup: Download the code, work on your own computer, and share your screen
+Language: Python
+Action: The interviewer will watch you debug. You must talk out loud as you solve the problem.
+About Mako
+Mako is a popular tool for Python. It turns templates into Python code so they run very fast. Here are its main features:
+
+Embedded Python: You can put Python code inside templates using <% ... %>.
+Variable Interpolation: You can use ${variable} to put values into templates.
+Template Inheritance: Templates can share a layout using <%inherit>.
+Reusable Components: You can make functions inside templates using <%def>.
+Control Flow: Standard Python loops and if statements work normally.
+Example Template:
+
+
+<%inherit file="base.html"/>
+
+<%def name="greeting(name)">
+    Hello, ${name}!
+</%def>
+
+% for item in items:
+    <li>${item}</li>
+% endfor
+You do not need to know Mako before taking this test. The code comes with many tests that will show you what is broken.
+
+How to Begin
+Installation Steps
+Download the code and go to the debug-mako folder.
+Install the needed libraries: pip install -r bugsquash-requirements.txt
+Run the tests: python -m pytest test/
+Look at which tests fail and start checking the code.
+Folder Layout
+The folder contains all the code for the library:
+
+
+mako/
+├── template.py      # Main class for rendering templates
+├── lexer.py         # Breaks template code into tokens
+├── codegen.py       # Turns parsed templates into Python code
+├── ast.py           # AST node definitions
+├── _ast_util.py     # Helpers for changing ASTs
+├── lookup.py        # Finds and loads template files
+├── runtime.py       # Tools used while the template runs
+├── parsetree.py     # Definitions for the parse tree
+├── pygen.py         # Generates Python source code
+├── pyparser.py      # Parses Python expressions
+├── filters.py       # Functions to filter output
+├── cache.py         # System for caching templates
+├── exceptions.py    # Custom error classes
+├── cmd.py           # Command-line tools
+├── compat.py        # Python version compatibility
+└── util.py          # General helper tools
+
+test/
+├── test_template.py # Tests for rendering templates
+├── test_lexer.py    # Tests for the Lexer
+├── test_lookup.py   # Tests for finding files
+├── test_ast.py      # Tests for AST handling
+└── ...              # Other test files
+How to Find Bugs
+Steps to Follow
+Run All Tests: See the big picture of what is failing.
+
+python -m pytest test/ -v
+Focus on One Failure: Run just the broken test to get clearer output.
+
+python -m pytest test/test_lookup.py::TestClass::test_name -v
+Read the Test: Understand what result the test expects.
+
+Trace the Code: Follow the logic from the start to where it crashes.
+
+Use Print or pdb: Add breakpoints or print statements to check values.
+
+import pdb; pdb.set_trace()
+Check Changes: Look for code that looks strange or inconsistent.
+
+Common Error Types
+Most bugs in this test fit into these groups:
+
+Wrong Conditions: Logic checks (like if statements) that do the opposite of what they should do.
+Missing Edge Cases: Code that fails when it gets unexpected input.
+AST/Parse Tree Issues: Errors in how the code creates nodes or changes data structures.
+String Errors: Mistakes in how the code handles text or template syntax.
+Table of Contents
+Debug: Mako Template Engine
+Challenge Description
+Interview Details
+About Mako
+How to Begin
+Installation Steps
+Folder Layout
+How to Find Bugs
+Steps to Follow
+Common Error Types
+
+Practice in Code Editor
+Debug: Mako Template Engine | 1Point3Acres
+
+
+1point3acres logo
+1P3A Interview
+Premium Version
+
+Interview Questions
+Software Engineer
+Data Scientist
+Product Manager
+
+Followed Companies
+scale.ai
+
+
+Bookmarks
+Reading History
+Popular Questions
+New
+Interview Blog
+1:1 Coaching
+Job Board
+Code Editor
+Share Interview Experience
+
+ByteByteGo 10% OFF
+
+Contact Support
+
+zhangori000
+zhangori000
+Membership active
+Toggle Sidebar
+Popular Questions
+Details
+Popular Questions
+Feature Tour
+
+
+中
+Debug: Mako Template Engine
+stripe · anonymous user · 4mon
+Debug: Mako Template Engine
+Challenge Description
+In this test, you need to find and fix errors in a Python template library. You will get a link to a GitHub folder. This folder has a version of the Mako template engine that contains hidden bugs. Your job is to find these bugs using the test suite and fix them.
+
+This test checks if you can:
+
+Work with new code you haven't seen before.
+Understand complex logic quickly.
+Use debugging tools well.
+Explain your thoughts clearly while you work.
+Repository: Google Drive
+
+Interview Details
+Time: About 45-60 minutes
+Setup: Download the code, work on your own computer, and share your screen
+Language: Python
+Action: The interviewer will watch you debug. You must talk out loud as you solve the problem.
+About Mako
+Mako is a popular tool for Python. It turns templates into Python code so they run very fast. Here are its main features:
+
+Embedded Python: You can put Python code inside templates using <% ... %>.
+Variable Interpolation: You can use ${variable} to put values into templates.
+Template Inheritance: Templates can share a layout using <%inherit>.
+Reusable Components: You can make functions inside templates using <%def>.
+Control Flow: Standard Python loops and if statements work normally.
+Example Template:
+
+
+<%inherit file="base.html"/>
+
+<%def name="greeting(name)">
+    Hello, ${name}!
+</%def>
+
+% for item in items:
+    <li>${item}</li>
+% endfor
+You do not need to know Mako before taking this test. The code comes with many tests that will show you what is broken.
+
+How to Begin
+Installation Steps
+Download the code and go to the debug-mako folder.
+Install the needed libraries: pip install -r bugsquash-requirements.txt
+Run the tests: python -m pytest test/
+Look at which tests fail and start checking the code.
+Folder Layout
+The folder contains all the code for the library:
+
+
+mako/
+├── template.py      # Main class for rendering templates
+├── lexer.py         # Breaks template code into tokens
+├── codegen.py       # Turns parsed templates into Python code
+├── ast.py           # AST node definitions
+├── _ast_util.py     # Helpers for changing ASTs
+├── lookup.py        # Finds and loads template files
+├── runtime.py       # Tools used while the template runs
+├── parsetree.py     # Definitions for the parse tree
+├── pygen.py         # Generates Python source code
+├── pyparser.py      # Parses Python expressions
+├── filters.py       # Functions to filter output
+├── cache.py         # System for caching templates
+├── exceptions.py    # Custom error classes
+├── cmd.py           # Command-line tools
+├── compat.py        # Python version compatibility
+└── util.py          # General helper tools
+
+test/
+├── test_template.py # Tests for rendering templates
+├── test_lexer.py    # Tests for the Lexer
+├── test_lookup.py   # Tests for finding files
+├── test_ast.py      # Tests for AST handling
+└── ...              # Other test files
+How to Find Bugs
+Steps to Follow
+Run All Tests: See the big picture of what is failing.
+
+python -m pytest test/ -v
+Focus on One Failure: Run just the broken test to get clearer output.
+
+python -m pytest test/test_lookup.py::TestClass::test_name -v
+Read the Test: Understand what result the test expects.
+
+Trace the Code: Follow the logic from the start to where it crashes.
+
+Use Print or pdb: Add breakpoints or print statements to check values.
+
+import pdb; pdb.set_trace()
+Check Changes: Look for code that looks strange or inconsistent.
+
+Common Error Types
+Most bugs in this test fit into these groups:
+
+Wrong Conditions: Logic checks (like if statements) that do the opposite of what they should do.
+Missing Edge Cases: Code that fails when it gets unexpected input.
+AST/Parse Tree Issues: Errors in how the code creates nodes or changes data structures.
+String Errors: Mistakes in how the code handles text or template syntax.
+Table of Contents
+Debug: Mako Template Engine
+Challenge Description
+Interview Details
+About Mako
+How to Begin
+Installation Steps
+Folder Layout
+How to Find Bugs
+Steps to Follow
+Common Error Types
+
+Practice in Code Editor
+Debug: Mako Template Engine | 1Point3Acres
+
+
+1point3acres logo
+1P3A Interview
+Premium Version
+
+Interview Questions
+Software Engineer
+Data Scientist
+Product Manager
+
+Followed Companies
+scale.ai
+
+
+Bookmarks
+Reading History
+Popular Questions
+New
+Interview Blog
+1:1 Coaching
+Job Board
+Code Editor
+Share Interview Experience
+
+ByteByteGo 10% OFF
+
+Contact Support
+
+zhangori000
+zhangori000
+Membership active
+Toggle Sidebar
+Popular Questions
+Details
+Popular Questions
+Feature Tour
+
+
+中
+Factory Cost Optimizer
+stripe · anonymous user · 4mon
+Factory Cost Optimizer
+The Problem
+You need to build a system to find the cheapest way to make a product. The product is made in steps (stages). For each step, you can choose from several factories. Each factory has:
+
+A building cost.
+A location (position) on a railway line.
+Your goal is to pick exactly one factory for each step. You want to make the total cost as low as possible.
+
+Total cost includes:
+
+The cost to build at the factory.
+The cost to move goods between factories (transportation).
+The interview has four parts:
+
+Simple Selection: Find the lowest cost if moving goods is free.
+Adding Moving Costs: Add costs based on distance between factories.
+Many Stages: Make the code work for any number of steps (N stages).
+Skip a Step: Find the lowest cost if you must skip exactly one stage.
+How the Input Looks
+You get a list of production stages. Each stage is a list of factory choices.
+
+# Each choice: [building_cost, position]
+stages = [
+    [[10, 0], [20, 5], [35, 2]],   # Stage 0: 3 choices
+    [[35, 1], [50, 3], [25, 0]],   # Stage 1: 3 choices
+    [[30, 4], [5, 2], [40, 0]]     # Stage 2: 3 choices
+]
+How to Calculate Cost
+Total Cost = (Sum of building costs) + (Sum of transportation costs)
+
+Transportation cost is the distance between two stages. Formula: |position_current - position_next|
+
+Part 1: Simple Selection (No Moving Cost)
+The Task
+Write a function find_minimum_cost(stages). Assume all factories are at the same place. This means transportation cost is zero. You only care about building costs.
+
+Example
+Input:
+
+stages = [
+    [[10, 0], [20, 0], [35, 0]],   # Stage 0
+    [[35, 0], [50, 0], [25, 0]],   # Stage 1
+    [[30, 0], [5, 0], [40, 0]]     # Stage 2
+]
+Output:
+
+find_minimum_cost(stages) == 40
+# Math:
+# Stage 0: Lowest is 10
+# Stage 1: Lowest is 25
+# Stage 2: Lowest is 5
+# Total: 10 + 25 + 5 = 40
+Goal
+Pick one factory from each stage.
+Find the lowest total building cost.
+The code should work for any number of choices per stage.
+Part 2: Adding Moving Costs
+The Task
+Now, include transportation costs. Factories are at different places. Moving goods from stage i to stage i+1 costs money equal to the distance between them.
+
+Example
+Input:
+
+stages = [
+    [[100, 2], [50, 0], [30, 1]],    # Stage 0
+    [[100, 1], [20, 2], [10, 5]],    # Stage 1
+    [[10, 1], [12, 1], [5, 3]]       # Stage 2
+]
+Output:
+
+find_minimum_cost(stages) == 51
+# Best choice:
+# Stage 0: [30, 1] - cost: 30, pos: 1
+# Stage 1: [10, 5] - cost: 10, pos: 5
+# Stage 2: [5, 3]  - cost: 5,  pos: 3
+# Build cost: 30 + 10 + 5 = 45
+# Move cost: |1-5| + |5-3| = 4 + 2 = 6
+# Total: 45 + 6 = 51
+Goal
+Total Cost = building cost + moving cost.
+Moving cost = |position_1 - position_2|.
+Find the mix of factories that gives the lowest total.
+Questions to Ask the Interviewer
+Are positions always positive numbers?
+Can two factories be at the same spot?
+Is there a limit to how many factories are in one stage?
+Part 3: Handling Many Stages
+The Task
+Make your solution work for any number of stages. You cannot write fixed loops (like one loop for stage 0, one for stage 1, etc.) because you don't know how many stages there will be.
+
+Example
+Input:
+
+# 5 production stages
+stages = [
+    [[10, 0], [20, 2]],
+    [[15, 1], [25, 3], [35, 0]],
+    [[30, 2], [40, 1]],
+    [[5, 0], [15, 2]],
+    [[20, 1], [10, 3], [25, 0]]
+]
+Output:
+
+find_minimum_cost(stages)  # Returns the lowest total cost
+Goal
+Handle N stages (not just 3).
+Handle different numbers of factories per stage.
+Keep the code fast enough to run reasonably well.
+Part 4: Skipping a Step
+The Task
+New rule: You must skip exactly one stage. When you skip a stage, calculate the moving cost between the stage before the gap and the stage after the gap.
+
+Example
+Input:
+
+stages = [
+    [[10, 0], [20, 2]],    # Stage 0
+    [[100, 5]],            # Stage 1 - very expensive, maybe skip this?
+    [[15, 1], [25, 3]],    # Stage 2
+    [[5, 2], [15, 0]]      # Stage 3
+]
+Output:
+
+find_minimum_cost_skip_one(stages) == 32
+# Best Plan: Skip Stage 1
+# Pick: [10, 0] -> skip -> [15, 1] -> [5, 2]
+# Build cost: 10 + 15 + 5 = 30
+# Move cost: |0-1| + |1-2| = 1 + 1 = 2
+# Total: 32
+Goal
+Skip exactly one stage.
+Calculate distance across the gap.
+Try skipping every possible stage to find the best option.
+Questions to Ask the Interviewer
+Can I skip the very first or very last stage? (Usually yes).
+What if there are only 2 stages? (If you skip one, there is only one left, so moving cost is 0).
+How to Solve It
+Part 1 Solution: Greedy Approach
+Plan: For every stage, find the cheapest factory. Add all those cheap costs together. Since there is no moving cost, picking the cheapest local option is always the best global option.
+
+Time Complexity: O(N × M) (N is stages, M is factories per stage). Space Complexity: O(1).
+
+Code:
+
+def find_minimum_cost(stages):
+    total = 0
+    for stage in stages:
+        min_cost = float('inf')
+        for factory in stage:
+            building_cost = factory[0]
+            # Find the lowest cost in this stage
+            min_cost = min(min_cost, building_cost)
+        total += min_cost
+    return total
+Things to Watch Out For:
+
+The list of stages is empty.
+A stage has only one factory.
+All factories cost the same.
+Part 2 Solution: Nested Loops
+Plan: Use loops to check every possible combination of factories. Calculate the cost for each combination. Keep track of the lowest one.
+
+Time Complexity: O(M^3) (for 3 stages). Space Complexity: O(1).
+
+Code:
+
+def find_minimum_cost(stages):
+    min_total = float('inf')
+
+    # check all combinations (3 stages)
+    for f0 in stages[0]:
+        for f1 in stages[1]:
+            for f2 in stages[2]:
+                # Add building costs
+                building = f0[0] + f1[0] + f2[0]
+
+                # Add moving costs
+                transport = abs(f0[1] - f1[1]) + abs(f1[1] - f2[1])
+
+                total = building + transport
+                min_total = min(min_total, total)
+
+    return min_total
+Speed Tip: If the building cost alone is already higher than your best total so far, stop checking that combination.
+
+Part 3 Solution: Recursion or DP
+Plan: Use Backtracking (recursion). This lets you handle any number of stages. You pick a factory, then call the function for the next stage, passing along the current cost and position.
+
+Time Complexity: O(M^N). Space Complexity: O(N) (for recursion memory).
+
+Code (Backtracking):
+
+def find_minimum_cost(stages):
+    n = len(stages)
+    min_cost = [float('inf')]
+
+    def backtrack(stage_idx, current_cost, prev_position):
+        # Base case: we finished all stages
+        if stage_idx == n:
+            min_cost[0] = min(min_cost[0], current_cost)
+            return
+
+        # Stop early if cost is already too high
+        if current_cost >= min_cost[0]:
+            return
+
+        # Try every factory in the current stage
+        for factory in stages[stage_idx]:
+            building_cost, position = factory[0], factory[1]
+
+            # Calculate move cost (0 for the first stage)
+            if stage_idx == 0:
+                transport = 0
+            else:
+                transport = abs(position - prev_position)
+
+            new_cost = current_cost + building_cost + transport
+            backtrack(stage_idx + 1, new_cost, position)
+
+    backtrack(0, 0, 0)
+    return min_cost[0]
+Alternative: Dynamic Programming (DP)
+
+DP is faster for large inputs. dp[i][j] = the lowest cost to finish stage i using factory j.
+
+Code (DP):
+
+def find_minimum_cost_dp(stages):
+    n = len(stages)
+    if n == 0:
+        return 0
+
+    # Start with the costs of the first stage
+    prev_dp = {}
+    for j, factory in enumerate(stages[0]):
+        prev_dp[(0, j)] = factory[0]
+
+    # Go through the rest of the stages
+    for i in range(1, n):
+        curr_dp = {}
+        for j, curr_factory in enumerate(stages[i]):
+            curr_cost, curr_pos = curr_factory[0], curr_factory[1]
+            min_cost = float('inf')
+
+            # Check paths from the previous stage to this one
+            for k, prev_factory in enumerate(stages[i-1]):
+                prev_pos = prev_factory[1]
+                transport = abs(curr_pos - prev_pos)
+                total = prev_dp[(i-1, k)] + curr_cost + transport
+                min_cost = min(min_cost, total)
+
+            curr_dp[(i, j)] = min_cost
+        prev_dp = curr_dp
+
+    # The answer is the lowest cost in the final stage
+    return min(prev_dp.values())
+Time Complexity (DP): O(N × M^2). This is much better than backtracking.
+
+Part 4 Solution: Try All Skips
+Plan: Loop through the stages. For each loop, temporarily remove one stage. Calculate the minimum cost for the remaining list (using the logic from Part 3). Pick the skip that results in the lowest overall cost.
+
+Time Complexity: O(N × M^(N-1)). Space Complexity: O(N).
+
+Code:
+
+def find_minimum_cost_skip_one(stages):
+    n = len(stages)
+    if n <= 1:
+        return 0  # Nothing to skip
+
+    def compute_min_cost(active_stages):
+        """Find min cost for a specific list of stages."""
+        if not active_stages:
+            return 0
+
+        min_cost = [float('inf')]
+
+        def backtrack(idx, current_cost, prev_position):
+            if idx == len(active_stages):
+                min_cost[0] = min(min_cost[0], current_cost)
+                return
+
+            if current_cost >= min_cost[0]:
+                return
+
+            for factory in active_stages[idx]:
+                building_cost, position = factory[0], factory[1]
+                # If idx is 0, transport is 0. Else, calc distance.
+                transport = 0 if idx == 0 else abs(position - prev_position)
+                backtrack(idx + 1, current_cost + building_cost + transport, position)
+
+        backtrack(0, 0, 0)
+        return min_cost[0]
+
+    global_min = float('inf')
+
+    # Try skipping each stage one by one
+    for skip_idx in range(n):
+        # Make a new list without the skipped stage
+        active_stages = stages[:skip_idx] + stages[skip_idx + 1:]
+        cost = compute_min_cost(active_stages)
+        global_min = min(global_min, cost)
+
+    return global_min
+Speed Tip: Instead of calculating from scratch every time, you can pre-calculate costs from the start (prefix) and costs from the end (suffix). Then you just combine them.
+
+Extra Discussion
+Can Part 1 be faster than O(N × M)?
+Question: Is there a way to solve Part 1 without checking every single factory?
+
+Answer:
+
+No. You have to look at every number to know which one is the smallest. O(N × M) is the best possible speed.
+Sorting doesn't help because sorting takes O(M log M), which is slower than just looking at them once O(M).
+This is a good topic to show you understand "Time Complexity".
+Table of Contents
+Factory Cost Optimizer
+The Problem
+How the Input Looks
+How to Calculate Cost
+Part 1: Simple Selection (No Moving Cost)
+The Task
+Example
+Goal
+Part 2: Adding Moving Costs
+The Task
+Example
+Goal
+Questions to Ask the Interviewer
+Part 3: Handling Many Stages
+The Task
+Example
+Goal
+Part 4: Skipping a Step
+The Task
+Example
+Goal
+Questions to Ask the Interviewer
+How to Solve It
+Part 1 Solution: Greedy Approach
+Part 2 Solution: Nested Loops
+Part 3 Solution: Recursion or DP
+Part 4 Solution: Try All Skips
+Extra Discussion
+Can Part 1 be faster than O(N × M)?
+
+Practice in Code Editor
+Factory Cost Optimizer | 1Point3Acres
+
+
+Rate Limiter
+stripe · anonymous user · 4mon
+Rate Limiter
+Problem Description
+Your task is to build a rate limiter. A rate limiter tracks how users access an API and limits how many requests they can make. It must work for multiple clients (identified by unique keys like User IDs) and decide if a request is allowed based on a sliding time window.
+
+Your code needs to support two main actions:
+
+hit(key, timestamp): Save a request event for a specific user at a specific time.
+allowed(key, timestamp): Check if the user is currently allowed to make a request.
+The limit is a maximum number of requests inside a time window. For example, if the limit is 100 requests per 60 seconds, a user is allowed only if they made fewer than 100 requests in the last 60 seconds.
+
+Core Requirements
+Track each key (user) separately.
+Use a "sliding window" logic for accuracy.
+Handle timestamps that arrive out of order.
+Clean up old data to save memory.
+Usage Example
+# Rate limit: 3 requests per 10-second window
+limiter = RateLimiter(max_requests=3, window_seconds=10)
+
+limiter.hit("user_1", 1)
+limiter.hit("user_1", 2)
+limiter.allowed("user_1", 3)   # Returns True (2 hits in window, safe)
+limiter.hit("user_1", 3)       # Records 3rd hit
+limiter.allowed("user_1", 4)   # Returns False (3 hits = limit reached)
+
+limiter.allowed("user_1", 12)  # Returns True (hits at t=1,2 are old, only 1 hit left)
+limiter.allowed("user_2", 5)   # Returns True (new key, no past hits)
+Part 1: The Basics
+Task
+Write a RateLimiter class. It should count hits for each key using a sliding window.
+
+class RateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        """
+        Setup the rate limiter.
+
+        Args:
+            max_requests: Max requests allowed in the window
+            window_seconds: Size of the time window in seconds
+        """
+        pass
+
+    def hit(self, key: str, timestamp: int) -> None:
+        """
+        Record a request for a key at a specific time.
+        """
+        pass
+
+    def allowed(self, key: str, timestamp: int) -> bool:
+        """
+        Check if the key is allowed to make a request.
+
+        Returns:
+            True if hits in current window < max_requests,
+            False otherwise.
+        """
+        pass
+Questions to Ask the Interviewer
+Should hit() stop requests that go over the limit, or just record them?
+Are the timestamps always positive numbers?
+Is the time measured in seconds or milliseconds?
+Does allowed() count the current request, or only the past ones?
+Part 2: Saving Memory
+The Issue
+In real systems, a user might stop sending requests for a long time. You need to remove old timestamps efficiently. If you don't, the memory will fill up with useless data.
+
+Interview Follow-Ups
+What is the Time Complexity (speed) and Space Complexity (memory) of your code?
+How do you remove old data?
+What happens if a user comes back after a long break?
+Goals
+Remove timestamps that are older than the current window.
+Memory usage should depend on active requests, not all past requests.
+Cleaning up data must not slow down the system.
+Part 3: Tricky Situations
+The Issue
+You need to improve your code to handle difficult situations that happen in production.
+
+What to Watch Out For
+Burst Traffic: Many requests arrive at the exact same time.
+New Keys: A request comes from a user you have never seen before.
+Out-of-Order Timestamps: A request arrives with a timestamp older than the previous one.
+Time Gaps: A user is inactive for a long time, then suddenly active.
+Examples
+limiter = RateLimiter(max_requests=3, window_seconds=10)
+
+# Burst traffic: multiple hits at exact same time
+limiter.hit("user_1", 5)
+limiter.hit("user_1", 5)
+limiter.allowed("user_1", 5)  # Returns True (2 hits, safe)
+limiter.hit("user_1", 5)
+limiter.allowed("user_1", 5)  # Returns False (3 hits = limit reached)
+
+# Out-of-order timestamps
+limiter.hit("user_2", 10)
+limiter.hit("user_2", 8)      # Old timestamp arrives late
+limiter.allowed("user_2", 10) # Should count both hits
+
+# Large time gap
+limiter.hit("user_3", 1)
+limiter.hit("user_3", 2)
+limiter.allowed("user_3", 1000)  # Returns True (old hits are gone)
+Part 4: Handling Multiple Threads
+The Issue
+In a real system, many threads or processes might call hit() and allowed() at the same time. Your code must be thread-safe. It needs to handle this without crashing or corrupting data.
+
+Interview Follow-Ups
+What errors (race conditions) could happen with your code right now?
+How do you make your rate limiter thread-safe?
+What are the good and bad points of different locking strategies?
+How do you keep the system fast while using locks?
+Goals
+Simultaneous calls for the same key must work correctly.
+Prevent data corruption.
+Keep the system fast (minimize waiting for locks).
+Balance accuracy with speed.
+Example Error
+# Without protection, this can fail:
+# Start: count = 2 (Limit is 3)
+# Thread A checks allowed -> sees count 2 -> Returns True
+# Thread B checks allowed -> sees count 2 -> Returns True
+# Thread A hits -> count becomes 3
+# Thread B hits -> count becomes 4 (Over limit!)
+# Both were allowed, but only one should have been.
+How to Solve It
+Solution 1: Using a Deque
+Strategy:
+
+Use a Dictionary (HashMap). It maps a User Key to a Deque (double-ended queue).
+hit(): Add the timestamp to the end of the deque.
+allowed(): Remove old timestamps from the front. Then, check if the count is less than the limit.
+Why Deque?
+
+Adding to the end is fast: O(1).
+Removing from the front is fast: O(1).
+It keeps timestamps in order naturally.
+Code:
+
+from collections import defaultdict, deque
+
+class RateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.hits = defaultdict(deque)
+
+    def _cleanup(self, key: str, timestamp: int) -> None:
+        """Remove timestamps that are too old."""
+        window_start = timestamp - self.window_seconds
+        while self.hits[key] and self.hits[key][0] <= window_start:
+            self.hits[key].popleft()
+
+    def hit(self, key: str, timestamp: int) -> None:
+        self._cleanup(key, timestamp)
+        self.hits[key].append(timestamp)
+
+    def allowed(self, key: str, timestamp: int) -> bool:
+        self._cleanup(key, timestamp)
+        return len(self.hits[key]) < self.max_requests
+Time Complexity:
+
+hit(): O(k) amortized (k is how many old items we remove).
+allowed(): O(k) amortized.
+Space Complexity:
+
+O(n × m). n is the number of keys, m is the average hits per key.
+Solution 2: Optimizing Memory
+Better Cleanup Strategy:
+
+The basic code removes old items during operations. We can improve this:
+
+Lazy Cleanup: Only clean when we touch a key.
+Periodic Cleanup: In a real system, a background job could scan for inactive users.
+Key Expiration: If a deque becomes empty, delete the key from the dictionary entirely.
+from collections import defaultdict, deque
+
+class RateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.hits = {}  # Regular dict so we can delete keys
+
+    def _cleanup(self, key: str, timestamp: int) -> None:
+        """Remove old timestamps and delete empty keys."""
+        if key not in self.hits:
+            return
+
+        window_start = timestamp - self.window_seconds
+        while self.hits[key] and self.hits[key][0] <= window_start:
+            self.hits[key].popleft()
+
+        # If key is empty, delete it to save memory
+        if not self.hits[key]:
+            del self.hits[key]
+
+    def hit(self, key: str, timestamp: int) -> None:
+        if key not in self.hits:
+            self.hits[key] = deque()
+        self._cleanup(key, timestamp)
+        self.hits[key].append(timestamp)
+
+    def allowed(self, key: str, timestamp: int) -> bool:
+        self._cleanup(key, timestamp)
+        if key not in self.hits:
+            return True
+        return len(self.hits[key]) < self.max_requests
+Complexity Analysis:
+
+| Operation | Best Case | Worst Case | Amortized | | :--- | :--- | :--- | :--- | | hit() | O(1) | O(m) | O(1) | | allowed() | O(1) | O(m) | O(1) |
+
+m is the number of timestamps in the deque.
+
+Why Amortized O(1)?
+
+Each timestamp is added exactly once and removed exactly once. Over time, the cost averages out to O(1) per operation.
+
+Solution 3: Handling Tricky Cases
+Out-of-Order Timestamps:
+
+If times arrive mixed up, a Deque is not enough because it expects order. You can:
+
+Use a Sorted List: Always keeps data sorted.
+Binary Search Insert: Find the right spot to insert the timestamp.
+from collections import defaultdict
+import bisect
+
+class RateLimiterWithUnorderedTimestamps:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.hits = defaultdict(list)
+
+    def _cleanup(self, key: str, timestamp: int) -> None:
+        """Remove old timestamps using binary search."""
+        window_start = timestamp - self.window_seconds
+        # Find the first timestamp inside the window
+        idx = bisect.bisect_right(self.hits[key], window_start)
+        if idx > 0:
+            self.hits[key] = self.hits[key][idx:]
+
+    def hit(self, key: str, timestamp: int) -> None:
+        # Insert while keeping the list sorted
+        bisect.insort(self.hits[key], timestamp)
+        self._cleanup(key, timestamp)
+
+    def allowed(self, key: str, timestamp: int) -> bool:
+        self._cleanup(key, timestamp)
+        return len(self.hits[key]) < self.max_requests
+Trade-offs:
+
+Using a sorted list is slower to add data. Insertion is O(m) because you have to shift elements.
+This is safer if data order is unreliable.
+New Keys:
+
+The dictionary handles this naturally. If a key is new, it starts empty.
+
+Burst Traffic:
+
+We store every timestamp, even duplicates. This correctly counts bursts.
+
+Solution 4: Thread Safety
+Locking Strategies:
+
+Here are ways to make the code safe for multiple threads:
+
+1. Global Lock (Simple)
+
+Use one lock for everything. It is easy to write but can be slow because threads have to wait in line.
+
+import threading
+from collections import deque
+
+class ThreadSafeRateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.hits = {}
+        self.lock = threading.Lock()
+
+    def _cleanup(self, key: str, timestamp: int) -> None:
+        if key not in self.hits:
+            return
+        window_start = timestamp - self.window_seconds
+        while self.hits[key] and self.hits[key][0] <= window_start:
+            self.hits[key].popleft()
+        if not self.hits[key]:
+            del self.hits[key]
+
+    def hit(self, key: str, timestamp: int) -> None:
+        with self.lock:
+            if key not in self.hits:
+                self.hits[key] = deque()
+            self._cleanup(key, timestamp)
+            self.hits[key].append(timestamp)
+
+    def allowed(self, key: str, timestamp: int) -> bool:
+        with self.lock:
+            self._cleanup(key, timestamp)
+            if key not in self.hits:
+                return True
+            return len(self.hits[key]) < self.max_requests
+2. Per-Key Locks (Better Speed)
+
+Use a different lock for each user key. This allows different users to be processed at the same time.
+
+import threading
+from collections import deque
+
+class PerKeyLockRateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.hits = {}
+        self.locks = {}
+        self.global_lock = threading.Lock()  # Protects access to the dictionaries
+
+    def _get_lock(self, key: str) -> threading.Lock:
+        with self.global_lock:
+            if key not in self.locks:
+                self.locks[key] = threading.Lock()
+            return self.locks[key]
+
+    def _cleanup(self, key: str, timestamp: int) -> None:
+        if key not in self.hits:
+            return
+        window_start = timestamp - self.window_seconds
+        while self.hits[key] and self.hits[key][0] <= window_start:
+            self.hits[key].popleft()
+
+    def hit(self, key: str, timestamp: int) -> None:
+        lock = self._get_lock(key)
+        with lock:
+            with self.global_lock:
+                if key not in self.hits:
+                    self.hits[key] = deque()
+            self._cleanup(key, timestamp)
+            self.hits[key].append(timestamp)
+
+    def allowed(self, key: str, timestamp: int) -> bool:
+        lock = self._get_lock(key)
+        with lock:
+            self._cleanup(key, timestamp)
+            if key not in self.hits:
+                return True
+            return len(self.hits[key]) < self.max_requests
+3. Read-Write Lock
+
+Allows many threads to read (check limits) at once, but only one to write (add hits).
+
+import threading
+from collections import deque
+
+class RWLockRateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.hits = {}
+        self.rw_lock = threading.RLock()
+        self.read_count = 0
+        self.read_lock = threading.Lock()
+
+    # Note: Python doesn't have a native RWLock in standard lib.
+    # This is just a concept for illustration.
+4. Lock-Free
+
+Uses atomic operations. This is very fast but very hard to code correctly.
+
+from collections import defaultdict
+import threading
+
+class AtomicCounter:
+    """Simple atomic counter example."""
+    def __init__(self):
+        self._value = 0
+        self._lock = threading.Lock()
+
+    def increment(self):
+        with self._lock:
+            self._value += 1
+            return self._value
+
+    def get(self):
+        return self._value
+Comparison:
+
+| Approach | Pros | Cons | Best For | | :--- | :--- | :--- | :--- | | Global Lock | Simple, Correct | Slow with many users | Low traffic, prototyping | | Per-Key Lock | Good Parallelism | Memory for locks | Many distinct users | | Read-Write Lock | Fast Reads | Complex, Writer issues | Read-heavy apps | | Lock-Free | Fastest | Very Complex | Extreme performance needs |
+
+Atomic Check-and-Hit:
+
+To fix the race condition mentioned earlier, you can combine checking and hitting into one locked step:
+
+def check_and_hit(self, key: str, timestamp: int) -> bool:
+    """
+    Check limit and record hit in one atomic step.
+    Returns True if allowed, False if not.
+    """
+    with self._get_lock(key):
+        self._cleanup(key, timestamp)
+        if key not in self.hits:
+            self.hits[key] = deque()
+
+        if len(self.hits[key]) < self.max_requests:
+            self.hits[key].append(timestamp)
+            return True
+        return False
+Extra Discussion Points
+Alternative Data Structures
+Circular Buffer (Ring Buffer):
+
+Create a fixed-size array. The size is the max requests allowed.
+Overwrite old entries using math (modulo).
+Pros: Memory size never changes.
+Cons: Harder to track time accurately if buffer size is small.
+class CircularBufferRateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.buffer_size = max_requests + 1
+        self.buffers = {}  # key -> (circular array, head index, count)
+Fixed Window vs. Sliding Window
+Fixed Window:
+
+Counts requests in fixed blocks (e.g., 12:00:00 to 12:00:59).
+Pros: Simpler code. Less memory.
+Cons: You can have a burst at the edge. A user could make 100 requests at 12:00:59 and 100 more at 12:01:00. This is 200 requests in 2 seconds, which might overload the system.
+Sliding Window:
+
+The window moves smoothly with time.
+Pros: More accurate. Prevents the edge-burst issue.
+Cons: Uses more memory because you store individual timestamps.
+
+

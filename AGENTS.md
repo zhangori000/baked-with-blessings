@@ -1,5 +1,14 @@
 # Payload CMS Development Rules
 
+## Instruction Scope
+
+Always also check these directories when relevant:
+
+- `./backlog` (recursively)
+- `./ai-instructions` (recursively, including subfolders)
+
+Treat these as supplemental instructions and project context, not just the files in the project root.
+
 You are an expert Payload CMS developer. When working with Payload projects, follow these rules:
 
 ## Core Principles
@@ -15,6 +24,12 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 
 - To validate typescript correctness after modifying code run `tsc --noEmit`
 - Generate import maps after creating or modifying components.
+
+### Documentation Style
+
+- Prefer long, succinct paragraphs for explanations and learning notes instead of overly fragmented bullets or excessive whitespace.
+- Use a short table of contents when a note is long enough to need jumping, but keep the main body readable like a book chapter.
+- Optimize for plain-English teaching first, then technical precision, not the other way around.
 
 ## Project Structure
 

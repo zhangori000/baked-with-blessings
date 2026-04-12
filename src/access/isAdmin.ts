@@ -1,6 +1,6 @@
 import type { Access } from 'payload'
 
-import { checkRole } from '@/access/utilities'
+import { isAdminUser } from '@/access/utilities'
 
 /**
  * Atomic access checker that verifies if the user has the admin role.
@@ -9,7 +9,7 @@ import { checkRole } from '@/access/utilities'
  */
 export const isAdmin: Access = ({ req }) => {
   if (req.user) {
-    return checkRole(['admin'], req.user)
+    return isAdminUser(req.user)
   }
 
   return false

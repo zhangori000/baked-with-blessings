@@ -1,6 +1,10 @@
 import path from 'path'
 import { test, expect, Page } from '@playwright/test'
+import { getPayload } from 'payload'
 import { fileURLToPath } from 'url'
+
+import { FIRST_ADMIN_BOOTSTRAP_CONTEXT } from '../../src/collections/Admins/hooks/requireExplicitFirstAdminBootstrap.js'
+import config from '../../src/payload.config.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -11,18 +15,20 @@ test.describe('Frontend', () => {
   const mediaURL = `${baseURL}/admin/collections/media`
   const adminEmail = 'admin@test.com'
   const adminPassword = 'admin'
-  const userEmail = 'user@test.com'
-  const userPassword = 'user'
+  const customerEmail = 'customer@test.com'
+  const customerPassword = 'customer'
   const testPaymentDetails = {
     cardNumber: '5454 5454 5454 5454',
     expiryDate: '0330',
     cvc: '737',
     postcode: 'WS11 1DB',
   }
-  test.beforeAll(async ({ browser, request }, testInfo) => {
+  test.beforeAll(async ({ browser, request }) => {
     const context = await browser.newContext()
     page = await context.newPage()
-    await createUserAndLogin(request, adminEmail, adminPassword)
+    await ensureAdminAccount(adminEmail, adminPassword)
+    await ensureCustomerAccount(customerEmail, customerPassword)
+    await loginAdminRequest(request, adminEmail, adminPassword)
     await createVariantsAndProducts(page, request)
   })
 
@@ -128,7 +134,7 @@ test.describe('Frontend', () => {
   })
 
   test('authenticated users can view account', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginFromUI(page, customerEmail, customerPassword)
 
     await page.goto(`${baseURL}/account`)
 
@@ -137,7 +143,7 @@ test.describe('Frontend', () => {
   })
 
   test('authenticated users can update their name', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginFromUI(page, customerEmail, customerPassword)
 
     await page.goto(`${baseURL}/account`)
 
@@ -156,7 +162,7 @@ test.describe('Frontend', () => {
   })
 
   test('authenticated users can view orders page', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginFromUI(page, customerEmail, customerPassword)
 
     await page.goto(`${baseURL}/orders`)
 
@@ -165,7 +171,7 @@ test.describe('Frontend', () => {
   })
 
   test('authenticated users can view order details', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginFromUI(page, customerEmail, customerPassword)
     await addToCartAndConfirm(page, {
       productName: 'Test Product',
       productSlug: 'test-product',
@@ -177,7 +183,7 @@ test.describe('Frontend', () => {
   })
 
   test('authenticated customers cannot access /admin', async ({ page }) => {
-    await createUserAndLogin(page.request, userEmail, userPassword, false)
+    await loginFromUI(page, customerEmail, customerPassword)
     await page.goto(`${baseURL}/admin`)
     const heading = page.locator('h1').first()
     await expect(heading).toContainText('Unauthorized')
@@ -221,7 +227,7 @@ test.describe('Frontend', () => {
   })
 
   test('Admins can update and view prices on products', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginToAdmin(page, adminEmail, adminPassword)
 
     await page.goto(`${baseURL}/admin/collections/products`)
     const testProductLink = page.getByRole('link', { name: 'Test Product', exact: true })
@@ -237,7 +243,7 @@ test.describe('Frontend', () => {
   })
 
   test('Admins can update and view prices on variants', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginToAdmin(page, adminEmail, adminPassword)
 
     await page.goto(`${baseURL}/admin/collections/variants`)
     const testProductWithVariantsLink = page.getByRole('link', {
@@ -253,7 +259,7 @@ test.describe('Frontend', () => {
   })
 
   test('Admins can create new products with new variants', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginToAdmin(page, adminEmail, adminPassword)
 
     await page.goto(`${baseURL}/admin/collections/products/create`)
     const titleInput = page.locator('input#field-title')
@@ -313,7 +319,7 @@ test.describe('Frontend', () => {
   })
 
   test('Admins can view transactions and orders', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginFromUI(page, customerEmail, customerPassword)
     await addToCartAndConfirm(page, {
       productName: 'Test Product',
       productSlug: 'test-product',
@@ -322,6 +328,8 @@ test.describe('Frontend', () => {
     await expectOrderIsDisplayed(page)
     const orderHeader = await page.locator('h1.text-sm.uppercase.font-mono > span').textContent()
     const orderNumber = orderHeader?.replace(/^Order #/, '').trim()
+
+    await loginToAdmin(page, adminEmail, adminPassword)
 
     await page.goto(`${baseURL}/admin/collections/orders`)
     const rowCount = await page.locator('div.table table tbody tr').count()
@@ -350,7 +358,7 @@ test.describe('Frontend', () => {
 
   // This test fails, it should not let you checkout but it does
   test.skip('should fail checkout when inventory is 0', async ({ page }) => {
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginToAdmin(page, adminEmail, adminPassword)
 
     // update inventory to 1
     await page.goto(`${baseURL}/admin/collections/products`)
@@ -379,35 +387,62 @@ test.describe('Frontend', () => {
     await expect(errorMessage).toBeVisible()
   })
 
-  async function createUserAndLogin(
-    request: any,
-    email: string,
-    password: string,
-    isAdmin: boolean = true,
-  ) {
-    const data: any = {
-      email,
-      password,
-    }
+  async function ensureAdminAccount(email: string, password: string) {
+    const payload = await getPayload({ config })
 
-    if (isAdmin) {
-      data.roles = ['admin']
-    }
-
-    const response = await request.post(`${baseURL}/api/users`, {
-      data,
+    await payload.delete({
+      collection: 'admins',
+      where: {
+        email: {
+          equals: email,
+        },
+      },
     })
 
-    console.log({ response })
+    await payload.create({
+      collection: 'admins',
+      context: {
+        [FIRST_ADMIN_BOOTSTRAP_CONTEXT]: true,
+      },
+      data: {
+        email,
+        name: 'Test Admin',
+        password,
+      },
+      overrideAccess: true,
+    })
+  }
 
-    const login = await request.post(`${baseURL}/api/users/login`, {
+  async function ensureCustomerAccount(email: string, password: string) {
+    const payload = await getPayload({ config })
+
+    await payload.delete({
+      collection: 'customers',
+      where: {
+        email: {
+          equals: email,
+        },
+      },
+    })
+
+    await payload.create({
+      collection: 'customers',
+      data: {
+        email,
+        name: 'Test Customer',
+        password,
+      },
+      overrideAccess: true,
+    })
+  }
+
+  async function loginAdminRequest(request: any, email: string, password: string) {
+    await request.post(`${baseURL}/api/admins/login`, {
       data: {
         email,
         password,
       },
     })
-
-    console.log({ login })
   }
 
   async function createVariantsAndProducts(page: Page, request: any) {
@@ -439,11 +474,11 @@ test.describe('Frontend', () => {
     const payloadVariantID = (await payload.json()).doc.id
     const figmaVariantID = (await figma.json()).doc.id
 
-    await loginFromUI(page, adminEmail, adminPassword)
+    await loginToAdmin(page, adminEmail, adminPassword)
     await page.goto(`${mediaURL}/create`)
     const fileInput = page.locator('input[type="file"]')
     const altInput = page.locator('input[name="alt"]')
-    const filePath = path.resolve(dirname, '../../public/media/image-post1.webp')
+    const filePath = path.resolve(dirname, '../../src/endpoints/seed/hat-logo.png')
     await fileInput.setInputFiles(filePath)
     await altInput.fill('Test Image')
     const uploadButton = page.locator('#action-save')
@@ -470,7 +505,7 @@ test.describe('Frontend', () => {
 
     const productID = (await productWithVariants.json()).doc.id
 
-    const variantPayload = await request.post(`${baseURL}/api/variants`, {
+    await request.post(`${baseURL}/api/variants`, {
       data: {
         product: productID,
         variantType: variantTypeID,
@@ -482,7 +517,7 @@ test.describe('Frontend', () => {
       },
     })
 
-    const variantFigma = await request.post(`${baseURL}/api/variants`, {
+    await request.post(`${baseURL}/api/variants`, {
       data: {
         product: productID,
         variantType: variantTypeID,
@@ -494,7 +529,7 @@ test.describe('Frontend', () => {
       },
     })
 
-    const product = await request.post(`${baseURL}/api/products`, {
+    await request.post(`${baseURL}/api/products`, {
       data: {
         title: 'Test Product',
         slug: 'test-product',
@@ -507,7 +542,7 @@ test.describe('Frontend', () => {
       },
     })
 
-    const noInventoryProduct = await request.post(`${baseURL}/api/products`, {
+    await request.post(`${baseURL}/api/products`, {
       data: {
         title: 'No Inventory Product',
         slug: 'no-inventory-product',
@@ -528,7 +563,7 @@ test.describe('Frontend', () => {
   }
 
   async function loginFromUI(page: Page, email: string, password: string) {
-    const emailInput = page.locator('input[name="email"]')
+    const emailInput = page.locator('input[name="identifier"]')
     const passwordInput = page.locator('input[name="password"]')
     const submitButton = page.locator('button[type="submit"]')
 
@@ -537,6 +572,18 @@ test.describe('Frontend', () => {
     await passwordInput.fill(password)
     await submitButton.click()
     await page.waitForURL(/\/account/)
+  }
+
+  async function loginToAdmin(page: Page, email: string, password: string) {
+    const emailInput = page.locator('#field-email')
+    const passwordInput = page.locator('#field-password')
+    const submitButton = page.locator('button[type="submit"]')
+
+    await page.goto(`${baseURL}/admin/login`)
+    await emailInput.fill(email)
+    await passwordInput.fill(password)
+    await submitButton.click()
+    await page.waitForURL(/\/admin/)
   }
 
   async function addToCartAndConfirm(

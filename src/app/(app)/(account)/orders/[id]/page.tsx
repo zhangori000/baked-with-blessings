@@ -14,6 +14,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { OrderStatus } from '@/components/OrderStatus'
 import { AddressItem } from '@/components/addresses/AddressItem'
+import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +26,7 @@ type PageProps = {
 export default async function Order({ params, searchParams }: PageProps) {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers })
+  const user = await getAuthenticatedCustomer(payload, headers)
 
   const { id } = await params
   const { email = '', accessToken = '' } = await searchParams

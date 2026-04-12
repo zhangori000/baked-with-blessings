@@ -9,11 +9,12 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { LoginForm } from '@/components/forms/LoginForm'
 import { redirect } from 'next/navigation'
+import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 
 export default async function Login() {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers })
+  const user = await getAuthenticatedCustomer(payload, headers)
 
   if (user) {
     redirect(`/account?warning=${encodeURIComponent('You are already logged in.')}`)
@@ -26,8 +27,8 @@ export default async function Login() {
 
         <h1 className="mb-4 text-[1.8rem]">Log in</h1>
         <p className="mb-8">
-          {`This is where your customers will login to manage their account, review their order history, and more. To manage all users, `}
-          <Link href="/admin/collections/users">login to the admin dashboard</Link>.
+          {`This is where your customers will log in with an email address or phone number to manage their account, review their order history, and more. To manage staff and customers, `}
+          <Link href="/admin">login to the admin dashboard</Link>.
         </p>
         <LoginForm />
       </div>
