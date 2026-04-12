@@ -19,7 +19,7 @@ export const productHatData: (args: ProductArgs) => RequiredDataFromCollectionSl
 }) => {
   return {
     meta: {
-      title: 'Hat | Baked with Blessing',
+      title: 'Hat | Baked with Blessings',
       image: metaImage,
       description:
         'Top off your look with our classic hat, crafted for style and comfort. Made with breathable, high-quality materials and an adjustable strap for the perfect fit.',

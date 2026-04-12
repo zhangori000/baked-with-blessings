@@ -113,7 +113,7 @@ export const seed = async ({
   payload.logger.info(`— Seeding customer and customer data...`)
 
   await payload.delete({
-    collection: 'users',
+    collection: 'customers',
     depth: 0,
     where: {
       email: {
@@ -151,12 +151,11 @@ export const seed = async ({
     hatsCategory,
   ] = await Promise.all([
     payload.create({
-      collection: 'users',
+      collection: 'customers',
       data: {
         name: 'Customer',
         email: 'customer@example.com',
         password: 'password',
-        roles: ['customer'],
       },
     }),
     payload.create({

@@ -9,11 +9,12 @@ import { getPayload } from 'payload'
 
 import { CreateAccountForm } from '@/components/forms/CreateAccountForm'
 import { redirect } from 'next/navigation'
+import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 
 export default async function CreateAccount() {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers })
+  const user = await getAuthenticatedCustomer(payload, headers)
 
   if (user) {
     redirect(`/account?warning=${encodeURIComponent('You are already logged in.')}`)

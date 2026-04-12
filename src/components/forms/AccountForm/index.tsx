@@ -1,21 +1,28 @@
 'use client'
 
+import type { CollectionAuthUser } from '@/access/utilities'
+
 import { FormError } from '@/components/forms/FormError'
 import { FormItem } from '@/components/forms/FormItem'
-import { Message } from '@/components/Message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User } from '@/payload-types'
 import { useAuth } from '@/providers/Auth'
 import { useRouter } from 'next/navigation'
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
+type StorefrontCustomer = CollectionAuthUser & {
+  email?: null | string
+  id: number | string
+  name?: null | string
+  phone?: null | string
+}
+
 type FormData = {
   email: string
-  name: User['name']
+  name: null | string | undefined
   password: string
   passwordConfirm: string
 }
@@ -40,19 +47,22 @@ export const AccountForm: React.FC = () => {
   const onSubmit = useCallback(
     async (data: FormData) => {
       if (user) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/${user.id}`, {
-          // Make sure to include cookies with fetch
-          body: JSON.stringify(data),
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/${user.id}`,
+          {
+            // Make sure to include cookies with fetch
+            body: JSON.stringify(data),
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            method: 'PATCH',
           },
-          method: 'PATCH',
-        })
+        )
 
         if (response.ok) {
           const json = await response.json()
-          setUser(json.doc)
+          setUser(json.doc as StorefrontCustomer)
           toast.success('Successfully updated account.')
           setChangePassword(false)
           reset({
@@ -82,7 +92,7 @@ export const AccountForm: React.FC = () => {
     if (user) {
       reset({
         name: user.name,
-        email: user.email,
+        email: user.email || '',
         password: '',
         passwordConfirm: '',
       })
@@ -113,12 +123,15 @@ export const AccountForm: React.FC = () => {
               <Label htmlFor="email" className="mb-2">
                 Email Address
               </Label>
-              <Input
-                id="email"
-                {...register('email', { required: 'Please provide an email.' })}
-                type="email"
-              />
+              <Input id="email" {...register('email')} type="email" />
               {errors.email && <FormError message={errors.email.message} />}
+            </FormItem>
+
+            <FormItem>
+              <Label htmlFor="phone" className="mb-2">
+                Verified Phone
+              </Label>
+              <Input id="phone" value={user?.phone || ''} disabled readOnly type="tel" />
             </FormItem>
 
             <FormItem>

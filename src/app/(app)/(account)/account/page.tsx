@@ -10,11 +10,12 @@ import { Order } from '@/payload-types'
 import { OrderItem } from '@/components/OrderItem'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
+import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 
 export default async function AccountPage() {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers })
+  const user = await getAuthenticatedCustomer(payload, headers)
 
   let orders: Order[] | null = null
 
@@ -39,7 +40,7 @@ export default async function AccountPage() {
     })
 
     orders = ordersResult?.docs || []
-  } catch (error) {
+  } catch (_error) {
     // when deploying this template on Payload Cloud, this page needs to build before the APIs are live
     // so swallow the error here and simply render the page with fallback data where necessary
     // in production you may want to redirect to a 404  page or at least log the error somewhere
@@ -69,7 +70,7 @@ export default async function AccountPage() {
 
         {orders && orders.length > 0 && (
           <ul className="flex flex-col gap-6 mb-8">
-            {orders?.map((order, index) => (
+            {orders?.map((order) => (
               <li key={order.id}>
                 <OrderItem order={order} />
               </li>

@@ -1,6 +1,6 @@
 import type { Access } from 'payload'
 
-import { checkRole } from '@/access/utilities'
+import { isAdminUser } from '@/access/utilities'
 
 /**
  * The ID of the document matches that of the user or the user is an admin.
@@ -9,7 +9,7 @@ import { checkRole } from '@/access/utilities'
  */
 export const adminOrSelf: Access = ({ req: { user } }) => {
   if (user) {
-    if (checkRole(['admin'], user)) {
+    if (isAdminUser(user)) {
       return true
     }
 

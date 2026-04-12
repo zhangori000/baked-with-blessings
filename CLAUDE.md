@@ -6,6 +6,13 @@ Instructions for Claude Code when working on Payload CMS projects.
 
 ## Primary Source of Truth
 
+Also scan these paths in addition to the primary source when they are relevant:
+
+- `./backlog` (recursive)
+- `./ai-instructions` (recursive, including subfolders)
+
+Use them as supplemental implementation and process guidance, then reconcile with the local repo code.
+
 Do not rely on memory first. When answering questions, proposing architecture, or writing Payload code, read the local Payload repository first:
 
 - Local repo: `C:\Users\zhang\00My Stuff\Coding\Learning\learning-payload-cms\payload`

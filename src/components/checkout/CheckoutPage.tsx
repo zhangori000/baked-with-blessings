@@ -19,7 +19,7 @@ import { CheckoutForm } from '@/components/forms/CheckoutForm'
 import { useAddresses, useCart, usePayments } from '@payloadcms/plugin-ecommerce/client/react'
 import { CheckoutAddresses } from '@/components/checkout/CheckoutAddresses'
 import { CreateAddressModal } from '@/components/addresses/CreateAddressModal'
-import { Address } from '@/payload-types'
+import { Address, Product, Variant } from '@/payload-types'
 import { Checkbox } from '@/components/ui/checkbox'
 import { AddressItem } from '@/components/addresses/AddressItem'
 import { FormItem } from '@/components/forms/FormItem'
@@ -147,7 +147,7 @@ export const CheckoutPage: React.FC = () => {
         {user ? (
           <div className="bg-accent dark:bg-card rounded-lg p-4 ">
             <div>
-              <p>{user.email}</p>{' '}
+              <p>{user.email || user.phone || 'Signed-in customer'}</p>{' '}
               <p>
                 Not you?{' '}
                 <Link className="underline" href="/logout">
@@ -373,20 +373,22 @@ export const CheckoutPage: React.FC = () => {
               if (isVariant) {
                 price = variant?.priceInUSD
 
-                const imageVariant = product.gallery?.find((item) => {
+                const imageVariant = product.gallery?.find(
+                  (item: NonNullable<Product['gallery']>[number]) => {
                   if (!item.variantOption) return false
                   const variantOptionID =
                     typeof item.variantOption === 'object'
                       ? item.variantOption.id
                       : item.variantOption
 
-                  const hasMatch = variant?.options?.some((option) => {
-                    if (typeof option === 'object') return option.id === variantOptionID
-                    else return option === variantOptionID
-                  })
+                    const hasMatch = variant?.options?.some((option: Variant['options'][number]) => {
+                      if (typeof option === 'object') return option.id === variantOptionID
+                      else return option === variantOptionID
+                    })
 
-                  return hasMatch
-                })
+                    return hasMatch
+                  },
+                )
 
                 if (imageVariant && typeof imageVariant.image !== 'string') {
                   image = imageVariant.image
@@ -408,7 +410,7 @@ export const CheckoutPage: React.FC = () => {
                       {variant && typeof variant === 'object' && (
                         <p className="text-sm font-mono text-primary/50 tracking-widest">
                           {variant.options
-                            ?.map((option) => {
+                            ?.map((option: Variant['options'][number]) => {
                               if (typeof option === 'object') return option.label
                               return null
                             })

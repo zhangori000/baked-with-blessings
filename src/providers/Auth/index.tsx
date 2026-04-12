@@ -1,21 +1,43 @@
 'use client'
 
-import type { User } from '@/payload-types'
+import type { CollectionAuthUser } from '@/access/utilities'
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 
-// eslint-disable-next-line no-unused-vars
+import { buildCustomerLoginData } from '@/utilities/phone'
+
+type StorefrontCustomer = CollectionAuthUser & {
+  email?: null | string
+  id: number | string
+  name?: null | string
+  phone?: null | string
+  username?: null | string
+}
+
 type ResetPassword = (args: {
+  identifier: string
   password: string
   passwordConfirm: string
-  token: string
-}) => Promise<void>
+  verificationCode?: string
+}) => Promise<{ recoveryChannel?: 'email' | 'phone'; reset?: boolean; success?: boolean }>
 
-type ForgotPassword = (args: { email: string }) => Promise<void> // eslint-disable-line no-unused-vars
+type ForgotPassword = (args: {
+  identifier: string
+  password?: string
+  passwordConfirm?: string
+  verificationCode?: string
+}) => Promise<{ maskedPhone?: string; recoveryChannel?: 'email' | 'phone'; requiresPhoneVerification?: boolean; reset?: boolean; success?: boolean }>
 
-type Create = (args: { email: string; password: string; passwordConfirm: string }) => Promise<void> // eslint-disable-line no-unused-vars
+type Create = (args: {
+  email?: string
+  name?: string
+  password: string
+  passwordConfirm: string
+  phone?: string
+  verificationCode?: string
+}) => Promise<{ maskedPhone?: string; requiresPhoneVerification?: boolean; success?: boolean }>
 
-type Login = (args: { email: string; password: string }) => Promise<User> // eslint-disable-line no-unused-vars
+type Login = (args: { identifier: string; password: string }) => Promise<StorefrontCustomer>
 
 type Logout = () => Promise<void>
 
@@ -25,54 +47,30 @@ type AuthContext = {
   login: Login
   logout: Logout
   resetPassword: ResetPassword
-  setUser: (user: User | null) => void // eslint-disable-line no-unused-vars
+  setUser: (user: StorefrontCustomer | null) => void
   status: 'loggedIn' | 'loggedOut' | undefined
-  user?: User | null
+  user?: StorefrontCustomer | null
 }
 
 const Context = createContext({} as AuthContext)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>()
+  const [user, setUser] = useState<StorefrontCustomer | null>()
 
   // used to track the single event of logging in or logging out
   // useful for `useEffect` hooks that should only run once
   const [status, setStatus] = useState<'loggedIn' | 'loggedOut' | undefined>()
-  const create = useCallback<Create>(async (args) => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/create`, {
-        body: JSON.stringify({
-          email: args.email,
-          password: args.password,
-          passwordConfirm: args.passwordConfirm,
-        }),
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-
-      if (res.ok) {
-        const { data, errors } = await res.json()
-        if (errors) throw new Error(errors[0].message)
-        setUser(data?.loginUser?.user)
-        setStatus('loggedIn')
-      } else {
-        throw new Error('Invalid login')
-      }
-    } catch (e) {
-      throw new Error('An error occurred while attempting to login.')
-    }
-  }, [])
 
   const login = useCallback<Login>(async (args) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/login`, {
-        body: JSON.stringify({
-          email: args.email,
-          password: args.password,
-        }),
+      const loginData = buildCustomerLoginData(args.identifier, args.password)
+
+      if (!('email' in loginData) && !('username' in loginData)) {
+        throw new Error('Enter a valid email address or phone number.')
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/login`, {
+        body: JSON.stringify(loginData),
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -85,18 +83,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (errors) throw new Error(errors[0].message)
         setUser(user)
         setStatus('loggedIn')
-        return user
+        return user as StorefrontCustomer
       }
 
       throw new Error('Invalid login')
-    } catch (e) {
+    } catch {
       throw new Error('An error occurred while attempting to login.')
     }
   }, [])
 
+  const create = useCallback<Create>(
+    async (args) => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customer-auth/signup`, {
+          body: JSON.stringify(args),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        })
+
+        const json = (await res.json()) as {
+          error?: string
+          maskedPhone?: string
+          requiresPhoneVerification?: boolean
+          success?: boolean
+        }
+
+        if (res.status === 202) {
+          return json
+        }
+
+        if (!res.ok) {
+          throw new Error(json.error || 'There was a problem creating your account.')
+        }
+
+        await login({
+          identifier: args.phone?.trim() || args.email || '',
+          password: args.password,
+        })
+
+        return json
+      } catch {
+        throw new Error('An error occurred while attempting to create your account.')
+      }
+    },
+    [login],
+  )
+
   const logout = useCallback<Logout>(async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/logout`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/logout`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         throw new Error('An error occurred while attempting to logout.')
       }
-    } catch (e) {
+    } catch {
       throw new Error('An error occurred while attempting to logout.')
     }
   }, [])
@@ -118,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/me`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/me`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -128,12 +166,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (res.ok) {
           const { user: meUser } = await res.json()
-          setUser(meUser || null)
+          setUser((meUser || null) as StorefrontCustomer | null)
           setStatus(meUser ? 'loggedIn' : undefined)
         } else {
           throw new Error('An error occurred while fetching your account.')
         }
-      } catch (e) {
+      } catch {
         setUser(null)
         throw new Error('An error occurred while fetching your account.')
       }
@@ -144,10 +182,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const forgotPassword = useCallback<ForgotPassword>(async (args) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/forgot-password`, {
-        body: JSON.stringify({
-          email: args.email,
-        }),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customer-auth/password-reset`, {
+        body: JSON.stringify(args),
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -155,26 +191,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: 'POST',
       })
 
-      if (res.ok) {
-        const { data, errors } = await res.json()
-        if (errors) throw new Error(errors[0].message)
-        setUser(data?.loginUser?.user)
-      } else {
-        throw new Error('Invalid login')
+      const json = (await res.json()) as {
+        error?: string
+        maskedPhone?: string
+        recoveryChannel?: 'email' | 'phone'
+        requiresPhoneVerification?: boolean
+        reset?: boolean
+        success?: boolean
       }
-    } catch (e) {
-      throw new Error('An error occurred while attempting to login.')
+
+      if (!res.ok) {
+        throw new Error(json.error || 'There was a problem processing the password reset request.')
+      }
+
+      return json
+    } catch {
+      throw new Error('An error occurred while attempting to recover your account.')
     }
   }, [])
 
   const resetPassword = useCallback<ResetPassword>(async (args) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/reset-password`, {
-        body: JSON.stringify({
-          password: args.password,
-          passwordConfirm: args.passwordConfirm,
-          token: args.token,
-        }),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customer-auth/password-reset`, {
+        body: JSON.stringify(args),
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -182,16 +221,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: 'POST',
       })
 
-      if (res.ok) {
-        const { data, errors } = await res.json()
-        if (errors) throw new Error(errors[0].message)
-        setUser(data?.loginUser?.user)
-        setStatus(data?.loginUser?.user ? 'loggedIn' : undefined)
-      } else {
-        throw new Error('Invalid login')
+      const json = (await res.json()) as {
+        error?: string
+        recoveryChannel?: 'email' | 'phone'
+        reset?: boolean
+        success?: boolean
       }
-    } catch (e) {
-      throw new Error('An error occurred while attempting to login.')
+
+      if (!res.ok) {
+        throw new Error(json.error || 'There was a problem resetting your password.')
+      }
+
+      return json
+    } catch {
+      throw new Error('An error occurred while attempting to reset your password.')
     }
   }, [])
 
@@ -213,6 +256,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   )
 }
 
-type UseAuth<T = User> = () => AuthContext // eslint-disable-line no-unused-vars
+type UseAuth = () => AuthContext
 
 export const useAuth: UseAuth = () => useContext(Context)

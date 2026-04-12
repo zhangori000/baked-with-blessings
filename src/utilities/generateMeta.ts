@@ -28,9 +28,9 @@ export const generateMeta = async (args: { doc: Page | Product }): Promise<Metad
             },
           ]
         : undefined,
-      title: doc?.meta?.title || doc?.title || 'Baked with Blessing',
+      title: doc?.meta?.title || doc?.title || 'Baked with Blessings',
       url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
     }),
-    title: doc?.meta?.title || doc?.title || 'Baked with Blessing',
+    title: doc?.meta?.title || doc?.title || 'Baked with Blessings',
   }
 }

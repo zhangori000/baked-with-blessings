@@ -8,11 +8,12 @@ import { headers as getHeaders } from 'next/headers'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
+import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 
 export default async function Orders() {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers })
+  const user = await getAuthenticatedCustomer(payload, headers)
 
   let orders: Order[] | null = null
 
@@ -35,7 +36,7 @@ export default async function Orders() {
     })
 
     orders = ordersResult?.docs || []
-  } catch (error) {}
+  } catch (_error) {}
 
   return (
     <>
@@ -47,7 +48,7 @@ export default async function Orders() {
 
         {orders && orders.length > 0 && (
           <ul className="flex flex-col gap-6">
-            {orders?.map((order, index) => (
+            {orders?.map((order) => (
               <li key={order.id}>
                 <OrderItem order={order} />
               </li>

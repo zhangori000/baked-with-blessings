@@ -10,7 +10,7 @@ Support guest checkout with a contact method that can be:
 
 ## What was prepared in this app
 
-- The app now stores derived `guestContactMethod` and `guestContactValue` fields on orders and transactions through collection overrides in [src/plugins/index.ts](/C:/Users/zhang/00My%20Stuff/Coding/Learning/learning-payload-cms/baked-with-blessing/src/plugins/index.ts).
+- The app now stores derived `guestContactMethod` and `guestContactValue` fields on orders and transactions through collection overrides in [src/plugins/index.ts](/C:/Users/zhang/00My%20Stuff/Coding/Learning/learning-payload-cms/baked-with-blessings/src/plugins/index.ts).
 - Local address forms already support phone numbers, so the UI data is partially available.
 
 ## What still blocks true phone-only guest checkout

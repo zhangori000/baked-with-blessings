@@ -1,8 +1,8 @@
-# Baked with Blessing
+# Baked with Blessings
 
 This template is in **BETA**.
 
-This project started from the official [Payload Ecommerce Template](https://github.com/payloadcms/payload/blob/main/templates/ecommerce). It keeps that structure, components, and ecommerce flows, but is set up locally as the foundation for the Baked with Blessing cafe website.
+This project started from the official [Payload Ecommerce Template](https://github.com/payloadcms/payload/blob/main/templates/ecommerce). It keeps that structure, components, and ecommerce flows, but is set up locally as the foundation for the Baked with Blessings cafe website.
 
 This template is right for you if you are working on building an ecommerce project or shop with Payload.
 
@@ -44,7 +44,7 @@ pnpx create-payload-app my-project -t ecommerce
 
 ### Development
 
-1. `cd baked-with-blessing`
+1. `cd baked-with-blessings`
 1. `docker compose up -d` to start the local Postgres database
 1. `.env` is already included for local development, or you can copy `.env.example` over it if you want a clean reset
 1. `pnpm install && pnpm dev` to install dependencies and start the dev server

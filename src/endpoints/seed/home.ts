@@ -46,7 +46,7 @@ export const homePageData: (args: ProductArgs) => RequiredDataFromCollectionSlug
                   format: 0,
                   mode: 'normal',
                   style: '',
-                  text: 'Baked with Blessing',
+                  text: 'Baked with Blessings',
                   version: 1,
                 },
               ],
@@ -612,7 +612,7 @@ export const homePageData: (args: ProductArgs) => RequiredDataFromCollectionSlug
       description: 'An open-source ecommerce site built with Payload and Next.js.',
       // @ts-ignore
       image: metaImage,
-      title: 'Baked with Blessing',
+      title: 'Baked with Blessings',
     },
     title: 'Home',
   }

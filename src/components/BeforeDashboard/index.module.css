@@ -1,0 +1,203 @@
+.shell {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 20px;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--theme-success-250) 70%, transparent) 0, transparent 40%),
+    linear-gradient(135deg, var(--theme-elevation-0), var(--theme-elevation-50));
+  box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.45);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+  color: var(--theme-success-700);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrowDot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: var(--theme-success-500);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--theme-success-500) 18%, transparent);
+}
+
+.title {
+  margin: 0;
+  color: var(--theme-elevation-900);
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.subtitle {
+  max-width: 54rem;
+  margin: 0.875rem 0 0;
+  color: var(--theme-elevation-700);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.badge,
+.heroLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  border-radius: 999px;
+  padding: 0.625rem 0.95rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.badge {
+  border: 1px solid color-mix(in srgb, var(--theme-success-500) 28%, transparent);
+  background: color-mix(in srgb, var(--theme-success-100) 82%, transparent);
+  color: var(--theme-success-700);
+}
+
+.heroLink {
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-900);
+  text-decoration: none;
+}
+
+.heroLink:hover {
+  border-color: var(--theme-elevation-300);
+  background: var(--theme-elevation-50);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.card {
+  display: grid;
+  gap: 0.9rem;
+  min-height: 100%;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 18px;
+  padding: 1.15rem;
+  background: var(--theme-elevation-0);
+}
+
+.cardAccent {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-success-100) 45%, var(--theme-elevation-0)) 0%, var(--theme-elevation-0) 100%);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cardKicker {
+  color: var(--theme-elevation-500);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--theme-success-100) 85%, transparent);
+  color: var(--theme-success-700);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--theme-elevation-900);
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.cardBody {
+  margin: 0;
+  color: var(--theme-elevation-700);
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+.cardList {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--theme-elevation-700);
+}
+
+.cardList li {
+  line-height: 1.45;
+}
+
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: auto;
+}
+
+.cardLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  border-radius: 999px;
+  padding: 0.625rem 0.95rem;
+  border: 1px solid var(--theme-elevation-150);
+  background: transparent;
+  color: var(--theme-elevation-900);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cardLink:hover {
+  border-color: var(--theme-elevation-300);
+  background: var(--theme-elevation-50);
+}
+
+.helperText {
+  color: var(--theme-elevation-600);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 768px) {
+  .hero,
+  .card {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+}

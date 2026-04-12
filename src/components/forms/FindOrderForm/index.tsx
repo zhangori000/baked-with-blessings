@@ -10,7 +10,7 @@ import React, { Fragment, useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { sendOrderAccessEmail } from './sendOrderAccessEmail'
 
-type FormData = {
+type FindOrderFormData = {
   email: string
   orderID: string
 }
@@ -29,13 +29,13 @@ export const FindOrderForm: React.FC<Props> = ({ initialEmail }) => {
     formState: { errors },
     handleSubmit,
     register,
-  } = useForm<FormData>({
+  } = useForm<FindOrderFormData>({
     defaultValues: {
-      email: initialEmail || user?.email,
+      email: initialEmail ?? user?.email ?? '',
     },
   })
 
-  const onSubmit = useCallback(async (data: FormData) => {
+  const onSubmit = useCallback(async (data: FindOrderFormData) => {
     setIsSubmitting(true)
     setSubmitError(null)
 
