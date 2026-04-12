@@ -15,6 +15,23 @@ Related security work should be bundled with it so auth hardening happens as one
 - configure auth lockout settings
 - review CSRF and CORS for production domains
 
+## Current product direction
+
+The likely near-term product direction is not "block the customer until email is verified."
+
+Instead, the app may allow a customer to create an account and place orders with an unverified email, while clearly warning that order updates and purchase information will be sent to the address they entered.
+
+Email verification can then become an optional follow-up step rather than a hard gate during signup.
+
+That means the eventual implementation should evaluate a few separate concerns instead of treating them as one thing:
+
+- real email sending for receipts, order updates, and forgot-password flows
+- optional or deferred email verification
+- clear UI copy explaining the risk of entering the wrong email
+- whether a later "verify now" prompt or reminder banner is a better fit than blocking checkout
+
+This is a product and trust decision, not just a transport/infrastructure decision.
+
 ## Why it matters
 
 - reduces fake or disposable account creation

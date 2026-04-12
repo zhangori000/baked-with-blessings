@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
+import { ArrowRight, Mail, ShieldCheck, Smartphone, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+import styles from './index.module.css'
 
 type FormData = {
   email: string
@@ -21,29 +24,66 @@ type FormData = {
   verificationCode: string
 }
 
+const contactRequirementMessage = 'Enter at least an email address or a phone number.'
+
 export const CreateAccountForm: React.FC = () => {
   const searchParams = useSearchParams()
   const allParams = searchParams.toString() ? `?${searchParams.toString()}` : ''
   const { create } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<null | string>(null)
+  const [submitError, setSubmitError] = useState<null | string>(null)
   const [maskedPhone, setMaskedPhone] = useState<null | string>(null)
   const [requiresPhoneVerification, setRequiresPhoneVerification] = useState(false)
 
   const {
+    clearErrors,
     formState: { errors },
     handleSubmit,
     register,
+    setError: setFieldError,
     watch,
   } = useForm<FormData>()
 
   const password = useRef({})
   password.current = watch('password', '')
+  const emailValue = watch('email', '')
+  const phoneValue = watch('phone', '')
+  const verificationCode = watch('verificationCode', '')
+
+  useEffect(() => {
+    if (emailValue.trim() || phoneValue.trim()) {
+      if (errors.email?.type === 'contact-required') clearErrors('email')
+      if (errors.phone?.type === 'contact-required') clearErrors('phone')
+    }
+  }, [clearErrors, emailValue, errors.email?.type, errors.phone?.type, phoneValue])
+
+  const primaryActionLabel = useMemo(() => {
+    if (loading) return 'Processing'
+    if (requiresPhoneVerification) return 'Verify code and create account'
+    if (phoneValue.trim()) return 'Send verification code'
+    return 'Create account'
+  }, [loading, phoneValue, requiresPhoneVerification])
 
   const onSubmit = useCallback(
     async (data: FormData) => {
       const redirect = searchParams.get('redirect')
+      const trimmedEmail = data.email.trim()
+      const trimmedPhone = data.phone.trim()
+
+      setSubmitError(null)
+
+      if (!trimmedEmail && !trimmedPhone) {
+        setFieldError('email', {
+          type: 'contact-required',
+          message: contactRequirementMessage,
+        })
+        setFieldError('phone', {
+          type: 'contact-required',
+          message: contactRequirementMessage,
+        })
+        return
+      }
 
       const timer = setTimeout(() => {
         setLoading(true)
@@ -64,105 +104,232 @@ export const CreateAccountForm: React.FC = () => {
         else router.push(`/account?success=${encodeURIComponent('Account created successfully')}`)
       } catch (_) {
         clearTimeout(timer)
-        setError('There was an error with the credentials provided. Please try again.')
+        setLoading(false)
+        setSubmitError('There was an error with the credentials provided. Please try again.')
       }
     },
-    [create, router, searchParams],
+    [create, router, searchParams, setFieldError],
   )
 
   return (
-    <form className="max-w-lg py-4" onSubmit={handleSubmit(onSubmit)}>
-      <div className="prose dark:prose-invert mb-6">
-        <p>
-          {`Create your account with an email address, a phone number, or both. If you sign up with a phone number, we'll text you a verification code before the account is created. To manage all users, `}
-          <Link href="/admin">login to the admin dashboard</Link>.
+    <form className={styles.shell} onSubmit={handleSubmit(onSubmit)}>
+      <section className={styles.hero}>
+        <div className={styles.eyebrowRow}>
+          <span className={styles.eyebrow}>
+            <span className={styles.eyebrowDot} />
+            Customer account
+          </span>
+          <span className={styles.pill}>At least one contact method is required</span>
+        </div>
+
+        <h1 className={styles.title}>Create your account with email, phone, or both.</h1>
+
+        <p className={styles.lead}>
+          Choose the login path that fits you. Email-only signup works today, and phone signup
+          adds a one-time 6-digit verification step before the account is created.
         </p>
-      </div>
 
-      <Message error={error} />
+        <div className={styles.heroMeta}>
+          <div className={styles.heroMetaItem}>
+            <strong>Email</strong>: good for customers who prefer inbox-based login and recovery.
+          </div>
+          <div className={styles.heroMetaItem}>
+            <strong>Phone</strong>: verifies the number once, then lets the customer log in with
+            phone and password.
+          </div>
+        </div>
+      </section>
 
-      <div className="flex flex-col gap-8 mb-8">
-        <FormItem>
-          <Label htmlFor="name" className="mb-2">
-            Name
-          </Label>
-          <Input id="name" {...register('name')} type="text" />
-          {errors.name && <FormError message={errors.name.message} />}
-        </FormItem>
+      <Message error={submitError} />
 
-        <FormItem>
-          <Label htmlFor="email" className="mb-2">
-            Email Address
-          </Label>
-          <Input id="email" {...register('email')} type="email" />
-          {errors.email && <FormError message={errors.email.message} />}
-        </FormItem>
+      <section className={styles.formCard}>
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>Profile</h2>
+              <p className={styles.sectionHint}>A display name helps you recognize the account later.</p>
+            </div>
+          </div>
 
-        <FormItem>
-          <Label htmlFor="phone" className="mb-2">
-            Phone Number
-          </Label>
-          <Input id="phone" {...register('phone')} type="tel" />
-          {errors.phone && <FormError message={errors.phone.message} />}
-        </FormItem>
+          <div className={styles.stack}>
+            <FormItem>
+              <Label htmlFor="name" className={styles.fieldLabel}>
+                <UserRound size={16} />
+                Name
+              </Label>
+              <Input
+                id="name"
+                autoComplete="name"
+                className={styles.input}
+                placeholder="Apple Smith"
+                {...register('name')}
+                type="text"
+              />
+              <span className={styles.helper}>Optional, but recommended if you want a friendly account name.</span>
+              {errors.name && <FormError message={errors.name.message} />}
+            </FormItem>
+          </div>
+        </div>
 
-        <FormItem>
-          <Label htmlFor="password" className="mb-2">
-            New password
-          </Label>
-          <Input
-            id="password"
-            {...register('password', { required: 'Password is required.' })}
-            type="password"
-          />
-          {errors.password && <FormError message={errors.password.message} />}
-        </FormItem>
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>Contact methods</h2>
+              <p className={styles.sectionHint}>
+                Add an email, a phone number, or both. You do not need both to create the account.
+              </p>
+            </div>
+          </div>
 
-        <FormItem>
-          <Label htmlFor="passwordConfirm" className="mb-2">
-            Confirm Password
-          </Label>
-          <Input
-            id="passwordConfirm"
-            {...register('passwordConfirm', {
-              required: 'Please confirm your password.',
-              validate: (value) => value === password.current || 'The passwords do not match',
-            })}
-            type="password"
-          />
-          {errors.passwordConfirm && <FormError message={errors.passwordConfirm.message} />}
-        </FormItem>
+          <div className={styles.grid}>
+            <FormItem>
+              <Label htmlFor="email" className={styles.fieldLabel}>
+                <Mail size={16} />
+                Email address
+                <span className={styles.optionalLabel}>optional</span>
+              </Label>
+              <Input
+                id="email"
+                autoComplete="email"
+                className={styles.input}
+                placeholder="apple@example.com"
+                {...register('email', {
+                  validate: (value) =>
+                    !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
+                })}
+                type="email"
+              />
+              <span className={styles.helper}>Use this if you want email-based login or recovery.</span>
+              {errors.email && <FormError message={errors.email.message} />}
+            </FormItem>
+
+            <FormItem>
+              <Label htmlFor="phone" className={styles.fieldLabel}>
+                <Smartphone size={16} />
+                Phone number
+                <span className={styles.optionalLabel}>optional</span>
+              </Label>
+              <Input
+                id="phone"
+                autoComplete="tel"
+                className={styles.input}
+                placeholder="(312) 555-1212"
+                {...register('phone')}
+                inputMode="tel"
+                type="tel"
+              />
+              <span className={styles.helper}>
+                If you use phone, we will text a one-time verification code before the account is created.
+              </span>
+              {errors.phone && <FormError message={errors.phone.message} />}
+            </FormItem>
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h2 className={styles.sectionTitle}>Password</h2>
+              <p className={styles.sectionHint}>Set the password the customer will use after signup.</p>
+            </div>
+          </div>
+
+          <div className={styles.grid}>
+            <FormItem>
+              <Label htmlFor="password" className={styles.fieldLabel}>
+                <ShieldCheck size={16} />
+                New password
+              </Label>
+              <Input
+                id="password"
+                autoComplete="new-password"
+                className={styles.input}
+                placeholder="Create a strong password"
+                {...register('password', { required: 'Password is required.' })}
+                type="password"
+              />
+              <span className={styles.helper}>Use something unique. This account can later log in with email or phone.</span>
+              {errors.password && <FormError message={errors.password.message} />}
+            </FormItem>
+
+            <FormItem>
+              <Label htmlFor="passwordConfirm" className={styles.fieldLabel}>
+                <ShieldCheck size={16} />
+                Confirm password
+              </Label>
+              <Input
+                id="passwordConfirm"
+                autoComplete="new-password"
+                className={styles.input}
+                placeholder="Repeat the password"
+                {...register('passwordConfirm', {
+                  required: 'Please confirm your password.',
+                  validate: (value) => value === password.current || 'The passwords do not match',
+                })}
+                type="password"
+              />
+              <span className={styles.helper}>This protects against typos before the account is created.</span>
+              {errors.passwordConfirm && <FormError message={errors.passwordConfirm.message} />}
+            </FormItem>
+          </div>
+        </div>
 
         {requiresPhoneVerification && (
-          <FormItem>
-            <Label htmlFor="verificationCode" className="mb-2">
-              Verification Code
-            </Label>
-            <Input
-              id="verificationCode"
-              {...register('verificationCode', {
-                required: 'Enter the 6-digit code we sent to your phone.',
-              })}
-              inputMode="numeric"
-              type="text"
-            />
-            <p className="text-sm text-muted-foreground mt-2">
-              {`Enter the code we sent to ${maskedPhone || 'your phone number'} to finish creating the account.`}
-            </p>
-            {errors.verificationCode && <FormError message={errors.verificationCode.message} />}
-          </FormItem>
-        )}
-      </div>
-      <Button disabled={loading} type="submit" variant="default">
-        {loading ? 'Processing' : requiresPhoneVerification ? 'Verify and create account' : 'Create Account'}
-      </Button>
+          <div className={styles.section}>
+            <div className={styles.verificationPanel}>
+              <h2 className={styles.verificationTitle}>Finish the phone verification</h2>
+              <p className={styles.verificationText}>
+                {`We sent a 6-digit code to ${maskedPhone || 'your phone number'}. Enter it below to finish creating the account.`}
+              </p>
 
-      <div className="prose dark:prose-invert mt-8">
-        <p>
-          {'Already have an account? '}
-          <Link href={`/login${allParams}`}>Login</Link>
-        </p>
-      </div>
+              <FormItem>
+                <Label htmlFor="verificationCode" className={styles.fieldLabel}>
+                  <ShieldCheck size={16} />
+                  Verification code
+                </Label>
+                <Input
+                  id="verificationCode"
+                  className={styles.input}
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="123456"
+                  {...register('verificationCode', {
+                    required: 'Enter the 6-digit code we sent to your phone.',
+                    validate: (value) =>
+                      /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
+                  })}
+                  type="text"
+                />
+                <span className={styles.helper}>
+                  The account is not created until this code is accepted.
+                </span>
+                {errors.verificationCode && <FormError message={errors.verificationCode.message} />}
+              </FormItem>
+            </div>
+          </div>
+        )}
+
+        <div className={styles.actions}>
+          <Button className={styles.primaryButton} disabled={loading} type="submit" variant="default">
+            {primaryActionLabel}
+            {!loading && <ArrowRight size={16} />}
+          </Button>
+
+          <p className={styles.loginHint}>
+            Already have an account? <Link href={`/login${allParams}`}>Log in</Link>.
+          </p>
+
+          <p className={styles.loginHint}>
+            Need full site management instead? <Link href="/admin">Use the admin dashboard</Link>.
+          </p>
+
+          {phoneValue.trim() && !requiresPhoneVerification && !verificationCode.trim() ? (
+            <p className={styles.loginHint}>
+              Because you entered a phone number, the next step will send a verification code before the account is created.
+            </p>
+          ) : null}
+        </div>
+      </section>
     </form>
   )
 }

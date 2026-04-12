@@ -17,6 +17,7 @@ export const Providers: React.FC<{
           <SonnerProvider />
           <EcommerceProvider
             enableVariants={true}
+            customersSlug="customers"
             api={{
               cartsFetchQuery: {
                 depth: 2,
