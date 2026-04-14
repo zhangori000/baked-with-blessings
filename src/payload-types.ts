@@ -132,10 +132,12 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    brand: Brand;
     header: Header;
     footer: Footer;
   };
   globalsSelect: {
+    brand: BrandSelect<false> | BrandSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
@@ -331,6 +333,9 @@ export interface Order {
 export interface Product {
   id: number;
   title: string;
+  /**
+   * Short product story for the product page and supporting storefront copy.
+   */
   description?: {
     root: {
       type: string;
@@ -346,17 +351,41 @@ export interface Product {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Product image gallery. The first image is the main storefront image, so put the best primary photo first.
+   */
   gallery?:
     | {
+        /**
+         * Choose the photo that should appear for this gallery item.
+         */
         image: number | Media;
+        /**
+         * Only use this when variants are enabled and the image belongs to one specific option.
+         */
         variantOption?: (number | null) | VariantOption;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Optional long-form sections below the main product details. Use these for ingredient notes, FAQs, extra selling copy, or supporting media.
+   */
   layout?: (CallToActionBlock | ContentBlock | MediaBlock)[] | null;
+  /**
+   * Stock count for simple products. If you enable variants, manage stock on each variant instead of here.
+   */
   inventory?: number | null;
+  /**
+   * Turn this on when one product needs selectable options such as size, flavor, filling, or color.
+   */
   enableVariants?: boolean | null;
+  /**
+   * Choose which kinds of options customers can pick, for example size, flavor, or pickup package.
+   */
   variantTypes?: (number | VariantType)[] | null;
+  /**
+   * After you choose variant types, create the actual purchasable combinations here with their own price and inventory.
+   */
   variants?: {
     docs?: (number | Variant)[];
     hasNextPage?: boolean;
@@ -364,6 +393,9 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
+  /**
+   * Pick other products that should be suggested alongside this one on the storefront.
+   */
   relatedProducts?: (number | Product)[] | null;
   meta?: {
     title?: string | null;
@@ -373,6 +405,9 @@ export interface Product {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  /**
+   * Categories group products on the /shop page and help organize the menu for customers and admins.
+   */
   categories?: (number | Category)[] | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -457,6 +492,9 @@ export interface VariantType {
  * via the `definition` "CallToActionBlock".
  */
 export interface CallToActionBlock {
+  /**
+   * Write the main promotional message and supporting copy for this call-to-action section.
+   */
   richText?: {
     root: {
       type: string;
@@ -503,8 +541,17 @@ export interface Page {
   id: number;
   title: string;
   publishedOn?: string | null;
+  /**
+   * This is the top section of the page. Use it for the main headline, supporting copy, buttons, and an optional lead image.
+   */
   hero: {
+    /**
+     * Choose how visually prominent the top-of-page hero should be. Use None when the page should begin directly with content blocks.
+     */
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Write the hero headline and supporting intro copy here.
+     */
     richText?: {
       root: {
         type: string;
@@ -539,8 +586,14 @@ export interface Page {
           id?: string | null;
         }[]
       | null;
+    /**
+     * Choose the lead image for higher-impact hero styles. It only appears for Medium Impact and High Impact heroes.
+     */
     media?: (number | null) | Media;
   };
+  /**
+   * Blocks are reusable page sections. Use Content for text columns, Call to Action for promo copy and buttons, Media Block for one image or video, Carousel or Archive for product lists, Three Item Grid for exactly three featured products, Banner for short notices, and Form Block to embed a form.
+   */
   layout: (
     | CallToActionBlock
     | ContentBlock
@@ -573,9 +626,18 @@ export interface Page {
  * via the `definition` "ContentBlock".
  */
 export interface ContentBlock {
+  /**
+   * Use this block for one or more text columns, such as story sections, FAQs, values, or side-by-side copy.
+   */
   columns?:
     | {
+        /**
+         * Choose how wide this column should be within the row.
+         */
         size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        /**
+         * Add the text content for this column.
+         */
         richText?: {
           root: {
             type: string;
@@ -591,6 +653,9 @@ export interface ContentBlock {
           };
           [k: string]: unknown;
         } | null;
+        /**
+         * Turn this on if this column should include one link or button.
+         */
         enableLink?: boolean | null;
         link?: {
           type?: ('reference' | 'custom') | null;
@@ -618,6 +683,9 @@ export interface ContentBlock {
  * via the `definition` "MediaBlock".
  */
 export interface MediaBlock {
+  /**
+   * Use this block when the section should primarily be one image or video.
+   */
   media: number | Media;
   id?: string | null;
   blockName?: string | null;
@@ -628,6 +696,9 @@ export interface MediaBlock {
  * via the `definition` "ArchiveBlock".
  */
 export interface ArchiveBlock {
+  /**
+   * Optional intro copy that appears above the automatically generated product list.
+   */
   introContent?: {
     root: {
       type: string;
@@ -643,10 +714,25 @@ export interface ArchiveBlock {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Choose whether this block should auto-fill from a collection or show a manual selection.
+   */
   populateBy?: ('collection' | 'selection') | null;
+  /**
+   * Choose which collection this automatic list should pull from.
+   */
   relationTo?: 'products' | null;
+  /**
+   * Optional filter: only show products from these categories.
+   */
   categories?: (number | Category)[] | null;
+  /**
+   * Maximum number of products to show in this block.
+   */
   limit?: number | null;
+  /**
+   * Pick the specific products to show when you want a manual list.
+   */
   selectedDocs?:
     | {
         relationTo: 'products';
@@ -665,6 +751,10 @@ export interface Category {
   id: number;
   title: string;
   /**
+   * Lower values appear first in /shop sections. Use this to control category order from Admin.
+   */
+  menuOrder?: number | null;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -677,10 +767,25 @@ export interface Category {
  * via the `definition` "CarouselBlock".
  */
 export interface CarouselBlock {
+  /**
+   * Choose whether this carousel should auto-fill from a collection or use a manual product selection.
+   */
   populateBy?: ('collection' | 'selection') | null;
+  /**
+   * Choose which collection this automatic carousel should pull from.
+   */
   relationTo?: 'products' | null;
+  /**
+   * Optional filter: only show products from these categories.
+   */
   categories?: (number | Category)[] | null;
+  /**
+   * Maximum number of products to include in the carousel.
+   */
   limit?: number | null;
+  /**
+   * Pick the specific products to show when you want a manual carousel.
+   */
   selectedDocs?:
     | {
         relationTo: 'products';
@@ -709,6 +814,9 @@ export interface CarouselBlock {
  * via the `definition` "ThreeItemGridBlock".
  */
 export interface ThreeItemGridBlock {
+  /**
+   * Pick exactly three featured products to display in this section.
+   */
   products?: (number | Product)[] | null;
   id?: string | null;
   blockName?: string | null;
@@ -719,7 +827,13 @@ export interface ThreeItemGridBlock {
  * via the `definition` "BannerBlock".
  */
 export interface BannerBlock {
+  /**
+   * Choose the tone of the banner message.
+   */
   style: 'info' | 'warning' | 'error' | 'success';
+  /**
+   * Short notice text, such as a promo, update, warning, or service announcement.
+   */
   content: {
     root: {
       type: string;
@@ -744,8 +858,17 @@ export interface BannerBlock {
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
+  /**
+   * Choose which saved form should appear in this section.
+   */
   form: number | Form;
+  /**
+   * Turn this on if the form needs a heading or explanatory copy above it.
+   */
   enableIntro?: boolean | null;
+  /**
+   * Add the heading or instructions that should appear above the form.
+   */
   introContent?: {
     root: {
       type: string;
@@ -1469,6 +1592,7 @@ export interface FormBlockSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
+  menuOrder?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -1896,6 +2020,37 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Manage the storefront brand name and logo in one place so the header can change without a code edit.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand".
+ */
+export interface Brand {
+  id: number;
+  /**
+   * Primary business name used for accessibility text and text-only fallbacks.
+   */
+  brandName: string;
+  /**
+   * Short alt text describing the logo image.
+   */
+  logoAlt?: string | null;
+  /**
+   * Use a public asset right away, or switch to Media once you upload a production-ready logo through the CMS.
+   */
+  logoSource?: ('publicPath' | 'mediaUpload') | null;
+  /**
+   * Path to a logo file in /public. This is useful for bootstrapping before the business owner starts managing uploaded assets.
+   */
+  logoPath?: string | null;
+  /**
+   * Select the uploaded logo from Media when you are ready to manage branding fully inside Payload.
+   */
+  logo?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
@@ -1942,6 +2097,20 @@ export interface Footer {
     | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brand_select".
+ */
+export interface BrandSelect<T extends boolean = true> {
+  brandName?: T;
+  logoAlt?: T;
+  logoSource?: T;
+  logoPath?: T;
+  logo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -320,7 +320,7 @@ export const CheckoutPage: React.FC = () => {
                         theme === 'dark' ? cssVariables.colors.base0 : cssVariables.colors.base1000,
                       colorText: theme === 'dark' ? '#858585' : cssVariables.colors.base1000,
                       colorTextPlaceholder: '#858585',
-                      fontFamily: 'Geist, sans-serif',
+                      fontFamily: 'Rubik, system-ui, sans-serif',
                       fontSizeBase: '16px',
                       fontWeightBold: '600',
                       fontWeightNormal: '500',
@@ -328,6 +328,13 @@ export const CheckoutPage: React.FC = () => {
                     },
                   },
                   clientSecret: paymentData['clientSecret'] as string,
+                  // Stripe Elements renders inside an iframe, so load Rubik there explicitly.
+                  fonts: [
+                    {
+                      cssSrc:
+                        'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap',
+                    },
+                  ],
                 }}
                 stripe={stripe}
               >

@@ -22,6 +22,7 @@ import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
+import { Brand } from '@/globals/Brand'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { plugins } from './plugins'
@@ -104,7 +105,7 @@ export default buildConfig({
   }),
   email: emailAdapter,
   endpoints: [],
-  globals: [Header, Footer],
+  globals: [Brand, Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET || '',
   sharp,

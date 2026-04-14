@@ -87,6 +87,10 @@ export const Pages: CollectionConfig = {
             {
               name: 'layout',
               type: 'blocks',
+              admin: {
+                description:
+                  'Blocks are reusable page sections. Use Content for text columns, Call to Action for promo copy and buttons, Media Block for one image or video, Carousel or Archive for product lists, Three Item Grid for exactly three featured products, Banner for short notices, and Form Block to embed a form.',
+              },
               blocks: [
                 CallToAction,
                 Content,

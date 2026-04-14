@@ -4,12 +4,10 @@ import { AdminBar } from '@/components/AdminBar'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { ensureStartsWith } from '@/utilities/ensureStartsWith'
+import { ViewportFlowers } from '@/components/ViewportFlowers'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
-import React from 'react'
+import { Rubik } from 'next/font/google'
 import './globals.css'
 
 /* const { SITE_NAME, TWITTER_CREATOR, TWITTER_SITE } = process.env
@@ -39,13 +37,16 @@ const twitterSite = TWITTER_SITE ? ensureStartsWith(TWITTER_SITE, 'https://') : 
     }),
 } */
 
+const rubik = Rubik({
+  subsets: ['latin'],
+  variable: '--font-rubik',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+})
+
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      className={[GeistSans.variable, GeistMono.variable].filter(Boolean).join(' ')}
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html className={rubik.variable} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
@@ -53,12 +54,15 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body>
         <Providers>
-          <AdminBar />
-          <LivePreviewListener />
+          <ViewportFlowers />
+          <div className="siteFrame">
+            <AdminBar />
+            <LivePreviewListener />
 
-          <Header />
-          <main>{children}</main>
-          <Footer />
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>

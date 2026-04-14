@@ -1,33 +1,34 @@
 'use client'
 
-import type { Header } from '@/payload-types'
-
-import { CMSLink } from '@/components/Link'
-import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { useAuth } from '@/providers/Auth'
-import { MenuIcon } from 'lucide-react'
+import { cn } from '@/utilities/cn'
+import { MenuIcon, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-interface Props {
-  menu: Header['navItems']
+type Props = {
+  cartQuantity: number
+  items: Array<{
+    id: string
+    href: string
+    label: string
+    panel: {
+      eyebrow: string
+      description: string
+    }
+  }>
 }
 
-export function MobileMenu({ menu }: Props) {
-  const { user } = useAuth()
+const isRouteActive = (pathname: string, href: string) => {
+  if (href === '/') return pathname === '/'
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
 
+export function MobileMenu({ cartQuantity, items }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -35,75 +36,96 @@ export function MobileMenu({ menu }: Props) {
         setIsOpen(false)
       }
     }
+
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [isOpen])
+  }, [])
 
   useEffect(() => {
     setIsOpen(false)
   }, [pathname, searchParams])
 
+  useEffect(() => {
+    if (!isOpen) return
+
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      if (!menuRef.current || !event.target) return
+      if (menuRef.current.contains(event.target as Node)) return
+      setIsOpen(false)
+    }
+
+    window.addEventListener('mousedown', onPointerDown)
+    window.addEventListener('touchstart', onPointerDown)
+
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown)
+      window.removeEventListener('touchstart', onPointerDown)
+    }
+  }, [isOpen])
+
   return (
-    <Sheet onOpenChange={setIsOpen} open={isOpen}>
-      <SheetTrigger className="relative flex h-11 w-11 items-center justify-center rounded-md border border-neutral-200 text-black transition-colors dark:border-neutral-700 dark:bg-black dark:text-white">
-        <MenuIcon className="h-4" />
-      </SheetTrigger>
+    <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
+      <div className="siteHeaderMobileControls">
+        <Link aria-label="Search the menu" className="siteHeaderMobileIconButton" href="/shop">
+          <Search className="h-4 w-4" />
+        </Link>
 
-        <SheetContent side="left" className="px-4">
-        <SheetHeader className="px-0 pt-4 pb-0">
-          <SheetTitle>Baked with Blessings</SheetTitle>
+        <button
+          aria-expanded={isOpen}
+          aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
+          className="siteHeaderMobileIconButton"
+          onClick={() => {
+            setIsOpen((current) => !current)
+          }}
+          type="button"
+        >
+          {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
+        </button>
 
-          <SheetDescription />
-        </SheetHeader>
+        <Link aria-label={`Cart with ${cartQuantity} items`} className="siteHeaderMobileBagCount" href="/checkout">
+          [{cartQuantity}]
+        </Link>
+      </div>
 
-        <div className="py-4">
-          {menu?.length ? (
-            <ul className="flex w-full flex-col">
-              {menu.map((item) => (
-                <li className="py-2" key={item.id}>
-                  <CMSLink {...item.link} appearance="link" />
-                </li>
-              ))}
-            </ul>
-          ) : null}
+      <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>
+        <div className="siteHeaderMobilePanelCards">
+          {items.map((item) => (
+            <article className="siteHeaderMobileCard" key={item.id}>
+              <div className="siteHeaderMobileCardCopy">
+                <p className="siteHeaderMobileCardEyebrow">{item.panel.eyebrow}</p>
+                <h3 className="siteHeaderMobileCardTitle">{item.label}</h3>
+                <p className="siteHeaderMobileCardDescription">{item.panel.description}</p>
+              </div>
+
+              <Link
+                aria-label={`Open ${item.label}`}
+                className="siteHeaderMobileCardAction"
+                href={item.href}
+                onClick={() => {
+                  setIsOpen(false)
+                }}
+              >
+                <span className="siteHeaderMobileCardActionLabel">GO</span>
+              </Link>
+            </article>
+          ))}
         </div>
 
-        {user ? (
-          <div className="mt-4">
-            <h2 className="text-xl mb-4">My account</h2>
-            <hr className="my-2" />
-            <ul className="flex flex-col gap-2">
-              <li>
-                <Link href="/orders">Orders</Link>
-              </li>
-              <li>
-                <Link href="/account/addresses">Addresses</Link>
-              </li>
-              <li>
-                <Link href="/account">Manage account</Link>
-              </li>
-              <li className="mt-6">
-                <Button asChild variant="outline">
-                  <Link href="/logout">Log out</Link>
-                </Button>
-              </li>
-            </ul>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-xl mb-4">My account</h2>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button asChild className="w-full sm:flex-1" variant="outline">
-                <Link href="/login">Log in</Link>
-              </Button>
-              <span className="text-center text-sm text-muted-foreground sm:text-base">or</span>
-              <Button asChild className="w-full sm:flex-1">
-                <Link href="/create-account">Create an account</Link>
-              </Button>
-            </div>
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
+        <div className="siteHeaderMobileTabs" role="tablist" aria-label="Mobile navigation tabs">
+          {items.map((item) => (
+            <Link
+              className={cn('siteHeaderMobileTab', isRouteActive(pathname, item.href) && 'is-active')}
+              href={item.href}
+              key={`tab-${item.id}`}
+              onClick={() => {
+                setIsOpen(false)
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }

@@ -14,6 +14,9 @@ export const Archive: Block = {
     {
       name: 'introContent',
       type: 'richText',
+      admin: {
+        description: 'Optional intro copy that appears above the automatically generated product list.',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [
@@ -30,6 +33,10 @@ export const Archive: Block = {
       name: 'populateBy',
       type: 'select',
       defaultValue: 'collection',
+      admin: {
+        description:
+          'Choose whether this block should auto-fill from a collection or show a manual selection.',
+      },
       options: [
         {
           label: 'Collection',
@@ -45,6 +52,7 @@ export const Archive: Block = {
       name: 'relationTo',
       type: 'select',
       admin: {
+        description: 'Choose which collection this automatic list should pull from.',
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       defaultValue: 'products',
@@ -60,6 +68,7 @@ export const Archive: Block = {
       name: 'categories',
       type: 'relationship',
       admin: {
+        description: 'Optional filter: only show products from these categories.',
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       hasMany: true,
@@ -71,6 +80,7 @@ export const Archive: Block = {
       type: 'number',
       admin: {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
+        description: 'Maximum number of products to show in this block.',
         step: 1,
       },
       defaultValue: 10,
@@ -80,6 +90,7 @@ export const Archive: Block = {
       name: 'selectedDocs',
       type: 'relationship',
       admin: {
+        description: 'Pick the specific products to show when you want a manual list.',
         condition: (_, siblingData) => siblingData.populateBy === 'selection',
       },
       hasMany: true,

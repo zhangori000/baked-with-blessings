@@ -16,6 +16,10 @@ export const CallToAction: Block = {
     {
       name: 'richText',
       type: 'richText',
+      admin: {
+        description:
+          'Write the main promotional message and supporting copy for this call-to-action section.',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [

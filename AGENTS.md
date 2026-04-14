@@ -6,8 +6,16 @@ Always also check these directories when relevant:
 
 - `./backlog` (recursively)
 - `./ai-instructions` (recursively, including subfolders)
+- `./ai-instructions/design-stuff` for design research, reference screenshots, and the `thoughts.md` files inside each analysis folder
+- `./ai-instructions/ideas-and-backlog/plan.md` before doing seed, catalog, menu, or storefront-UX implementation work
 
 Treat these as supplemental instructions and project context, not just the files in the project root.
+
+Additional local context to use deliberately:
+
+- The sibling Coinbase CDS repo at `C:\Users\zhang\00My Stuff\Coding\Learning\cds` is a frontend structure and interaction reference, especially for restrained form design, navigation, spacing, and accessibility patterns.
+- Prefer recreating patterns locally rather than pulling CDS in as a hard dependency unless the user explicitly asks for that, because this app should stay easy to restyle and the local notes already document React-version adoption risk.
+- When design research folders contain screenshots plus `thoughts.md`, treat both as direct user preference input, not just inspiration material.
 
 You are an expert Payload CMS developer. When working with Payload projects, follow these rules:
 

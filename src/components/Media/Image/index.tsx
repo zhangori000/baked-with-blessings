@@ -11,6 +11,22 @@ import type { Props as MediaProps } from '../types'
 import { cssVariables } from '@/cssVariables'
 
 const { breakpoints } = cssVariables
+const sameOriginServerURL = process.env.NEXT_PUBLIC_SERVER_URL?.replace(/\/$/, '')
+
+const normalizeImageSrc = (value: string) => {
+  if (!value) return value
+
+  if (sameOriginServerURL && value.startsWith(sameOriginServerURL)) {
+    const relativePath = value.slice(sameOriginServerURL.length)
+    return relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  }
+
+  if (value.startsWith('/') || value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
+    return value
+  }
+
+  return `/${value.replace(/^\/+/, '')}`
+}
 
 export const Image: React.FC<MediaProps> = (props) => {
   const {
@@ -34,10 +50,13 @@ export const Image: React.FC<MediaProps> = (props) => {
   let alt = altFromProps
   let src: StaticImageData | string = srcFromProps || ''
 
+  if (typeof src === 'string') {
+    src = normalizeImageSrc(src)
+  }
+
   if (!src && resource && typeof resource === 'object') {
     const {
       alt: altFromResource,
-      filename: fullFilename,
       height: fullHeight,
       url,
       width: fullWidth,
@@ -47,9 +66,7 @@ export const Image: React.FC<MediaProps> = (props) => {
     height = heightFromProps ?? fullHeight
     alt = altFromResource
 
-    const filename = fullFilename
-
-    src = `${process.env.NEXT_PUBLIC_SERVER_URL}${url}`
+    src = normalizeImageSrc(url || '')
   }
 
   // NOTE: this is used by the browser to determine which image to download at different screen sizes

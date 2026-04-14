@@ -6,10 +6,7 @@ import { generateMeta } from '@/utilities/generateMeta'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
-import { homeStaticData } from '@/endpoints/seed/home-static'
-import React from 'react'
 
-import type { Page } from '@/payload-types'
 import { notFound } from 'next/navigation'
 
 export async function generateStaticParams() {
@@ -44,16 +41,30 @@ type Args = {
 
 export default async function Page({ params }: Args) {
   const { slug = 'home' } = await params
-  const url = '/' + slug
 
-  let page = await queryPageBySlug({
+  if (slug === 'home') {
+    return (
+      <section className="home-page-placeholder min-h-screen pt-24 pb-20">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6">
+          <div className="h-52 bg-neutral-200" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="h-36 bg-neutral-300" />
+            <div className="h-36 bg-neutral-300" />
+          </div>
+          <div className="h-72 bg-neutral-200" />
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="h-40 bg-neutral-300" />
+            <div className="h-40 bg-neutral-300" />
+            <div className="h-40 bg-neutral-300" />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  const page = await queryPageBySlug({
     slug,
   })
-
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStaticData() as Page
-  }
 
   if (!page) {
     return notFound()
