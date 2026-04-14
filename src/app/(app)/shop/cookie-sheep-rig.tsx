@@ -100,6 +100,20 @@ function AssetPartImage({
   )
 }
 
+function burstStyle(
+  x: string,
+  y: string,
+  rotate: string,
+  scale = '0.72',
+): CSSProperties {
+  return {
+    ['--sheep-burst-rotate' as string]: rotate,
+    ['--sheep-burst-scale' as string]: scale,
+    ['--sheep-burst-x' as string]: x,
+    ['--sheep-burst-y' as string]: y,
+  }
+}
+
 function SheepLegPairSvg() {
   return (
     <svg aria-hidden="true" fill="none" viewBox="0 0 36 22" xmlns="http://www.w3.org/2000/svg">
@@ -130,7 +144,12 @@ export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps
           className="pointer-events-none absolute"
           style={placePartOnCookie(frontLegPairPlacement)}
         >
-          <SheepLegPairSvg />
+          <span
+            className="cookieSheepBurstPart block h-full w-full"
+            style={burstStyle('-48px', '16px', '-18deg')}
+          >
+            <SheepLegPairSvg />
+          </span>
         </span>
 
         <span
@@ -138,7 +157,12 @@ export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps
           className="pointer-events-none absolute"
           style={placePartOnCookie(hindLegPairPlacement)}
         >
-          <SheepLegPairSvg />
+          <span
+            className="cookieSheepBurstPart block h-full w-full"
+            style={burstStyle('48px', '16px', '18deg')}
+          >
+            <SheepLegPairSvg />
+          </span>
         </span>
       </div>
 
@@ -150,7 +174,7 @@ export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps
         <span className="sr-only">{title}</span>
         <img
           alt={`${title} cookie`}
-          className="pointer-events-none block h-full w-full scale-[1.04] object-cover"
+          className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
           loading="lazy"
           src={singularSrc}
         />
@@ -161,12 +185,17 @@ export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps
         className="pointer-events-none absolute z-30"
         style={placePartOnCookie(tailPlacement)}
       >
-        <AssetPartImage
-          alt=""
-          className="block h-full w-full object-contain"
-          src="/sheep-tail.svg"
-          style={placePartArt(tailPlacement)}
-        />
+        <span
+          className="cookieSheepBurstPart block h-full w-full"
+          style={burstStyle('34px', '-10px', '16deg', '0.7')}
+        >
+          <AssetPartImage
+            alt=""
+            className="block h-full w-full object-contain"
+            src="/sheep-tail.svg"
+            style={placePartArt(tailPlacement)}
+          />
+        </span>
       </span>
 
       <span
@@ -174,12 +203,17 @@ export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps
         className="pointer-events-none absolute z-40"
         style={placePartOnCookie(headPlacement)}
       >
-        <AssetPartImage
-          alt=""
-          className="block h-full w-full object-contain"
-          src="/singular-sheep-head.svg"
-          style={placePartArt(headPlacement)}
-        />
+        <span
+          className="cookieSheepBurstPart block h-full w-full"
+          style={burstStyle('-42px', '-26px', '-30deg', '0.62')}
+        >
+          <AssetPartImage
+            alt=""
+            className="block h-full w-full object-contain"
+            src="/singular-sheep-head.svg"
+            style={placePartArt(headPlacement)}
+          />
+        </span>
       </span>
     </div>
   )

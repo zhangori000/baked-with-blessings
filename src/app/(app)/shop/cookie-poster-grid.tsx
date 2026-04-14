@@ -192,6 +192,35 @@ export function CookiePosterGrid() {
           animation-delay: -12s;
         }
 
+        .cookieSheepBodyImage {
+          transform: scale(1.04);
+          transform-origin: center center;
+          transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: transform;
+        }
+
+        .cookieSheepBurstPart {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+          transition:
+            transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 260ms ease-out;
+          will-change: transform, opacity;
+        }
+
+        .group:hover .cookieSheepBodyImage,
+        .group:focus-within .cookieSheepBodyImage {
+          transform: scale(1.18);
+        }
+
+        .group:hover .cookieSheepBurstPart,
+        .group:focus-within .cookieSheepBurstPart {
+          opacity: 0;
+          transform: translate3d(var(--sheep-burst-x, 0), var(--sheep-burst-y, 0), 0)
+            rotate(var(--sheep-burst-rotate, 0deg))
+            scale(var(--sheep-burst-scale, 0.72));
+        }
+
         @keyframes cookiePosterCloudDrift {
           0% {
             transform: translate3d(0, 0, 0);
