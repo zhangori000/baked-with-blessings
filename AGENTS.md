@@ -8,6 +8,7 @@ Always also check these directories when relevant:
 - `./ai-instructions` (recursively, including subfolders)
 - `./ai-instructions/design-stuff` for design research, reference screenshots, and the `thoughts.md` files inside each analysis folder
 - `./ai-instructions/ideas-and-backlog/plan.md` before doing seed, catalog, menu, or storefront-UX implementation work
+- `./ai-instructions/learnings/design/cookie-sheep-rig-alignment-history-2026-04-14.md` before modifying `cookie-sheep-rig.tsx`, `cookie-sheep-geometry.ts`, or sheep/card alignment behavior, because it records the tuning history and the correct order of alignment knobs
 
 Treat these as supplemental instructions and project context, not just the files in the project root.
 
