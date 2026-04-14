@@ -12,6 +12,7 @@ Also scan these paths in addition to the primary source when they are relevant:
 - `./ai-instructions` (recursive, including subfolders)
 - `./ai-instructions/design-stuff` for design research, screenshots, and the `thoughts.md` files inside each website-analysis folder
 - `./ai-instructions/ideas-and-backlog/plan.md` before implementing seed data, catalog structure, menu UX, or storefront product presentation
+- `./ai-instructions/learnings/design/cookie-sheep-rig-alignment-history-2026-04-14.md` before modifying `cookie-sheep-rig.tsx`, `cookie-sheep-geometry.ts`, or sheep/card alignment behavior, because it explains how the final pose system was reached and which variables should be tuned first
 
 Use them as supplemental implementation and process guidance, then reconcile with the local repo code.
 
