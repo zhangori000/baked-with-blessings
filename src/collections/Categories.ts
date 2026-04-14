@@ -14,12 +14,22 @@ export const Categories: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     group: 'Content',
+    defaultColumns: ['title', 'menuOrder'],
   },
   fields: [
     {
       name: 'title',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'menuOrder',
+      type: 'number',
+      defaultValue: 100,
+      admin: {
+        description:
+          'Lower values appear first in /shop sections. Use this to control category order from Admin.',
+      },
     },
     slugField({
       position: undefined,

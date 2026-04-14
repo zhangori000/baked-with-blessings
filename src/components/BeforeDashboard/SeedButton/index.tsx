@@ -23,7 +23,7 @@ type SeedButtonProps = {
 export const SeedButton: React.FC<SeedButtonProps> = ({ className, messageClassName }) => {
   const [loading, setLoading] = useState(false)
   const [seeded, setSeeded] = useState(false)
-  const [error, setError] = useState<unknown>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleClick = useCallback(
     async (e: MouseEvent<HTMLButtonElement>) => {
@@ -38,40 +38,38 @@ export const SeedButton: React.FC<SeedButtonProps> = ({ className, messageClassN
         return
       }
       if (error) {
-        toast.error(`An error occurred, please refresh and try again.`)
+        toast.error(error)
         return
       }
 
       setLoading(true)
+      setError(null)
 
       try {
-        toast.promise(
-          new Promise((resolve, reject) => {
-            try {
-              fetch('/next/seed', { method: 'POST', credentials: 'include' })
-                .then((res) => {
-                  if (res.ok) {
-                    resolve(true)
-                    setSeeded(true)
-                  } else {
-                    reject('An error occurred while seeding.')
-                  }
-                })
-                .catch((error) => {
-                  reject(error)
-                })
-            } catch (error) {
-              reject(error)
-            }
-          }),
-          {
-            loading: 'Seeding with data....',
-            success: <SuccessMessage />,
-            error: 'An error occurred while seeding.',
-          },
-        )
+        const res = await fetch('/next/seed', { method: 'POST', credentials: 'include' })
+        const contentType = res.headers.get('content-type') || ''
+        const body = contentType.includes('application/json') ? await res.json() : await res.text()
+
+        if (!res.ok) {
+          const message =
+            typeof body === 'string'
+              ? body
+              : body?.error || 'An error occurred while seeding the database.'
+
+          setError(message)
+          toast.error(message)
+          return
+        }
+
+        setSeeded(true)
+        toast.success(<SuccessMessage />)
       } catch (err) {
-        setError(err)
+        const message =
+          err instanceof Error ? err.message : 'An unexpected error occurred while seeding.'
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoading(false)
       }
     },
     [loading, seeded, error],

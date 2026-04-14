@@ -10,6 +10,10 @@ export const InitTheme: React.FC = () => {
       dangerouslySetInnerHTML={{
         __html: `
   (function () {
+    function applyThemeVariables(theme) {
+      document.documentElement.style.setProperty('--background', theme === 'dark' ? '#020e2f' : '#d8ecfb')
+    }
+
     function getImplicitPreference() {
       var mediaQuery = '(prefers-color-scheme: dark)'
       var mql = window.matchMedia(mediaQuery)
@@ -40,6 +44,7 @@ export const InitTheme: React.FC = () => {
     }
 
     document.documentElement.setAttribute('data-theme', themeToSet)
+    applyThemeVariables(themeToSet)
   })();
   `,
       }}

@@ -1,0 +1,4 @@
+⨯ TypeError: controller[kState].transformAlgorithm is not a function
+    at ignore-listed frames {
+  digest: '2403777416'
+}

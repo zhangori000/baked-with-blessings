@@ -3,6 +3,7 @@
 import { Price } from '@/components/Price'
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -10,7 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
-import { ShoppingCart } from 'lucide-react'
+import { ArrowRight, ShoppingBag, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -19,8 +20,14 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { DeleteItemButton } from './DeleteItemButton'
 import { EditItemQuantityButton } from './EditItemQuantityButton'
 import { OpenCartButton } from './OpenCart'
-import { Button } from '@/components/ui/button'
 import { Product, Variant } from '@/payload-types'
+
+const FREE_SHIPPING_THRESHOLD = 100
+
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+})
 
 export function CartModal() {
   const { cart } = useCart()
@@ -29,7 +36,6 @@ export function CartModal() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Close the cart modal when the pathname changes.
     setIsOpen(false)
   }, [pathname])
 
@@ -38,154 +44,258 @@ export function CartModal() {
     return cart.items.reduce((quantity, item) => (item.quantity || 0) + quantity, 0)
   }, [cart])
 
+  const subtotal = typeof cart?.subtotal === 'number' ? cart.subtotal : 0
+  const amountUntilFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
+  const freeShippingProgress = Math.max(0, Math.min(1, subtotal / FREE_SHIPPING_THRESHOLD))
+  const hasItems = Boolean(cart?.items?.length)
+
   return (
     <Sheet onOpenChange={setIsOpen} open={isOpen}>
       <SheetTrigger asChild>
         <OpenCartButton quantity={totalQuantity} />
       </SheetTrigger>
 
-      <SheetContent className="flex flex-col">
-        <SheetHeader>
-          <SheetTitle>My Cart</SheetTitle>
+      <SheetContent
+        className="!top-4 !bottom-4 !right-4 !left-auto !h-[calc(100vh-32px)] !w-[min(430px,calc(100vw-24px))] border border-black/10 border-l-0 rounded-[28px] bg-[#f7f3ea]/95 p-0 text-black shadow-none backdrop-blur-xl"
+        hideClose
+        overlayClassName="bg-[rgba(244,240,232,0.34)] backdrop-blur-md"
+      >
+        <div className="flex h-full min-h-0 flex-col">
+          <SheetHeader className="border-b border-black/8 px-5 py-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.24em] text-black/65">
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}</span>
+                </div>
 
-          <SheetDescription>Manage your cart here, add items to view the total.</SheetDescription>
-        </SheetHeader>
-
-        {!cart || cart?.items?.length === 0 ? (
-          <div className="text-center flex flex-col items-center gap-2">
-            <ShoppingCart className="h-16" />
-            <p className="text-center text-2xl font-bold">Your cart is empty.</p>
-          </div>
-        ) : (
-          <div className="grow flex px-4">
-            <div className="flex flex-col justify-between w-full">
-              <ul className="grow overflow-auto py-4">
-                {cart?.items?.map((item, i) => {
-                  const product = item.product
-                  const variant = item.variant
-
-                  if (typeof product !== 'object' || !item || !product || !product.slug)
-                    return <React.Fragment key={i} />
-
-                  const metaImage =
-                    product.meta?.image && typeof product.meta?.image === 'object'
-                      ? product.meta.image
-                      : undefined
-
-                  const firstGalleryImage =
-                    typeof product.gallery?.[0]?.image === 'object'
-                      ? product.gallery?.[0]?.image
-                      : undefined
-
-                  let image = firstGalleryImage || metaImage
-                  let price = product.priceInUSD
-
-                  const isVariant = Boolean(variant) && typeof variant === 'object'
-
-                  if (isVariant) {
-                    price = variant?.priceInUSD
-
-                    const imageVariant = product.gallery?.find(
-                      (item: NonNullable<Product['gallery']>[number]) => {
-                      if (!item.variantOption) return false
-                      const variantOptionID =
-                        typeof item.variantOption === 'object'
-                          ? item.variantOption.id
-                          : item.variantOption
-
-                        const hasMatch = variant?.options?.some((option: Variant['options'][number]) => {
-                          if (typeof option === 'object') return option.id === variantOptionID
-                          else return option === variantOptionID
-                        })
-
-                        return hasMatch
-                      },
-                    )
-
-                    if (imageVariant && typeof imageVariant.image === 'object') {
-                      image = imageVariant.image
-                    }
-                  }
-
-                  return (
-                    <li className="flex w-full flex-col" key={i}>
-                      <div className="relative flex w-full flex-row justify-between px-1 py-4">
-                        <div className="absolute z-40 -mt-2 ml-[55px]">
-                          <DeleteItemButton item={item} />
-                        </div>
-                        <Link
-                          className="z-30 flex flex-row space-x-4"
-                          href={`/products/${(item.product as Product)?.slug}`}
-                        >
-                          <div className="relative h-16 w-16 cursor-pointer overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
-                            {image?.url && (
-                              <Image
-                                alt={image?.alt || product?.title || ''}
-                                className="h-full w-full object-cover"
-                                height={94}
-                                src={image.url}
-                                width={94}
-                              />
-                            )}
-                          </div>
-
-                          <div className="flex flex-1 flex-col text-base">
-                            <span className="leading-tight">{product?.title}</span>
-                            {isVariant && variant ? (
-                              <p className="text-sm text-neutral-500 dark:text-neutral-400 capitalize">
-                                {variant.options
-                                  ?.map((option: Variant['options'][number]) => {
-                                    if (typeof option === 'object') return option.label
-                                    return null
-                                  })
-                                  .join(', ')}
-                              </p>
-                            ) : null}
-                          </div>
-                        </Link>
-                        <div className="flex h-16 flex-col justify-between">
-                          {typeof price === 'number' && (
-                            <Price
-                              amount={price}
-                              className="flex justify-end space-y-2 text-right text-sm"
-                            />
-                          )}
-                          <div className="ml-auto flex h-9 flex-row items-center rounded-lg border">
-                            <EditItemQuantityButton item={item} type="minus" />
-                            <p className="w-6 text-center">
-                              <span className="w-full text-sm">{item.quantity}</span>
-                            </p>
-                            <EditItemQuantityButton item={item} type="plus" />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              <div className="px-4">
-                <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
-                  {typeof cart?.subtotal === 'number' && (
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
-                      <p>Total</p>
-                      <Price
-                        amount={cart?.subtotal}
-                        className="text-right text-base text-black dark:text-white"
-                      />
-                    </div>
-                  )}
-
-                  <Button asChild>
-                    <Link className="w-full" href="/checkout">
-                      Proceed to Checkout
-                    </Link>
-                  </Button>
+                <div className="space-y-2">
+                  <SheetTitle className="text-[28px] font-medium tracking-[-0.05em]">
+                    Cart
+                  </SheetTitle>
+                  <SheetDescription className="max-w-[32ch] text-sm leading-6 text-black/60">
+                    Review the order before checkout. The panel stays scrollable so the rest of the
+                    page can fall away behind it.
+                  </SheetDescription>
                 </div>
               </div>
+
+              <SheetClose asChild>
+                <button
+                  aria-label="Close cart"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black/70 transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </SheetClose>
             </div>
-          </div>
-        )}
+          </SheetHeader>
+
+          {!hasItems ? (
+            <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white/80">
+                <ShoppingBag className="h-8 w-8 text-black/70" />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
+                <p className="text-sm leading-6 text-black/60">
+                  Add a few bakery items first, then come back here to review quantity and checkout.
+                </p>
+              </div>
+
+              <Link
+                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+                href="/shop"
+              >
+                Browse the menu
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="border-b border-black/8 px-5 py-4">
+                <div className="h-1 rounded-full bg-black/8">
+                  <div
+                    className="h-full rounded-full bg-black transition-[width] duration-500 ease-out"
+                    style={{ width: `${freeShippingProgress * 100}%` }}
+                  />
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.22em] text-black/55">
+                  <span>
+                    {amountUntilFreeShipping > 0
+                      ? 'Delivery threshold progress'
+                      : 'Delivery threshold reached'}
+                  </span>
+                  {typeof cart?.subtotal === 'number' ? (
+                    <Price amount={cart.subtotal} className="text-sm text-black" />
+                  ) : null}
+                </div>
+
+                <p className="mt-3 text-sm leading-6 text-black/65">
+                  {amountUntilFreeShipping > 0
+                    ? `You are ${currencyFormatter.format(amountUntilFreeShipping)} away from free shipping on orders over ${currencyFormatter.format(FREE_SHIPPING_THRESHOLD)}.`
+                    : 'This order has crossed the free-shipping threshold.'}
+                </p>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                <ul className="space-y-3">
+                  {cart?.items?.map((item, index) => {
+                    const product = item.product
+                    const variant = item.variant
+
+                    if (typeof product !== 'object' || !item || !product || !product.slug) {
+                      return <React.Fragment key={index} />
+                    }
+
+                    const metaImage =
+                      product.meta?.image && typeof product.meta.image === 'object'
+                        ? product.meta.image
+                        : undefined
+
+                    const firstGalleryImage =
+                      typeof product.gallery?.[0]?.image === 'object'
+                        ? product.gallery[0].image
+                        : undefined
+
+                    let image = firstGalleryImage || metaImage
+                    let price = product.priceInUSD
+                    const isVariant = Boolean(variant) && typeof variant === 'object'
+
+                    if (isVariant) {
+                      price = variant?.priceInUSD
+
+                      const imageVariant = product.gallery?.find(
+                        (galleryItem: NonNullable<Product['gallery']>[number]) => {
+                          if (!galleryItem.variantOption) return false
+
+                          const variantOptionID =
+                            typeof galleryItem.variantOption === 'object'
+                              ? galleryItem.variantOption.id
+                              : galleryItem.variantOption
+
+                          return (
+                            variant?.options?.some((option: Variant['options'][number]) => {
+                              if (typeof option === 'object') return option.id === variantOptionID
+                              return option === variantOptionID
+                            }) || false
+                          )
+                        },
+                      )
+
+                      if (imageVariant && typeof imageVariant.image === 'object') {
+                        image = imageVariant.image
+                      }
+                    }
+
+                    return (
+                      <li
+                        className="rounded-[24px] border border-black/8 bg-white/72 p-4"
+                        key={index}
+                      >
+                        <div className="flex gap-4">
+                          <Link
+                            className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[20px] bg-[#ece6d8]"
+                            href={`/products/${(item.product as Product).slug}`}
+                          >
+                            {image?.url ? (
+                              <Image
+                                alt={image.alt || product.title || ''}
+                                className="h-full w-full object-cover"
+                                fill
+                                sizes="96px"
+                                src={image.url}
+                              />
+                            ) : null}
+                          </Link>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 space-y-1">
+                                <p className="text-[11px] uppercase tracking-[0.22em] text-black/45">
+                                  {isVariant ? 'Configured item' : 'Bakery item'}
+                                </p>
+                                <Link
+                                  className="block text-lg font-medium leading-6 tracking-[-0.03em] text-black"
+                                  href={`/products/${(item.product as Product).slug}`}
+                                >
+                                  {product.title}
+                                </Link>
+                                {isVariant && variant ? (
+                                  <p className="text-sm leading-6 text-black/60 capitalize">
+                                    {variant.options
+                                      ?.map((option: Variant['options'][number]) => {
+                                        if (typeof option === 'object') return option.label
+                                        return null
+                                      })
+                                      .filter(Boolean)
+                                      .join(', ')}
+                                  </p>
+                                ) : null}
+                              </div>
+
+                              <DeleteItemButton item={item} />
+                            </div>
+
+                            <div className="mt-4 flex items-end justify-between gap-3">
+                              <div className="inline-flex items-center rounded-full border border-black/10 bg-black/[0.03] px-1 py-1">
+                                <EditItemQuantityButton item={item} type="minus" />
+                                <span className="w-8 text-center text-sm font-medium">
+                                  {item.quantity}
+                                </span>
+                                <EditItemQuantityButton item={item} type="plus" />
+                              </div>
+
+                              {typeof price === 'number' ? (
+                                <Price amount={price} className="text-lg font-medium text-black" />
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+
+              <div className="border-t border-black/8 bg-white/55 px-5 py-5">
+                <div className="mb-4 flex items-center justify-between gap-3 border-b border-black/8 pb-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-black/45">Subtotal</p>
+                    <p className="mt-1 text-sm leading-6 text-black/60">
+                      Shipping and taxes are calculated during checkout.
+                    </p>
+                  </div>
+
+                  {typeof cart?.subtotal === 'number' ? (
+                    <Price amount={cart.subtotal} className="text-2xl font-medium text-black" />
+                  ) : null}
+                </div>
+
+                <div className="space-y-3">
+                  <Link
+                    className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-4 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+                    href="/checkout"
+                  >
+                    Proceed to checkout
+                  </Link>
+
+                  <SheetClose asChild>
+                    <button
+                      className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-4 text-[11px] font-medium uppercase tracking-[0.24em] text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
+                      type="button"
+                    >
+                      Keep browsing
+                    </button>
+                  </SheetClose>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   )

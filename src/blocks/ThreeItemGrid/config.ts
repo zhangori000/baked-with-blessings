@@ -7,6 +7,7 @@ export const ThreeItemGrid: Block = {
       name: 'products',
       type: 'relationship',
       admin: {
+        description: 'Pick exactly three featured products to display in this section.',
         isSortable: true,
       },
       hasMany: true,
@@ -18,7 +19,7 @@ export const ThreeItemGrid: Block = {
   ],
   interfaceName: 'ThreeItemGridBlock',
   labels: {
-    plural: 'Three Item Grids',
-    singular: 'Three Item Grid',
+    plural: 'Three Featured Product Grids',
+    singular: 'Three Featured Products',
   },
 }

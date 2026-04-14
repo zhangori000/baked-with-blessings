@@ -16,16 +16,23 @@ export const FormBlock: Block = {
       type: 'relationship',
       relationTo: 'forms',
       required: true,
+      admin: {
+        description: 'Choose which saved form should appear in this section.',
+      },
     },
     {
       name: 'enableIntro',
       type: 'checkbox',
       label: 'Enable Intro Content',
+      admin: {
+        description: 'Turn this on if the form needs a heading or explanatory copy above it.',
+      },
     },
     {
       name: 'introContent',
       type: 'richText',
       admin: {
+        description: 'Add the heading or instructions that should appear above the form.',
         condition: (_, { enableIntro }) => Boolean(enableIntro),
       },
       editor: lexicalEditor({

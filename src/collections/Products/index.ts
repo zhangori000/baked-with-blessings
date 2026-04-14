@@ -20,11 +20,64 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { DefaultDocumentIDType, Where } from 'payload'
 
+const productDetailsFields = (defaultFields: NonNullable<CollectionOverride extends (...args: any[]) => infer R ? R extends { fields: infer F } ? F : never : never>) =>
+  defaultFields.map((field) => {
+    if (!field || typeof field !== 'object' || !('name' in field)) {
+      return field
+    }
+
+    if (field.name === 'inventory') {
+      return {
+        ...field,
+        admin: {
+          ...field.admin,
+          description:
+            'Stock count for simple products. If you enable variants, manage stock on each variant instead of here.',
+        },
+      }
+    }
+
+    if (field.name === 'enableVariants') {
+      return {
+        ...field,
+        admin: {
+          ...field.admin,
+          description:
+            'Turn this on when one product needs selectable options such as size, flavor, filling, or color.',
+        },
+      }
+    }
+
+    if (field.name === 'variantTypes') {
+      return {
+        ...field,
+        admin: {
+          ...field.admin,
+          description:
+            'Choose which kinds of options customers can pick, for example size, flavor, or pickup package.',
+        },
+      }
+    }
+
+    if (field.name === 'variants') {
+      return {
+        ...field,
+        admin: {
+          ...field.admin,
+          description:
+            'After you choose variant types, create the actual purchasable combinations here with their own price and inventory.',
+        },
+      }
+    }
+
+    return field
+  })
+
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'enableVariants', '_status', 'variants.variants'],
+    defaultColumns: ['title', 'categories', 'priceInUSD', 'inventory', '_status'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -63,6 +116,10 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
             {
               name: 'description',
               type: 'richText',
+              admin: {
+                description:
+                  'Short product story for the product page and supporting storefront copy.',
+              },
               editor: lexicalEditor({
                 features: ({ rootFeatures }) => {
                   return [
@@ -81,18 +138,27 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               name: 'gallery',
               type: 'array',
               minRows: 1,
+              admin: {
+                description:
+                  'Product image gallery. The first image is the main storefront image, so put the best primary photo first.',
+              },
               fields: [
                 {
                   name: 'image',
                   type: 'upload',
                   relationTo: 'media',
                   required: true,
+                  admin: {
+                    description: 'Choose the photo that should appear for this gallery item.',
+                  },
                 },
                 {
                   name: 'variantOption',
                   type: 'relationship',
                   relationTo: 'variantOptions',
                   admin: {
+                    description:
+                      'Only use this when variants are enabled and the image belongs to one specific option.',
                     condition: (data) => {
                       return data?.enableVariants === true && data?.variantTypes?.length > 0
                     },
@@ -135,6 +201,10 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
             {
               name: 'layout',
               type: 'blocks',
+              admin: {
+                description:
+                  'Optional long-form sections below the main product details. Use these for ingredient notes, FAQs, extra selling copy, or supporting media.',
+              },
               blocks: [CallToAction, Content, MediaBlock],
             },
           ],
@@ -142,10 +212,14 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         },
         {
           fields: [
-            ...defaultCollection.fields,
+            ...productDetailsFields(defaultCollection.fields),
             {
               name: 'relatedProducts',
               type: 'relationship',
+              admin: {
+                description:
+                  'Pick other products that should be suggested alongside this one on the storefront.',
+              },
               filterOptions: ({ id }) => {
                 if (id) {
                   return {
@@ -201,6 +275,8 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       name: 'categories',
       type: 'relationship',
       admin: {
+        description:
+          'Categories group products on the /shop page and help organize the menu for customers and admins.',
         position: 'sidebar',
         sortOptions: 'title',
       },

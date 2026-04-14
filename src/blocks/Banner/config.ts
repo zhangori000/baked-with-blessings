@@ -13,6 +13,9 @@ export const Banner: Block = {
       name: 'style',
       type: 'select',
       defaultValue: 'info',
+      admin: {
+        description: 'Choose the tone of the banner message.',
+      },
       options: [
         { label: 'Info', value: 'info' },
         { label: 'Warning', value: 'warning' },
@@ -24,6 +27,9 @@ export const Banner: Block = {
     {
       name: 'content',
       type: 'richText',
+      admin: {
+        description: 'Short notice text, such as a promo, update, warning, or service announcement.',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
@@ -34,4 +40,8 @@ export const Banner: Block = {
     },
   ],
   interfaceName: 'BannerBlock',
+  labels: {
+    plural: 'Announcement Banners',
+    singular: 'Announcement Banner',
+  },
 }

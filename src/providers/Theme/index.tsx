@@ -15,6 +15,13 @@ const initialContext: ThemeContextType = {
 
 const ThemeContext = createContext(initialContext)
 
+const applyThemeVariables = (themeToSet: Theme) => {
+  document.documentElement.style.setProperty(
+    '--background',
+    themeToSet === 'dark' ? '#020e2f' : '#d8ecfb',
+  )
+}
+
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setThemeState] = useState<Theme | undefined>(
     canUseDOM ? (document.documentElement.getAttribute('data-theme') as Theme) : undefined,
@@ -25,11 +32,15 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       window.localStorage.removeItem(themeLocalStorageKey)
       const implicitPreference = getImplicitPreference()
       document.documentElement.setAttribute('data-theme', implicitPreference || '')
-      if (implicitPreference) setThemeState(implicitPreference)
+      if (implicitPreference) {
+        applyThemeVariables(implicitPreference)
+        setThemeState(implicitPreference)
+      }
     } else {
       setThemeState(themeToSet)
       window.localStorage.setItem(themeLocalStorageKey, themeToSet)
       document.documentElement.setAttribute('data-theme', themeToSet)
+      applyThemeVariables(themeToSet)
     }
   }, [])
 
@@ -48,6 +59,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     document.documentElement.setAttribute('data-theme', themeToSet)
+    applyThemeVariables(themeToSet)
     setThemeState(themeToSet)
   }, [])
 

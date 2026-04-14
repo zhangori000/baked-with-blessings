@@ -10,8 +10,17 @@ Also scan these paths in addition to the primary source when they are relevant:
 
 - `./backlog` (recursive)
 - `./ai-instructions` (recursive, including subfolders)
+- `./ai-instructions/design-stuff` for design research, screenshots, and the `thoughts.md` files inside each website-analysis folder
+- `./ai-instructions/ideas-and-backlog/plan.md` before implementing seed data, catalog structure, menu UX, or storefront product presentation
 
 Use them as supplemental implementation and process guidance, then reconcile with the local repo code.
+
+Additional local design reference:
+
+- The sibling Coinbase CDS repo lives at `C:\Users\zhang\00My Stuff\Coding\Learning\cds`.
+- Use it as a reference for frontend engineering discipline, interaction patterns, and accessible component structure.
+- Prefer local reimplementation over direct CDS package adoption unless the user explicitly asks for package integration; the local repo notes already document the React compatibility tradeoff and the desire to keep theming flexible.
+- When design folders include screenshots plus `thoughts.md`, treat them as direct user preference input rather than optional inspiration.
 
 Do not rely on memory first. When answering questions, proposing architecture, or writing Payload code, read the local Payload repository first:
 

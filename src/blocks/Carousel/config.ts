@@ -7,6 +7,10 @@ export const Carousel: Block = {
       name: 'populateBy',
       type: 'select',
       defaultValue: 'collection',
+      admin: {
+        description:
+          'Choose whether this carousel should auto-fill from a collection or use a manual product selection.',
+      },
       options: [
         {
           label: 'Collection',
@@ -22,6 +26,7 @@ export const Carousel: Block = {
       name: 'relationTo',
       type: 'select',
       admin: {
+        description: 'Choose which collection this automatic carousel should pull from.',
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       defaultValue: 'products',
@@ -37,6 +42,7 @@ export const Carousel: Block = {
       name: 'categories',
       type: 'relationship',
       admin: {
+        description: 'Optional filter: only show products from these categories.',
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       hasMany: true,
@@ -48,6 +54,7 @@ export const Carousel: Block = {
       type: 'number',
       admin: {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
+        description: 'Maximum number of products to include in the carousel.',
         step: 1,
       },
       defaultValue: 10,
@@ -57,6 +64,7 @@ export const Carousel: Block = {
       name: 'selectedDocs',
       type: 'relationship',
       admin: {
+        description: 'Pick the specific products to show when you want a manual carousel.',
         condition: (_, siblingData) => siblingData.populateBy === 'selection',
       },
       hasMany: true,
@@ -89,7 +97,7 @@ export const Carousel: Block = {
   ],
   interfaceName: 'CarouselBlock',
   labels: {
-    plural: 'Carousels',
-    singular: 'Carousel',
+    plural: 'Product Carousels',
+    singular: 'Product Carousel',
   },
 }

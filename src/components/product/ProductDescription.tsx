@@ -1,5 +1,5 @@
 'use client'
-import type { Product, Variant } from '@/payload-types'
+import type { Category, Product, Variant } from '@/payload-types'
 
 import { RichText } from '@/components/RichText'
 import { AddToCart } from '@/components/Cart/AddToCart'
@@ -51,10 +51,27 @@ export function ProductDescription({ product }: { product: Product }) {
     amount = product[priceField]
   }
 
+  const categories =
+    product.categories?.filter((category): category is Category => {
+      return typeof category === 'object' && Boolean(category?.title)
+    }) ?? []
+
   return (
     <div className="flex flex-col gap-6">
+      {categories.length ? (
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <span
+              className="rounded-full border border-black/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-primary/55"
+              key={category.id}
+            >
+              {category.title}
+            </span>
+          ))}
+        </div>
+      ) : null}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-2xl font-medium">{product.title}</h1>
+        <h1 className="text-3xl font-medium leading-none md:text-4xl">{product.title}</h1>
         <div className="uppercase font-mono">
           {hasVariants ? (
             <Price highestAmount={highestAmount} lowestAmount={lowestAmount} />
