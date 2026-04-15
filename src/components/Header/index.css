@@ -982,28 +982,6 @@
   color: rgb(0 0 0 / 58%);
 }
 
-.siteHeaderOverlay {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  height: 100vh;
-  z-index: 5;
-  border: 0;
-  background: rgb(20 23 11 / 12%);
-  animation: siteHeaderOverlayReveal 200ms ease;
-}
-
-@keyframes siteHeaderOverlayReveal {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
 @media (min-width: 768px) {
   .siteHeaderViewport {
     padding: 1.15rem 0 0.9rem;

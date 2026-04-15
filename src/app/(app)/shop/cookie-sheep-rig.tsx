@@ -39,10 +39,10 @@ const frontLegPairPlacement: CookieJointPlacement = {
 const hindLegPairPlacement: CookieJointPlacement = {
   anchorX: 0.08,
   anchorY: 0.46,
-  clockMs: clockTimeToMs(4, 16),
+  clockMs: clockTimeToMs(4, 24),
   directionClockMs: clockTimeToMs(4, 8),
   height: `${legPairHeightPct}%`,
-  radialOffsetPct: 0.28,
+  radialOffsetPct: 0.24,
   radiusPct: cookieRadiusPct,
   width: `${legPairWidthPct}%`,
 }
