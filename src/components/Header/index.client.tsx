@@ -56,7 +56,6 @@ const headerClassNames = {
   actionPanelInner: 'siteHeaderActionPanelInner',
   actionPanelTitle: 'siteHeaderActionPanelTitle',
   actionPanelList: 'siteHeaderActionPanelList',
-  overlay: 'siteHeaderOverlay',
   root: 'siteHeader',
   shell: 'siteHeaderShell',
   shellRow: 'siteHeaderShellRow',
@@ -163,17 +162,6 @@ export function HeaderClient({ brand, header }: Props) {
       data-scrolled={isScrolled}
       ref={headerRef}
     >
-      {activePanel ? (
-        <button
-          aria-label="Close quick actions"
-          className={headerClassNames.overlay}
-          onClick={() => {
-            setActivePanel(null)
-          }}
-          type="button"
-        />
-      ) : null}
-
       <div className={headerClassNames.viewport}>
         <div className={cn(headerClassNames.shell, 'container')}>
           <div className={headerClassNames.shellRow}>

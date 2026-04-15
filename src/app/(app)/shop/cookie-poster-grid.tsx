@@ -134,7 +134,7 @@ export function CookiePosterGrid() {
 
                 <div className="flex flex-1 flex-col gap-1.5 px-4 pb-4 pt-3.5">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
-                    <div className="space-y-0.5">
+                    <div className="flex flex-col gap-1">
                       <h3 className="text-[1.5rem] font-medium leading-[0.92] tracking-[-0.05em] text-[#1d3250] md:text-[1.58rem]">
                         {poster.title}
                       </h3>
