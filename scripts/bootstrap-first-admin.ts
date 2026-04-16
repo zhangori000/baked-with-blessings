@@ -1,11 +1,10 @@
-import { loadEnvConfig } from '@next/env'
+import nextEnv from '@next/env'
+
+const { loadEnvConfig } = nextEnv
 
 loadEnvConfig(process.cwd())
 
-import { getPayload } from 'payload'
-
 import { FIRST_ADMIN_BOOTSTRAP_CONTEXT } from '../src/collections/Admins/hooks/requireExplicitFirstAdminBootstrap'
-import config from '../src/payload.config'
 
 /*
  * Local usage:
@@ -19,6 +18,18 @@ import config from '../src/payload.config'
 
 const requiredEnv = ['BOOTSTRAP_ADMIN_EMAIL', 'BOOTSTRAP_ADMIN_PASSWORD'] as const
 
+const destroyWithTimeout = async (destroy: () => Promise<void>) => {
+  await Promise.race([
+    destroy(),
+    new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.warn('Payload shutdown timed out after 2s. Forcing process exit.')
+        resolve()
+      }, 2000)
+    }),
+  ])
+}
+
 const missingEnv = requiredEnv.filter((key) => !process.env[key]?.trim())
 
 if (missingEnv.length > 0) {
@@ -28,6 +39,8 @@ if (missingEnv.length > 0) {
 }
 
 const bootstrap = async () => {
+  const { getPayload } = await import('payload')
+  const { default: config } = await import('../src/payload.config')
   const payload = await getPayload({ config })
   try {
     const email = process.env.BOOTSTRAP_ADMIN_EMAIL!.trim().toLowerCase()
@@ -62,11 +75,15 @@ const bootstrap = async () => {
 
     console.log(`Created first admin: ${admin.email}`)
   } finally {
-    await payload.destroy()
+    await destroyWithTimeout(() => payload.destroy())
   }
 }
 
-void bootstrap().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+void bootstrap()
+  .then(() => {
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })

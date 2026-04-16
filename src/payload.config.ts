@@ -1,5 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { resendAdapter } from '@payloadcms/email-resend'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 
 import {
   BoldFeature,
@@ -106,7 +107,15 @@ export default buildConfig({
   email: emailAdapter,
   endpoints: [],
   globals: [Brand, Header, Footer],
-  plugins,
+  plugins: [
+    vercelBlobStorage({
+      collections: {
+        media: true,
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    }),
+    ...plugins,
+  ],
   secret: process.env.PAYLOAD_SECRET || '',
   sharp,
   typescript: {
