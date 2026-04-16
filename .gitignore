@@ -41,3 +41,6 @@ next-env.d.ts
 
 public/media
 temp-sandbox-stuff/
+
+# local PR drafting notes kept inside dated learnings folders
+ai-instructions/learnings/**/pr-*.md
