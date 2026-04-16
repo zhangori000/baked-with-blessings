@@ -4,7 +4,7 @@ const { loadEnvConfig } = nextEnv
 
 loadEnvConfig(process.cwd())
 
-import { seed } from '../src/endpoints/seed'
+import { importCookieMedia } from '../src/endpoints/seed/cookie-media'
 
 const destroyWithTimeout = async (destroy: () => Promise<void>) => {
   await Promise.race([
@@ -18,7 +18,7 @@ const destroyWithTimeout = async (destroy: () => Promise<void>) => {
   ])
 }
 
-const runSeed = async () => {
+const runImport = async () => {
   const { createLocalReq, getPayload } = await import('payload')
   const { default: config } = await import('../src/payload.config')
   const payload = await getPayload({ config })
@@ -35,20 +35,23 @@ const runSeed = async () => {
     const admin = admins.docs[0]
 
     if (!admin) {
-      throw new Error('No admin exists yet. Run `pnpm bootstrap:admin` first, then run `pnpm seed`.')
+      throw new Error(
+        'No admin exists yet. Run `pnpm bootstrap:admin` first, then run `pnpm import:cookie-media`.',
+      )
     }
 
     const req = await createLocalReq({ user: admin }, payload)
+    const result = await importCookieMedia({ payload, req })
 
-    await seed({ payload, req })
-
-    console.log('Database seeded successfully.')
+    console.log(
+      `Cookie media import finished. Created: ${result.created}, updated: ${result.updated}, skipped: ${result.skipped}.`,
+    )
   } finally {
     await destroyWithTimeout(() => payload.destroy())
   }
 }
 
-void runSeed()
+void runImport()
   .then(() => {
     process.exit(0)
   })

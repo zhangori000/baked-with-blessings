@@ -1,13 +1,14 @@
-import 'dotenv/config'
+import nextEnv from '@next/env'
 
-import { getPayload } from 'payload'
+const { loadEnvConfig } = nextEnv
+
+loadEnvConfig(process.cwd())
 
 import { FIRST_ADMIN_BOOTSTRAP_CONTEXT } from '../src/collections/Admins/hooks/requireExplicitFirstAdminBootstrap'
-import config from '../src/payload.config'
 
 /*
  * Local usage:
- *   1. Set BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD / BOOTSTRAP_ADMIN_NAME in .env
+ *   1. Set BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD / BOOTSTRAP_ADMIN_NAME in .env.local
  *   2. Run: pnpm bootstrap:admin
  *
  * Later, for hosted Vercel environments, run the same script with environment injection:
@@ -17,15 +18,29 @@ import config from '../src/payload.config'
 
 const requiredEnv = ['BOOTSTRAP_ADMIN_EMAIL', 'BOOTSTRAP_ADMIN_PASSWORD'] as const
 
+const destroyWithTimeout = async (destroy: () => Promise<void>) => {
+  await Promise.race([
+    destroy(),
+    new Promise<void>((resolve) => {
+      setTimeout(() => {
+        console.warn('Payload shutdown timed out after 2s. Forcing process exit.')
+        resolve()
+      }, 2000)
+    }),
+  ])
+}
+
 const missingEnv = requiredEnv.filter((key) => !process.env[key]?.trim())
 
 if (missingEnv.length > 0) {
   throw new Error(
-    `Missing required env vars for admin bootstrap: ${missingEnv.join(', ')}. Add them to your .env before running this script.`,
+    `Missing required env vars for admin bootstrap: ${missingEnv.join(', ')}. Add them to your .env.local or .env before running this script.`,
   )
 }
 
 const bootstrap = async () => {
+  const { getPayload } = await import('payload')
+  const { default: config } = await import('../src/payload.config')
   const payload = await getPayload({ config })
   try {
     const email = process.env.BOOTSTRAP_ADMIN_EMAIL!.trim().toLowerCase()
@@ -60,11 +75,15 @@ const bootstrap = async () => {
 
     console.log(`Created first admin: ${admin.email}`)
   } finally {
-    await payload.destroy()
+    await destroyWithTimeout(() => payload.destroy())
   }
 }
 
-void bootstrap().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+void bootstrap()
+  .then(() => {
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })

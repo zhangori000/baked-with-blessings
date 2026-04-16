@@ -41,6 +41,25 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
+    adminThumbnail: 'thumbnail',
+    imageSizes: [
+      {
+        name: 'thumbnail',
+        width: 160,
+      },
+      {
+        name: 'card',
+        width: 480,
+      },
+      {
+        name: 'poster',
+        width: 768,
+      },
+      {
+        name: 'tablet',
+        width: 1024,
+      },
+    ],
     staticDir: path.resolve(dirname, '../../public/media'),
   },
 }

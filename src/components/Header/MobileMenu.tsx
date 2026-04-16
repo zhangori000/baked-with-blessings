@@ -3,7 +3,7 @@
 import { cn } from '@/utilities/cn'
 import { MenuIcon, Search, X } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import React, { useEffect, useRef, useState } from 'react'
 
 type Props = {
@@ -26,7 +26,6 @@ const isRouteActive = (pathname: string, href: string) => {
 
 export function MobileMenu({ cartQuantity, items }: Props) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -43,7 +42,7 @@ export function MobileMenu({ cartQuantity, items }: Props) {
 
   useEffect(() => {
     setIsOpen(false)
-  }, [pathname, searchParams])
+  }, [pathname])
 
   useEffect(() => {
     if (!isOpen) return

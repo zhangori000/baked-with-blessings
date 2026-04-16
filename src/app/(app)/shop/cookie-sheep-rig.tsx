@@ -1,5 +1,7 @@
 'use client'
 
+import { Media } from '@/components/Media'
+import type { Media as MediaType } from '@/payload-types'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
@@ -12,8 +14,9 @@ import {
 } from './cookie-sheep-geometry'
 
 type CookieSheepRigProps = {
+  bodyFallbackSrc: string
   href: string
-  singularSrc: string
+  image: MediaType | null
   title: string
 }
 
@@ -135,7 +138,7 @@ function SheepLegPairSvg() {
   )
 }
 
-export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps) {
+export function CookieSheepRig({ bodyFallbackSrc, href, image, title }: CookieSheepRigProps) {
   return (
     <div className="absolute left-1/2 bottom-[var(--cookie-bottom)] z-20 h-[var(--cookie-size)] w-[var(--cookie-size)] -translate-x-1/2">
       <div className="absolute inset-0 z-10">
@@ -172,12 +175,21 @@ export function CookieSheepRig({ href, singularSrc, title }: CookieSheepRigProps
         href={href}
       >
         <span className="sr-only">{title}</span>
-        <img
-          alt={`${title} cookie`}
-          className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
-          loading="lazy"
-          src={singularSrc}
-        />
+        {image ? (
+          <Media
+            fill
+            htmlElement={null}
+            imgClassName="cookieSheepBodyImage pointer-events-none object-cover"
+            resource={image}
+          />
+        ) : (
+          <img
+            alt={`${title} cookie`}
+            className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
+            loading="lazy"
+            src={bodyFallbackSrc}
+          />
+        )}
       </Link>
 
       <span

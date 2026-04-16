@@ -1,12 +1,14 @@
 ﻿'use client'
 import React, { useCallback, useMemo } from 'react'
 
-import { Category } from '@/payload-types'
+import type { Category } from '@/payload-types'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import clsx from 'clsx'
 
+type CategoryItemData = Pick<Category, 'id' | 'title'>
+
 type Props = {
-  category: Category
+  category: CategoryItemData
 }
 
 export const CategoryItem: React.FC<Props> = ({ category }) => {

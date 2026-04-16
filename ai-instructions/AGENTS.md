@@ -43,6 +43,17 @@ Also read these files in this folder when relevant:
 - `TEACHING-GUIDANCE.md` for explanation style, ordering, pacing, and anti-patterns when teaching
 - `PAYLOAD-SETTINGS-AND-HOOKS.md` for practical guidance on config settings, analytics placement, hooks, route handlers, endpoints, and context
 
+### PR Notes Convention
+
+When writing PR descriptions, review guides, or merge summaries for this project, store them under `ai-instructions/learnings/pr/<YYYY-MM-DD>/`.
+
+Examples:
+
+- `ai-instructions/learnings/pr/2026-04-16/pr-image-enhancements.md`
+- `ai-instructions/learnings/pr/2026-04-16/pr-seed-refactor.md`
+
+The date folder should map 1:1 to the day the note was created. Use descriptive filenames that start with `pr-`.
+
 ## What is Payload CMS
 
 Payload is a Next.js-native headless CMS. You install it directly into a Next.js `/app` folder. It gives you:

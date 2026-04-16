@@ -13,7 +13,7 @@ const createTextNode = (text: string) => ({
 const createParagraphNode = (text: string) => ({
   children: [createTextNode(text)],
   direction: 'ltr' as const,
-  format: '',
+  format: '' as const,
   indent: 0,
   type: 'paragraph' as const,
   version: 1,
@@ -24,7 +24,7 @@ const createParagraphNode = (text: string) => ({
 const createHeadingNode = (text: string, tag: HeadingTag) => ({
   children: [createTextNode(text)],
   direction: 'ltr' as const,
-  format: '',
+  format: '' as const,
   indent: 0,
   tag,
   type: 'heading' as const,
@@ -35,7 +35,7 @@ export const createParagraphRichText = (text: string) => ({
   root: {
     children: [createParagraphNode(text)],
     direction: 'ltr' as const,
-    format: '',
+    format: '' as const,
     indent: 0,
     type: 'root' as const,
     version: 1,
@@ -54,7 +54,7 @@ export const createHeadingAndParagraphsRichText = ({
   root: {
     children: [createHeadingNode(heading, headingTag), ...paragraphs.map(createParagraphNode)],
     direction: 'ltr' as const,
-    format: '',
+    format: '' as const,
     indent: 0,
     type: 'root' as const,
     version: 1,

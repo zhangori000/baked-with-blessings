@@ -18,56 +18,35 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import { DefaultDocumentIDType, Where } from 'payload'
+import { DefaultDocumentIDType, type Field, Where } from 'payload'
 
-const productDetailsFields = (defaultFields: NonNullable<CollectionOverride extends (...args: any[]) => infer R ? R extends { fields: infer F } ? F : never : never>) =>
-  defaultFields.map((field) => {
+const productDetailsDescriptions: Record<string, string> = {
+  inventory:
+    'Stock count for simple products. If you enable variants, manage stock on each variant instead of here.',
+  enableVariants:
+    'Turn this on when one product needs selectable options such as size, flavor, filling, or color.',
+  variantTypes:
+    'Choose which kinds of options customers can pick, for example size, flavor, or pickup package.',
+  variants:
+    'After you choose variant types, create the actual purchasable combinations here with their own price and inventory.',
+}
+
+const productDetailsFields = (defaultFields: Field[]): Field[] =>
+  defaultFields.map((field): Field => {
     if (!field || typeof field !== 'object' || !('name' in field)) {
       return field
     }
 
-    if (field.name === 'inventory') {
-      return {
-        ...field,
-        admin: {
-          ...field.admin,
-          description:
-            'Stock count for simple products. If you enable variants, manage stock on each variant instead of here.',
-        },
-      }
-    }
+    const description = productDetailsDescriptions[field.name]
 
-    if (field.name === 'enableVariants') {
+    if (description) {
       return {
         ...field,
         admin: {
-          ...field.admin,
-          description:
-            'Turn this on when one product needs selectable options such as size, flavor, filling, or color.',
+          ...(field.admin ?? {}),
+          description,
         },
-      }
-    }
-
-    if (field.name === 'variantTypes') {
-      return {
-        ...field,
-        admin: {
-          ...field.admin,
-          description:
-            'Choose which kinds of options customers can pick, for example size, flavor, or pickup package.',
-        },
-      }
-    }
-
-    if (field.name === 'variants') {
-      return {
-        ...field,
-        admin: {
-          ...field.admin,
-          description:
-            'After you choose variant types, create the actual purchasable combinations here with their own price and inventory.',
-        },
-      }
+      } as Field
     }
 
     return field
@@ -212,7 +191,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         },
         {
           fields: [
-            ...productDetailsFields(defaultCollection.fields),
+            ...productDetailsFields(defaultCollection.fields as Field[]),
             {
               name: 'relatedProducts',
               type: 'relationship',

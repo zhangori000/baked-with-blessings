@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { cookiePosterAssets, type CookiePosterAsset } from './cookiePosterData'
+import type { CookiePosterAsset } from './cookiePosterData'
 import { CookieSheepRig } from './cookie-sheep-rig'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
@@ -78,18 +78,18 @@ function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) 
   )
 }
 
-export function CookiePosterGrid() {
+export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) {
   return (
     <>
       <div className="grid w-full grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
-        {cookiePosterAssets.map((poster) => {
+        {posters.map((poster) => {
           const sceneStyle = {
             ['--cookie-bottom' as string]: '2.35rem',
             ['--cookie-size' as string]: 'clamp(14.6rem, 63%, 16rem)',
           } as React.CSSProperties
 
           return (
-            <article className="group block h-full w-full" key={poster.src}>
+            <article className="group block h-full w-full" key={poster.slug}>
               <div
                 className="relative flex h-full min-h-[33rem] w-full flex-col overflow-hidden rounded-[0.7rem] border shadow-[0_14px_36px_rgba(74,57,31,0.08)]"
                 style={{
@@ -125,8 +125,9 @@ export function CookiePosterGrid() {
                     <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
 
                     <CookieSheepRig
+                      bodyFallbackSrc={poster.bodyFallbackSrc}
                       href={poster.href}
-                      singularSrc={poster.singularSrc}
+                      image={poster.image}
                       title={poster.title}
                     />
                   </div>

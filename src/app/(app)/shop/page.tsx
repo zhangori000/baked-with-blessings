@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import { CookiePosterGrid } from './cookie-poster-grid'
+import { buildCookiePosterAssets } from './cookiePosterData'
 import { shopSectionGroups } from './menuSections'
 
 type SearchParams = { [key: string]: string | string[] | undefined }
@@ -314,7 +315,12 @@ export default async function ShopPage({ searchParams }: Props) {
               const categorySlug = normalizeSlug(categorySection.category.slug)
 
               if (categorySlug === 'cookies') {
-                return <CookiePosterGrid key={categorySection.category.id} />
+                return (
+                  <CookiePosterGrid
+                    key={categorySection.category.id}
+                    posters={buildCookiePosterAssets(categorySection.products)}
+                  />
+                )
               }
 
               return (
