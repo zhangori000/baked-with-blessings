@@ -1,4 +1,6 @@
-import 'dotenv/config'
+import { loadEnvConfig } from '@next/env'
+
+loadEnvConfig(process.cwd())
 
 import { getPayload } from 'payload'
 
@@ -7,7 +9,7 @@ import config from '../src/payload.config'
 
 /*
  * Local usage:
- *   1. Set BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD / BOOTSTRAP_ADMIN_NAME in .env
+ *   1. Set BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD / BOOTSTRAP_ADMIN_NAME in .env.local
  *   2. Run: pnpm bootstrap:admin
  *
  * Later, for hosted Vercel environments, run the same script with environment injection:
@@ -21,7 +23,7 @@ const missingEnv = requiredEnv.filter((key) => !process.env[key]?.trim())
 
 if (missingEnv.length > 0) {
   throw new Error(
-    `Missing required env vars for admin bootstrap: ${missingEnv.join(', ')}. Add them to your .env before running this script.`,
+    `Missing required env vars for admin bootstrap: ${missingEnv.join(', ')}. Add them to your .env.local or .env before running this script.`,
   )
 }
 

@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { CollectionSlug, File, GlobalSlug, Payload, PayloadRequest } from 'payload'
+import type { CollectionSlug, File, Payload, PayloadRequest } from 'payload'
 
-import { Address, Transaction } from '@/payload-types'
+import { Address, type Product, Transaction } from '@/payload-types'
 
 import { cafeCatalog, cafeCategories, buildCafeProductData } from './cafe-products'
 import { contactFormData } from './contact-form'
@@ -28,8 +28,6 @@ const collections: CollectionSlug[] = [
   'addresses',
   'orders',
 ]
-
-const globals: GlobalSlug[] = ['header', 'footer']
 
 const baseAddressUSData: Transaction['billingAddress'] = {
   title: 'Dr.',
@@ -70,20 +68,28 @@ export const seed = async ({
   payload.logger.info('Seeding database...')
   payload.logger.info(`— Clearing collections and globals...`)
 
-  await Promise.all(
-    globals.map((global) =>
-      payload.updateGlobal({
-        slug: global,
-        data: {
-          navItems: [],
-        },
-        depth: 0,
-        context: {
-          disableRevalidate: true,
-        },
-      }),
-    ),
-  )
+  await Promise.all([
+    payload.updateGlobal({
+      slug: 'header',
+      data: {
+        navItems: [],
+      },
+      depth: 0,
+      context: {
+        disableRevalidate: true,
+      },
+    }),
+    payload.updateGlobal({
+      slug: 'footer',
+      data: {
+        navItems: [],
+      },
+      depth: 0,
+      context: {
+        disableRevalidate: true,
+      },
+    }),
+  ])
 
   for (const collection of collections) {
     await payload.db.deleteMany({ collection, req, where: {} })
@@ -166,7 +172,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding products...`)
 
-  const createdProducts: Record<string, { id: number | string; slug?: string }> = {}
+  const createdProducts: Record<string, Pick<Product, 'id' | 'slug'>> = {}
 
   for (const [key, spec] of Object.entries(cafeCatalog)) {
     const categories = spec.categorySlugs.map((slug) => categoryBySlug[slug]).filter(Boolean)

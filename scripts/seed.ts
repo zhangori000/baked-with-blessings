@@ -1,4 +1,6 @@
-import 'dotenv/config'
+import { loadEnvConfig } from '@next/env'
+
+loadEnvConfig(process.cwd())
 
 import { createLocalReq, getPayload } from 'payload'
 
