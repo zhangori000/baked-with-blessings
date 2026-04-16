@@ -1,218 +1,241 @@
-export type CookiePosterAsset = {
-  amount: string
+import type { Media, Product } from '@/payload-types'
+
+export type CookiePosterMeta = {
+  bodyFallbackSrc: string
   chips: string[]
-  href: string
   label: string
   labelTone: string
-  palette: [string, string, string]
-  productId?: number
-  singularSrc: string
   slug: string
-  src: string
   subtitle: string
   summary: string
   title: string
 }
 
-export const cookiePosterAssets: CookiePosterAsset[] = [
+export type CookiePosterAsset = CookiePosterMeta & {
+  amount: string
+  href: string
+  image: Media | null
+  productHref: string
+  productId?: number
+}
+
+const formatAmount = (priceInUSD?: number | null) => {
+  if (typeof priceInUSD !== 'number') {
+    return 'TBD'
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    style: 'currency',
+  }).format(priceInUSD / 100)
+}
+
+const normalizeImage = (product: Partial<Product>): Media | null => {
+  if (!product.gallery?.[0] || typeof product.gallery[0] === 'string') {
+    return null
+  }
+
+  const firstImage = product.gallery[0].image
+
+  return firstImage && typeof firstImage === 'object' ? firstImage : null
+}
+
+const resolveSummary = (product: Partial<Product>, meta: CookiePosterMeta) => {
+  if (typeof product.meta === 'object' && product.meta?.description?.trim()) {
+    return product.meta.description.trim()
+  }
+
+  return meta.summary
+}
+
+export const cookiePosterMetas: CookiePosterMeta[] = [
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-brookie.svg',
     chips: ['BROWN BUTTER', 'FUDGY', 'CHOCOLATE'],
-    href: '/cookies/brookie',
     label: 'BROOKIE',
     labelTone: '#f2e35b',
-    palette: ['#f2e35b', '#b98554', '#4f2c1f'],
-    singularSrc: '/cookie-singular-brookie.svg',
     slug: 'brookie',
-    src: '/10.svg',
     subtitle: 'Brownie cookie mashup',
     summary: 'Brownie depth and chocolate chip chew packed into one oversized cookie.',
     title: 'Brookie',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-oreo-cheesecake.svg',
     chips: ['OREO', 'CREAM CHEESE', 'WHITE CHOC'],
-    href: '/cookies/oreo-cheesecake',
     label: 'OREO CHEESECAKE',
     labelTone: '#f08e94',
-    palette: ['#f08e94', '#d8ccb1', '#56443a'],
-    singularSrc: '/cookie-singular-oreo-cheesecake.svg',
     slug: 'oreo-cheesecake',
-    src: '/11.svg',
     subtitle: 'Creamy Oreo center',
     summary: 'Cheesecake filling layered into a brown butter Oreo cookie.',
     title: 'Oreo Cheesecake',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-apple-snickerdoodle.svg',
     chips: ['APPLE PIE', 'CINNAMON', 'CARAMEL'],
-    href: '/cookies/apple-snickerdoodle',
     label: 'APPLE SNICKERDOODLE',
     labelTone: '#f6c58f',
-    palette: ['#f6c58f', '#d17d4c', '#7c4d2b'],
-    singularSrc: '/cookie-singular-apple-snickerdoodle.svg',
     slug: 'apple-snickerdoodle',
-    src: '/12.svg',
     subtitle: 'Apple pie meets snickerdoodle',
     summary: 'Warm cinnamon sugar with apple pie filling and caramel glaze.',
     title: 'Apple Snickerdoodle',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-smores.svg',
     chips: ['GRAHAM', 'MARSHMALLOW', 'CHOCOLATE'],
-    href: '/cookies/smores',
     label: "S'MORES",
     labelTone: '#f3deb0',
-    palette: ['#f3deb0', '#b58b57', '#4d2d24'],
-    singularSrc: '/cookie-singular-smores.svg',
     slug: 'smores',
-    src: '/13.svg',
     subtitle: 'Campfire cookie',
     summary: 'Brown butter dough packed with graham, marshmallow, and chocolate.',
     title: "S'mores",
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-banana-chocolate-chip-walnut.svg',
     chips: ['BANANA', 'WALNUT', 'CHOC CHIP'],
-    href: '/cookies/banana-choc-chip-walnut',
     label: 'BANANA WALNUT',
     labelTone: '#d8ea94',
-    palette: ['#d8ea94', '#b9965b', '#6c5032'],
-    singularSrc: '/cookie-singular-banana-chocolate-chip-walnut.svg',
     slug: 'banana-choc-chip-walnut',
-    src: '/14.svg',
     subtitle: 'Banana bread cookie',
     summary: 'Toasted walnut crunch and melty chocolate tucked into banana dough.',
     title: 'Banana Choc-Chip Walnut',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-cinnamon-roll.svg',
     chips: ['CINNAMON', 'BROWN SUGAR', 'ICING'],
-    href: '/cookies/cinnamon-roll',
     label: 'CINNAMON ROLL',
     labelTone: '#f0d6a8',
-    palette: ['#f0d6a8', '#d0a067', '#8b6442'],
-    singularSrc: '/cookie-singular-cinnamon-roll.svg',
     slug: 'cinnamon-roll',
-    src: '/15.svg',
     subtitle: 'Bakery roll in cookie form',
     summary: 'Swirled brown sugar cinnamon cookie finished with brown butter icing.',
     title: 'Cinnamon Roll',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-biscoff.svg',
     chips: ['BISCOFF', 'COOKIE BUTTER', 'SPICE'],
-    href: '/cookies/biscoff',
     label: 'BISCOFF',
     labelTone: '#f0c589',
-    palette: ['#f0c589', '#be8851', '#70472b'],
-    singularSrc: '/cookie-singular-biscoff.svg',
     slug: 'biscoff',
-    src: '/cookie-singular-biscoff.svg',
     subtitle: 'Cookie butter loaded',
     summary: 'Warm spiced dough stacked with Biscoff flavor and cookie butter richness.',
     title: 'Biscoff',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-banana-crumble.svg',
     chips: ['BANANA', 'CRUMBLE', 'BROWN SUGAR'],
-    href: '/cookies/banana-crumble',
     label: 'BANANA CRUMBLE',
     labelTone: '#e6d98a',
-    palette: ['#e6d98a', '#c39a53', '#6d5230'],
-    singularSrc: '/cookie-singular-banana-crumble.svg',
     slug: 'banana-crumble',
-    src: '/cookie-singular-banana-crumble.svg',
     subtitle: 'Soft banana streusel cookie',
     summary: 'Banana-forward dough topped with crumble texture and brown sugar warmth.',
     title: 'Banana Crumble',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-chocolate-peanut-butter.svg',
     chips: ['PEANUT BUTTER', 'CHOCOLATE', 'BROWN BUTTER'],
-    href: '/cookies/peanut-butter-cup',
     label: 'PEANUT BUTTER CUP',
     labelTone: '#f2c66c',
-    palette: ['#f2c66c', '#9b6233', '#573421'],
-    singularSrc: '/cookie-singular-chocolate-peanut-butter.svg',
     slug: 'peanut-butter-cup',
-    src: '/16.svg',
     subtitle: 'Chocolate peanut butter cookie',
     summary: 'Chocolate dough loaded with peanut butter cup pieces and brown butter richness.',
     title: 'Peanut Butter Cup',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-dubai-chocolate.svg',
     chips: ['PISTACHIO', 'KATAIFI', 'CHOCOLATE'],
-    href: '/cookies/dubai-chocolate',
     label: 'DUBAI CHOCOLATE',
     labelTone: '#d7d28a',
-    palette: ['#d7d28a', '#a8844c', '#4e3527'],
-    singularSrc: '/cookie-singular-dubai-chocolate.svg',
     slug: 'dubai-chocolate',
-    src: '/cookie-singular-dubai-chocolate.svg',
     subtitle: 'Pistachio chocolate cookie',
     summary: 'A rich chocolate cookie layered with pistachio notes and crunchy texture.',
     title: 'Dubai Chocolate',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-salted-caramel-nest.svg',
     chips: ['SALTED', 'CARAMEL', 'CRUNCH'],
-    href: '/cookies/salted-caramel-nest',
     label: 'SALTED CARAMEL',
     labelTone: '#f0c073',
-    palette: ['#f0c073', '#b8793e', '#684128'],
-    singularSrc: '/cookie-singular-salted-caramel-nest.svg',
     slug: 'salted-caramel-nest',
-    src: '/cookie-singular-salted-caramel-nest.svg',
     subtitle: 'Salted caramel nest cookie',
     summary: 'Sticky caramel depth with a salted edge and crunchy topping throughout.',
     title: 'Salted Caramel Nest',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-strawberry-cheesecake.svg',
     chips: ['STRAWBERRY', 'CHEESECAKE', 'GRAHAM'],
-    href: '/cookies/strawberry-cheesecake',
     label: 'STRAWBERRY CHEESECAKE',
     labelTone: '#f3adb4',
-    palette: ['#f3adb4', '#d78692', '#72505c'],
-    singularSrc: '/cookie-singular-strawberry-cheesecake.svg',
     slug: 'strawberry-cheesecake',
-    src: '/cookie-singular-strawberry-cheesecake.svg',
     subtitle: 'Berry cheesecake cookie',
     summary: 'Strawberry sweetness and cheesecake richness with a graham-style finish.',
     title: 'Strawberry Cheesecake',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-strawberry-matcha.svg',
     chips: ['STRAWBERRY', 'MATCHA', 'WHITE CHOC'],
-    href: '/cookies/strawberry-matcha',
     label: 'STRAWBERRY MATCHA',
     labelTone: '#d7efaa',
-    palette: ['#d7efaa', '#f4b1bc', '#5f6b49'],
-    singularSrc: '/cookie-singular-strawberry-matcha.svg',
     slug: 'strawberry-matcha',
-    src: '/cookie-singular-strawberry-matcha.svg',
     subtitle: 'Matcha berry swirl',
     summary: 'Fresh strawberry notes layered with matcha flavor in a bright soft cookie.',
     title: 'Strawberry Matcha',
   },
   {
-    amount: '$5.00',
+    bodyFallbackSrc: '/cookie-singular-strawberry-matcha-marble.svg',
     chips: ['STRAWBERRY', 'MATCHA', 'MARBLE'],
-    href: '/cookies/strawberry-matcha-marble',
     label: 'MATCHA MARBLE',
     labelTone: '#d8efc3',
-    palette: ['#d8efc3', '#efb0bb', '#59644b'],
-    singularSrc: '/cookie-singular-strawberry-matcha-marble.svg',
     slug: 'strawberry-matcha-marble',
-    src: '/cookie-singular-strawberry-matcha-marble.svg',
     subtitle: 'Marbled berry matcha cookie',
     summary: 'A marbled cookie with strawberry brightness and matcha depth baked together.',
     title: 'Strawberry Matcha Marble',
   },
 ]
 
-export const getCookiePosterAsset = (slug: string) => {
-  return cookiePosterAssets.find((poster) => poster.slug === slug)
+const cookiePosterMetaBySlug = new Map(cookiePosterMetas.map((meta) => [meta.slug, meta]))
+
+export const getCookiePosterMeta = (slug: string) => {
+  return cookiePosterMetaBySlug.get(slug)
+}
+
+export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterAsset | null => {
+  if (typeof product.slug !== 'string') {
+    return null
+  }
+
+  const meta = getCookiePosterMeta(product.slug)
+
+  if (!meta) {
+    return null
+  }
+
+  return {
+    ...meta,
+    amount: formatAmount(product.priceInUSD),
+    href: `/cookies/${meta.slug}`,
+    image: normalizeImage(product),
+    productHref: `/products/${meta.slug}`,
+    productId: typeof product.id === 'number' ? product.id : undefined,
+    summary: resolveSummary(product, meta),
+    title: product.title || meta.title,
+  }
+}
+
+export const buildCookiePosterAssets = (products: Partial<Product>[]) => {
+  const productsBySlug = new Map(
+    products
+      .filter((product) => typeof product.slug === 'string')
+      .map((product) => [product.slug as string, product]),
+  )
+
+  return cookiePosterMetas
+    .map((meta) => {
+      const product = productsBySlug.get(meta.slug)
+
+      if (!product) {
+        return null
+      }
+
+      return buildCookiePosterAsset(product)
+    })
+    .filter((poster): poster is CookiePosterAsset => Boolean(poster))
 }
