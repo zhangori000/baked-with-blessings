@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import React from 'react'
 
-import type { CookiePosterAsset } from './cookiePosterData'
-import { CookieSheepRig } from './cookie-sheep-rig'
-
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { toast } from 'sonner'
+
+import type { CookiePosterAsset } from './cookiePosterData'
+import { CookieSheepRig } from './cookie-sheep-rig'
 
 type PosterCloud = {
   delay: string
@@ -101,22 +101,23 @@ function CookieCateringNotice() {
   return (
     <section
       aria-label="Cookie catering notice"
-      className="cookieCateringNotice relative overflow-hidden rounded-[1.8rem] px-5 py-6 md:px-8 md:py-8"
+      className="cookieCateringNotice relative overflow-hidden rounded-[1.8rem] border px-5 py-6 md:px-8 md:py-8"
       style={{
-        background: '#c3d3cb',
+        background: 'linear-gradient(135deg, #f8f8f5 0%, #efefeb 100%)',
+        borderColor: 'rgba(23, 21, 16, 0.12)',
       }}
     >
       <div className="cookieCateringNoticeGlow" />
 
       <div className="relative z-[1] grid items-center gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(14rem,0.8fr)] md:gap-10">
         <div className="min-w-0">
-          <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[#516158]">
+          <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.56)]">
             Cookie Catering
           </p>
           <h2 className="cookieCateringNoticeHeading mt-3 max-w-[13ch] text-[2rem] leading-[0.95] tracking-[-0.045em] text-[#171510] md:text-[2.65rem]">
             Catering orders can include past cookie flavors.
           </h2>
-          <p className="cookieCateringNoticeBody mt-5 max-w-[34rem] text-[1.05rem] leading-8 text-[#243129] md:text-[1.12rem]">
+          <p className="cookieCateringNoticeBody mt-5 max-w-[34rem] text-[1.05rem] leading-8 text-[rgba(23,21,16,0.82)] md:text-[1.12rem]">
             If you are ordering for catering, you are not limited to only the cookies shown in the
             current lineup. Larger catering batches can reopen previous flavors because they are
             easier to plan and bake well than one-off custom cookie requests.
@@ -188,8 +189,8 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
                         key={`${poster.slug}-cloud-${index}`}
                         src="/log-stacked-cloud-transparent.png"
                         style={cloud.style}
-                        data-cloud-duration={cloud.duration}
                         data-cloud-delay={cloud.delay}
+                        data-cloud-duration={cloud.duration}
                       />
                     ))}
 
@@ -235,15 +236,15 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
       <style>{`
         .cookieCateringNotice {
           box-shadow:
-            0 16px 36px rgba(62, 78, 70, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            0 16px 36px rgba(23, 21, 16, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7);
           margin-bottom: 1.2rem;
         }
 
         .cookieCateringNoticeGlow {
           background:
-            radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 44%),
-            linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 62%);
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.34), transparent 42%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 64%);
           inset: 0;
           pointer-events: none;
           position: absolute;
@@ -256,9 +257,10 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
 
         .cookieCateringNoticeButton {
           align-items: center;
-          border: 1px solid rgba(23, 21, 16, 0.45);
+          background: #171510;
+          border: 1px solid #171510;
           border-radius: 0.95rem;
-          color: #171510;
+          color: #ffffff;
           display: inline-flex;
           font-size: 1rem;
           justify-content: center;
@@ -273,8 +275,8 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
 
         .cookieCateringNoticeButton:hover,
         .cookieCateringNoticeButton:focus-visible {
-          background: rgba(255, 255, 255, 0.22);
-          border-color: rgba(23, 21, 16, 0.68);
+          background: #2a2822;
+          border-color: #2a2822;
           transform: translateY(-1px);
         }
 
@@ -357,7 +359,7 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
         }
 
         .cookieCateringNoticePedestalTier {
-          background: rgba(255, 251, 244, 0.96);
+          background: #ffffff;
           display: block;
           margin-left: auto;
           margin-right: auto;
