@@ -2,6 +2,7 @@
 
 import { Media } from '@/components/Media'
 import type { Media as MediaType } from '@/payload-types'
+import { cn } from '@/utilities/cn'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
@@ -15,6 +16,7 @@ import {
 
 type CookieSheepRigProps = {
   bodyFallbackSrc: string
+  className?: string
   href: string
   image: MediaType | null
   title: string
@@ -103,12 +105,7 @@ function AssetPartImage({
   )
 }
 
-function burstStyle(
-  x: string,
-  y: string,
-  rotate: string,
-  scale = '0.72',
-): CSSProperties {
+function burstStyle(x: string, y: string, rotate: string, scale = '0.72'): CSSProperties {
   return {
     ['--sheep-burst-rotate' as string]: rotate,
     ['--sheep-burst-scale' as string]: scale,
@@ -138,9 +135,20 @@ function SheepLegPairSvg() {
   )
 }
 
-export function CookieSheepRig({ bodyFallbackSrc, href, image, title }: CookieSheepRigProps) {
+export function CookieSheepRig({
+  bodyFallbackSrc,
+  className,
+  href,
+  image,
+  title,
+}: CookieSheepRigProps) {
   return (
-    <div className="absolute left-1/2 bottom-[var(--cookie-bottom)] z-20 h-[var(--cookie-size)] w-[var(--cookie-size)] -translate-x-1/2">
+    <div
+      className={cn(
+        'absolute left-1/2 bottom-[var(--cookie-bottom)] z-20 h-[var(--cookie-size)] w-[var(--cookie-size)] -translate-x-1/2',
+        className,
+      )}
+    >
       <div className="absolute inset-0 z-10">
         <span
           aria-hidden="true"

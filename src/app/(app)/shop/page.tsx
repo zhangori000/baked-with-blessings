@@ -163,6 +163,7 @@ export default async function ShopPage({ searchParams }: Props) {
     collection: 'products',
     draft: false,
     overrideAccess: false,
+    pagination: false,
     select: {
       title: true,
       slug: true,
@@ -221,6 +222,7 @@ export default async function ShopPage({ searchParams }: Props) {
 
   const categories = await payload.find({
     collection: 'categories',
+    pagination: false,
     sort: 'menuOrder',
     select: {
       title: true,

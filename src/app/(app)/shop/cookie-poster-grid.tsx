@@ -14,6 +14,12 @@ type PosterCloud = {
   style: React.CSSProperties
 }
 
+type CookiePosterSketchFrameProps = {
+  children: React.ReactNode
+  slug: string
+  style?: React.CSSProperties
+}
+
 const cardSurface = '#fffaf0'
 const cardBorder = 'rgba(91, 70, 37, 0.14)'
 
@@ -46,6 +52,18 @@ const posterClouds: PosterCloud[] = [
     },
   },
 ]
+
+function CookiePosterSketchFrame({ children, slug, style }: CookiePosterSketchFrameProps) {
+  return (
+    <div
+      className="cookiePosterSketchFrame cookiePosterScene relative h-[20rem] w-full overflow-hidden bg-[#dbeeff]"
+      data-poster-slug={slug}
+      style={style}
+    >
+      <div className="relative h-full w-full">{children}</div>
+    </div>
+  )
+}
 
 function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) {
   const { addItem, isLoading } = useCart()
@@ -98,10 +116,7 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
                 }}
               >
                 <div className="border-b border-[rgba(91,70,37,0.1)] px-3.5 pb-3.5 pt-3.5">
-                  <div
-                    className="cookiePosterScene relative h-[20rem] overflow-hidden rounded-[0.58rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff]"
-                    style={sceneStyle}
-                  >
+                  <CookiePosterSketchFrame slug={poster.slug} style={sceneStyle}>
                     <img
                       alt=""
                       aria-hidden="true"
@@ -130,7 +145,7 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
                       image={poster.image}
                       title={poster.title}
                     />
-                  </div>
+                  </CookiePosterSketchFrame>
                 </div>
 
                 <div className="flex flex-1 flex-col gap-1.5 px-4 pb-4 pt-3.5">
@@ -171,6 +186,27 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
       </div>
 
       <style>{`
+        .cookiePosterSketchFrame {
+          clip-path: polygon(
+            0.5% 0.8%,
+            25% 0.45%,
+            50% 0.35%,
+            75% 0.5%,
+            99.2% 0.85%,
+            99.45% 24.9%,
+            99.15% 50%,
+            99.4% 75.1%,
+            98.95% 99.25%,
+            74.9% 99.05%,
+            50.05% 99.4%,
+            25.05% 99.15%,
+            0.75% 98.9%,
+            0.55% 75.15%,
+            0.8% 50.2%,
+            0.45% 24.9%
+          );
+        }
+
         .cookiePosterCloud {
           left: -18%;
           animation: cookiePosterCloudDrift 18s linear infinite;

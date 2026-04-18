@@ -1,5 +1,11 @@
 import type { Metadata } from 'next'
 
+import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
+import {
+  buildCookiePosterAssets,
+  cookiePosterMetas,
+  type CookiePosterAsset,
+} from '../shop/cookiePosterData'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -43,23 +49,9 @@ export default async function Page({ params }: Args) {
   const { slug = 'home' } = await params
 
   if (slug === 'home') {
-    return (
-      <section className="home-page-placeholder min-h-screen pt-24 pb-20">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6">
-          <div className="h-52 bg-neutral-200" />
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="h-36 bg-neutral-300" />
-            <div className="h-36 bg-neutral-300" />
-          </div>
-          <div className="h-72 bg-neutral-200" />
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="h-40 bg-neutral-300" />
-            <div className="h-40 bg-neutral-300" />
-            <div className="h-40 bg-neutral-300" />
-          </div>
-        </div>
-      </section>
-    )
+    const posters = await queryHomeCookiePosters()
+
+    return <HomeCookieCarousel posters={posters} />
   }
 
   const page = await queryPageBySlug({
@@ -114,4 +106,37 @@ const queryPageBySlug = async ({ slug }: { slug: string }) => {
   })
 
   return result.docs?.[0] || null
+}
+
+const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
+  cookiePosterMetas.map((meta) => ({
+    ...meta,
+    amount: 'Fresh weekly',
+    href: `/cookies/${meta.slug}`,
+    image: null,
+    productHref: `/products/${meta.slug}`,
+  }))
+
+const queryHomeCookiePosters = async () => {
+  const payload = await getPayload({ config: configPromise })
+  const result = await payload.find({
+    collection: 'products',
+    draft: false,
+    limit: 100,
+    overrideAccess: false,
+    pagination: false,
+    select: {
+      gallery: true,
+      id: true,
+      meta: true,
+      priceInUSD: true,
+      slug: true,
+      title: true,
+    },
+    sort: 'title',
+  })
+
+  const posters = buildCookiePosterAssets(result.docs)
+
+  return posters.length > 0 ? posters : buildFallbackHomeCookiePosters()
 }
