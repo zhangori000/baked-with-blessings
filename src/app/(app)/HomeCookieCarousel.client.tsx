@@ -45,7 +45,7 @@ class CloudPaperOverlay extends PaperOverlayPiece {
   }
 }
 
-const JUMP_DURATION_MS = 820
+const JUMP_DURATION_MS = 620
 const grassVisibleHeightRatioDesktop = Number(((375 - 246.066406) / 375).toFixed(5))
 const grassVisibleHeightRatioMobile = 0.834
 const grassCrestLimitRatio = 0.45
@@ -236,8 +236,13 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
   const [grassDropPx, setGrassDropPx] = useState(0)
   const [transition, setTransition] = useState<CarouselTransition>(null)
 
+  const [nameButtonSize, setNameButtonSize] = useState<{ width: number; height: number } | null>(
+    null,
+  )
+
   const activeIndexRef = useRef(0)
   const isTransitioningRef = useRef(false)
+  const measureRef = useRef<HTMLDivElement | null>(null)
   const pendingDirectionRef = useRef<-1 | 1 | null>(null)
   const rigShellRef = useRef<HTMLDivElement | null>(null)
   const sceneFrameRef = useRef<HTMLDivElement | null>(null)
@@ -254,6 +259,35 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
   useEffect(() => {
     activeIndexRef.current = activeIndex
   }, [activeIndex])
+
+  useEffect(() => {
+    const el = measureRef.current
+    if (!el) return
+
+    const spans = el.querySelectorAll('span')
+
+    // Pass 1: find the widest name at natural width
+    for (const span of spans) {
+      ;(span as HTMLElement).style.width = ''
+    }
+    let maxWidth = 0
+    for (const span of spans) {
+      maxWidth = Math.max(maxWidth, (span as HTMLElement).offsetWidth)
+    }
+
+    // Pass 2: lock all spans to that width, then find the tallest
+    let maxHeight = 0
+    for (const span of spans) {
+      ;(span as HTMLElement).style.width = `${maxWidth}px`
+    }
+    for (const span of spans) {
+      maxHeight = Math.max(maxHeight, (span as HTMLElement).offsetHeight)
+    }
+
+    if (maxWidth > 0 && maxHeight > 0) {
+      setNameButtonSize({ width: maxWidth, height: maxHeight })
+    }
+  }, [posters])
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -467,6 +501,18 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             </div>
           </div>
 
+          <div
+            aria-hidden="true"
+            className="homeCookieNameMeasure"
+            ref={measureRef}
+          >
+            {posters.map((p) => (
+              <span className="homeCookieNameButton" key={p.href}>
+                {p.title}
+              </span>
+            ))}
+          </div>
+
           <div aria-live="polite" className="homeCookieCopy text-center">
             <div className="homeCookieControls">
               <button
@@ -479,7 +525,15 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
                 <ArrowLeft aria-hidden="true" size={22} />
               </button>
 
-              <Link className="homeCookieNameButton" href={activePoster.href}>
+              <Link
+                className="homeCookieNameButton"
+                href={activePoster.href}
+                style={
+                  nameButtonSize
+                    ? { width: `${nameButtonSize.width}px`, minHeight: `${nameButtonSize.height}px` }
+                    : undefined
+                }
+              >
                 {activePoster.title}
               </Link>
 
@@ -581,23 +635,19 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         }
 
         .homeCookieRigShell--outgoing.homeCookieRigShell--next {
-          animation: homeCookieJumpOutToRight ${JUMP_DURATION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)
-            both;
+          animation: homeCookieJumpOutToRight ${JUMP_DURATION_MS}ms linear both;
         }
 
         .homeCookieRigShell--incoming.homeCookieRigShell--next {
-          animation: homeCookieJumpInFromLeft ${JUMP_DURATION_MS}ms
-            cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: homeCookieJumpInFromLeft ${JUMP_DURATION_MS}ms linear both;
         }
 
         .homeCookieRigShell--outgoing.homeCookieRigShell--prev {
-          animation: homeCookieJumpOutToLeft ${JUMP_DURATION_MS}ms
-            cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: homeCookieJumpOutToLeft ${JUMP_DURATION_MS}ms linear both;
         }
 
         .homeCookieRigShell--incoming.homeCookieRigShell--prev {
-          animation: homeCookieJumpInFromRight ${JUMP_DURATION_MS}ms
-            cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: homeCookieJumpInFromRight ${JUMP_DURATION_MS}ms linear both;
         }
 
         .homeCookieShowcase .cookieSheepBodyImage {
@@ -612,105 +662,45 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         }
 
         @keyframes homeCookieJumpOutToLeft {
-          0% {
-            opacity: 1;
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-            animation-timing-function: cubic-bezier(0.3, 0.88, 0.36, 1);
-          }
-
-          58% {
-            opacity: 1;
-            transform: translate3d(calc(-50% - 16vw), calc(-50% - 6.9rem), 0) rotate(-10deg)
-              scale(1.02);
-            animation-timing-function: cubic-bezier(0.38, 0, 0.26, 1);
-          }
-
-          92% {
-            opacity: 1;
-            transform: translate3d(calc(-50% - 28vw), calc(-50% - 0.55rem), 0) rotate(-15deg)
-              scale(0.9);
-          }
-
-          100% {
-            opacity: 0;
-            transform: translate3d(calc(-50% - 30vw), calc(-50% + 0.2rem), 0) rotate(-16deg)
-              scale(0.86);
-          }
+          0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 5.1rem), 0) rotate(-3deg) scale(0.98); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 8.4rem), 0) rotate(-6deg) scale(0.96); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% - 29vw), calc(-50% - 10rem), 0) rotate(-10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% - 40.6vw), calc(-50% - 8.4rem), 0) rotate(-14deg) scale(0.90); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% - 49.3vw), calc(-50% - 5.1rem), 0) rotate(-17deg) scale(0.87); }
+          100% { opacity: 0; transform: translate3d(calc(-50% - 58vw), -50%, 0) rotate(-20deg) scale(0.84); }
         }
 
         @keyframes homeCookieJumpOutToRight {
-          0% {
-            opacity: 1;
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-            animation-timing-function: cubic-bezier(0.3, 0.88, 0.36, 1);
-          }
-
-          58% {
-            opacity: 1;
-            transform: translate3d(calc(-50% + 16vw), calc(-50% - 6.9rem), 0) rotate(10deg)
-              scale(1.02);
-            animation-timing-function: cubic-bezier(0.38, 0, 0.26, 1);
-          }
-
-          92% {
-            opacity: 1;
-            transform: translate3d(calc(-50% + 28vw), calc(-50% - 0.55rem), 0) rotate(15deg)
-              scale(0.9);
-          }
-
-          100% {
-            opacity: 0;
-            transform: translate3d(calc(-50% + 30vw), calc(-50% + 0.2rem), 0) rotate(16deg)
-              scale(0.86);
-          }
+          0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% + 8.7vw), calc(-50% - 5.1rem), 0) rotate(3deg) scale(0.98); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% + 17.4vw), calc(-50% - 8.4rem), 0) rotate(6deg) scale(0.96); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% + 29vw), calc(-50% - 10rem), 0) rotate(10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% + 40.6vw), calc(-50% - 8.4rem), 0) rotate(14deg) scale(0.90); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% + 49.3vw), calc(-50% - 5.1rem), 0) rotate(17deg) scale(0.87); }
+          100% { opacity: 0; transform: translate3d(calc(-50% + 58vw), -50%, 0) rotate(20deg) scale(0.84); }
         }
 
         @keyframes homeCookieJumpInFromRight {
-          0% {
-            opacity: 0;
-            transform: translate3d(calc(-50% + 30vw), calc(-50% + 0.2rem), 0) rotate(16deg)
-              scale(0.86);
-          }
-
-          14% {
-            opacity: 1;
-          }
-
-          56% {
-            opacity: 1;
-            transform: translate3d(calc(-50% + 15vw), calc(-50% - 6.7rem), 0) rotate(9deg)
-              scale(0.97);
-            animation-timing-function: cubic-bezier(0.38, 0, 0.26, 1);
-          }
-
-          100% {
-            opacity: 1;
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-          }
+          0%   { opacity: 0; transform: translate3d(calc(-50% + 58vw), -50%, 0) rotate(20deg) scale(0.84); }
+          8%   { opacity: 1; transform: translate3d(calc(-50% + 53.4vw), calc(-50% - 3.1rem), 0) rotate(18deg) scale(0.86); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% + 49.3vw), calc(-50% - 5.1rem), 0) rotate(17deg) scale(0.87); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% + 40.6vw), calc(-50% - 8.4rem), 0) rotate(14deg) scale(0.90); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% + 29vw), calc(-50% - 10rem), 0) rotate(10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% + 17.4vw), calc(-50% - 8.4rem), 0) rotate(6deg) scale(0.96); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% + 8.7vw), calc(-50% - 5.1rem), 0) rotate(3deg) scale(0.98); }
+          100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
         }
 
         @keyframes homeCookieJumpInFromLeft {
-          0% {
-            opacity: 0;
-            transform: translate3d(calc(-50% - 30vw), calc(-50% + 0.2rem), 0) rotate(-16deg)
-              scale(0.86);
-          }
-
-          14% {
-            opacity: 1;
-          }
-
-          56% {
-            opacity: 1;
-            transform: translate3d(calc(-50% - 15vw), calc(-50% - 6.7rem), 0) rotate(-9deg)
-              scale(0.97);
-            animation-timing-function: cubic-bezier(0.38, 0, 0.26, 1);
-          }
-
-          100% {
-            opacity: 1;
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-          }
+          0%   { opacity: 0; transform: translate3d(calc(-50% - 58vw), -50%, 0) rotate(-20deg) scale(0.84); }
+          8%   { opacity: 1; transform: translate3d(calc(-50% - 53.4vw), calc(-50% - 3.1rem), 0) rotate(-18deg) scale(0.86); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% - 49.3vw), calc(-50% - 5.1rem), 0) rotate(-17deg) scale(0.87); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% - 40.6vw), calc(-50% - 8.4rem), 0) rotate(-14deg) scale(0.90); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% - 29vw), calc(-50% - 10rem), 0) rotate(-10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 8.4rem), 0) rotate(-6deg) scale(0.96); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 5.1rem), 0) rotate(-3deg) scale(0.98); }
+          100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
         }
 
         .homeCookieMeadowClip {
@@ -881,6 +871,15 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
           min-width: var(--cta-width);
           padding: 0.9rem var(--cta-padding-x) 1rem;
           text-align: center;
+        }
+
+        .homeCookieNameMeasure {
+          clip-path: inset(50%);
+          display: flex;
+          flex-direction: column;
+          pointer-events: none;
+          position: absolute;
+          visibility: hidden;
         }
 
         .homeCookieNameButton:active {
