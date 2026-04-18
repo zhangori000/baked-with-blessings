@@ -21,9 +21,6 @@ type CookiePosterSketchFrameProps = {
   style?: React.CSSProperties
 }
 
-const cardSurface = '#fffaf0'
-const cardBorder = 'rgba(91, 70, 37, 0.14)'
-
 const posterClouds: PosterCloud[] = [
   {
     delay: '0s',
@@ -73,7 +70,7 @@ function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) 
   return (
     <button
       aria-label={`Add ${poster.title} to cart`}
-      className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-[0.78rem] bg-[#21492d] px-5 font-mono text-[0.88rem] uppercase tracking-[0.16em] text-white transition-colors duration-300 ease-out hover:bg-[#2d5a37] disabled:cursor-not-allowed"
+      className="inline-flex cursor-pointer items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[rgba(23,21,16,0.72)] transition-colors duration-300 ease-out hover:text-[#171510] disabled:cursor-not-allowed disabled:opacity-50"
       onClick={(event) => {
         event.preventDefault()
         event.stopPropagation()
@@ -93,6 +90,7 @@ function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) 
       type="button"
     >
       Add To Cart
+      <span aria-hidden="true">+</span>
     </button>
   )
 }
@@ -103,13 +101,14 @@ function CookieCateringNotice() {
       aria-label="Cookie catering notice"
       className="cookieCateringNotice relative overflow-hidden rounded-[1.8rem] border px-5 py-6 md:px-8 md:py-8"
       style={{
-        background: 'linear-gradient(135deg, #f8f8f5 0%, #efefeb 100%)',
-        borderColor: 'rgba(23, 21, 16, 0.12)',
+        background:
+          'linear-gradient(180deg, rgba(255, 250, 242, 0.97), rgba(251, 246, 235, 0.97)), rgba(255, 250, 242, 0.97)',
+        borderColor: 'rgba(91, 70, 37, 0.14)',
       }}
     >
       <div className="cookieCateringNoticeGlow" />
 
-      <div className="relative z-[1] grid items-center gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(14rem,0.8fr)] md:gap-10">
+      <div className="relative z-[1] grid items-center gap-8 md:grid-cols-[minmax(0,1.08fr)_minmax(18rem,0.92fr)] md:gap-10">
         <div className="min-w-0">
           <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.56)]">
             Cookie Catering
@@ -129,21 +128,14 @@ function CookieCateringNotice() {
           </div>
         </div>
 
-        <div aria-hidden="true" className="cookieCateringNoticeArt hidden md:flex">
-          <div className="cookieCateringNoticeArch">
-            <span className="cookieCateringNoticeArchTop" />
-            <span className="cookieCateringNoticeArchLeg cookieCateringNoticeArchLeg--left" />
-            <span className="cookieCateringNoticeArchLeg cookieCateringNoticeArchLeg--right" />
-            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--outer-left" />
-            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--inner-left" />
-            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--inner-right" />
-            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--outer-right" />
-          </div>
-
-          <div className="cookieCateringNoticePedestal">
-            <span className="cookieCateringNoticePedestalTier cookieCateringNoticePedestalTier--top" />
-            <span className="cookieCateringNoticePedestalTier cookieCateringNoticePedestalTier--mid" />
-            <span className="cookieCateringNoticePedestalTier cookieCateringNoticePedestalTier--base" />
+        <div aria-hidden="true" className="cookieCateringNoticeArt flex">
+          <div className="cookieCateringNoticeSheepWrap">
+            <img
+              alt=""
+              aria-hidden="true"
+              className="cookieCateringNoticeSheep"
+              src="/labubu-white-sheep-2.png"
+            />
           </div>
         </div>
       </div>
@@ -156,23 +148,20 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
     <>
       <CookieCateringNotice />
 
-      <div className="grid w-full grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
-        {posters.map((poster) => {
-          const sceneStyle = {
-            ['--cookie-bottom' as string]: '2.35rem',
-            ['--cookie-size' as string]: 'clamp(14.6rem, 63%, 16rem)',
-          } as React.CSSProperties
+      <section className="w-full">
+        <div className="grid w-full grid-cols-1 gap-x-6 gap-y-7 md:grid-cols-2 xl:grid-cols-3">
+          {posters.map((poster) => {
+            const sceneStyle = {
+              ['--cookie-bottom' as string]: '2.35rem',
+              ['--cookie-size' as string]: 'clamp(14.6rem, 63%, 16rem)',
+            } as React.CSSProperties
 
-          return (
-            <article className="group block h-full w-full" key={poster.slug}>
-              <div
-                className="relative flex h-full min-h-[31rem] w-full flex-col overflow-hidden rounded-[0.7rem] border shadow-[0_12px_28px_rgba(74,57,31,0.06)]"
-                style={{
-                  backgroundColor: cardSurface,
-                  borderColor: cardBorder,
-                }}
+            return (
+              <article
+                className="group cookiePosterCard relative flex h-full w-full flex-col overflow-visible rounded-[1.05rem] border p-3 pb-14"
+                key={poster.slug}
               >
-                <div className="border-b border-[rgba(91,70,37,0.1)] px-3.5 pb-3.5 pt-3.5">
+                <div className="cookiePosterMediaWrap overflow-hidden">
                   <CookiePosterSketchFrame slug={poster.slug} style={sceneStyle}>
                     <img
                       alt=""
@@ -205,35 +194,69 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
                   </CookiePosterSketchFrame>
                 </div>
 
-                <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-4">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 border-b border-[rgba(91,70,37,0.1)] pb-3.5">
-                    <div className="flex flex-col gap-1">
-                      <h3 className="text-[1.42rem] font-medium leading-[0.94] tracking-[-0.045em] text-[#1d3250] md:text-[1.5rem]">
-                        {poster.title}
-                      </h3>
-                      <p className="font-mono text-[0.74rem] uppercase leading-none tracking-[0.09em] text-[#7a836f]">
-                        {poster.subtitle}
-                      </p>
-                    </div>
+                <div className="mt-3.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-x-4 gap-y-2 px-1">
+                  <h3 className="min-w-0 text-[1.48rem] font-medium leading-[0.94] tracking-[-0.045em] text-[#171510] md:text-[1.58rem]">
+                    <Link href={poster.href}>
+                      {poster.title}
+                    </Link>
+                  </h3>
 
-                    <span className="shrink-0 pt-0.5 font-mono text-[0.95rem] uppercase tracking-[0.08em] text-[#38533d]">
-                      {poster.amount}
-                    </span>
-                  </div>
-
-                  <p className="text-[0.95rem] leading-6 text-[#5f685d]">{poster.summary}</p>
-
-                  <div className="mt-auto h-[3.35rem]">
+                  <div className="shrink-0 self-end">
                     <CookiePosterAddToCartButton poster={poster} />
                   </div>
                 </div>
-              </div>
-            </article>
-          )
-        })}
-      </div>
+
+                <div aria-hidden="true" className="cookiePosterFence">
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="cookiePosterFenceImage"
+                    src="/long-fence.svg"
+                  />
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
 
       <style>{`
+        .cookiePosterCard {
+          background:
+            linear-gradient(180deg, rgba(255, 250, 242, 0.97), rgba(251, 246, 235, 0.97)),
+            rgba(255, 250, 242, 0.97);
+          border-color: rgba(91, 70, 37, 0.14);
+          box-shadow:
+            0 8px 20px rgba(74, 57, 31, 0.045),
+            inset 0 1px 0 rgba(255, 255, 255, 0.75);
+          isolation: isolate;
+        }
+
+        .cookiePosterFence {
+          bottom: -1.35rem;
+          height: 3.5rem;
+          left: -1.2rem;
+          overflow: hidden;
+          pointer-events: none;
+          position: absolute;
+          right: -1.2rem;
+          z-index: 8;
+        }
+
+        .cookiePosterFenceImage {
+          display: block;
+          height: auto;
+          left: 0;
+          max-width: none;
+          opacity: 1;
+          position: absolute;
+          top: 50%;
+          transform: translateY(-52%) scale(1.04);
+          transform-origin: center center;
+          user-select: none;
+          width: 100%;
+        }
+
         .cookieCateringNotice {
           box-shadow:
             0 16px 36px rgba(23, 21, 16, 0.06),
@@ -283,108 +306,30 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
         .cookieCateringNoticeArt {
           align-items: center;
           justify-content: center;
-          min-height: 15rem;
+          min-height: 18.5rem;
           position: relative;
         }
 
-        .cookieCateringNoticeArch {
-          height: 9rem;
+        .cookieCateringNoticeSheepWrap {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          min-height: 18.5rem;
+          padding: 0;
           position: relative;
-          width: 14rem;
+          width: 100%;
         }
 
-        .cookieCateringNoticeArchTop,
-        .cookieCateringNoticeArchLeg,
-        .cookieCateringNoticeArchStep {
-          background: #171510;
-          border-radius: 999px;
-          position: absolute;
-        }
-
-        .cookieCateringNoticeArchTop {
-          height: 0.38rem;
-          left: 0.45rem;
-          right: 0.45rem;
-          top: 0.5rem;
-        }
-
-        .cookieCateringNoticeArchLeg {
-          height: 7.3rem;
-          top: 0.5rem;
-          width: 0.42rem;
-        }
-
-        .cookieCateringNoticeArchLeg--left {
-          left: 0.3rem;
-        }
-
-        .cookieCateringNoticeArchLeg--right {
-          right: 0.3rem;
-        }
-
-        .cookieCateringNoticeArchStep {
-          height: 0.38rem;
-        }
-
-        .cookieCateringNoticeArchStep--outer-left {
-          left: 0.3rem;
-          top: 7.42rem;
-          width: 2.6rem;
-        }
-
-        .cookieCateringNoticeArchStep--inner-left {
-          left: 2.55rem;
-          top: 5.15rem;
-          width: 3.2rem;
-        }
-
-        .cookieCateringNoticeArchStep--inner-right {
-          right: 2.55rem;
-          top: 5.15rem;
-          width: 3.2rem;
-        }
-
-        .cookieCateringNoticeArchStep--outer-right {
-          right: 0.3rem;
-          top: 7.42rem;
-          width: 2.6rem;
-        }
-
-        .cookieCateringNoticePedestal {
-          bottom: 0.35rem;
-          height: 7.4rem;
-          position: absolute;
-          right: 1rem;
-          width: 10rem;
-        }
-
-        .cookieCateringNoticePedestalTier {
-          background: #ffffff;
+        .cookieCateringNoticeSheep {
           display: block;
+          filter: drop-shadow(0 18px 24px rgba(23, 21, 16, 0.14));
+          height: auto;
           margin-left: auto;
           margin-right: auto;
-          position: absolute;
-        }
-
-        .cookieCateringNoticePedestalTier--top {
-          height: 2.8rem;
-          left: 2.8rem;
-          right: 2.8rem;
-          top: 0;
-        }
-
-        .cookieCateringNoticePedestalTier--mid {
-          height: 2.55rem;
-          left: 1.4rem;
-          right: 1.4rem;
-          top: 2.35rem;
-        }
-
-        .cookieCateringNoticePedestalTier--base {
-          height: 2.7rem;
-          left: 0;
-          right: 0;
-          top: 4.7rem;
+          max-width: 28rem;
+          max-height: 28rem;
+          object-fit: contain;
+          width: 100%;
         }
 
         .cookiePosterSketchFrame {
@@ -470,6 +415,11 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
         }
 
         @media (max-width: 767px) {
+          .cookieCateringNotice {
+            padding-bottom: 1.5rem;
+            padding-top: 1.75rem;
+          }
+
           .cookieCateringNoticeHeading {
             max-width: 12ch;
           }
@@ -477,6 +427,16 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           .cookieCateringNoticeBody {
             font-size: 1rem;
             line-height: 1.7;
+          }
+
+          .cookieCateringNoticeArt,
+          .cookieCateringNoticeSheepWrap {
+            min-height: 17rem;
+          }
+
+          .cookieCateringNoticeSheep {
+            max-width: 21rem;
+            max-height: 21rem;
           }
         }
       `}</style>

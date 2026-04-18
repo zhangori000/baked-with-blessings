@@ -179,7 +179,7 @@ export function CookieSheepRig({
 
       <Link
         aria-label={`Open ${title} cookie page`}
-        className="absolute inset-0 z-20 flex items-center justify-center overflow-hidden rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17341f] focus-visible:ring-offset-4"
+        className="absolute inset-0 z-20 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17341f] focus-visible:ring-offset-4"
         href={href}
       >
         <span className="sr-only">{title}</span>
