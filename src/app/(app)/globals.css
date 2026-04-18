@@ -267,7 +267,12 @@
   }
 
   main:has(.home-page-placeholder) {
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main:has(.home-page-placeholder) .home-page-placeholder {
+    flex: 1;
   }
 
   main:has(.home-page-placeholder) + footer {
@@ -288,6 +293,7 @@
   .siteFrame {
     position: relative;
     z-index: 1;
+    @apply flex flex-col flex-1;
   }
 }
 
@@ -526,8 +532,7 @@
     display: none;
   }
 
-  .viewportFlower--mid-right,
-  .viewportFlower--bottom-right {
+  .viewportFlower--mid-right {
     display: none;
   }
 
@@ -538,6 +543,11 @@
   .viewportFlower--bottom-left {
     bottom: -4.25rem;
     left: -4rem;
+  }
+
+  .viewportFlower--bottom-right {
+    bottom: -3.75rem;
+    right: -3.5rem;
   }
 }
 

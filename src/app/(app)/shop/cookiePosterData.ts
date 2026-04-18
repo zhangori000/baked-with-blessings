@@ -19,6 +19,8 @@ export type CookiePosterAsset = CookiePosterMeta & {
   productId?: number
 }
 
+const cookiePosterDisplayPriceInUSD = 750
+
 const formatAmount = (priceInUSD?: number | null) => {
   if (typeof priceInUSD !== 'number') {
     return 'TBD'
@@ -210,7 +212,7 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
 
   return {
     ...meta,
-    amount: formatAmount(product.priceInUSD),
+    amount: formatAmount(cookiePosterDisplayPriceInUSD),
     href: `/cookies/${meta.slug}`,
     image: normalizeImage(product),
     productHref: `/products/${meta.slug}`,

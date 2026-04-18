@@ -45,7 +45,7 @@ class CloudPaperOverlay extends PaperOverlayPiece {
   }
 }
 
-const JUMP_DURATION_MS = 620
+const JUMP_DURATION_MS = 350
 const grassVisibleHeightRatioDesktop = Number(((375 - 246.066406) / 375).toFixed(5))
 const grassVisibleHeightRatioMobile = 0.834
 const grassCrestLimitRatio = 0.45
@@ -61,7 +61,6 @@ const showcaseStyle = {
   ['--control-gap' as string]: '1.1rem',
   ['--control-size' as string]: 'clamp(3.2rem, 6vw, 4.35rem)',
   ['--cookie-size' as string]: 'clamp(13rem, 26vw, 17rem)',
-  ['--copy-bottom' as string]: 'clamp(1rem, 3.8vw, 2.2rem)',
   ['--copy-width' as string]: 'min(92vw, 52rem)',
   ['--cta-font-size' as string]: 'clamp(1.1rem, 2.3vw, 1.6rem)',
   ['--cta-padding-x' as string]: '1.6rem',
@@ -106,124 +105,273 @@ type MeadowFlowerAccent = {
 
 const meadowFlowerAccents: MeadowFlowerAccent[] = [
   {
-    id: 'meadow-flower-left-a',
+    id: 'meadow-flower-1',
     tone: 'orange',
     style: {
       ['--meadow-flower-size' as string]: 'clamp(1.05rem, 2.5vw, 1.45rem)',
-      bottom: '12%',
-      left: '6%',
+      bottom: '11%',
+      left: '3%',
       opacity: 0.94,
       transform: 'rotate(-10deg)',
     },
   },
   {
-    id: 'meadow-flower-left-b',
+    id: 'meadow-flower-2',
     tone: 'cream',
     style: {
-      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.35vw, 1.35rem)',
-      bottom: '18%',
-      left: '15%',
-      opacity: 0.9,
-      transform: 'rotate(8deg)',
+      ['--meadow-flower-size' as string]: 'clamp(0.92rem, 2.1vw, 1.28rem)',
+      bottom: '26%',
+      left: '8%',
+      opacity: 0.88,
+      transform: 'rotate(12deg)',
     },
   },
   {
-    id: 'meadow-flower-mid-left',
+    id: 'meadow-flower-3',
     tone: 'rose',
     style: {
       ['--meadow-flower-size' as string]: 'clamp(1.1rem, 2.65vw, 1.5rem)',
-      bottom: '14%',
-      left: '28%',
+      bottom: '17%',
+      left: '16%',
       opacity: 0.92,
       transform: 'rotate(-4deg)',
     },
   },
   {
-    id: 'meadow-flower-center',
+    id: 'meadow-flower-4',
+    tone: 'gold',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.88rem, 2vw, 1.2rem)',
+      bottom: '33%',
+      left: '21%',
+      opacity: 0.86,
+      transform: 'rotate(7deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-5',
     tone: 'plum',
     style: {
+      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.35vw, 1.4rem)',
+      bottom: '13%',
+      left: '31%',
+      opacity: 0.9,
+      transform: 'rotate(-9deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-6',
+    tone: 'orange',
+    style: {
       ['--meadow-flower-size' as string]: 'clamp(0.95rem, 2.2vw, 1.3rem)',
-      bottom: '20%',
-      left: '43%',
-      opacity: 0.88,
+      bottom: '29%',
+      left: '37%',
+      opacity: 0.91,
+      transform: 'rotate(3deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-7',
+    tone: 'rose',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1.08rem, 2.5vw, 1.46rem)',
+      bottom: '22%',
+      left: '47%',
+      opacity: 0.93,
+      transform: 'rotate(-13deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-8',
+    tone: 'cream',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.9rem, 2.05vw, 1.22rem)',
+      bottom: '9%',
+      left: '54%',
+      opacity: 0.87,
       transform: 'rotate(6deg)',
     },
   },
   {
-    id: 'meadow-flower-mid-right',
+    id: 'meadow-flower-9',
     tone: 'gold',
     style: {
-      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.35vw, 1.4rem)',
-      bottom: '13%',
-      opacity: 0.9,
-      right: '29%',
+      ['--meadow-flower-size' as string]: 'clamp(1.12rem, 2.6vw, 1.52rem)',
+      bottom: '31%',
+      left: '59%',
+      opacity: 0.89,
       transform: 'rotate(-7deg)',
     },
   },
   {
-    id: 'meadow-flower-right-a',
-    tone: 'rose',
-    style: {
-      ['--meadow-flower-size' as string]: 'clamp(1.1rem, 2.6vw, 1.5rem)',
-      bottom: '18%',
-      opacity: 0.94,
-      right: '17%',
-      transform: 'rotate(9deg)',
-    },
-  },
-  {
-    id: 'meadow-flower-right-b',
-    tone: 'orange',
-    style: {
-      ['--meadow-flower-size' as string]: 'clamp(1.15rem, 2.7vw, 1.6rem)',
-      bottom: '12%',
-      opacity: 0.96,
-      right: '7%',
-      transform: 'rotate(-11deg)',
-    },
-  },
-  {
-    id: 'meadow-flower-mid-low',
+    id: 'meadow-flower-10',
     tone: 'plum',
     style: {
-      ['--meadow-flower-size' as string]: 'clamp(0.95rem, 2.15vw, 1.25rem)',
-      bottom: '9%',
-      left: '55%',
-      opacity: 0.9,
-      transform: 'rotate(-2deg)',
+      ['--meadow-flower-size' as string]: 'clamp(0.96rem, 2.25vw, 1.34rem)',
+      bottom: '15%',
+      opacity: 0.92,
+      right: '33%',
+      transform: 'rotate(11deg)',
     },
   },
   {
-    id: 'meadow-flower-left-low',
-    tone: 'gold',
-    style: {
-      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.3vw, 1.35rem)',
-      bottom: '11%',
-      left: '2%',
-      opacity: 0.9,
-      transform: 'rotate(-8deg)',
-    },
-  },
-  {
-    id: 'meadow-flower-mid-high',
+    id: 'meadow-flower-11',
     tone: 'orange',
     style: {
-      ['--meadow-flower-size' as string]: 'clamp(0.98rem, 2.25vw, 1.32rem)',
+      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.3vw, 1.38rem)',
+      bottom: '27%',
+      opacity: 0.86,
+      right: '26%',
+      transform: 'rotate(-5deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-12',
+    tone: 'rose',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.94rem, 2.15vw, 1.26rem)',
+      bottom: '10%',
+      opacity: 0.9,
+      right: '19%',
+      transform: 'rotate(8deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-13',
+    tone: 'gold',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1.06rem, 2.45vw, 1.44rem)',
+      bottom: '34%',
+      opacity: 0.88,
+      right: '14%',
+      transform: 'rotate(-12deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-14',
+    tone: 'cream',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1.1rem, 2.55vw, 1.48rem)',
       bottom: '19%',
-      left: '50%',
-      opacity: 0.92,
+      opacity: 0.94,
+      right: '8%',
       transform: 'rotate(4deg)',
     },
   },
   {
-    id: 'meadow-flower-right-low',
-    tone: 'cream',
+    id: 'meadow-flower-15',
+    tone: 'plum',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.88rem, 2vw, 1.18rem)',
+      bottom: '25%',
+      opacity: 0.85,
+      right: '2%',
+      transform: 'rotate(-8deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-16',
+    tone: 'rose',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.92rem, 2.1vw, 1.24rem)',
+      bottom: '8%',
+      opacity: 0.9,
+      right: '39%',
+      transform: 'rotate(14deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-17',
+    tone: 'orange',
     style: {
       ['--meadow-flower-size' as string]: 'clamp(1rem, 2.3vw, 1.35rem)',
-      bottom: '11%',
+      bottom: '21%',
+      left: '42%',
+      opacity: 0.87,
+      transform: 'rotate(-3deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-18',
+    tone: 'cream',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.95rem, 2.15vw, 1.28rem)',
+      bottom: '36%',
+      left: '12%',
+      opacity: 0.91,
+      transform: 'rotate(9deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-19',
+    tone: 'gold',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1.08rem, 2.5vw, 1.48rem)',
+      bottom: '14%',
+      right: '46%',
+      opacity: 0.89,
+      transform: 'rotate(-6deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-20',
+    tone: 'plum',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.3vw, 1.4rem)',
+      bottom: '28%',
+      right: '31%',
+      opacity: 0.92,
+      transform: 'rotate(11deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-21',
+    tone: 'cream',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.98rem, 2.25vw, 1.34rem)',
+      display: 'none',
       opacity: 0.9,
-      right: '2%',
-      transform: 'rotate(7deg)',
+      transform: 'rotate(-7deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-22',
+    tone: 'gold',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1.02rem, 2.35vw, 1.4rem)',
+      display: 'none',
+      opacity: 0.88,
+      transform: 'rotate(10deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-23',
+    tone: 'rose',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.94rem, 2.2vw, 1.28rem)',
+      display: 'none',
+      opacity: 0.9,
+      transform: 'rotate(-4deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-24',
+    tone: 'orange',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(1rem, 2.3vw, 1.36rem)',
+      display: 'none',
+      opacity: 0.92,
+      transform: 'rotate(8deg)',
+    },
+  },
+  {
+    id: 'meadow-flower-25',
+    tone: 'plum',
+    style: {
+      ['--meadow-flower-size' as string]: 'clamp(0.92rem, 2.1vw, 1.24rem)',
+      display: 'none',
+      opacity: 0.88,
+      transform: 'rotate(-11deg)',
     },
   },
 ]
@@ -236,9 +384,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
   const [grassDropPx, setGrassDropPx] = useState(0)
   const [transition, setTransition] = useState<CarouselTransition>(null)
 
-  const [nameButtonSize, setNameButtonSize] = useState<{ width: number; height: number } | null>(
-    null,
-  )
+  const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
 
   const activeIndexRef = useRef(0)
   const isTransitioningRef = useRef(false)
@@ -264,28 +410,14 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
     const el = measureRef.current
     if (!el) return
 
-    const spans = el.querySelectorAll('span')
-
-    // Pass 1: find the widest name at natural width
-    for (const span of spans) {
-      ;(span as HTMLElement).style.width = ''
-    }
     let maxWidth = 0
+    const spans = el.querySelectorAll('span')
     for (const span of spans) {
       maxWidth = Math.max(maxWidth, (span as HTMLElement).offsetWidth)
     }
 
-    // Pass 2: lock all spans to that width, then find the tallest
-    let maxHeight = 0
-    for (const span of spans) {
-      ;(span as HTMLElement).style.width = `${maxWidth}px`
-    }
-    for (const span of spans) {
-      maxHeight = Math.max(maxHeight, (span as HTMLElement).offsetHeight)
-    }
-
-    if (maxWidth > 0 && maxHeight > 0) {
-      setNameButtonSize({ width: maxWidth, height: maxHeight })
+    if (maxWidth > 0) {
+      setNameButtonWidth(maxWidth)
     }
   }, [posters])
 
@@ -417,7 +549,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
     <section
       aria-label="Cookie showcase"
       aria-roledescription="carousel"
-      className="home-page-placeholder homeCookieShowcase relative overflow-hidden px-4 pb-5 pt-4 md:px-8 md:pb-8"
+      className="home-page-placeholder homeCookieShowcase relative flex flex-col px-4 pt-4 md:px-8"
       style={showcaseStyle}
     >
       <div className="homeCookieBackdrop absolute inset-0" />
@@ -426,7 +558,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         {paperCloudOverlays.map((overlay) => overlay.render())}
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-6.75rem)] max-w-6xl flex-col md:min-h-[calc(100svh-7.75rem)]">
+      <div className="relative z-10 mx-auto flex w-full flex-1 flex-col max-w-6xl">
         <div className="homeCookieStage relative flex-1">
           <div className="homeCookieSceneFrame absolute inset-0" ref={sceneFrameRef}>
             {transition && outgoingPoster ? (
@@ -528,11 +660,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
               <Link
                 className="homeCookieNameButton"
                 href={activePoster.href}
-                style={
-                  nameButtonSize
-                    ? { width: `${nameButtonSize.width}px`, minHeight: `${nameButtonSize.height}px` }
-                    : undefined
-                }
+                style={nameButtonWidth ? { width: `${nameButtonWidth}px` } : undefined}
               >
                 {activePoster.title}
               </Link>
@@ -554,13 +682,14 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
       <style>{`
         .homeCookieShowcase {
-          background: var(--showcase-sky);
+          --copy-bottom: clamp(1rem, 3.8vw, 2.2rem);
+          background: linear-gradient(to bottom, var(--showcase-sky) 55%, #4a7a3b 100%);
           color: var(--showcase-ink);
           overflow: visible;
         }
 
         .homeCookieBackdrop {
-          background: var(--showcase-sky);
+          background: linear-gradient(to bottom, var(--showcase-sky) 60%, #4a7a3b 100%);
         }
 
         .homeCookieStage {
@@ -635,19 +764,19 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         }
 
         .homeCookieRigShell--outgoing.homeCookieRigShell--next {
-          animation: homeCookieJumpOutToRight ${JUMP_DURATION_MS}ms linear both;
+          animation: homeCookieJumpOutToLeft var(--jump-duration, ${JUMP_DURATION_MS}ms) linear both;
         }
 
         .homeCookieRigShell--incoming.homeCookieRigShell--next {
-          animation: homeCookieJumpInFromLeft ${JUMP_DURATION_MS}ms linear both;
+          animation: homeCookieJumpInFromRight var(--jump-duration, ${JUMP_DURATION_MS}ms) linear both;
         }
 
         .homeCookieRigShell--outgoing.homeCookieRigShell--prev {
-          animation: homeCookieJumpOutToLeft ${JUMP_DURATION_MS}ms linear both;
+          animation: homeCookieJumpOutToRight var(--jump-duration, ${JUMP_DURATION_MS}ms) linear both;
         }
 
         .homeCookieRigShell--incoming.homeCookieRigShell--prev {
-          animation: homeCookieJumpInFromRight ${JUMP_DURATION_MS}ms linear both;
+          animation: homeCookieJumpInFromLeft var(--jump-duration, ${JUMP_DURATION_MS}ms) linear both;
         }
 
         .homeCookieShowcase .cookieSheepBodyImage {
@@ -663,43 +792,43 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
         @keyframes homeCookieJumpOutToLeft {
           0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
-          15%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 5.1rem), 0) rotate(-3deg) scale(0.98); }
-          30%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 8.4rem), 0) rotate(-6deg) scale(0.96); }
-          50%  { opacity: 1; transform: translate3d(calc(-50% - 29vw), calc(-50% - 10rem), 0) rotate(-10deg) scale(0.93); }
-          70%  { opacity: 1; transform: translate3d(calc(-50% - 40.6vw), calc(-50% - 8.4rem), 0) rotate(-14deg) scale(0.90); }
-          85%  { opacity: 1; transform: translate3d(calc(-50% - 49.3vw), calc(-50% - 5.1rem), 0) rotate(-17deg) scale(0.87); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 4.08rem), 0) rotate(-3deg) scale(0.98); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 6.72rem), 0) rotate(-6deg) scale(0.96); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% - 29vw), calc(-50% - 8rem), 0) rotate(-10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% - 40.6vw), calc(-50% - 6.72rem), 0) rotate(-14deg) scale(0.90); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% - 49.3vw), calc(-50% - 4.08rem), 0) rotate(-17deg) scale(0.87); }
           100% { opacity: 0; transform: translate3d(calc(-50% - 58vw), -50%, 0) rotate(-20deg) scale(0.84); }
         }
 
         @keyframes homeCookieJumpOutToRight {
           0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
-          15%  { opacity: 1; transform: translate3d(calc(-50% + 8.7vw), calc(-50% - 5.1rem), 0) rotate(3deg) scale(0.98); }
-          30%  { opacity: 1; transform: translate3d(calc(-50% + 17.4vw), calc(-50% - 8.4rem), 0) rotate(6deg) scale(0.96); }
-          50%  { opacity: 1; transform: translate3d(calc(-50% + 29vw), calc(-50% - 10rem), 0) rotate(10deg) scale(0.93); }
-          70%  { opacity: 1; transform: translate3d(calc(-50% + 40.6vw), calc(-50% - 8.4rem), 0) rotate(14deg) scale(0.90); }
-          85%  { opacity: 1; transform: translate3d(calc(-50% + 49.3vw), calc(-50% - 5.1rem), 0) rotate(17deg) scale(0.87); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% + 8.7vw), calc(-50% - 4.08rem), 0) rotate(3deg) scale(0.98); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% + 17.4vw), calc(-50% - 6.72rem), 0) rotate(6deg) scale(0.96); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% + 29vw), calc(-50% - 8rem), 0) rotate(10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% + 40.6vw), calc(-50% - 6.72rem), 0) rotate(14deg) scale(0.90); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% + 49.3vw), calc(-50% - 4.08rem), 0) rotate(17deg) scale(0.87); }
           100% { opacity: 0; transform: translate3d(calc(-50% + 58vw), -50%, 0) rotate(20deg) scale(0.84); }
         }
 
         @keyframes homeCookieJumpInFromRight {
           0%   { opacity: 0; transform: translate3d(calc(-50% + 58vw), -50%, 0) rotate(20deg) scale(0.84); }
-          8%   { opacity: 1; transform: translate3d(calc(-50% + 53.4vw), calc(-50% - 3.1rem), 0) rotate(18deg) scale(0.86); }
-          15%  { opacity: 1; transform: translate3d(calc(-50% + 49.3vw), calc(-50% - 5.1rem), 0) rotate(17deg) scale(0.87); }
-          30%  { opacity: 1; transform: translate3d(calc(-50% + 40.6vw), calc(-50% - 8.4rem), 0) rotate(14deg) scale(0.90); }
-          50%  { opacity: 1; transform: translate3d(calc(-50% + 29vw), calc(-50% - 10rem), 0) rotate(10deg) scale(0.93); }
-          70%  { opacity: 1; transform: translate3d(calc(-50% + 17.4vw), calc(-50% - 8.4rem), 0) rotate(6deg) scale(0.96); }
-          85%  { opacity: 1; transform: translate3d(calc(-50% + 8.7vw), calc(-50% - 5.1rem), 0) rotate(3deg) scale(0.98); }
+          8%   { opacity: 1; transform: translate3d(calc(-50% + 53.4vw), calc(-50% - 2.48rem), 0) rotate(18deg) scale(0.86); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% + 49.3vw), calc(-50% - 4.08rem), 0) rotate(17deg) scale(0.87); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% + 40.6vw), calc(-50% - 6.72rem), 0) rotate(14deg) scale(0.90); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% + 29vw), calc(-50% - 8rem), 0) rotate(10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% + 17.4vw), calc(-50% - 6.72rem), 0) rotate(6deg) scale(0.96); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% + 8.7vw), calc(-50% - 4.08rem), 0) rotate(3deg) scale(0.98); }
           100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
         }
 
         @keyframes homeCookieJumpInFromLeft {
           0%   { opacity: 0; transform: translate3d(calc(-50% - 58vw), -50%, 0) rotate(-20deg) scale(0.84); }
-          8%   { opacity: 1; transform: translate3d(calc(-50% - 53.4vw), calc(-50% - 3.1rem), 0) rotate(-18deg) scale(0.86); }
-          15%  { opacity: 1; transform: translate3d(calc(-50% - 49.3vw), calc(-50% - 5.1rem), 0) rotate(-17deg) scale(0.87); }
-          30%  { opacity: 1; transform: translate3d(calc(-50% - 40.6vw), calc(-50% - 8.4rem), 0) rotate(-14deg) scale(0.90); }
-          50%  { opacity: 1; transform: translate3d(calc(-50% - 29vw), calc(-50% - 10rem), 0) rotate(-10deg) scale(0.93); }
-          70%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 8.4rem), 0) rotate(-6deg) scale(0.96); }
-          85%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 5.1rem), 0) rotate(-3deg) scale(0.98); }
+          8%   { opacity: 1; transform: translate3d(calc(-50% - 53.4vw), calc(-50% - 2.48rem), 0) rotate(-18deg) scale(0.86); }
+          15%  { opacity: 1; transform: translate3d(calc(-50% - 49.3vw), calc(-50% - 4.08rem), 0) rotate(-17deg) scale(0.87); }
+          30%  { opacity: 1; transform: translate3d(calc(-50% - 40.6vw), calc(-50% - 6.72rem), 0) rotate(-14deg) scale(0.90); }
+          50%  { opacity: 1; transform: translate3d(calc(-50% - 29vw), calc(-50% - 8rem), 0) rotate(-10deg) scale(0.93); }
+          70%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 6.72rem), 0) rotate(-6deg) scale(0.96); }
+          85%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 4.08rem), 0) rotate(-3deg) scale(0.98); }
           100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
         }
 
@@ -733,6 +862,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
         .homeCookieMeadowFlower::before,
         .homeCookieMeadowFlower::after {
+          animation: homeCookieMeadowFlowerBob 2.8s ease-in-out infinite;
           content: '';
           left: 50%;
           pointer-events: none;
@@ -832,9 +962,11 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
         .homeCookieControls {
           align-items: center;
-          display: flex;
-          gap: var(--control-gap);
+          display: inline-flex;
+          height: var(--control-size);
           justify-content: center;
+          overflow: visible;
+          position: relative;
         }
 
         .homeCookieShowcase a[href],
@@ -867,6 +999,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
           font-size: var(--cta-font-size);
           font-weight: 600;
           line-height: 1;
+          max-width: calc(100vw - 20vw - 2 * var(--control-size) - 2 * var(--control-gap));
           min-height: var(--control-size);
           min-width: var(--cta-width);
           padding: 0.9rem var(--cta-padding-x) 1rem;
@@ -903,7 +1036,18 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
         .homeCookieArrow {
           height: var(--control-size);
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
           width: var(--control-size);
+        }
+
+        .homeCookieControls > .homeCookieArrow:first-child {
+          right: calc(100% + var(--control-gap));
+        }
+
+        .homeCookieControls > .homeCookieArrow:last-child {
+          left: calc(100% + var(--control-gap));
         }
 
         .homeCookieArrow::before {
@@ -929,7 +1073,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         }
 
         .homeCookieArrow:active:not(:disabled) {
-          transform: translateY(1px);
+          transform: translateY(calc(-50% + 1px));
         }
 
         .homeCookieArrow:focus-visible {
@@ -964,14 +1108,14 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
         @media (max-width: 639px) {
           .homeCookieShowcase {
-            --control-gap: 0.7rem;
+            --control-gap: 0.85rem;
             --control-size: 2.95rem;
             --cookie-size: clamp(10.5rem, 43vw, 12.75rem);
-            --copy-bottom: 0.95rem;
-            --copy-width: min(94vw, 21rem);
-            --cta-font-size: 1rem;
-            --cta-padding-x: 1.15rem;
-            --cta-width: clamp(8.75rem, 33vw, 10.25rem);
+            --copy-bottom: clamp(3rem, 10vh, 5.5rem);
+            --copy-width: min(86vw, 21rem);
+            --cta-font-size: 0.88rem;
+            --cta-padding-x: 1rem;
+            --cta-width: clamp(7rem, 26vw, 8.5rem);
             --stage-min-height: 24rem;
           }
 
@@ -995,7 +1139,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
           .homeCookieMeadowFlower:nth-child(4) {
             --meadow-flower-size: clamp(1.1rem, 3.45vw, 1.45rem) !important;
-            bottom: 42% !important;
+            bottom: 38% !important;
             left: 41% !important;
           }
 
@@ -1020,7 +1164,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
           .homeCookieMeadowFlower:nth-child(8) {
             --meadow-flower-size: clamp(1.22rem, 3.85vw, 1.6rem) !important;
             bottom: 29% !important;
-            left: 53% !important;
+            right: 43% !important;
           }
 
           .homeCookieMeadowFlower:nth-child(9) {
@@ -1031,8 +1175,9 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
           .homeCookieMeadowFlower:nth-child(10) {
             --meadow-flower-size: clamp(1.08rem, 3.35vw, 1.4rem) !important;
-            bottom: 40% !important;
+            bottom: 37% !important;
             left: 50% !important;
+            transform: translateX(-50%) !important;
           }
 
           .homeCookieMeadowFlower:nth-child(11) {
@@ -1041,64 +1186,173 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             right: 3% !important;
           }
 
-          .homeCookieMeadowFlower::before,
-          .homeCookieMeadowFlower::after {
-            animation: homeCookieMeadowFlowerBob 2.8s ease-in-out infinite;
+          .homeCookieMeadowFlower:nth-child(12) {
+            --meadow-flower-size: clamp(1.15rem, 3.6vw, 1.5rem) !important;
+            bottom: 28% !important;
+            right: 55% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(13) {
+            --meadow-flower-size: clamp(1.25rem, 4vw, 1.7rem) !important;
+            bottom: 31% !important;
+            right: 35% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(14) {
+            --meadow-flower-size: clamp(1.05rem, 3.3vw, 1.35rem) !important;
+            bottom: 36% !important;
+            left: 35% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(15) {
+            --meadow-flower-size: clamp(1.3rem, 4.2vw, 1.75rem) !important;
+            bottom: 22% !important;
+            right: 25% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(16) {
+            --meadow-flower-size: clamp(1.1rem, 3.5vw, 1.4rem) !important;
+            bottom: 40% !important;
+            left: 15% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(17) {
+            --meadow-flower-size: clamp(1.2rem, 3.8vw, 1.55rem) !important;
+            bottom: 42% !important;
+            left: 28% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(18) {
+            --meadow-flower-size: clamp(1rem, 3.2vw, 1.3rem) !important;
+            bottom: 39% !important;
+            left: 45% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(19) {
+            --meadow-flower-size: clamp(1.15rem, 3.6vw, 1.5rem) !important;
+            bottom: 43% !important;
+            right: 42% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(20) {
+            --meadow-flower-size: clamp(1.05rem, 3.3vw, 1.35rem) !important;
+            bottom: 41% !important;
+            right: 12% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(21) {
+            --meadow-flower-size: clamp(1.1rem, 3.45vw, 1.42rem) !important;
+            bottom: 35% !important;
+            display: block !important;
+            right: 24% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(22) {
+            --meadow-flower-size: clamp(1.04rem, 3.25vw, 1.34rem) !important;
+            bottom: 31% !important;
+            display: block !important;
+            right: 16% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(23) {
+            --meadow-flower-size: clamp(1rem, 3.1vw, 1.28rem) !important;
+            bottom: 27% !important;
+            display: block !important;
+            right: 9% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(24) {
+            --meadow-flower-size: clamp(1.12rem, 3.5vw, 1.46rem) !important;
+            bottom: 23% !important;
+            display: block !important;
+            right: 32% !important;
+          }
+
+          .homeCookieMeadowFlower:nth-child(25) {
+            --meadow-flower-size: clamp(0.96rem, 3vw, 1.24rem) !important;
+            bottom: 20% !important;
+            display: block !important;
+            right: 14% !important;
           }
 
           .homeCookieMeadowFlower:nth-child(1)::before,
           .homeCookieMeadowFlower:nth-child(1)::after {
             animation-delay: -0.4s;
           }
-
-          .homeCookieMeadowFlower:nth-child(2)::before,
-          .homeCookieMeadowFlower:nth-child(2)::after {
-            animation-delay: -1.3s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(3)::before,
-          .homeCookieMeadowFlower:nth-child(3)::after {
-            animation-delay: -0.9s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(4)::before,
-          .homeCookieMeadowFlower:nth-child(4)::after {
-            animation-delay: -1.6s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(5)::before,
-          .homeCookieMeadowFlower:nth-child(5)::after {
-            animation-delay: -0.7s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(6)::before,
-          .homeCookieMeadowFlower:nth-child(6)::after {
-            animation-delay: -1.8s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(7)::before,
-          .homeCookieMeadowFlower:nth-child(7)::after {
-            animation-delay: -0.2s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(8)::before,
-          .homeCookieMeadowFlower:nth-child(8)::after {
-            animation-delay: -1.1s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(9)::before,
-          .homeCookieMeadowFlower:nth-child(9)::after {
-            animation-delay: -0.5s;
-          }
-
-          .homeCookieMeadowFlower:nth-child(10)::before,
-          .homeCookieMeadowFlower:nth-child(10)::after {
-            animation-delay: -1.4s;
-          }
-
+          ...
           .homeCookieMeadowFlower:nth-child(11)::before,
           .homeCookieMeadowFlower:nth-child(11)::after {
             animation-delay: -0.1s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(12)::before,
+          .homeCookieMeadowFlower:nth-child(12)::after {
+            animation-delay: -0.8s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(13)::before,
+          .homeCookieMeadowFlower:nth-child(13)::after {
+            animation-delay: -1.5s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(14)::before,
+          .homeCookieMeadowFlower:nth-child(14)::after {
+            animation-delay: -0.3s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(15)::before,
+          .homeCookieMeadowFlower:nth-child(15)::after {
+            animation-delay: -1.2s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(16)::before,
+          .homeCookieMeadowFlower:nth-child(16)::after {
+            animation-delay: -0.6s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(17)::before,
+          .homeCookieMeadowFlower:nth-child(17)::after {
+            animation-delay: -1.9s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(18)::before,
+          .homeCookieMeadowFlower:nth-child(18)::after {
+            animation-delay: -0.1s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(19)::before,
+          .homeCookieMeadowFlower:nth-child(19)::after {
+            animation-delay: -1.3s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(20)::before,
+          .homeCookieMeadowFlower:nth-child(20)::after {
+            animation-delay: -0.7s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(21)::before,
+          .homeCookieMeadowFlower:nth-child(21)::after {
+            animation-delay: -1.1s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(22)::before,
+          .homeCookieMeadowFlower:nth-child(22)::after {
+            animation-delay: -0.5s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(23)::before,
+          .homeCookieMeadowFlower:nth-child(23)::after {
+            animation-delay: -1.7s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(24)::before,
+          .homeCookieMeadowFlower:nth-child(24)::after {
+            animation-delay: -0.2s;
+          }
+
+          .homeCookieMeadowFlower:nth-child(25)::before,
+          .homeCookieMeadowFlower:nth-child(25)::after {
+            animation-delay: -1.4s;
           }
         }
 

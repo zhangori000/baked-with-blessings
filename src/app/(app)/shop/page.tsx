@@ -22,8 +22,6 @@ type DecorativeCloud = {
   variant: 'story' | 'halfEgg' | 'stacked'
 }
 
-const sunRayRotations = [0, 45, 90, 135, 180, 225, 270, 315]
-
 const nonSquareCategorySlugs = ['entrees']
 
 const cloudsPerViewport = 6
@@ -56,6 +54,11 @@ const decorativeClouds: DecorativeCloud[] = Array.from(
     const [anchorMin, anchorMax] = anchorRanges[lane]
     const anchorPercent = anchorMin + seededFloat(seedBase + 7) * (anchorMax - anchorMin)
     const width = `clamp(12.5rem, ${13.5 + seededFloat(seedBase + 9) * 5.5}vw, 18.5rem)`
+    const shouldSkipOpeningRightCloud = viewportIndex === 0 && bandIndex === 2
+
+    if (shouldSkipOpeningRightCloud) {
+      return null
+    }
 
     return {
       compact: true,
@@ -71,63 +74,10 @@ const decorativeClouds: DecorativeCloud[] = Array.from(
         top: `calc(${viewportIndex * 100}vh + ${(baseTop + topJitter).toFixed(2)}vh)`,
         width,
       } as React.CSSProperties,
-      variant: 'halfEgg',
+      variant: 'halfEgg' as const,
     }
   },
-)
-
-function ShopCornerSun() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-full w-full"
-      fill="none"
-      viewBox="0 0 140 140"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g>
-        <animateTransform
-          attributeName="transform"
-          attributeType="XML"
-          dur="18s"
-          from="0 70 70"
-          repeatCount="indefinite"
-          to="360 70 70"
-          type="rotate"
-        />
-        {sunRayRotations.map((rotation) => (
-          <circle
-            cx="70"
-            cy="8"
-            fill={rotation % 90 === 0 ? '#f3a126' : '#ffc74f'}
-            key={rotation}
-            r={rotation % 90 === 0 ? 6.5 : 5}
-            transform={`rotate(${rotation} 70 70)`}
-          />
-        ))}
-      </g>
-
-      <circle cx="70" cy="70" fill="#ffd45c" r="33" />
-      <circle cx="70" cy="70" fill="#ffeb9e" opacity="0.62" r="23" />
-
-      <path
-        d="M53 67C55.5 64.7 58.4 64.7 61 67"
-        stroke="#1f261f"
-        strokeLinecap="round"
-        strokeWidth="4.2"
-      />
-      <path
-        d="M79 67C81.6 64.7 84.5 64.7 87 67"
-        stroke="#1f261f"
-        strokeLinecap="round"
-        strokeWidth="4.2"
-      />
-      <ellipse cx="50" cy="80" fill="#f8b196" rx="4.6" ry="3.5" />
-      <ellipse cx="90.5" cy="80" fill="#f8b196" rx="4.6" ry="3.5" />
-      <circle cx="70" cy="87.5" fill="#1f261f" r="3.3" />
-    </svg>
-  )
-}
+).flatMap((cloud) => (cloud ? [cloud] : []))
 
 const normalizeSlug = (value: unknown): string => {
   return typeof value === 'string' ? value.toLowerCase() : ''
@@ -293,10 +243,6 @@ export default async function ShopPage({ searchParams }: Props) {
       style={{ '--shop-section-nav-height': '4.5rem' } as React.CSSProperties}
     >
       <div aria-hidden="true" className="shopSkyField">
-        <div className="pointer-events-none absolute left-[clamp(0.9rem,2vw,1.8rem)] top-[clamp(0.9rem,2vw,1.8rem)] h-[clamp(7.5rem,11vw,10rem)] w-[clamp(7.5rem,11vw,10rem)] drop-shadow-[0_16px_22px_rgba(243,161,38,0.22)]">
-          <ShopCornerSun />
-        </div>
-
         {decorativeClouds.map((cloud, index) => (
           <CloudCluster
             className={`shopSkyCloud ${

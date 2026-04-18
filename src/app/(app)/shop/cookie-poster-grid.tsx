@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import React from 'react'
 
 import type { CookiePosterAsset } from './cookiePosterData'
@@ -96,9 +97,64 @@ function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) 
   )
 }
 
+function CookieCateringNotice() {
+  return (
+    <section
+      aria-label="Cookie catering notice"
+      className="cookieCateringNotice relative overflow-hidden rounded-[1.8rem] px-5 py-6 md:px-8 md:py-8"
+      style={{
+        background: '#c3d3cb',
+      }}
+    >
+      <div className="cookieCateringNoticeGlow" />
+
+      <div className="relative z-[1] grid items-center gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(14rem,0.8fr)] md:gap-10">
+        <div className="min-w-0">
+          <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-[#516158]">
+            Cookie Catering
+          </p>
+          <h2 className="cookieCateringNoticeHeading mt-3 max-w-[13ch] text-[2rem] leading-[0.95] tracking-[-0.045em] text-[#171510] md:text-[2.65rem]">
+            Catering orders can include past cookie flavors.
+          </h2>
+          <p className="cookieCateringNoticeBody mt-5 max-w-[34rem] text-[1.05rem] leading-8 text-[#243129] md:text-[1.12rem]">
+            If you are ordering for catering, you are not limited to only the cookies shown in the
+            current lineup. Larger catering batches can reopen previous flavors because they are
+            easier to plan and bake well than one-off custom cookie requests.
+          </p>
+          <div className="mt-7">
+            <Link className="cookieCateringNoticeButton" href="/contact">
+              Ask about catering
+            </Link>
+          </div>
+        </div>
+
+        <div aria-hidden="true" className="cookieCateringNoticeArt hidden md:flex">
+          <div className="cookieCateringNoticeArch">
+            <span className="cookieCateringNoticeArchTop" />
+            <span className="cookieCateringNoticeArchLeg cookieCateringNoticeArchLeg--left" />
+            <span className="cookieCateringNoticeArchLeg cookieCateringNoticeArchLeg--right" />
+            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--outer-left" />
+            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--inner-left" />
+            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--inner-right" />
+            <span className="cookieCateringNoticeArchStep cookieCateringNoticeArchStep--outer-right" />
+          </div>
+
+          <div className="cookieCateringNoticePedestal">
+            <span className="cookieCateringNoticePedestalTier cookieCateringNoticePedestalTier--top" />
+            <span className="cookieCateringNoticePedestalTier cookieCateringNoticePedestalTier--mid" />
+            <span className="cookieCateringNoticePedestalTier cookieCateringNoticePedestalTier--base" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) {
   return (
     <>
+      <CookieCateringNotice />
+
       <div className="grid w-full grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-3">
         {posters.map((poster) => {
           const sceneStyle = {
@@ -109,7 +165,7 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           return (
             <article className="group block h-full w-full" key={poster.slug}>
               <div
-                className="relative flex h-full min-h-[33rem] w-full flex-col overflow-hidden rounded-[0.7rem] border shadow-[0_14px_36px_rgba(74,57,31,0.08)]"
+                className="relative flex h-full min-h-[31rem] w-full flex-col overflow-hidden rounded-[0.7rem] border shadow-[0_12px_28px_rgba(74,57,31,0.06)]"
                 style={{
                   backgroundColor: cardSurface,
                   borderColor: cardBorder,
@@ -148,32 +204,23 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
                   </CookiePosterSketchFrame>
                 </div>
 
-                <div className="flex flex-1 flex-col gap-1.5 px-4 pb-4 pt-3.5">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
+                <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-4">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 border-b border-[rgba(91,70,37,0.1)] pb-3.5">
                     <div className="flex flex-col gap-1">
-                      <h3 className="text-[1.5rem] font-medium leading-[0.92] tracking-[-0.05em] text-[#1d3250] md:text-[1.58rem]">
+                      <h3 className="text-[1.42rem] font-medium leading-[0.94] tracking-[-0.045em] text-[#1d3250] md:text-[1.5rem]">
                         {poster.title}
                       </h3>
-                      <p className="font-mono text-[0.79rem] uppercase leading-none tracking-[0.08em] text-[#5a6857]">
+                      <p className="font-mono text-[0.74rem] uppercase leading-none tracking-[0.09em] text-[#7a836f]">
                         {poster.subtitle}
                       </p>
                     </div>
 
-                    <span className="shrink-0 pt-0.5 font-mono text-[0.98rem] uppercase tracking-[0.08em] text-[#1d3250]">
+                    <span className="shrink-0 pt-0.5 font-mono text-[0.95rem] uppercase tracking-[0.08em] text-[#38533d]">
                       {poster.amount}
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-1 pt-0.5">
-                    {poster.chips.map((chip) => (
-                      <span
-                        className="rounded-full border border-[rgba(91,70,37,0.14)] bg-[#fff7e4] px-3 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.06em] text-[#465743]"
-                        key={chip}
-                      >
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-[0.95rem] leading-6 text-[#5f685d]">{poster.summary}</p>
 
                   <div className="mt-auto h-[3.35rem]">
                     <CookiePosterAddToCartButton poster={poster} />
@@ -186,6 +233,158 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
       </div>
 
       <style>{`
+        .cookieCateringNotice {
+          box-shadow:
+            0 16px 36px rgba(62, 78, 70, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          margin-bottom: 1.2rem;
+        }
+
+        .cookieCateringNoticeGlow {
+          background:
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 44%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 62%);
+          inset: 0;
+          pointer-events: none;
+          position: absolute;
+        }
+
+        .cookieCateringNoticeHeading,
+        .cookieCateringNoticeBody {
+          font-family: Georgia, 'Times New Roman', serif;
+        }
+
+        .cookieCateringNoticeButton {
+          align-items: center;
+          border: 1px solid rgba(23, 21, 16, 0.45);
+          border-radius: 0.95rem;
+          color: #171510;
+          display: inline-flex;
+          font-size: 1rem;
+          justify-content: center;
+          min-height: 3rem;
+          padding: 0.8rem 1.2rem;
+          text-decoration: none;
+          transition:
+            transform 150ms ease,
+            background-color 150ms ease,
+            border-color 150ms ease;
+        }
+
+        .cookieCateringNoticeButton:hover,
+        .cookieCateringNoticeButton:focus-visible {
+          background: rgba(255, 255, 255, 0.22);
+          border-color: rgba(23, 21, 16, 0.68);
+          transform: translateY(-1px);
+        }
+
+        .cookieCateringNoticeArt {
+          align-items: center;
+          justify-content: center;
+          min-height: 15rem;
+          position: relative;
+        }
+
+        .cookieCateringNoticeArch {
+          height: 9rem;
+          position: relative;
+          width: 14rem;
+        }
+
+        .cookieCateringNoticeArchTop,
+        .cookieCateringNoticeArchLeg,
+        .cookieCateringNoticeArchStep {
+          background: #171510;
+          border-radius: 999px;
+          position: absolute;
+        }
+
+        .cookieCateringNoticeArchTop {
+          height: 0.38rem;
+          left: 0.45rem;
+          right: 0.45rem;
+          top: 0.5rem;
+        }
+
+        .cookieCateringNoticeArchLeg {
+          height: 7.3rem;
+          top: 0.5rem;
+          width: 0.42rem;
+        }
+
+        .cookieCateringNoticeArchLeg--left {
+          left: 0.3rem;
+        }
+
+        .cookieCateringNoticeArchLeg--right {
+          right: 0.3rem;
+        }
+
+        .cookieCateringNoticeArchStep {
+          height: 0.38rem;
+        }
+
+        .cookieCateringNoticeArchStep--outer-left {
+          left: 0.3rem;
+          top: 7.42rem;
+          width: 2.6rem;
+        }
+
+        .cookieCateringNoticeArchStep--inner-left {
+          left: 2.55rem;
+          top: 5.15rem;
+          width: 3.2rem;
+        }
+
+        .cookieCateringNoticeArchStep--inner-right {
+          right: 2.55rem;
+          top: 5.15rem;
+          width: 3.2rem;
+        }
+
+        .cookieCateringNoticeArchStep--outer-right {
+          right: 0.3rem;
+          top: 7.42rem;
+          width: 2.6rem;
+        }
+
+        .cookieCateringNoticePedestal {
+          bottom: 0.35rem;
+          height: 7.4rem;
+          position: absolute;
+          right: 1rem;
+          width: 10rem;
+        }
+
+        .cookieCateringNoticePedestalTier {
+          background: rgba(255, 251, 244, 0.96);
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          position: absolute;
+        }
+
+        .cookieCateringNoticePedestalTier--top {
+          height: 2.8rem;
+          left: 2.8rem;
+          right: 2.8rem;
+          top: 0;
+        }
+
+        .cookieCateringNoticePedestalTier--mid {
+          height: 2.55rem;
+          left: 1.4rem;
+          right: 1.4rem;
+          top: 2.35rem;
+        }
+
+        .cookieCateringNoticePedestalTier--base {
+          height: 2.7rem;
+          left: 0;
+          right: 0;
+          top: 4.7rem;
+        }
+
         .cookiePosterSketchFrame {
           clip-path: polygon(
             0.5% 0.8%,
@@ -265,6 +464,17 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
 
           100% {
             transform: translate3d(42rem, 0, 0);
+          }
+        }
+
+        @media (max-width: 767px) {
+          .cookieCateringNoticeHeading {
+            max-width: 12ch;
+          }
+
+          .cookieCateringNoticeBody {
+            font-size: 1rem;
+            line-height: 1.7;
           }
         }
       `}</style>

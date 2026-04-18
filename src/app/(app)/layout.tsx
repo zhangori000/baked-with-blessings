@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <LivePreviewListener />
 
             <Header />
-            <main className="min-h-screen">{children}</main>
+            <main className="flex-1">{children}</main>
             <Footer />
           </div>
         </Providers>
