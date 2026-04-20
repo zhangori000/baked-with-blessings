@@ -292,6 +292,16 @@ export interface Order {
         product?: (number | null) | Product;
         variant?: (number | null) | Variant;
         quantity: number;
+        /**
+         * For tray-builder products, store which child products were picked for this tray and how many of each.
+         */
+        batchSelections?:
+          | {
+              product: number | Product;
+              quantity: number;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -352,6 +362,24 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
+   * Long-form copy shown inside expandable menu cards. Use this when you want a more persuasive, blog-like section without creating a dedicated product page.
+   */
+  menuExpandedPitch?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
    * Product image gallery. The first image is the main storefront image, so put the best primary photo first.
    */
   gallery?:
@@ -393,6 +421,22 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
+  /**
+   * Short quantity label for menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".
+   */
+  menuPortionLabel?: string | null;
+  /**
+   * Use batch builder when customers must build a tray by picking child products before adding this item to cart.
+   */
+  menuBehavior?: ('simple' | 'batchBuilder') | null;
+  /**
+   * How many child items must be chosen before a tray-builder product can be added to cart.
+   */
+  requiredSelectionCount?: number | null;
+  /**
+   * Choose which existing product rows can be picked inside this tray-builder product.
+   */
+  selectableProducts?: (number | Product)[] | null;
   /**
    * Pick other products that should be suggested alongside this one on the storefront.
    */
@@ -1127,6 +1171,16 @@ export interface Transaction {
         product?: (number | null) | Product;
         variant?: (number | null) | Variant;
         quantity: number;
+        /**
+         * For tray-builder products, store which child products were picked for this tray and how many of each.
+         */
+        batchSelections?:
+          | {
+              product: number | Product;
+              quantity: number;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -1177,6 +1231,16 @@ export interface Cart {
         product?: (number | null) | Product;
         variant?: (number | null) | Variant;
         quantity: number;
+        /**
+         * For tray-builder products, store which child products were picked for this tray and how many of each.
+         */
+        batchSelections?:
+          | {
+              product: number | Product;
+              quantity: number;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -1912,6 +1976,7 @@ export interface VariantOptionsSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  menuExpandedPitch?: T;
   gallery?:
     | T
     | {
@@ -1932,6 +1997,10 @@ export interface ProductsSelect<T extends boolean = true> {
   variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
+  menuPortionLabel?: T;
+  menuBehavior?: T;
+  requiredSelectionCount?: T;
+  selectableProducts?: T;
   relatedProducts?: T;
   meta?:
     | T
@@ -1959,6 +2028,13 @@ export interface CartsSelect<T extends boolean = true> {
         product?: T;
         variant?: T;
         quantity?: T;
+        batchSelections?:
+          | T
+          | {
+              product?: T;
+              quantity?: T;
+              id?: T;
+            };
         id?: T;
       };
   secret?: T;
@@ -1981,6 +2057,13 @@ export interface OrdersSelect<T extends boolean = true> {
         product?: T;
         variant?: T;
         quantity?: T;
+        batchSelections?:
+          | T
+          | {
+              product?: T;
+              quantity?: T;
+              id?: T;
+            };
         id?: T;
       };
   shippingAddress?:
@@ -2021,6 +2104,13 @@ export interface TransactionsSelect<T extends boolean = true> {
         product?: T;
         variant?: T;
         quantity?: T;
+        batchSelections?:
+          | T
+          | {
+              product?: T;
+              quantity?: T;
+              id?: T;
+            };
         id?: T;
       };
   paymentMethod?: T;

@@ -1,6 +1,8 @@
 'use client'
 
 import { Price } from '@/components/Price'
+import { TraySelectionSummary } from '@/components/TraySelectionSummary'
+import { menuHref } from '@/utilities/routes'
 import {
   Sheet,
   SheetClose,
@@ -15,7 +17,7 @@ import { ArrowRight, ShoppingBag, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useEffectEvent, useMemo, useState } from 'react'
 
 import { DeleteItemButton } from './DeleteItemButton'
 import { EditItemQuantityButton } from './EditItemQuantityButton'
@@ -34,9 +36,12 @@ export function CartModal() {
   const [isOpen, setIsOpen] = useState(false)
 
   const pathname = usePathname()
+  const closeCart = useEffectEvent(() => {
+    setIsOpen(false)
+  })
 
   useEffect(() => {
-    setIsOpen(false)
+    closeCart()
   }, [pathname])
 
   const totalQuantity = useMemo(() => {
@@ -107,7 +112,7 @@ export function CartModal() {
 
               <Link
                 className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
-                href="/shop"
+                href={menuHref}
               >
                 Browse the menu
                 <ArrowRight className="h-4 w-4" />
@@ -235,6 +240,12 @@ export function CartModal() {
                                       .join(', ')}
                                   </p>
                                 ) : null}
+                                <TraySelectionSummary
+                                  className="mt-3"
+                                  compact
+                                  selections={item.batchSelections}
+                                  tone="muted"
+                                />
                               </div>
 
                               <DeleteItemButton item={item} />

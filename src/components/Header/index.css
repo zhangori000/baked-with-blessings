@@ -186,6 +186,16 @@
     radial-gradient(circle at 18% 38%, #e6d1da 0 23%, transparent 25%);
 }
 
+.siteHeaderBannerItem:nth-child(4) .siteHeaderBannerLink::after {
+  background:
+    radial-gradient(circle at 50% 50%, #6e422f 0 17%, transparent 19%),
+    radial-gradient(circle at 50% 14%, #f5bfcb 0 23%, transparent 25%),
+    radial-gradient(circle at 82% 38%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 68% 80%, #d94d74 0 23%, transparent 25%),
+    radial-gradient(circle at 32% 80%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 18% 38%, #f5bfcb 0 23%, transparent 25%);
+}
+
 .siteHeaderBannerLink:hover,
 .siteHeaderBannerLink.is-active {
   color: #f7f5ef;
@@ -229,7 +239,7 @@
 }
 
 .siteHeaderBannerItem:hover .siteHeaderBannerReveal,
-.siteHeaderBannerItem:focus-within .siteHeaderBannerReveal {
+.siteHeaderBannerItem:has(.siteHeaderBannerLink:focus-visible) .siteHeaderBannerReveal {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
@@ -477,6 +487,16 @@
     radial-gradient(circle at 68% 80%, #6f4b5e 0 23%, transparent 25%),
     radial-gradient(circle at 32% 80%, #9a6d83 0 23%, transparent 25%),
     radial-gradient(circle at 18% 38%, #e6d1da 0 23%, transparent 25%);
+}
+
+.siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(4) .siteHeaderMobileCardAction::after {
+  background:
+    radial-gradient(circle at 50% 50%, #6e422f 0 17%, transparent 19%),
+    radial-gradient(circle at 50% 14%, #f5bfcb 0 23%, transparent 25%),
+    radial-gradient(circle at 82% 38%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 68% 80%, #d94d74 0 23%, transparent 25%),
+    radial-gradient(circle at 32% 80%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 18% 38%, #f5bfcb 0 23%, transparent 25%);
 }
 
 .siteHeaderMobileTabs {

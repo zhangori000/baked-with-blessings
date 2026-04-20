@@ -1,16 +1,18 @@
 'use client'
 
 import { cn } from '@/utilities/cn'
+import { menuHref } from '@/utilities/routes'
 import { MenuIcon, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 type Props = {
   cartQuantity: number
   items: Array<{
     id: string
     href: string
+    isActive?: boolean
     label: string
     panel: {
       eyebrow: string
@@ -19,15 +21,13 @@ type Props = {
   }>
 }
 
-const isRouteActive = (pathname: string, href: string) => {
-  if (href === '/') return pathname === '/'
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 export function MobileMenu({ cartQuantity, items }: Props) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const closeMenu = useEffectEvent(() => {
+    setIsOpen(false)
+  })
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +41,7 @@ export function MobileMenu({ cartQuantity, items }: Props) {
   }, [])
 
   useEffect(() => {
-    setIsOpen(false)
+    closeMenu()
   }, [pathname])
 
   useEffect(() => {
@@ -65,7 +65,11 @@ export function MobileMenu({ cartQuantity, items }: Props) {
   return (
     <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
       <div className="siteHeaderMobileControls">
-        <Link aria-label="Search the menu" className="siteHeaderMobileIconButton" href="/shop">
+        <Link
+          aria-label="Search the menu"
+          className="siteHeaderMobileIconButton"
+          href={menuHref}
+        >
           <Search className="h-4 w-4" />
         </Link>
 
@@ -113,7 +117,7 @@ export function MobileMenu({ cartQuantity, items }: Props) {
         <div className="siteHeaderMobileTabs" role="tablist" aria-label="Mobile navigation tabs">
           {items.map((item) => (
             <Link
-              className={cn('siteHeaderMobileTab', isRouteActive(pathname, item.href) && 'is-active')}
+              className={cn('siteHeaderMobileTab', item.isActive && 'is-active')}
               href={item.href}
               key={`tab-${item.id}`}
               onClick={() => {

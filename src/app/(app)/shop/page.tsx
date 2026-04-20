@@ -96,7 +96,7 @@ const isNonSquareCategory = (category: unknown) => {
 }
 
 export const metadata = {
-  description: 'Browse the menu.',
+  description: 'Browse the current bakery menu, including the individual cookie cards.',
   title: 'Menu',
 }
 

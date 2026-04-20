@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
+import { shopHref } from '@/utilities/routes'
 
 import { buildCookiePosterAsset, cookiePosterMetas, getCookiePosterMeta } from '../../shop/cookiePosterData'
 
@@ -142,7 +143,7 @@ export default async function CookiePosterPage({ params }: Args) {
             </Link>
             <Link
               className="inline-flex items-center justify-center rounded-[1.25rem] border border-black/10 bg-white px-6 py-4 font-mono text-[0.9rem] uppercase tracking-[0.14em] text-[#082a53] transition duration-200 hover:bg-[#fff7ec]"
-              href="/shop?section=sweets"
+              href={shopHref}
             >
               Back to Menu
             </Link>

@@ -1,4 +1,4 @@
-﻿export const shopSectionGroups = [
+export const shopSectionGroups = [
   {
     id: 'sweets',
     label: 'Sweets',

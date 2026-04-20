@@ -56,7 +56,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
   ...defaultCollection,
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'categories', 'priceInUSD', 'inventory', '_status'],
+    defaultColumns: ['title', 'categories', 'menuBehavior', 'priceInUSD', 'inventory', '_status'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -81,9 +81,14 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
     variants: true,
     enableVariants: true,
     gallery: true,
+    menuBehavior: true,
+    menuExpandedPitch: true,
+    menuPortionLabel: true,
     priceInUSD: true,
     inventory: true,
     meta: true,
+    requiredSelectionCount: true,
+    selectableProducts: true,
   },
   fields: [
     { name: 'title', type: 'text', required: true },
@@ -111,6 +116,27 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 },
               }),
               label: false,
+              required: false,
+            },
+            {
+              name: 'menuExpandedPitch',
+              type: 'richText',
+              admin: {
+                description:
+                  'Long-form copy shown inside expandable menu cards. Use this when you want a more persuasive, blog-like section without creating a dedicated product page.',
+              },
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => {
+                  return [
+                    ...rootFeatures,
+                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                    FixedToolbarFeature(),
+                    InlineToolbarFeature(),
+                    HorizontalRuleFeature(),
+                  ]
+                },
+              }),
+              label: 'Expanded Menu Pitch',
               required: false,
             },
             {
@@ -144,9 +170,9 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   },
                   filterOptions: ({ data }) => {
                     if (data?.enableVariants && data?.variantTypes?.length) {
-                      const variantTypeIDs = data.variantTypes.map((item: any) => {
-                        if (typeof item === 'object' && item?.id) {
-                          return item.id
+                      const variantTypeIDs = data.variantTypes.map((item: unknown) => {
+                        if (item && typeof item === 'object' && 'id' in item && item.id) {
+                          return item.id as DefaultDocumentIDType
                         }
                         return item
                       }) as DefaultDocumentIDType[]
@@ -192,6 +218,109 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         {
           fields: [
             ...productDetailsFields(defaultCollection.fields as Field[]),
+            {
+              name: 'menuPortionLabel',
+              type: 'text',
+              admin: {
+                description:
+                  'Short quantity label for menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".',
+              },
+            },
+            {
+              name: 'menuBehavior',
+              type: 'select',
+              admin: {
+                description:
+                  'Use batch builder when customers must build a tray by picking child products before adding this item to cart.',
+              },
+              defaultValue: 'simple',
+              options: [
+                {
+                  label: 'Simple Add To Cart',
+                  value: 'simple',
+                },
+                {
+                  label: 'Batch Builder',
+                  value: 'batchBuilder',
+                },
+              ],
+            },
+            {
+              name: 'requiredSelectionCount',
+              type: 'number',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
+                description:
+                  'How many child items must be chosen before a tray-builder product can be added to cart.',
+              },
+              min: 1,
+              validate: (
+                value: unknown,
+                {
+                  siblingData,
+                }: {
+                  siblingData?: {
+                    menuBehavior?: string | null
+                  }
+                },
+              ) => {
+                if (siblingData?.menuBehavior !== 'batchBuilder') {
+                  return true
+                }
+
+                if (typeof value === 'number' && value >= 1) {
+                  return true
+                }
+
+                return 'Batch-builder products require a selection count of at least 1.'
+              },
+            },
+            {
+              name: 'selectableProducts',
+              type: 'relationship',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
+                description:
+                  'Choose which existing product rows can be picked inside this tray-builder product.',
+              },
+              filterOptions: ({ id }) => {
+                if (id) {
+                  return {
+                    id: {
+                      not_in: [id],
+                    },
+                  }
+                }
+
+                return {
+                  id: {
+                    exists: true,
+                  },
+                }
+              },
+              hasMany: true,
+              relationTo: 'products',
+              validate: (
+                value: unknown,
+                {
+                  siblingData,
+                }: {
+                  siblingData?: {
+                    menuBehavior?: string | null
+                  }
+                },
+              ) => {
+                if (siblingData?.menuBehavior !== 'batchBuilder') {
+                  return true
+                }
+
+                if (Array.isArray(value) && value.length > 0) {
+                  return true
+                }
+
+                return 'Batch-builder products need at least one selectable product.'
+              },
+            },
             {
               name: 'relatedProducts',
               type: 'relationship',

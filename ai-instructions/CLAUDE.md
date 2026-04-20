@@ -16,3 +16,5 @@ The date folder should map 1:1 to the day the note was created. Use descriptive 
 ## Additional Guidance
 
 Also follow the broader project instructions in `ai-instructions/AGENTS.md`.
+
+The navbar flower design language is especially important in this repo. When adding selection feedback, celebratory accents, menu-card embellishments, or motion details, reuse the established navbar flower style instead of inventing a new floral motif.

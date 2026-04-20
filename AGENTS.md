@@ -17,6 +17,9 @@ Additional local context to use deliberately:
 - The sibling Coinbase CDS repo at `C:\Users\zhang\00My Stuff\Coding\Learning\cds` is a frontend structure and interaction reference, especially for restrained form design, navigation, spacing, and accessibility patterns.
 - Prefer recreating patterns locally rather than pulling CDS in as a hard dependency unless the user explicitly asks for that, because this app should stay easy to restyle and the local notes already document React-version adoption risk.
 - When design research folders contain screenshots plus `thoughts.md`, treat both as direct user preference input, not just inspiration material.
+- For cookie poster cards, do not circularly crop or mask the cookie artwork unless the user explicitly asks for it. Preserve the full cookie silhouette/details, preserve the cookie sheep rig hover-burst behavior unless the user explicitly asks to remove it, and treat the cookie sheep rig and the catering-banner sheep as separate design elements so changes to one do not silently remove the other.
+- Treat the navbar flower design language as a core reusable motif. For menu-item selection feedback, celebratory states, hover accents, or supporting illustrations, reuse that same flower system instead of inventing a different floral style.
+- When a menu flow needs a "chosen" indicator or a completion moment, prefer subtle animated flowers in the established navbar style before adding unrelated visual effects.
 
 You are an expert Payload CMS developer. When working with Payload projects, follow these rules:
 

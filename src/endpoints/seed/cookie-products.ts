@@ -1,4 +1,4 @@
-import type { Category, Media } from '@/payload-types'
+import type { Category, Media, Product } from '@/payload-types'
 import { type Payload, type PayloadRequest, RequiredDataFromCollectionSlug } from 'payload'
 
 import { cookieCatalog, cookieCategory, type CookieSeedSpec } from './cookie-catalog'
@@ -47,6 +47,7 @@ export const seedCookieProducts = async ({
     depth: 0,
     req,
   })
+  const productsBySlug: Record<string, Product> = {}
 
   for (const spec of cookieCatalog) {
     const image = mediaBySlug[spec.slug]
@@ -55,7 +56,7 @@ export const seedCookieProducts = async ({
       throw new Error(`Missing media document for cookie slug "${spec.slug}".`)
     }
 
-    await payload.create({
+    const product = await payload.create({
       collection: 'products',
       data: buildCookieProductData({
         category,
@@ -66,6 +67,13 @@ export const seedCookieProducts = async ({
       req,
     })
 
+    productsBySlug[spec.slug] = product
+
     payload.logger.info(`- Seeded product ${spec.slug}`)
+  }
+
+  return {
+    category,
+    productsBySlug,
   }
 }

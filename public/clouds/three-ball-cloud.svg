@@ -1,0 +1,14 @@
+<svg width="220" height="136" viewBox="0 0 220 136" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="cloudShadow" x="0" y="0" width="220" height="136" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#A7C1DD" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <g filter="url(#cloudShadow)" fill="#FFF8F4">
+    <circle cx="64" cy="82" r="26"/>
+    <circle cx="92" cy="62" r="30"/>
+    <circle cx="124" cy="50" r="34"/>
+    <circle cx="158" cy="60" r="30"/>
+    <circle cx="184" cy="82" r="24"/>
+  </g>
+</svg>

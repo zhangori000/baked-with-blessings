@@ -1,11 +1,7 @@
 import type { Metadata } from 'next'
 
 import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
-import {
-  buildCookiePosterAssets,
-  cookiePosterMetas,
-  type CookiePosterAsset,
-} from '../shop/cookiePosterData'
+import { queryHomeCookiePosters } from '../cookiePosterQueries'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -106,37 +102,4 @@ const queryPageBySlug = async ({ slug }: { slug: string }) => {
   })
 
   return result.docs?.[0] || null
-}
-
-const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
-  cookiePosterMetas.map((meta) => ({
-    ...meta,
-    amount: 'Fresh weekly',
-    href: `/cookies/${meta.slug}`,
-    image: null,
-    productHref: `/products/${meta.slug}`,
-  }))
-
-const queryHomeCookiePosters = async () => {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'products',
-    draft: false,
-    limit: 100,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      gallery: true,
-      id: true,
-      meta: true,
-      priceInUSD: true,
-      slug: true,
-      title: true,
-    },
-    sort: 'title',
-  })
-
-  const posters = buildCookiePosterAssets(result.docs)
-
-  return posters.length > 0 ? posters : buildFallbackHomeCookiePosters()
 }

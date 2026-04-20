@@ -22,6 +22,8 @@ Additional local design reference:
 - Use it as a reference for frontend engineering discipline, interaction patterns, and accessible component structure.
 - Prefer local reimplementation over direct CDS package adoption unless the user explicitly asks for package integration; the local repo notes already document the React compatibility tradeoff and the desire to keep theming flexible.
 - When design folders include screenshots plus `thoughts.md`, treat them as direct user preference input rather than optional inspiration.
+- The navbar flower language is a core visual motif for this project, not decorative filler. When working on menu cards, selection states, celebratory micro-interactions, or supporting illustrations, preserve and reuse the existing navbar flower design language instead of swapping in generic florals or unrelated icon styles.
+- If a flow needs a visual "chosen" or "completed" moment, prefer a restrained animation using that same flower system before introducing a new motif.
 
 Do not rely on memory first. When answering questions, proposing architecture, or writing Payload code, read the local Payload repository first:
 

@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import React, { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
+import { shopHref } from '@/utilities/routes'
 import { ChevronLeftIcon } from 'lucide-react'
 import { Metadata } from 'next'
 
@@ -119,7 +120,7 @@ export default async function ProductPage({ params }: Args) {
       />
       <div className="container pt-8 pb-8">
         <Button asChild variant="ghost" className="mb-4">
-          <Link href="/shop">
+          <Link href={shopHref}>
             <ChevronLeftIcon />
             Back to menu
           </Link>

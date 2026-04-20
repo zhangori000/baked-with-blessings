@@ -1,5 +1,7 @@
-import PageTemplate, { generateMetadata } from './[slug]/page'
+import { redirect } from 'next/navigation'
 
-export default PageTemplate
+import { rotatingCookieFlavorsHref } from '@/utilities/routes'
 
-export { generateMetadata }
+export default function HomePageRedirect() {
+  redirect(rotatingCookieFlavorsHref)
+}

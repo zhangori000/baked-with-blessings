@@ -17,7 +17,7 @@ import {
 type CookieSheepRigProps = {
   bodyFallbackSrc: string
   className?: string
-  href: string
+  href?: string
   image: MediaType | null
   title: string
 }
@@ -177,28 +177,51 @@ export function CookieSheepRig({
         </span>
       </div>
 
-      <Link
-        aria-label={`Open ${title} cookie page`}
-        className="absolute inset-0 z-20 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17341f] focus-visible:ring-offset-4"
-        href={href}
-      >
-        <span className="sr-only">{title}</span>
-        {image ? (
-          <Media
-            fill
-            htmlElement={null}
-            imgClassName="cookieSheepBodyImage pointer-events-none object-cover"
-            resource={image}
-          />
-        ) : (
-          <img
-            alt={`${title} cookie`}
-            className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
-            loading="lazy"
-            src={bodyFallbackSrc}
-          />
-        )}
-      </Link>
+      {href ? (
+        <Link
+          aria-label={`Open ${title} cookie page`}
+          className="absolute inset-0 z-20 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#17341f] focus-visible:ring-offset-4"
+          href={href}
+        >
+          <span className="sr-only">{title}</span>
+          {image ? (
+            <Media
+              fill
+              htmlElement={null}
+              imgClassName="cookieSheepBodyImage pointer-events-none object-cover"
+              resource={image}
+            />
+          ) : (
+            <img
+              alt={`${title} cookie`}
+              className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
+              loading="lazy"
+              src={bodyFallbackSrc}
+            />
+          )}
+        </Link>
+      ) : (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-20 flex items-center justify-center"
+        >
+          {image ? (
+            <Media
+              fill
+              htmlElement={null}
+              imgClassName="cookieSheepBodyImage pointer-events-none object-cover"
+              resource={image}
+            />
+          ) : (
+            <img
+              alt=""
+              className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
+              loading="lazy"
+              src={bodyFallbackSrc}
+            />
+          )}
+        </div>
+      )}
 
       <span
         aria-hidden="true"

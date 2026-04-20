@@ -7,13 +7,14 @@ import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
 import { ArrowRight, ChevronDown, ShoppingBag, UserRound } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { buildHeaderNavigation } from './constants'
+import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants'
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
@@ -62,12 +63,6 @@ const headerClassNames = {
   viewport: 'siteHeaderViewport',
 } as const
 
-const isRouteActive = (pathname: string, href?: string | null) => {
-  if (!href) return false
-  if (href === '/') return pathname === '/'
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
   const headerRef = useRef<HTMLElement | null>(null)
@@ -81,7 +76,7 @@ export function HeaderClient({ brand, header }: Props) {
   const navigationItems = useMemo(() => {
     return buildHeaderNavigation(header.navItems || []).map((item) => ({
       ...item,
-      isActive: isRouteActive(pathname, item.href),
+      isActive: isHeaderNavigationItemActive(pathname, item),
     }))
   }, [header.navItems, pathname])
 
@@ -170,7 +165,7 @@ export function HeaderClient({ brand, header }: Props) {
               className={cn(headerClassNames.brand, {
                 'has-logo': Boolean(brand.logoUrl),
               })}
-              href="/"
+              href={rotatingCookieFlavorsHref}
             >
               {brand.logoUrl ? (
                 <img
@@ -383,7 +378,8 @@ export function HeaderClient({ brand, header }: Props) {
                               }
                             }
 
-                            const productHref = product.slug ? `/products/${product.slug}` : '/shop'
+                            const productHref =
+                              product.slug ? `/products/${product.slug}` : menuHref
                             const variantSummary =
                               isVariant && variant
                                 ? variant.options
@@ -483,7 +479,7 @@ export function HeaderClient({ brand, header }: Props) {
                           </Link>
                           <Link
                             className="siteHeaderCartQuickSecondaryLink"
-                            href="/shop"
+                            href={menuHref}
                             onClick={() => setActivePanel(null)}
                           >
                             Keep browsing
@@ -504,7 +500,7 @@ export function HeaderClient({ brand, header }: Props) {
                       </div>
                       <Link
                         className="siteHeaderCartQuickCheckout"
-                        href="/shop"
+                        href={menuHref}
                         onClick={() => setActivePanel(null)}
                       >
                         Browse the menu
