@@ -10,4 +10,7 @@
     <ellipse cx="0" cy="-7" rx="4" ry="9" fill="#ffd700" transform="rotate(315)" />
   </g>
   <circle cx="0" cy="0" r="3.5" fill="#a06818" />
+  <path d="M0 3.5 L0 16" stroke="#6fa24a" stroke-width="1.9" stroke-linecap="round" />
+  <path d="M0 9 C-2.2 7.8 -3.7 7.8 -5 9" stroke="#7db455" stroke-width="1.2" stroke-linecap="round" fill="none" />
+  <path d="M0 11.5 C2.2 10.3 3.7 10.3 5 11.5" stroke="#7db455" stroke-width="1.2" stroke-linecap="round" fill="none" />
 </svg>
