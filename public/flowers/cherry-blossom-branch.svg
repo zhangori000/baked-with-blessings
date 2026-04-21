@@ -1,5 +1,5 @@
-<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(100, 65)">
+<svg width="200" height="260" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(96, 52) scale(1.8 1.8)">
     <path d="M 0 130 Q -5 90 -8 60 Q -10 30 -5 0" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
     <path d="M -7 50 Q -18 42 -28 48" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/>
     <path d="M -8 75 Q 3 68 12 72" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/>

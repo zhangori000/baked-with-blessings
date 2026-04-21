@@ -12,6 +12,8 @@
     <ellipse cx="550" cy="120" rx="60" ry="6"/>
     <ellipse cx="620" cy="60" rx="50" ry="5"/>
   </g>
+  <g transform="translate(0 79)">
+    <g transform="scale(0.82)">
   <path d="M 25 440 Q 30 400 40 360 Q 55 310 70 260 Q 82 220 90 190 L 112 188 Q 108 220 102 260 Q 95 310 85 360 Q 75 400 70 440 Z" fill="#5d3a1a"/>
   <path d="M 28 440 Q 33 400 42 360 Q 57 310 72 260 Q 82 225 90 192 L 98 192 Q 94 225 88 260 Q 80 310 72 360 Q 63 400 58 440 Z" fill="#3e2510"/>
   <path d="M 105 192 Q 101 225 95 260 Q 88 310 80 360 Q 72 400 68 440 L 72 440 Q 78 400 86 360 Q 96 310 102 260 Q 108 220 112 190 Z" fill="#7a5028"/>
@@ -59,6 +61,8 @@
     <circle cx="60" cy="5" r="18"/><circle cx="105" cy="0" r="20"/><circle cx="155" cy="0" r="22"/><circle cx="205" cy="5" r="20"/><circle cx="255" cy="15" r="18"/>
     <circle cx="75" cy="40" r="15"/><circle cx="120" cy="35" r="16"/><circle cx="170" cy="32" r="18"/><circle cx="220" cy="40" r="15"/>
     <circle cx="115" cy="85" r="14"/><circle cx="165" cy="80" r="15"/><circle cx="215" cy="85" r="14"/>
+  </g>
+    </g>
   </g>
   <g fill="#f4a8c4" opacity="0.9">
     <ellipse cx="380" cy="50" rx="4" ry="2.5" transform="rotate(30 380 50)"/><ellipse cx="420" cy="80" rx="4" ry="2.5" transform="rotate(-20 420 80)"/>

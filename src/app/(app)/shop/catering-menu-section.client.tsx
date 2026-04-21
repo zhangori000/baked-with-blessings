@@ -86,6 +86,12 @@ type BloomVariant = {
   rotation: number
 }
 
+type StaticSceneCritter = {
+  className: string
+  src: string
+  style?: React.CSSProperties
+}
+
 const cateringDisplayOrder = [
   'cookie-tray',
   'mini-cookie-tray',
@@ -134,7 +140,7 @@ const meadowByScenery: Record<MenuSceneryTone, string> = {
   'under-tree': '/catering/scenery/girl-under-tree-meadow.svg',
   moonlit: '/catering/scenery/moonlit-purple-meadow.svg',
   classic: '/catering/scenery/classic-meadow.svg',
-  blossom: '/catering/scenery/transparent-meadow.svg',
+  blossom: '/catering/scenery/blossom-grass-mound.svg',
 }
 const dividerFillByScenery: Record<MenuSceneryTone, string> = {
   dawn: 'linear-gradient(180deg, #cda639 0%, #b88623 100%)',
@@ -150,6 +156,13 @@ const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
   moonlit: 'linear-gradient(180deg, rgba(19, 41, 76, 0.96) 0%, rgba(29, 66, 98, 0.94) 100%)',
   classic: 'linear-gradient(180deg, rgba(233, 245, 255, 0.96) 0%, rgba(219, 236, 247, 0.95) 100%)',
   blossom: 'linear-gradient(180deg, rgba(248, 235, 240, 0.94) 0%, rgba(242, 224, 232, 0.94) 100%)',
+}
+const sceneButtonAuraByScenery: Record<MenuSceneryTone, string> = {
+  dawn: 'rgba(255, 214, 101, 0.85)',
+  'under-tree': 'rgba(197, 228, 142, 0.82)',
+  moonlit: 'rgba(153, 115, 255, 0.88)',
+  classic: 'rgba(255, 215, 79, 0.84)',
+  blossom: 'rgba(255, 176, 208, 0.9)',
 }
 const noScenePieces: readonly StaticScenePiece[] = []
 const brownAnimeHeroPieces: readonly StaticScenePiece[] = [
@@ -244,6 +257,41 @@ const panelPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]>
   moonlit: noScenePieces,
   classic: noScenePieces,
   blossom: noScenePieces,
+}
+const noSceneCritters: readonly StaticSceneCritter[] = []
+const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
+  dawn: noSceneCritters,
+  'under-tree': noSceneCritters,
+  moonlit: noSceneCritters,
+  classic: noSceneCritters,
+  blossom: [
+    {
+      className: 'left-[9%] bottom-[0.42rem] w-[3rem] md:w-[3.8rem]',
+      src: '/catering/decor/bunny-crouch.svg',
+    },
+    {
+      className: 'right-[14%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
+      src: '/catering/decor/bunny-crouch.svg',
+      style: { transform: 'scaleX(-1)' },
+    },
+  ],
+}
+const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
+  dawn: noSceneCritters,
+  'under-tree': noSceneCritters,
+  moonlit: noSceneCritters,
+  classic: noSceneCritters,
+  blossom: [
+    {
+      className: 'left-[16%] bottom-[0.34rem] w-[2.4rem]',
+      src: '/catering/decor/bunny-crouch.svg',
+    },
+    {
+      className: 'right-[18%] bottom-[0.34rem] w-[2.2rem]',
+      src: '/catering/decor/bunny-crouch.svg',
+      style: { transform: 'scaleX(-1)' },
+    },
+  ],
 }
 const heroCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
   dawn: [
@@ -549,7 +597,7 @@ const spawnedFlowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> =
   ],
   moonlit: ['/flowers/moonlit-purple-flower.svg'],
   classic: classicFlowerAssets,
-  blossom: ['/flowers/cherry-blossom-branch.svg'],
+  blossom: ['/catering/decor/bunny-crouch.svg'],
 }
 
 const defaultHeroLineFlowers: readonly LandscapeFlower[] = [
@@ -590,10 +638,10 @@ const heroLineFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower
   moonlit: moonlitHeroLineFlowers,
   classic: classicHeroLineFlowers,
   blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '18%', scale: 0.7 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '42%', scale: 0.74 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '66%', scale: 0.72 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '88%', scale: 0.68 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '18%', scale: 0.28 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '42%', scale: 0.3 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '66%', scale: 0.29 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '88%', scale: 0.27 },
   ],
 }
 
@@ -619,8 +667,8 @@ const persuasionWildflowersByScenery: Record<MenuSceneryTone, readonly Landscape
   moonlit: moonlitPersuasionWildflowers,
   classic: classicPersuasionWildflowers,
   blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '24%', scale: 0.68 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '62%', scale: 0.66 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '24%', scale: 0.24 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '62%', scale: 0.23 },
   ],
 }
 
@@ -660,10 +708,10 @@ const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly Landsca
   moonlit: moonlitPersuasionGardenFlowers,
   classic: classicPersuasionGardenFlowers,
   blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '14%', scale: 0.76 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '36%', scale: 0.8 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '58%', scale: 0.78 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '80%', scale: 0.74 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '14%', scale: 0.26 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '36%', scale: 0.28 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '58%', scale: 0.27 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '80%', scale: 0.25 },
   ],
 }
 
@@ -743,11 +791,7 @@ const dividerWildflowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlo
   ],
 }
 
-const persuasionSheep = [
-  { left: '72%', src: '/catering/decor/sheep-sleepy.svg' },
-  { left: '84%', src: '/catering/decor/sheep-curious.svg' },
-  { left: '94%', src: '/catering/decor/sheep-grin.svg' },
-] as const
+const persuasionSheep = [{ left: '89%', src: '/catering/decor/sheep-grin.svg' }] as const
 
 const normalizeImage = (product: Partial<Product>) => {
   const firstGalleryItem = product.gallery?.[0]
@@ -875,9 +919,25 @@ const preloadSceneryAssets = (sceneryTone: MenuSceneryTone) => {
   }
 }
 
+const createSceneChangeChargeId = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random()}`
+
 const getRandomBloomVariant = () =>
   bloomVariantPresets[Math.floor(Math.random() * bloomVariantPresets.length)] ??
   bloomVariantPresets[0]
+
+const hashSeed = (seed: string) =>
+  Array.from(seed).reduce(
+    (total, character, index) => total + character.charCodeAt(0) * (index + 1),
+    0,
+  )
+
+const deterministicBetween = (seed: string, min: number, max: number) => {
+  const normalized = (Math.sin(hashSeed(seed) * 12.9898) + 1) / 2
+  return min + (max - min) * normalized
+}
 
 const buildFlowerMotionStyle = (key: string, left: string, scale: number): React.CSSProperties => {
   const seed = Array.from(key).reduce(
@@ -904,7 +964,7 @@ const heroFlowerSeamByScenery: Record<MenuSceneryTone, string> = {
   'under-tree': '0.55rem',
   moonlit: '0.5rem',
   classic: '0.5rem',
-  blossom: '0.6rem',
+  blossom: '0rem',
 }
 
 const createSpawnedCloud = (
@@ -956,19 +1016,23 @@ const createSpawnedFlower = (
   const heroScaleRange =
     sceneryTone === 'under-tree'
       ? [0.66, 0.86]
-      : sceneryTone === 'moonlit'
-        ? [0.72, 0.92]
-        : sceneryTone === 'classic'
-          ? [0.74, 0.94]
-          : [0.76, 0.98]
+      : sceneryTone === 'blossom'
+        ? [0.96, 1.24]
+        : sceneryTone === 'moonlit'
+          ? [0.72, 0.92]
+          : sceneryTone === 'classic'
+            ? [0.74, 0.94]
+            : [0.76, 0.98]
   const panelScaleRange =
     sceneryTone === 'under-tree'
       ? [0.78, 1]
-      : sceneryTone === 'moonlit'
-        ? [0.82, 1.04]
-        : sceneryTone === 'classic'
-          ? [0.84, 1.06]
-          : [0.86, 1.08]
+      : sceneryTone === 'blossom'
+        ? [0.88, 1.14]
+        : sceneryTone === 'moonlit'
+          ? [0.82, 1.04]
+          : sceneryTone === 'classic'
+            ? [0.84, 1.06]
+            : [0.86, 1.08]
   const [minLeft, maxLeft] = kind === 'hero' ? heroLeftRange : [8, 92]
   const [minScale, maxScale] = kind === 'hero' ? heroScaleRange : panelScaleRange
 
@@ -983,33 +1047,78 @@ const createSpawnedFlower = (
   }
 }
 
+const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'panel') => {
+  const leftRange: [number, number] = kind === 'hero' ? [8, 92] : [6, 94]
+
+  if (kind === 'hero') {
+    return {
+      leftRange,
+      scaleRange:
+        sceneryTone === 'under-tree'
+          ? ([0.66, 0.86] as [number, number])
+          : sceneryTone === 'blossom'
+            ? ([0.96, 1.24] as [number, number])
+            : sceneryTone === 'moonlit'
+              ? ([0.72, 0.92] as [number, number])
+              : sceneryTone === 'classic'
+                ? ([0.74, 0.94] as [number, number])
+                : ([0.76, 0.98] as [number, number]),
+    }
+  }
+
+  return {
+    leftRange,
+    scaleRange:
+      sceneryTone === 'under-tree'
+        ? ([0.78, 1] as [number, number])
+        : sceneryTone === 'blossom'
+          ? ([0.88, 1.14] as [number, number])
+          : sceneryTone === 'moonlit'
+            ? ([0.82, 1.04] as [number, number])
+            : sceneryTone === 'classic'
+              ? ([0.84, 1.06] as [number, number])
+              : ([0.86, 1.08] as [number, number]),
+  }
+}
+
 const buildSeededFlowers = (
   sceneryTone: MenuSceneryTone,
   kind: 'hero' | 'panel',
   count = 20,
 ): SpawnedFlower[] => {
-  const [minLeft, maxLeft] = kind === 'hero' ? [8, 92] : [6, 94]
+  const {
+    leftRange: [minLeft, maxLeft],
+    scaleRange: [minScale, maxScale],
+  } = getSeededFlowerRanges(sceneryTone, kind)
+  const assets = spawnedFlowerAssetsByScenery[sceneryTone]
   const span = maxLeft - minLeft
 
   return Array.from({ length: count }, (_, index) => {
     const segmentStart = minLeft + (span / count) * index
     const segmentEnd = minLeft + (span / count) * (index + 1)
-    const flower = createSpawnedFlower(sceneryTone, kind)
+    const seedRoot = `${sceneryTone}-${kind}-${index}`
+    const assetIndex = Math.floor(
+      deterministicBetween(`${seedRoot}-asset`, 0, assets.length - 0.0001),
+    )
+    const asset = assets[assetIndex] ?? '/flowers/daisy.svg'
+    const left = deterministicBetween(`${seedRoot}-left`, segmentStart + 0.16, segmentEnd - 0.16)
+    const scale = deterministicBetween(`${seedRoot}-scale`, minScale, maxScale)
 
     return {
-      ...flower,
+      asset,
       id: index + 1,
-      left: `${randomBetween(segmentStart + 0.16, segmentEnd - 0.16).toFixed(2)}%`,
+      left: `${left.toFixed(2)}%`,
+      scale: Number(scale.toFixed(2)),
     }
   })
 }
 
 const getResponsiveFlowerSeedCount = () => {
   if (typeof window === 'undefined') {
-    return 20
+    return 9
   }
 
-  return window.matchMedia('(max-width: 767px)').matches ? 13 : 20
+  return 9
 }
 
 const useResponsiveFlowerSeedCount = () => {
@@ -1021,7 +1130,7 @@ const useResponsiveFlowerSeedCount = () => {
     }
 
     const mediaQuery = window.matchMedia('(max-width: 767px)')
-    const sync = () => setFlowerCount(mediaQuery.matches ? 13 : 20)
+    const sync = () => setFlowerCount(9)
 
     sync()
     mediaQuery.addEventListener('change', sync)
@@ -1160,9 +1269,11 @@ function DecorativeSceneImage({
 }
 
 function MenuHero({
+  isSceneChanging,
   onChangeScenery,
   sceneryTone,
 }: {
+  isSceneChanging: boolean
   onChangeScenery: () => void
   sceneryTone: MenuSceneryTone
 }) {
@@ -1172,6 +1283,7 @@ function MenuHero({
     buildSeededFlowers(sceneryTone, 'hero', flowerSeedCount),
   )
   const sceneClouds = heroCloudsByScenery[sceneryTone] ?? heroCloudsByScenery.dawn
+  const heroCritters = heroCrittersByScenery[sceneryTone] ?? heroCrittersByScenery.dawn
   const heroPieces = heroPiecesByScenery[sceneryTone] ?? heroPiecesByScenery.dawn
   const heroFlowers = heroLineFlowersByScenery[sceneryTone] ?? heroLineFlowersByScenery.dawn
   const heroSkySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
@@ -1198,6 +1310,7 @@ function MenuHero({
       )}
       style={
         {
+          ['--catering-scene-charge' as string]: sceneButtonAuraByScenery[sceneryTone],
           ['--catering-hero-flower-seam' as string]:
             heroFlowerSeamByScenery[sceneryTone] ?? heroFlowerSeamByScenery.dawn,
         } as React.CSSProperties
@@ -1224,6 +1337,15 @@ function MenuHero({
             sizes="50vw"
             src={piece.src}
             style={piece.style}
+          />
+        ))}
+        {heroCritters.map((critter) => (
+          <DecorativeSceneImage
+            className={cn('cateringHeroSceneryPiece', critter.className)}
+            key={`${sceneryTone}-${critter.className}-${critter.src}`}
+            sizes="6rem"
+            src={critter.src}
+            style={critter.style}
           />
         ))}
         <div aria-hidden="true" className="cateringHeroFlowerRail">
@@ -1291,7 +1413,14 @@ function MenuHero({
               <button className="cateringSpawnButton" onClick={spawnFlower} type="button">
                 Spawn a flower
               </button>
-              <button className="cateringSpawnButton" onClick={onChangeScenery} type="button">
+              <button
+                className={cn(
+                  'cateringSpawnButton',
+                  isSceneChanging && 'cateringSpawnButtonCharging',
+                )}
+                onClick={onChangeScenery}
+                type="button"
+              >
                 Change scenery
               </button>
             </div>
@@ -1303,11 +1432,13 @@ function MenuHero({
 }
 
 function PersuasionGardenPanel({
+  isSceneChanging,
   onChangeScenery,
   product,
   sceneryTone,
   summary,
 }: {
+  isSceneChanging: boolean
   onChangeScenery: () => void
   product: Partial<Product>
   sceneryTone: MenuSceneryTone
@@ -1323,6 +1454,7 @@ function PersuasionGardenPanel({
   const panelPieces = panelPiecesByScenery[sceneryTone] ?? panelPiecesByScenery.dawn
   const panelFlowers =
     persuasionGardenFlowersByScenery[sceneryTone] ?? persuasionGardenFlowersByScenery.dawn
+  const panelCritters = panelCrittersByScenery[sceneryTone] ?? panelCrittersByScenery.dawn
   const panelWildflowers =
     persuasionWildflowersByScenery[sceneryTone] ?? persuasionWildflowersByScenery.dawn
   const skySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
@@ -1349,6 +1481,7 @@ function PersuasionGardenPanel({
       )}
       style={
         {
+          ['--catering-scene-charge' as string]: sceneButtonAuraByScenery[sceneryTone],
           ['--catering-panel-fill' as string]: panelBackgroundByScenery[sceneryTone],
         } as React.CSSProperties
       }
@@ -1417,7 +1550,11 @@ function PersuasionGardenPanel({
           <button className="cateringSpawnButton" onClick={spawnFlower} type="button">
             Spawn a flower
           </button>
-          <button className="cateringSpawnButton" onClick={onChangeScenery} type="button">
+          <button
+            className={cn('cateringSpawnButton', isSceneChanging && 'cateringSpawnButtonCharging')}
+            onClick={onChangeScenery}
+            type="button"
+          >
             Change scenery
           </button>
         </div>
@@ -1437,6 +1574,15 @@ function PersuasionGardenPanel({
             sizes="40vw"
             src={piece.src}
             style={piece.style}
+          />
+        ))}
+        {panelCritters.map((critter) => (
+          <DecorativeSceneImage
+            className={cn('cateringPersuasionSceneryPiece', critter.className)}
+            key={`${sceneryTone}-${critter.className}-${critter.src}`}
+            sizes="4rem"
+            src={critter.src}
+            style={critter.style}
           />
         ))}
         {persuasionSheep.map((sheep) => (
@@ -1506,17 +1652,14 @@ function TrayFlavorCard({
   const flavorCardSky = skyByScenery[sceneryTone] ?? skyByScenery.classic
   const flavorCardMeadow =
     sceneryTone === 'blossom'
-      ? '/catering/scenery/classic-meadow.svg'
+      ? '/catering/scenery/blossom-grass-mound.svg'
       : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
 
   return (
     <article className="cateringFlavorCard flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]">
       <div className="px-4 pt-3.5">
         <div className="min-w-0">
-          <h4 className="cateringMenuRoundHeading truncate text-[1.02rem] leading-tight tracking-[-0.02em] text-[#171510]">
-            {flavor.title}
-          </h4>
-          <div className="mt-2.5 flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               aria-label={`Remove one ${flavor.title}`}
               className="cateringFlavorStep"
@@ -1524,30 +1667,33 @@ function TrayFlavorCard({
               onClick={removeSelection}
               type="button"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-3.5 w-3.5" />
             </button>
 
-            <div className="text-center">
-              <p className="text-[0.72rem] uppercase tracking-[0.14em] text-[rgba(23,21,16,0.42)]">
-                In tray
-              </p>
-              <p className="cateringMenuRoundHeading text-[0.94rem] tracking-[-0.02em] text-[#171510]">
-                {count}
-              </p>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[0.98rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
+                <span className="block line-clamp-2">{flavor.title}</span>
+              </h4>
+
+              <div className="flex shrink-0 items-center justify-center text-center">
+                <p className="text-[0.68rem] font-semibold tracking-[-0.01em] text-[rgba(23,21,16,0.48)]">
+                  {count}
+                </p>
+              </div>
             </div>
 
             <button
               aria-label={`Add one ${flavor.title}`}
-              className="cateringFlavorStep"
+              className="cateringFlavorStep ml-auto"
               disabled={!canIncrement}
               onClick={addSelection}
               type="button"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
           {flavor.summary ? (
-            <p className="mt-2.5 line-clamp-2 text-[0.8rem] leading-6 text-[rgba(23,21,16,0.62)]">
+            <p className="mt-1 line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
               {flavor.summary}
             </p>
           ) : null}
@@ -1559,7 +1705,7 @@ function TrayFlavorCard({
         style={
           {
             '--cookie-bottom': '1.75rem',
-            '--cookie-size': 'clamp(10rem, 64%, 11.6rem)',
+            '--cookie-size': 'clamp(10.8rem, 68%, 12.4rem)',
           } as React.CSSProperties
         }
       >
@@ -1586,7 +1732,7 @@ function TrayFlavorCard({
         ))}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
 
-        <div className="relative h-[14.3rem]">
+        <div className="relative h-[16.3rem]">
           <CookieSheepRig
             bodyFallbackSrc={flavor.bodyFallbackSrc}
             image={flavor.image}
@@ -1667,6 +1813,7 @@ function SimpleItemPanel({
 }
 
 function BatchBuilderPanel({
+  isSceneChanging,
   onAddFlavor,
   onAddToCart,
   onChangeScenery,
@@ -1680,6 +1827,7 @@ function BatchBuilderPanel({
   totalSelected,
   traySelectionsForSummary,
 }: {
+  isSceneChanging: boolean
   onAddFlavor: (flavorID: number) => void
   onAddToCart: () => void
   onChangeScenery: () => void
@@ -1710,6 +1858,7 @@ function BatchBuilderPanel({
   return (
     <div className="space-y-5">
       <PersuasionGardenPanel
+        isSceneChanging={isSceneChanging}
         onChangeScenery={onChangeScenery}
         product={product}
         sceneryTone={sceneryTone}
@@ -1749,13 +1898,21 @@ function BatchBuilderPanel({
 
                 {progressFlowers.map((bloom, index) => (
                   <span
-                    className={cn('cateringProgressBloom', `tone-${bloom.tone}`)}
+                    className="cateringProgressBloom"
                     key={bloom.id}
                     style={{
                       left: `${((index + 1) / requiredSelectionCount) * 100}%`,
                     }}
                   >
-                    <MenuBloomMark tone={bloom.tone} variant={defaultToneVariants[bloom.tone]} />
+                    <Image
+                      alt=""
+                      aria-hidden="true"
+                      className="cateringProgressBloomImage"
+                      height={80}
+                      src="/flowers/menu-nav-flower.svg"
+                      unoptimized
+                      width={80}
+                    />
                   </span>
                 ))}
               </div>
@@ -1819,11 +1976,13 @@ function BatchBuilderPanel({
 }
 
 function CateringMenuRow({
+  isSceneChanging,
   index,
   onChangeScenery,
   product,
   sceneryTone,
 }: {
+  isSceneChanging: boolean
   index: number
   onChangeScenery: () => void
   product: Partial<Product>
@@ -1972,6 +2131,7 @@ function CateringMenuRow({
       <AccordionContent className="pt-1 pb-9">
         {isBatchBuilder ? (
           <BatchBuilderPanel
+            isSceneChanging={isSceneChanging}
             onAddFlavor={handleAddFlavor}
             onAddToCart={handleAddToCart}
             onChangeScenery={onChangeScenery}
@@ -2000,7 +2160,8 @@ function CateringMenuRow({
 
 export function CateringMenuSection({ products }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
-  const [heroSceneryTone, setHeroSceneryTone] = useState<MenuSceneryTone>('dawn')
+  const [heroSceneryTone, setHeroSceneryTone] = useState<MenuSceneryTone>('classic')
+  const [isSceneChanging, setIsSceneChanging] = useState(false)
 
   if (orderedProducts.length === 0) {
     return null
@@ -2013,16 +2174,22 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
   }, [])
 
   const handleChangeHeroScenery = () => {
+    setIsSceneChanging(true)
     const nextSceneryTone = getNextSceneryTone(heroSceneryTone)
     preloadSceneryAssets(nextSceneryTone)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
+    window.setTimeout(() => setIsSceneChanging(false), 360)
   }
 
   return (
     <div className="cateringMenuExperience" style={{ fontFamily: 'var(--font-rounded-body)' }}>
-      <MenuHero onChangeScenery={handleChangeHeroScenery} sceneryTone={heroSceneryTone} />
+      <MenuHero
+        isSceneChanging={isSceneChanging}
+        onChangeScenery={handleChangeHeroScenery}
+        sceneryTone={heroSceneryTone}
+      />
 
       <section
         className="cateringMenuBand relative left-1/2 w-screen -translate-x-1/2"
@@ -2037,6 +2204,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
             >
               {orderedProducts.map((product, index) => (
                 <CateringMenuRow
+                  isSceneChanging={isSceneChanging}
                   index={index}
                   key={product.id ?? product.slug ?? index}
                   onChangeScenery={handleChangeHeroScenery}
@@ -2194,14 +2362,14 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringHeroLineFlower {
           --flower-stem-trim: 10%;
-          bottom: 0.1rem;
+          bottom: 0;
           width: 2.18rem;
           z-index: 2;
         }
 
         .cateringHeroLineWildflower {
           --flower-stem-trim: 6%;
-          bottom: 0.16rem;
+          bottom: 0;
           width: 1.34rem;
           z-index: 1;
         }
@@ -2269,7 +2437,17 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringSpawnButton {
           align-items: center;
-          background: rgba(255, 248, 242, 0.84);
+          background:
+            linear-gradient(
+              90deg,
+              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 68%, white 32%) 0%,
+              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 82%, white 18%) 100%
+            )
+            no-repeat,
+            rgba(255, 248, 242, 0.84);
+          background-size:
+            0% 100%,
+            100% 100%;
           border: 1px solid rgba(25, 57, 95, 0.16);
           border-radius: 999px;
           color: #173a63;
@@ -2280,12 +2458,53 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           font-weight: 700;
           letter-spacing: -0.01em;
           min-height: 2.25rem;
+          overflow: hidden;
           padding: 0.45rem 0.95rem;
+          position: relative;
           transition:
+            background-size 220ms ease,
             background-color 180ms ease,
             border-color 180ms ease,
+            box-shadow 180ms ease,
             transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
           z-index: 2;
+        }
+
+        .cateringSpawnButton::before {
+          content: '';
+          inset: 0;
+          opacity: 0;
+          pointer-events: none;
+          position: absolute;
+          background:
+            linear-gradient(
+              90deg,
+              transparent 0%,
+              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 28%, white 72%) 52%,
+              transparent 100%
+            );
+          border-radius: inherit;
+          transition: opacity 140ms ease;
+          z-index: 0;
+        }
+
+        .cateringSpawnButtonCharging {
+          background-size:
+            100% 100%,
+            100% 100%;
+          border-color: color-mix(
+            in srgb,
+            var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 45%,
+            rgba(25, 57, 95, 0.18)
+          );
+          box-shadow: inset 0 0 0 1px
+            color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 22%, transparent 78%);
+          transform: translateY(-1px) scale(1.01);
+        }
+
+        .cateringSpawnButtonCharging::before {
+          animation: cateringSceneBeamSweep 680ms linear infinite;
+          opacity: 0.82;
         }
 
         .cateringSpawnButton:hover,
@@ -2523,14 +2742,14 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           border-radius: 999px;
           color: #1c2e10;
           display: inline-flex;
-          height: 1.9rem;
+          height: 1.45rem;
           justify-content: center;
           transition:
             transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
             background-color 180ms ease,
             border-color 180ms ease,
             color 180ms ease;
-          width: 1.9rem;
+          width: 1.45rem;
         }
 
         .cateringFlavorStep:hover,
@@ -2580,33 +2799,30 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringFlavorRailItem {
-          flex: 0 0 min(82vw, 18rem);
+          flex: 0 0 min(86vw, 20.75rem);
           scroll-snap-align: start;
         }
 
         .cateringProgressBloom {
-          bottom: 0.12rem;
+          animation: cateringProgressBloomGrow 760ms cubic-bezier(0.22, 1, 0.36, 1) both,
+            cateringProgressBloomBob 3.2s ease-in-out 760ms infinite;
+          bottom: -0.02rem;
+          height: 2.6rem;
           opacity: 1;
           pointer-events: none;
           position: absolute;
           transform: translateX(-50%);
           transform-origin: center bottom;
+          width: 2.6rem;
           z-index: 2;
         }
 
-        .cateringProgressBloom .cateringBloomFlower {
-          animation: cateringProgressFlowerGrow 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          height: 0.96rem;
-          transform: scale(0.42);
-          transform-origin: center center;
-          width: 0.96rem;
-        }
-
-        .cateringProgressBloom .cateringBloomStem {
-          animation: cateringProgressStemGrow 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          height: 0.14rem;
-          margin-top: -0.02rem;
-          width: 2px;
+        .cateringProgressBloomImage {
+          display: block;
+          height: 100%;
+          object-fit: contain;
+          object-position: center bottom;
+          width: 100%;
         }
 
         .cookieSheepBodyImage {
@@ -2649,31 +2865,31 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
-        @keyframes cateringProgressStemGrow {
+        @keyframes cateringProgressBloomGrow {
           0% {
-            height: 0.14rem;
+            opacity: 0;
+            transform: translateX(-50%) translateY(0.35rem) scale(0.38);
           }
 
-          68% {
-            height: 1rem;
+          72% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-0.08rem) scale(1.06);
           }
 
           100% {
-            height: 0.78rem;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
           }
         }
 
-        @keyframes cateringProgressFlowerGrow {
-          0% {
-            transform: scale(0.36);
-          }
-
-          74% {
-            transform: scale(1.08);
-          }
-
+        @keyframes cateringProgressBloomBob {
+          0%,
           100% {
-            transform: scale(0.94);
+            transform: translateX(-50%) translateY(0) rotate(-2deg) scale(1);
+          }
+
+          50% {
+            transform: translateX(-50%) translateY(-0.16rem) rotate(2deg) scale(1.02);
           }
         }
 
@@ -2738,9 +2954,30 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
+        @keyframes cateringSceneBeamSweep {
+          0% {
+            opacity: 0;
+            transform: translateX(-120%);
+          }
+
+          18% {
+            opacity: 0.65;
+          }
+
+          55% {
+            opacity: 0.92;
+            transform: translateX(-8%);
+          }
+
+          100% {
+            opacity: 0;
+            transform: translateX(108%);
+          }
+        }
+
         @media (min-width: 960px) {
           .cateringFlavorRailItem {
-            flex-basis: 18rem;
+            flex-basis: 20.75rem;
           }
         }
 
@@ -2793,7 +3030,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
 
           .cateringFlavorRailItem {
-            flex-basis: min(84vw, 17rem);
+            flex-basis: min(90vw, 19rem);
           }
 
           .cateringPortionInline {
