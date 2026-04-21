@@ -1,0 +1,306 @@
+Here are all the SVG components that make up the scene, broken out as standalone pieces.
+
+## Shared gradient/pattern defs
+
+Every scene reuses these. Paste the `<defs>` block once at the top of your SVG, then reference the IDs below.
+
+```svg
+<defs>
+  <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#0a1540"/>
+    <stop offset="40%" stop-color="#1a3060"/>
+    <stop offset="70%" stop-color="#2a6878"/>
+    <stop offset="100%" stop-color="#3a9880"/>
+  </linearGradient>
+  
+  <linearGradient id="auroraGlow" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#6ad4a0" stop-opacity="0"/>
+    <stop offset="50%" stop-color="#6ad4a0" stop-opacity="0.5"/>
+    <stop offset="100%" stop-color="#4ab8a8" stop-opacity="0.7"/>
+  </linearGradient>
+  
+  <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+    <stop offset="40%" stop-color="#e8f4d8" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#a8e8c4" stop-opacity="0"/>
+  </radialGradient>
+  
+  <radialGradient id="moon" cx="0.4" cy="0.4" r="0.6">
+    <stop offset="0%" stop-color="#ffffff"/>
+    <stop offset="70%" stop-color="#f0f8e0"/>
+    <stop offset="100%" stop-color="#c8e0b8"/>
+  </radialGradient>
+  
+  <linearGradient id="mountain" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#3a5068"/>
+    <stop offset="100%" stop-color="#2a3a50"/>
+  </linearGradient>
+  
+  <linearGradient id="meadowNight" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1a3a4a"/>
+    <stop offset="100%" stop-color="#0a2030"/>
+  </linearGradient>
+  
+  <radialGradient id="purpleGlow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0%" stop-color="#d4a8ff" stop-opacity="0.85"/>
+    <stop offset="100%" stop-color="#8a5ac4" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+```
+
+## 1. Night sky background with aurora
+
+```svg
+<rect x="0" y="0" width="680" height="480" fill="url(#nightSky)"/>
+<rect x="0" y="180" width="680" height="120" fill="url(#auroraGlow)"/>
+```
+
+## 2. Star field
+
+A mix of tiny dots and three bigger "plus sign" twinkle stars.
+
+```svg
+<g fill="#ffffff">
+  <circle cx="80" cy="30" r="1"/>
+  <circle cx="180" cy="20" r="0.8"/>
+  <circle cx="260" cy="50" r="1.2"/>
+  <circle cx="340" cy="35" r="0.8"/>
+  <circle cx="420" cy="25" r="1"/>
+  <circle cx="480" cy="45" r="0.8"/>
+  <circle cx="560" cy="30" r="1.2"/>
+  <circle cx="620" cy="55" r="1"/>
+  <circle cx="50" cy="80" r="0.8"/>
+  <circle cx="130" cy="90" r="1"/>
+  <circle cx="220" cy="100" r="0.8"/>
+  <circle cx="300" cy="85" r="1"/>
+  <circle cx="380" cy="105" r="0.8"/>
+  <circle cx="450" cy="90" r="1"/>
+  <circle cx="540" cy="110" r="0.8"/>
+  <circle cx="610" cy="95" r="1"/>
+  <circle cx="100" cy="140" r="0.8"/>
+  <circle cx="200" cy="150" r="1"/>
+  <circle cx="280" cy="135" r="0.8"/>
+  <circle cx="360" cy="155" r="1"/>
+  <circle cx="490" cy="145" r="0.8"/>
+  <circle cx="580" cy="160" r="1"/>
+  
+  <!-- Plus-shaped twinkle stars -->
+  <g opacity="0.9">
+    <rect x="279" y="83" width="0.8" height="5"/>
+    <rect x="277" y="85" width="5" height="0.8"/>
+    <rect x="419" y="23" width="0.8" height="5"/>
+    <rect x="417" y="25" width="5" height="0.8"/>
+    <rect x="559" y="28" width="0.8" height="5"/>
+    <rect x="557" y="30" width="5" height="0.8"/>
+  </g>
+</g>
+```
+
+## 3. Moon with halo and reflection
+
+```svg
+<!-- Outer glow halo -->
+<circle cx="130" cy="100" r="70" fill="url(#moonGlow)"/>
+<!-- Moon disc -->
+<circle cx="130" cy="100" r="32" fill="url(#moon)"/>
+<!-- Craters -->
+<circle cx="120" cy="95" r="3" fill="#c8d8b8" opacity="0.5"/>
+<circle cx="138" cy="105" r="2" fill="#c8d8b8" opacity="0.5"/>
+<circle cx="128" cy="112" r="2.5" fill="#c8d8b8" opacity="0.5"/>
+<circle cx="142" cy="92" r="1.5" fill="#c8d8b8" opacity="0.5"/>
+<!-- Moonlight reflection streak -->
+<ellipse cx="130" cy="140" rx="50" ry="6" fill="#a8e8c4" opacity="0.3"/>
+<ellipse cx="130" cy="155" rx="35" ry="4" fill="#a8e8c4" opacity="0.2"/>
+```
+
+## 4. Cloud bank (upper right wispy)
+
+```svg
+<g fill="#4a7a98" opacity="0.85">
+  <ellipse cx="520" cy="40" rx="80" ry="10"/>
+  <ellipse cx="580" cy="30" rx="60" ry="8"/>
+  <ellipse cx="620" cy="50" rx="50" ry="7"/>
+  <ellipse cx="450" cy="55" rx="55" ry="6"/>
+</g>
+<g fill="#6b98b8" opacity="0.7">
+  <ellipse cx="500" cy="45" rx="70" ry="6"/>
+  <ellipse cx="600" cy="38" rx="50" ry="5"/>
+</g>
+```
+
+## 5. Dark swooping cloud with moonlit highlights
+
+```svg
+<!-- Dark body -->
+<g fill="#1a2540" opacity="0.95">
+  <ellipse cx="580" cy="80" rx="120" ry="15"/>
+  <ellipse cx="640" cy="70" rx="60" ry="12"/>
+  <ellipse cx="520" cy="90" rx="80" ry="10"/>
+</g>
+<!-- Moonlit highlights catching light -->
+<g fill="#8bc4d4" opacity="0.5">
+  <ellipse cx="560" cy="75" rx="100" ry="5"/>
+  <ellipse cx="630" cy="65" rx="40" ry="4"/>
+</g>
+```
+
+## 6. Mid-sky wispy horizontal cloud band
+
+```svg
+<g fill="#3a6878" opacity="0.7">
+  <ellipse cx="350" cy="180" rx="150" ry="8"/>
+  <ellipse cx="480" cy="175" rx="100" ry="6"/>
+  <ellipse cx="200" cy="185" rx="80" ry="6"/>
+</g>
+```
+
+## 7. Horizon aurora glow band
+
+```svg
+<ellipse cx="340" cy="230" rx="340" ry="20" fill="#7ae8b0" opacity="0.5"/>
+<ellipse cx="340" cy="240" rx="340" ry="12" fill="#a8f0c4" opacity="0.4"/>
+```
+
+## 8. Distant mountains with moonlit edges
+
+```svg
+<path d="M 0 250 L 60 210 L 110 230 L 180 200 L 250 225 L 310 215 L 360 235 L 400 230 L 440 240 L 500 235 L 560 245 L 620 230 L 680 245 L 680 280 L 0 280 Z" fill="url(#mountain)"/>
+<!-- Green aurora-lit peaks -->
+<path d="M 60 210 L 110 230" stroke="#6ad4a0" stroke-width="1" opacity="0.7"/>
+<path d="M 180 200 L 250 225" stroke="#6ad4a0" stroke-width="1" opacity="0.6"/>
+<path d="M 310 215 L 360 235" stroke="#6ad4a0" stroke-width="1" opacity="0.5"/>
+```
+
+## 9. Reflective water strip
+
+```svg
+<rect x="0" y="280" width="680" height="30" fill="#2a5868" opacity="0.6"/>
+<line x1="50" y1="290" x2="150" y2="290" stroke="#6ad4a0" stroke-width="0.8" opacity="0.4"/>
+<line x1="200" y1="295" x2="320" y2="295" stroke="#6ad4a0" stroke-width="0.8" opacity="0.3"/>
+<line x1="380" y1="292" x2="480" y2="292" stroke="#6ad4a0" stroke-width="0.8" opacity="0.3"/>
+```
+
+## 10. Dark meadow foreground
+
+```svg
+<path d="M 0 300 Q 200 290 400 305 Q 550 315 680 300 L 680 480 L 0 480 Z" fill="url(#meadowNight)"/>
+```
+
+## 11. Stylized purple flower (three sizes)
+
+The flower structure is: glow halo, stem, calyx, back petal (darkest), two side petals (mid), front petal (brightest), dark center, sparkle dot. Just wrap in `<g transform="translate(X, Y)">` to position — `(X, Y)` is where the stem meets the ground.
+
+**Large flower (use for tallest/closest):**
+
+```svg
+<g transform="translate(90, 470)">
+  <circle cx="0" cy="-55" r="48" fill="url(#purpleGlow)"/>
+  <line x1="0" y1="10" x2="0" y2="-40" stroke="#2a4a3a" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="0" cy="-38" rx="8" ry="7" fill="#3a1a7a"/>
+  <ellipse cx="0" cy="-40" rx="7" ry="5" fill="#4a2a9a"/>
+  <circle cx="0" cy="-60" r="16" fill="#5a2ab4"/>
+  <circle cx="-13" cy="-50" r="15" fill="#7a3ad4"/>
+  <circle cx="13" cy="-50" r="15" fill="#7a3ad4"/>
+  <circle cx="0" cy="-48" r="14" fill="#9a5af0"/>
+  <circle cx="0" cy="-50" r="3" fill="#2a0a5a"/>
+  <circle cx="-2" cy="-52" r="1.2" fill="#e8c8ff" opacity="0.9"/>
+</g>
+```
+
+**Medium flower:**
+
+```svg
+<g transform="translate(165, 478)">
+  <circle cx="0" cy="-45" r="40" fill="url(#purpleGlow)"/>
+  <line x1="0" y1="5" x2="0" y2="-33" stroke="#2a4a3a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="0" cy="-32" rx="7" ry="6" fill="#3a1a7a"/>
+  <ellipse cx="0" cy="-34" rx="6" ry="4" fill="#4a2a9a"/>
+  <circle cx="0" cy="-50" r="13" fill="#5a2ab4"/>
+  <circle cx="-11" cy="-42" r="12" fill="#7a3ad4"/>
+  <circle cx="11" cy="-42" r="12" fill="#7a3ad4"/>
+  <circle cx="0" cy="-40" r="11" fill="#9a5af0"/>
+  <circle cx="0" cy="-42" r="2.5" fill="#2a0a5a"/>
+  <circle cx="-1.5" cy="-44" r="1" fill="#e8c8ff" opacity="0.9"/>
+</g>
+```
+
+**Small flower (background/scattered):**
+
+```svg
+<g transform="translate(30, 475)">
+  <circle cx="0" cy="-28" r="25" fill="url(#purpleGlow)"/>
+  <line x1="0" y1="5" x2="0" y2="-20" stroke="#2a4a3a" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="0" cy="-30" r="8" fill="#5a2ab4"/>
+  <circle cx="-6" cy="-25" r="7" fill="#7a3ad4"/>
+  <circle cx="6" cy="-25" r="7" fill="#7a3ad4"/>
+  <circle cx="0" cy="-24" r="6" fill="#9a5af0"/>
+  <circle cx="0" cy="-25" r="1.5" fill="#2a0a5a"/>
+</g>
+```
+
+## 12. Tiniest/shortest flower
+
+For crowded clusters where you want extra variation:
+
+```svg
+<g transform="translate(220, 478)">
+  <circle cx="0" cy="-35" r="32" fill="url(#purpleGlow)"/>
+  <line x1="0" y1="5" x2="0" y2="-25" stroke="#2a4a3a" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="0" cy="-24" rx="5" ry="4" fill="#3a1a7a"/>
+  <circle cx="0" cy="-38" r="10" fill="#5a2ab4"/>
+  <circle cx="-8" cy="-32" r="9" fill="#7a3ad4"/>
+  <circle cx="8" cy="-32" r="9" fill="#7a3ad4"/>
+  <circle cx="0" cy="-31" r="8" fill="#9a5af0"/>
+  <circle cx="0" cy="-32" r="2" fill="#2a0a5a"/>
+  <circle cx="-1" cy="-34" r="0.8" fill="#e8c8ff" opacity="0.9"/>
+</g>
+```
+
+## 13. Floating fireflies/magical particles
+
+```svg
+<g fill="#ffffff" opacity="0.9">
+  <circle cx="380" cy="220" r="1.5"/>
+  <circle cx="420" cy="200" r="1"/>
+  <circle cx="450" cy="170" r="1.2"/>
+  <circle cx="550" cy="140" r="1"/>
+  <circle cx="600" cy="180" r="1.5"/>
+  <circle cx="330" cy="160" r="1"/>
+  <circle cx="300" cy="240" r="1.2"/>
+  <circle cx="250" cy="200" r="1"/>
+  <circle cx="180" cy="260" r="1"/>
+  <circle cx="520" cy="260" r="1.2"/>
+</g>
+```
+
+## Layer order
+
+Stack from background to foreground when assembling — later elements render on top:
+
+Sky background → aurora gradient overlay → stars → moon → upper-right clouds → dark swooping cloud → mid-sky wispy cloud → horizon aurora band → mountains → water strip → meadow foreground → fireflies (behind flowers) → flowers (largest/closest last so they sit on top).
+
+## Full canvas wrapper
+
+Everything above lives inside:
+
+```svg
+<svg width="100%" viewBox="0 0 680 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>...</defs>
+  <!-- layer stack here -->
+</svg>
+```
+
+## Color palette
+
+In case you want to retint anything — every hex used in the scene:
+
+**Sky:** `#0a1540` → `#1a3060` → `#2a6878` → `#3a9880`
+**Aurora:** `#6ad4a0`, `#4ab8a8`, `#7ae8b0`, `#a8f0c4`
+**Moon:** `#ffffff`, `#f0f8e0`, `#c8e0b8`, `#e8f4d8`, `#a8e8c4`, `#c8d8b8` (craters)
+**Clouds:** `#4a7a98` / `#6b98b8` (light), `#1a2540` / `#8bc4d4` (swooping), `#3a6878` (wispy)
+**Mountains:** `#3a5068` → `#2a3a50`
+**Water:** `#2a5868`, highlights `#6ad4a0` / `#8be8c4`
+**Meadow:** `#1a3a4a` → `#0a2030`
+**Flower palette:** `#3a1a7a` (calyx), `#4a2a9a`, `#5a2ab4` (back), `#7a3ad4` (sides), `#9a5af0` (front), `#2a0a5a` (center), `#e8c8ff` (sparkle), `#d4a8ff` → `#8a5ac4` (glow), `#2a4a3a` (stem)
+
+Each piece is independent so you can remix — drop the moon into a different scene, swap the flowers for a different species, etc.

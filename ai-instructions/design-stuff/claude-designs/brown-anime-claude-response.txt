@@ -1,0 +1,211 @@
+Here are the individual SVG components that make up the meadow scene — each one standalone and droppable into other scenes.
+
+## Gradient sky
+
+```svg
+<svg width="680" height="280" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7cc3e8"/>
+      <stop offset="50%" stop-color="#c5dff0"/>
+      <stop offset="80%" stop-color="#f5d5d8"/>
+      <stop offset="100%" stop-color="#f8e4c8"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="680" height="280" fill="url(#sky)"/>
+  <!-- Jet streams -->
+  <line x1="100" y1="45" x2="280" y2="40" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+  <line x1="380" y1="55" x2="560" y2="48" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <line x1="200" y1="70" x2="340" y2="68" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+  <line x1="420" y1="80" x2="600" y2="75" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+  <line x1="50" y1="95" x2="180" y2="92" stroke="#ffffff" stroke-width="0.6" opacity="0.4"/>
+</svg>
+```
+
+## Fluffy cloud (with pink underside)
+
+```svg
+<svg width="220" height="80" viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg">
+  <g opacity="0.95">
+    <ellipse cx="50" cy="50" rx="55" ry="18" fill="#ffffff"/>
+    <ellipse cx="80" cy="35" rx="45" ry="22" fill="#ffffff"/>
+    <ellipse cx="110" cy="45" rx="50" ry="20" fill="#ffffff"/>
+    <ellipse cx="65" cy="60" rx="60" ry="14" fill="#f5d5d8" opacity="0.6"/>
+  </g>
+</svg>
+```
+
+## Large layered cloud
+
+```svg
+<svg width="300" height="100" viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+  <g opacity="0.95">
+    <ellipse cx="150" cy="55" rx="75" ry="25" fill="#ffffff"/>
+    <ellipse cx="110" cy="40" rx="50" ry="25" fill="#ffffff"/>
+    <ellipse cx="190" cy="35" rx="55" ry="28" fill="#ffffff"/>
+    <ellipse cx="230" cy="50" rx="45" ry="22" fill="#ffffff"/>
+    <ellipse cx="160" cy="70" rx="85" ry="15" fill="#e8c4d0" opacity="0.7"/>
+  </g>
+</svg>
+```
+
+## Rolling golden meadow (two layers)
+
+```svg
+<svg width="680" height="200" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="meadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8c547"/>
+      <stop offset="60%" stop-color="#d4a73a"/>
+      <stop offset="100%" stop-color="#9c7a2e"/>
+    </linearGradient>
+    <linearGradient id="farMeadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4d96b"/>
+      <stop offset="100%" stop-color="#e8c547"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Distant rolling ridge -->
+  <path d="M 0 30 Q 170 10 340 20 Q 510 30 680 15 L 680 80 L 0 80 Z" fill="url(#farMeadow)"/>
+  
+  <!-- Closer meadow -->
+  <path d="M 0 60 Q 170 40 340 50 Q 510 60 680 45 L 680 200 L 0 200 Z" fill="url(#meadow)"/>
+  
+  <!-- Scattered distant white flower specks -->
+  <g fill="#ffffff" opacity="0.9">
+    <circle cx="60" cy="55" r="1.5"/>
+    <circle cx="120" cy="50" r="1.5"/>
+    <circle cx="180" cy="58" r="1.5"/>
+    <circle cx="240" cy="48" r="1.5"/>
+    <circle cx="300" cy="52" r="1.5"/>
+    <circle cx="360" cy="46" r="1.5"/>
+    <circle cx="420" cy="54" r="1.5"/>
+    <circle cx="480" cy="50" r="1.5"/>
+    <circle cx="540" cy="56" r="1.5"/>
+    <circle cx="600" cy="48" r="1.5"/>
+    <circle cx="90" cy="70" r="1.8"/>
+    <circle cx="210" cy="72" r="1.8"/>
+    <circle cx="330" cy="68" r="1.8"/>
+    <circle cx="450" cy="74" r="1.8"/>
+    <circle cx="570" cy="70" r="1.8"/>
+    <circle cx="40" cy="85" r="2"/>
+    <circle cx="150" cy="90" r="2"/>
+    <circle cx="270" cy="85" r="2"/>
+    <circle cx="390" cy="92" r="2"/>
+    <circle cx="510" cy="86" r="2"/>
+    <circle cx="630" cy="90" r="2"/>
+  </g>
+</svg>
+```
+
+## Tall grass blade clump
+
+```svg
+<svg width="100" height="140" viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="#4a6b28" stroke-width="1.5" fill="none" stroke-linecap="round">
+    <path d="M 15 140 Q 18 90 16 50"/>
+    <path d="M 25 140 Q 22 100 28 60"/>
+    <path d="M 45 140 Q 48 80 42 40"/>
+    <path d="M 60 140 Q 58 90 63 50"/>
+    <path d="M 75 140 Q 78 90 76 50"/>
+    <path d="M 85 140 Q 82 100 88 60"/>
+  </g>
+</svg>
+```
+
+## Dry grass stalk (tan/hay colored)
+
+```svg
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="#8a7a2a" stroke-width="1" opacity="0.7">
+    <line x1="15" y1="0" x2="17" y2="30"/>
+    <line x1="30" y1="5" x2="33" y2="35"/>
+    <line x1="45" y1="2" x2="43" y2="32"/>
+    <line x1="60" y1="8" x2="63" y2="38"/>
+    <line x1="75" y1="4" x2="72" y2="34"/>
+  </g>
+</svg>
+```
+
+## Wheat/grass plume (framing reed)
+
+```svg
+<svg width="40" height="250" viewBox="0 0 40 250" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fluffy plume head -->
+  <ellipse cx="15" cy="30" rx="8" ry="20" fill="#d4a574" opacity="0.8"/>
+  <ellipse cx="15" cy="25" rx="5" ry="14" fill="#c49464" opacity="0.9"/>
+  
+  <!-- Tall stem -->
+  <line x1="15" y1="50" x2="18" y2="230" stroke="#8b7355" stroke-width="2"/>
+  
+  <!-- Smaller secondary plume -->
+  <line x1="25" y1="60" x2="28" y2="240" stroke="#8b7355" stroke-width="1.5"/>
+  <ellipse cx="25" cy="45" rx="6" ry="16" fill="#d4a574" opacity="0.7"/>
+</svg>
+```
+
+## Pink daisy wildflower (12 petals)
+
+```svg
+<svg width="40" height="80" viewBox="-20 -30 40 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stem -->
+  <path d="M 0 50 Q -3 25 0 0" stroke="#558b2f" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- 12 petals radiating -->
+  <g>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(30)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(60)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(90)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(120)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(150)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(180)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(210)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(240)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(270)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(300)"/>
+    <ellipse cx="0" cy="-8" rx="5" ry="12" fill="#d48db5" transform="rotate(330)"/>
+  </g>
+  
+  <!-- Dark pink center -->
+  <circle cx="0" cy="0" r="4" fill="#8b3a62"/>
+</svg>
+```
+
+To swap colors, change the petal `fill` and center `fill`:
+
+- **Soft mauve:** `fill="#e8a8c8"` petals, `fill="#a84a78"` center
+- **Deep magenta:** `fill="#c9588f"` petals, `fill="#7a2848"` center
+
+## Small white wildflower (6 petals)
+
+```svg
+<svg width="30" height="50" viewBox="-15 -20 30 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stem -->
+  <path d="M 0 30 Q -2 15 0 0" stroke="#ffffff" stroke-width="1" fill="none" stroke-linecap="round"/>
+  
+  <!-- 6 petals -->
+  <ellipse cx="0" cy="-4" rx="3" ry="6" fill="#ffffff"/>
+  <ellipse cx="0" cy="-4" rx="3" ry="6" fill="#ffffff" transform="rotate(60)"/>
+  <ellipse cx="0" cy="-4" rx="3" ry="6" fill="#ffffff" transform="rotate(120)"/>
+  <ellipse cx="0" cy="-4" rx="3" ry="6" fill="#ffffff" transform="rotate(180)"/>
+  <ellipse cx="0" cy="-4" rx="3" ry="6" fill="#ffffff" transform="rotate(240)"/>
+  <ellipse cx="0" cy="-4" rx="3" ry="6" fill="#ffffff" transform="rotate(300)"/>
+  
+  <!-- Yellow center -->
+  <circle cx="0" cy="0" r="2" fill="#ffd966"/>
+</svg>
+```
+
+## Color palette reference
+
+If you want to recreate the mood elsewhere, these are the exact colors used throughout:
+
+**Sky gradient:** `#7cc3e8` → `#c5dff0` → `#f5d5d8` → `#f8e4c8`
+**Cloud pink underside:** `#f5d5d8` and `#e8c4d0`
+**Meadow gradient:** `#f4d96b` → `#e8c547` → `#d4a73a` → `#9c7a2e`
+**Grass greens:** `#4a6b28` (dark), `#558b2f` (mid), `#6b8534` (light)
+**Dry grass/reeds:** `#8a7a2a`, `#8b7355`, `#d4a574`, `#c49464`
+**Pink florals:** `#e8a8c8` (light), `#d48db5` (mid), `#c9588f` (deep), `#8b3a62` (center), `#7a2848` (darkest center)
+
+Each component is positioned relative to its own viewBox, so you can place them freely. The flowers use negative coordinates in their viewBox so the bloom sits at `(0, 0)` — that makes it easy to drop multiples at different `translate()` positions without math.

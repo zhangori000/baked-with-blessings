@@ -1,14 +1,15 @@
-<svg width="180" height="114" viewBox="0 0 180 114" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="260" height="164" viewBox="0 0 260 164" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <filter id="cloudShadowCompact" x="0" y="0" width="180" height="114" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#A7C1DD" flood-opacity="0.15"/>
+    <filter id="cloudShadowCompact" x="8" y="18" width="244" height="138" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#A7C1DD" flood-opacity="0.12"/>
     </filter>
   </defs>
   <g filter="url(#cloudShadowCompact)" fill="#FFF8F4">
-    <circle cx="54" cy="70" r="22"/>
-    <circle cx="78" cy="56" r="24"/>
-    <circle cx="104" cy="50" r="26"/>
-    <circle cx="130" cy="58" r="24"/>
-    <circle cx="148" cy="72" r="18"/>
+    <circle cx="70" cy="96" r="28"/>
+    <circle cx="100" cy="74" r="34"/>
+    <circle cx="136" cy="64" r="38"/>
+    <circle cx="174" cy="70" r="34"/>
+    <circle cx="206" cy="92" r="28"/>
+    <circle cx="132" cy="94" r="34"/>
   </g>
 </svg>

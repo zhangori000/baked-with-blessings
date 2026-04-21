@@ -1,0 +1,57 @@
+<svg width="620" height="520" viewBox="0 0 620 520" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" fill-rule="evenodd">
+    <path
+      d="M291 505c-12-66-13-117-5-153 8-37 24-70 48-97-15 44-14 90 1 138 11 35 15 72 12 112H291Z"
+      fill="#6A4322"
+    />
+    <path
+      d="M332 505c5-59 1-103-12-131-14-31-37-59-69-82 25 39 34 84 28 135-4 31-2 57 6 78h47Z"
+      fill="#7D532B"
+    />
+    <path
+      d="M313 342c-4-67 11-126 44-178 34-53 87-92 159-118-65 56-101 117-108 183-4 40-1 78 10 113H313Z"
+      fill="#7D532B"
+      opacity=".78"
+    />
+    <path
+      d="M309 342c9-67 0-126-26-178-27-53-74-92-141-118 55 56 84 117 87 183 2 40-4 78-17 113h97Z"
+      fill="#6A4322"
+      opacity=".82"
+    />
+    <g fill="#3F6E2B">
+      <circle cx="140" cy="188" r="52"/>
+      <circle cx="190" cy="140" r="60"/>
+      <circle cx="254" cy="114" r="70"/>
+      <circle cx="330" cy="102" r="74"/>
+      <circle cx="408" cy="116" r="70"/>
+      <circle cx="474" cy="146" r="60"/>
+      <circle cx="524" cy="194" r="52"/>
+      <circle cx="116" cy="246" r="46"/>
+      <circle cx="186" cy="226" r="48"/>
+      <circle cx="248" cy="208" r="52"/>
+      <circle cx="320" cy="200" r="56"/>
+      <circle cx="394" cy="208" r="52"/>
+      <circle cx="460" cy="228" r="48"/>
+      <circle cx="530" cy="252" r="44"/>
+    </g>
+    <g fill="#588F37">
+      <circle cx="170" cy="176" r="40"/>
+      <circle cx="226" cy="148" r="46"/>
+      <circle cx="286" cy="132" r="54"/>
+      <circle cx="352" cy="128" r="58"/>
+      <circle cx="420" cy="138" r="54"/>
+      <circle cx="478" cy="166" r="48"/>
+      <circle cx="220" cy="226" r="42"/>
+      <circle cx="312" cy="220" r="46"/>
+      <circle cx="404" cy="228" r="42"/>
+    </g>
+    <g fill="#7FAF47" opacity=".82">
+      <circle cx="250" cy="164" r="26"/>
+      <circle cx="310" cy="154" r="30"/>
+      <circle cx="372" cy="160" r="28"/>
+      <circle cx="434" cy="184" r="26"/>
+      <circle cx="204" cy="200" r="22"/>
+      <circle cx="486" cy="214" r="22"/>
+    </g>
+  </g>
+</svg>

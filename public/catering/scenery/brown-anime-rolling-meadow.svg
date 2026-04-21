@@ -1,0 +1,38 @@
+<svg width="680" height="200" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="meadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8c547" />
+      <stop offset="60%" stop-color="#d4a73a" />
+      <stop offset="100%" stop-color="#9c7a2e" />
+    </linearGradient>
+    <linearGradient id="farMeadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4d96b" />
+      <stop offset="100%" stop-color="#e8c547" />
+    </linearGradient>
+  </defs>
+  <path d="M 0 30 Q 170 10 340 20 Q 510 30 680 15 L 680 80 L 0 80 Z" fill="url(#farMeadow)" />
+  <path d="M 0 60 Q 170 40 340 50 Q 510 60 680 45 L 680 200 L 0 200 Z" fill="url(#meadow)" />
+  <g fill="#ffffff" opacity="0.9">
+    <circle cx="60" cy="55" r="1.5" />
+    <circle cx="120" cy="50" r="1.5" />
+    <circle cx="180" cy="58" r="1.5" />
+    <circle cx="240" cy="48" r="1.5" />
+    <circle cx="300" cy="52" r="1.5" />
+    <circle cx="360" cy="46" r="1.5" />
+    <circle cx="420" cy="54" r="1.5" />
+    <circle cx="480" cy="50" r="1.5" />
+    <circle cx="540" cy="56" r="1.5" />
+    <circle cx="600" cy="48" r="1.5" />
+    <circle cx="90" cy="70" r="1.8" />
+    <circle cx="210" cy="72" r="1.8" />
+    <circle cx="330" cy="68" r="1.8" />
+    <circle cx="450" cy="74" r="1.8" />
+    <circle cx="570" cy="70" r="1.8" />
+    <circle cx="40" cy="85" r="2" />
+    <circle cx="150" cy="90" r="2" />
+    <circle cx="270" cy="85" r="2" />
+    <circle cx="390" cy="92" r="2" />
+    <circle cx="510" cy="86" r="2" />
+    <circle cx="630" cy="90" r="2" />
+  </g>
+</svg>

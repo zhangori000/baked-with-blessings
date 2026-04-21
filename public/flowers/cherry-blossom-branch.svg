@@ -1,0 +1,36 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 65)">
+    <path d="M 0 130 Q -5 90 -8 60 Q -10 30 -5 0" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M -7 50 Q -18 42 -28 48" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M -8 75 Q 3 68 12 72" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g transform="translate(-5, 0)">
+      <ellipse cx="0" cy="-15" rx="9" ry="13" fill="#fce4ec"/>
+      <ellipse cx="14" cy="-4" rx="9" ry="13" fill="#fce4ec" transform="rotate(72 14 -4)"/>
+      <ellipse cx="9" cy="13" rx="9" ry="13" fill="#fce4ec" transform="rotate(144 9 13)"/>
+      <ellipse cx="-9" cy="13" rx="9" ry="13" fill="#fce4ec" transform="rotate(-144 -9 13)"/>
+      <ellipse cx="-14" cy="-4" rx="9" ry="13" fill="#fce4ec" transform="rotate(-72 -14 -4)"/>
+      <circle cx="0" cy="0" r="4" fill="#ffeb3b"/>
+      <line x1="0" y1="0" x2="4" y2="-5" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="-4" y2="-5" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="5" y2="2" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="-5" y2="2" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#f9a825" stroke-width="0.8"/>
+    </g>
+    <g transform="translate(-22, 35) scale(0.7)">
+      <ellipse cx="0" cy="-15" rx="9" ry="13" fill="#f8bbd0"/>
+      <ellipse cx="14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(72 14 -4)"/>
+      <ellipse cx="9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(144 9 13)"/>
+      <ellipse cx="-9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-144 -9 13)"/>
+      <ellipse cx="-14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-72 -14 -4)"/>
+      <circle cx="0" cy="0" r="4" fill="#ffeb3b"/>
+    </g>
+    <g transform="translate(15, 50) scale(0.65)">
+      <ellipse cx="0" cy="-15" rx="9" ry="13" fill="#f8bbd0"/>
+      <ellipse cx="14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(72 14 -4)"/>
+      <ellipse cx="9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(144 9 13)"/>
+      <ellipse cx="-9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-144 -9 13)"/>
+      <ellipse cx="-14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-72 -14 -4)"/>
+      <circle cx="0" cy="0" r="4" fill="#ffeb3b"/>
+    </g>
+  </g>
+</svg>

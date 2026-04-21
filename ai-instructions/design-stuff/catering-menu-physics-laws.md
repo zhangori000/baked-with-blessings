@@ -10,3 +10,5 @@ These laws take precedence for the catering menu decorative system.
 6. Grass must visually connect directly to the blue sky or sky-toned band with no cream strip interrupting it.
 7. Flowers must look planted: stems grow out of grass or progress bars, not float above them.
 8. Decorative motion should read like growth or bobbing, not flying away or drifting off-screen.
+9. Cloud designs should live in `public/clouds` and stay fluffy clustered blobs instead of crescent or croissant arcs.
+10. Decorative random flowers should come from the SVG set in `public/flowers` rather than ad-hoc petal construction.
