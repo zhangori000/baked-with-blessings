@@ -1,0 +1,372 @@
+import type { CSSProperties } from 'react'
+
+export type SceneTone = 'dawn' | 'under-tree' | 'moonlit' | 'classic' | 'blossom'
+
+export type SceneCloudConfig = {
+  className: string
+  src: string
+  style?: CSSProperties
+}
+
+export type SceneFlowerConfig = {
+  asset: string
+  left: string
+  scale: number
+  variant?: 'full' | 'wildflower'
+}
+
+export type ScenePieceConfig = {
+  className: string
+  src: string
+  style?: CSSProperties
+}
+
+export type SceneCritterConfig = {
+  className: string
+  src: string
+  style?: CSSProperties
+}
+
+export type SceneAccentConfig = {
+  asset: string
+  id: number
+  left: string
+  scale: number
+}
+
+export const menuSceneTones: SceneTone[] = ['dawn', 'under-tree', 'moonlit', 'classic', 'blossom']
+export const persistentMenuSceneStorageKey = 'baked-with-blessings-menu-scene'
+
+export const menuHeroSkyByScene: Record<SceneTone, string> = {
+  dawn: '/catering/scenery/brown-anime-gradient-sky.svg',
+  'under-tree': '/catering/scenery/girl-under-tree-sky.svg',
+  moonlit: '/catering/scenery/moonlit-purple-sky.svg',
+  classic: '/catering/scenery/classic-sky.svg',
+  blossom: '/catering/scenery/blossom-breeze-sky.svg',
+}
+
+export const menuHeroMeadowByScene: Record<SceneTone, string> = {
+  dawn: '/catering/scenery/brown-anime-rolling-meadow.svg',
+  'under-tree': '/catering/scenery/girl-under-tree-meadow.svg',
+  moonlit: '/catering/scenery/moonlit-purple-meadow.svg',
+  classic: '/catering/scenery/classic-meadow.svg',
+  blossom: '/catering/scenery/blossom-grass-mound.svg',
+}
+
+export const menuSceneButtonAuraByScene: Record<SceneTone, string> = {
+  dawn: 'rgba(255, 214, 101, 0.85)',
+  'under-tree': 'rgba(197, 228, 142, 0.82)',
+  moonlit: 'rgba(153, 115, 255, 0.88)',
+  classic: 'rgba(255, 215, 79, 0.84)',
+  blossom: 'rgba(255, 176, 208, 0.9)',
+}
+
+export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[]> = {
+  dawn: [
+    {
+      className: 'left-[30%] top-[8%] w-[13rem] md:left-[36%] md:w-[17rem]',
+      src: '/clouds/brown-anime-cloud-fluffy.svg',
+      style: { animationDelay: '-9s' },
+    },
+    {
+      className: 'right-[10%] top-[14%] w-[17rem] md:right-[8%] md:w-[21rem]',
+      src: '/clouds/brown-anime-cloud-layered.svg',
+      style: { animationDelay: '-16s' },
+    },
+    {
+      className: 'right-[4%] top-[28%] hidden w-[12rem] md:block md:w-[15rem]',
+      src: '/clouds/brown-anime-cloud-fluffy.svg',
+      style: { animationDelay: '-4s' },
+    },
+  ],
+  'under-tree': [
+    {
+      className: 'right-[5%] top-[15%] w-[13rem] md:right-[6%] md:w-[16rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+      style: { animationDelay: '-13s' },
+    },
+    {
+      className: 'left-[44%] top-[24%] hidden w-[8rem] md:block md:w-[9.5rem]',
+      src: '/clouds/three-ball-cloud.svg',
+      style: { animationDelay: '-5s' },
+    },
+    {
+      className: 'right-[22%] top-[31%] hidden w-[8.5rem] md:block md:w-[10rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+      style: { animationDelay: '-18s' },
+    },
+  ],
+  moonlit: [
+    {
+      className: 'left-[2%] top-[9%] w-[18rem] md:w-[22rem]',
+      src: '/clouds/moonlit-purple-upper-cloud.svg',
+    },
+    {
+      className: 'right-[6%] top-[14%] w-[18rem] md:w-[22rem]',
+      src: '/clouds/moonlit-purple-swoop-cloud.svg',
+      style: { animationDelay: '-7s' },
+    },
+    {
+      className: 'left-[18%] top-[27%] hidden w-[12rem] md:block md:w-[15rem]',
+      src: '/clouds/moonlit-purple-upper-cloud.svg',
+      style: { animationDelay: '-15s' },
+    },
+    {
+      className: 'right-[18%] top-[23%] hidden w-[13rem] md:block md:w-[16rem]',
+      src: '/clouds/moonlit-purple-upper-cloud.svg',
+      style: { animationDelay: '-2s' },
+    },
+  ],
+  classic: [
+    {
+      className: 'left-[38%] top-[8%] w-[11rem] md:left-[42%] md:w-[14rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+      style: { animationDelay: '-10s' },
+    },
+    {
+      className: 'right-[7%] top-[16%] w-[15rem] md:w-[19rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+      style: { animationDelay: '-14s' },
+    },
+    {
+      className: 'right-[20%] top-[29%] hidden w-[11rem] md:block md:w-[13rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+      style: { animationDelay: '-4s' },
+    },
+  ],
+  blossom: [
+    {
+      className: 'right-[7%] top-[10%] w-[12rem] md:w-[16rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+    },
+    {
+      className: 'right-[20%] top-[22%] hidden w-[10rem] md:block md:w-[13rem]',
+      src: '/clouds/three-ball-cloud-wide.svg',
+      style: { animationDelay: '-11s' },
+    },
+  ],
+}
+
+export const menuHeroFlowersByScene: Record<SceneTone, readonly SceneFlowerConfig[]> = {
+  dawn: [
+    { asset: '/flowers/daisy-large.svg', left: '60%', scale: 0.86 },
+    { asset: '/flowers/rose.svg', left: '74%', scale: 0.8 },
+    { asset: '/flowers/daisy-small.svg', left: '86%', scale: 0.76, variant: 'wildflower' },
+  ],
+  'under-tree': [
+    { asset: '/flowers/daisy-small.svg', left: '12%', scale: 0.72 },
+    { asset: '/flowers/daisy-medium.svg', left: '21%', scale: 0.76 },
+    { asset: '/flowers/daisy-small.svg', left: '30%', scale: 0.68 },
+    { asset: '/flowers/daisy-large.svg', left: '40%', scale: 0.82 },
+    { asset: '/flowers/daisy-small.svg', left: '50%', scale: 0.7 },
+    { asset: '/flowers/daisy-medium.svg', left: '60%', scale: 0.76 },
+    { asset: '/flowers/daisy-small.svg', left: '70%', scale: 0.68 },
+    { asset: '/flowers/daisy-large.svg', left: '80%', scale: 0.8 },
+    { asset: '/flowers/daisy-medium.svg', left: '90%', scale: 0.74 },
+  ],
+  moonlit: [
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.78 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.72 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '32%', scale: 0.76 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '42%', scale: 0.68 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '52%', scale: 0.8 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '62%', scale: 0.72 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '72%', scale: 0.76 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.7 },
+    { asset: '/flowers/moonlit-purple-flower.svg', left: '92%', scale: 0.8 },
+  ],
+  classic: [
+    { asset: '/flowers/daisy-large.svg', left: '62%', scale: 0.82 },
+    { asset: '/flowers/daisy-small.svg', left: '76%', scale: 0.72, variant: 'wildflower' },
+    { asset: '/flowers/rose.svg', left: '89%', scale: 0.78 },
+  ],
+  blossom: [
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '18%', scale: 0.28 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '42%', scale: 0.3 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '66%', scale: 0.29 },
+    { asset: '/flowers/cherry-blossom-branch.svg', left: '88%', scale: 0.27 },
+  ],
+}
+
+const noScenePieces: readonly ScenePieceConfig[] = []
+const noSceneCritters: readonly SceneCritterConfig[] = []
+
+export const menuHeroPiecesByScene: Record<SceneTone, readonly ScenePieceConfig[]> = {
+  dawn: [
+    {
+      className: 'left-[3%] bottom-[0.2rem] w-[5rem] md:w-[6.2rem]',
+      src: '/catering/scenery/brown-anime-grass-clump.svg',
+    },
+    {
+      className: 'left-[16%] bottom-[4.6rem] w-[3.2rem] opacity-75 md:w-[3.8rem]',
+      src: '/catering/scenery/brown-anime-dry-grass-stalk.svg',
+    },
+    {
+      className: 'right-[13%] bottom-[0.2rem] w-[5.2rem] md:w-[6.6rem]',
+      src: '/catering/scenery/brown-anime-grass-clump.svg',
+    },
+    {
+      className: 'right-[23%] bottom-[1.1rem] w-[1.7rem] opacity-80 md:w-[2rem]',
+      src: '/catering/scenery/brown-anime-wheat-plume.svg',
+    },
+  ],
+  'under-tree': [
+    {
+      className: 'left-[-18%] bottom-[-0.15rem] w-[30rem] md:left-[-9%] md:w-[46rem]',
+      src: '/catering/scenery/girl-under-tree-tree.svg',
+    },
+    {
+      className: 'left-[12%] bottom-[0.35rem] w-[4.8rem] md:left-[18%] md:w-[6.4rem]',
+      src: '/catering/scenery/girl-under-tree-girl.svg',
+    },
+  ],
+  moonlit: noScenePieces,
+  classic: noScenePieces,
+  blossom: noScenePieces,
+}
+
+export const menuHeroCrittersByScene: Record<SceneTone, readonly SceneCritterConfig[]> = {
+  dawn: noSceneCritters,
+  'under-tree': noSceneCritters,
+  moonlit: noSceneCritters,
+  classic: noSceneCritters,
+  blossom: [
+    {
+      className: 'left-[9%] bottom-[0.42rem] w-[3rem] md:w-[3.8rem]',
+      src: '/catering/decor/bunny-crouch.svg',
+    },
+    {
+      className: 'right-[14%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
+      src: '/catering/decor/bunny-crouch.svg',
+      style: { transform: 'scaleX(-1)' },
+    },
+  ],
+}
+
+export const menuHeroFlowerSeamByScene: Record<SceneTone, string> = {
+  dawn: '0.5rem',
+  'under-tree': '0.55rem',
+  moonlit: '0.5rem',
+  classic: '0.5rem',
+  blossom: '0rem',
+}
+
+export const menuSpawnedAccentSourcesByScene: Record<SceneTone, readonly string[]> = {
+  dawn: ['/flowers/daisy-large.svg', '/flowers/daisy-medium.svg', '/flowers/rose.svg'],
+  'under-tree': ['/flowers/daisy-large.svg', '/flowers/daisy-medium.svg', '/flowers/daisy-small.svg'],
+  moonlit: ['/flowers/moonlit-purple-flower.svg'],
+  classic: ['/flowers/daisy-large.svg', '/flowers/daisy-small.svg', '/flowers/rose.svg'],
+  blossom: ['/catering/decor/bunny-crouch.svg'],
+}
+
+export const getNextMenuSceneTone = (current: SceneTone): SceneTone => {
+  const currentIndex = menuSceneTones.indexOf(current)
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % menuSceneTones.length : 0
+
+  return menuSceneTones[nextIndex] ?? menuSceneTones[0]
+}
+
+const hashSeed = (seed: string) =>
+  Array.from(seed).reduce(
+    (total, character, index) => total + character.charCodeAt(0) * (index + 1),
+    0,
+  )
+
+const deterministicBetween = (seed: string, min: number, max: number) => {
+  const normalized = (Math.sin(hashSeed(seed) * 12.9898) + 1) / 2
+  return min + (max - min) * normalized
+}
+
+const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
+
+const getSceneAccentScaleRange = (sceneTone: SceneTone): [number, number] => {
+  if (sceneTone === 'under-tree') {
+    return [0.66, 0.86]
+  }
+
+  if (sceneTone === 'blossom') {
+    return [0.96, 1.24]
+  }
+
+  if (sceneTone === 'moonlit') {
+    return [0.72, 0.92]
+  }
+
+  if (sceneTone === 'classic') {
+    return [0.74, 0.94]
+  }
+
+  return [0.76, 0.98]
+}
+
+export const buildSeededMenuSceneAccents = (
+  sceneTone: SceneTone,
+  count = 9,
+): SceneAccentConfig[] => {
+  const [minScale, maxScale] = getSceneAccentScaleRange(sceneTone)
+  const assets = menuSpawnedAccentSourcesByScene[sceneTone]
+  const minLeft = 8
+  const maxLeft = 92
+  const span = maxLeft - minLeft
+
+  return Array.from({ length: count }, (_, index) => {
+    const segmentStart = minLeft + (span / count) * index
+    const segmentEnd = minLeft + (span / count) * (index + 1)
+    const seedRoot = `${sceneTone}-hero-${index}`
+    const assetIndex = Math.floor(
+      deterministicBetween(`${seedRoot}-asset`, 0, assets.length - 0.0001),
+    )
+    const asset = assets[assetIndex] ?? assets[0] ?? '/flowers/daisy-large.svg'
+    const left = deterministicBetween(`${seedRoot}-left`, segmentStart + 0.16, segmentEnd - 0.16)
+    const scale = deterministicBetween(`${seedRoot}-scale`, minScale, maxScale)
+
+    return {
+      asset,
+      id: index + 1,
+      left: `${left.toFixed(2)}%`,
+      scale: Number(scale.toFixed(2)),
+    }
+  })
+}
+
+export const createSpawnedMenuSceneAccent = (sceneTone: SceneTone): SceneAccentConfig => {
+  const [minScale, maxScale] = getSceneAccentScaleRange(sceneTone)
+  const assets = menuSpawnedAccentSourcesByScene[sceneTone]
+
+  return {
+    asset: assets[Math.floor(Math.random() * assets.length)] ?? assets[0] ?? '/flowers/daisy-large.svg',
+    id: Date.now() + Math.random(),
+    left: `${randomBetween(3, 97).toFixed(2)}%`,
+    scale: Number(randomBetween(minScale, maxScale).toFixed(2)),
+  }
+}
+
+export const menuHeroScenarioByScene = Object.fromEntries(
+  menuSceneTones.map((sceneTone) => [
+    sceneTone,
+    {
+      buttonAura: menuSceneButtonAuraByScene[sceneTone],
+      clouds: menuHeroCloudsByScene[sceneTone],
+      critters: menuHeroCrittersByScene[sceneTone],
+      flowerRail: menuHeroFlowersByScene[sceneTone],
+      flowerSeam: menuHeroFlowerSeamByScene[sceneTone],
+      meadowSrc: menuHeroMeadowByScene[sceneTone],
+      pieces: menuHeroPiecesByScene[sceneTone],
+      skySrc: menuHeroSkyByScene[sceneTone],
+      spawnableAccents: menuSpawnedAccentSourcesByScene[sceneTone],
+    },
+  ]),
+) as Record<
+  SceneTone,
+  {
+    buttonAura: string
+    clouds: readonly SceneCloudConfig[]
+    critters: readonly SceneCritterConfig[]
+    flowerRail: readonly SceneFlowerConfig[]
+    flowerSeam: string
+    meadowSrc: string
+    pieces: readonly ScenePieceConfig[]
+    skySrc: string
+    spawnableAccents: readonly string[]
+  }
+>

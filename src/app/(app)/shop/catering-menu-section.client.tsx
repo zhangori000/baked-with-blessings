@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
 import { RichText } from '@/components/RichText'
+import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import {
   Accordion,
@@ -2160,7 +2161,7 @@ function CateringMenuRow({
 
 export function CateringMenuSection({ products }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
-  const [heroSceneryTone, setHeroSceneryTone] = useState<MenuSceneryTone>('classic')
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
   const [isSceneChanging, setIsSceneChanging] = useState(false)
 
   if (orderedProducts.length === 0) {
@@ -2271,16 +2272,16 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringMenuExperience {
           --catering-header-underlap: 7.6rem;
-          --catering-layout-offset: clamp(2.5rem, 3.8vw, 3.5rem);
           position: relative;
           isolation: isolate;
-          margin-top: calc((var(--catering-header-underlap) + var(--catering-layout-offset)) * -1);
+          margin-top: calc(var(--catering-header-underlap) * -1);
         }
 
         .cateringHeroBand {
-          --catering-hero-meadow-height: clamp(8.5rem, 15vh, 10.75rem);
+          --catering-hero-meadow-height: clamp(6.75rem, 12vh, 8.75rem);
           background: transparent;
-          min-height: clamp(35rem, 78svh, 45rem);
+          box-sizing: border-box;
+          min-height: 100svh;
           overflow: hidden;
           position: relative;
         }
@@ -2293,10 +2294,11 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringHeroContent {
           align-items: flex-start;
+          box-sizing: border-box;
           display: flex;
-          min-height: clamp(35rem, 78svh, 45rem);
-          padding-bottom: calc(var(--catering-hero-meadow-height) + clamp(1.8rem, 4.4vw, 3rem));
-          padding-top: calc(var(--catering-header-underlap) + clamp(1.5rem, 4vw, 3rem));
+          min-height: 100svh;
+          padding-bottom: calc(var(--catering-hero-meadow-height) + clamp(1rem, 2.6vw, 1.8rem));
+          padding-top: calc(var(--catering-header-underlap) + clamp(1rem, 2.7vw, 1.8rem));
         }
 
         .cateringMenuBand {
@@ -2982,12 +2984,16 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         @media (max-width: 767px) {
+          .cateringMenuExperience {
+            --catering-header-underlap: 7.2rem;
+          }
+
           .cateringPriceBlock {
             min-width: 0;
           }
 
           .cateringHeroBand {
-            --catering-hero-meadow-height: 7.4rem;
+            --catering-hero-meadow-height: 6.4rem;
           }
 
           .cateringHeroMeadow {

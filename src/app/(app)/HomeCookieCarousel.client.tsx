@@ -4,17 +4,52 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 
+import {
+  buildSeededMenuSceneAccents,
+  createSpawnedMenuSceneAccent,
+  getNextMenuSceneTone,
+  menuHeroCloudsByScene,
+  menuHeroCrittersByScene,
+  menuHeroFlowerSeamByScene,
+  menuHeroFlowersByScene,
+  menuHeroMeadowByScene,
+  menuHeroPiecesByScene,
+  menuHeroSkyByScene,
+  menuSceneButtonAuraByScene,
+  type SceneTone,
+} from '@/components/scenery/menuHeroScenery'
+import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import type { CookiePosterAsset } from './shop/cookiePosterData'
 import { CookieSheepRig } from './shop/cookie-sheep-rig'
 
 type HomeCookieCarouselProps = {
   posters: CookiePosterAsset[]
+  sceneVariant?: 'grassland' | 'scenery'
 }
 
 type CarouselTransition = {
   direction: -1 | 1
   outgoingIndex: number
 } | null
+
+type ShowcaseSceneCloud = {
+  className?: string
+  id: string
+  src: string
+  style: CSSProperties
+}
+
+type ShowcaseSceneFlower = {
+  id: string
+  src: string
+  style: CSSProperties
+}
+
+type ShowcaseFlowerRailBloom = {
+  id: string
+  src: string
+  style: CSSProperties
+}
 
 abstract class PaperOverlayPiece {
   constructor(
@@ -94,6 +129,131 @@ const paperCloudOverlays: PaperOverlayPiece[] = [
     width: 'clamp(4rem, 10vw, 6.5rem)',
   }),
 ]
+
+let spawnedShowcaseCloudID = 0
+let spawnedShowcaseFlowerID = 0
+
+const buildShowcaseFlowerStyle = ({
+  bob,
+  bottom,
+  delay,
+  duration,
+  left,
+  scale,
+  tilt,
+}: {
+  bob: string
+  bottom: string
+  delay: string
+  duration: string
+  left: string
+  scale: number
+  tilt: string
+}): CSSProperties =>
+  ({
+    ['--home-flower-bob' as string]: bob,
+    ['--home-flower-delay' as string]: delay,
+    ['--home-flower-duration' as string]: duration,
+    ['--home-flower-scale' as string]: `${scale}`,
+    ['--home-flower-tilt' as string]: tilt,
+    bottom,
+    left,
+  }) as CSSProperties
+
+const buildShowcaseFlowerStyleFromSeed = (key: string, left: string, scale: number): CSSProperties => {
+  const seed = Array.from(key).reduce(
+    (total, character, index) => total + character.charCodeAt(0) * (index + 1),
+    0,
+  )
+  const bob = 0.12 + (seed % 7) * 0.02
+  const tilt = 1.5 + (seed % 5) * 0.55
+  const duration = 4 + (seed % 6) * 0.22
+  const delay = (seed % 8) * -0.34
+
+  return buildShowcaseFlowerStyle({
+    bob: `${bob.toFixed(2)}rem`,
+    bottom: '0%',
+    delay: `${delay.toFixed(2)}s`,
+    duration: `${duration.toFixed(2)}s`,
+    left,
+    scale,
+    tilt: `${tilt.toFixed(2)}deg`,
+  })
+}
+
+const buildSeededShowcaseFlowers = (sceneTone: SceneTone = 'classic'): ShowcaseSceneFlower[] => {
+  return buildSeededMenuSceneAccents(sceneTone).map((accent) => ({
+    id: `seed-${sceneTone}-${accent.id}`,
+    src: accent.asset,
+    style: buildShowcaseFlowerStyleFromSeed(`hero-spawn-${accent.id}`, accent.left, accent.scale),
+  }))
+}
+
+const buildShowcaseFlowerRail = (sceneTone: SceneTone): ShowcaseFlowerRailBloom[] => {
+  const flowers = menuHeroFlowersByScene[sceneTone] ?? menuHeroFlowersByScene.classic
+
+  return flowers.map((flower, index) => ({
+    id: `rail-${sceneTone}-${index}`,
+    src: flower.asset,
+    style: {
+      left: flower.left,
+      transform: `translateX(-50%) scale(${flower.scale})`,
+    },
+  }))
+}
+
+const buildStaticShowcaseClouds = (sceneTone: SceneTone): ShowcaseSceneCloud[] => {
+  const clouds = menuHeroCloudsByScene[sceneTone] ?? menuHeroCloudsByScene.classic
+
+  return clouds.map((cloud, index) => ({
+    className: cloud.className,
+    id: `static-cloud-${sceneTone}-${index}`,
+    src: cloud.src,
+    style: (cloud.style ?? {}) as CSSProperties,
+  }))
+}
+
+const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
+  const clouds = menuHeroCloudsByScene[sceneTone] ?? menuHeroCloudsByScene.classic
+  const cloud = clouds[Math.floor(Math.random() * clouds.length)] ?? clouds[0]
+  const widthRangeByScene: Record<SceneTone, [number, number]> = {
+    dawn: [10.5, 21],
+    'under-tree': [8.5, 16.5],
+    moonlit: [12, 22],
+    classic: [9.5, 18.5],
+    blossom: [9.5, 16.5],
+  }
+  const [minWidth, maxWidth] = widthRangeByScene[sceneTone]
+  const left = Math.random() * 84
+  const top = 5 + Math.random() * 26
+
+  return {
+    className: '',
+    id: `spawned-cloud-${++spawnedShowcaseCloudID}`,
+    src: cloud?.src ?? '/clouds/three-ball-cloud-wide.svg',
+    style: {
+      ...(cloud?.style ?? {}),
+      animationDelay: `-${(Math.random() * 7).toFixed(2)}s`,
+      left: `${left.toFixed(2)}%`,
+      top: `${top.toFixed(2)}%`,
+      width: `${(minWidth + Math.random() * (maxWidth - minWidth)).toFixed(2)}rem`,
+    } as CSSProperties,
+  }
+}
+
+const createShowcaseFlowerForScene = (sceneTone: SceneTone): ShowcaseSceneFlower => {
+  const accent = createSpawnedMenuSceneAccent(sceneTone)
+
+  return {
+    id: `spawned-flower-${++spawnedShowcaseFlowerID}-${accent.id}`,
+    src: accent.asset,
+    style: buildShowcaseFlowerStyleFromSeed(
+      `hero-spawn-${accent.id}`,
+      accent.left,
+      accent.scale,
+    ),
+  }
+}
 
 type MeadowFlowerTone = 'orange' | 'cream' | 'plum' | 'rose' | 'gold'
 
@@ -378,10 +538,18 @@ const meadowFlowerAccents: MeadowFlowerAccent[] = [
 
 const wrapIndex = (index: number, length: number) => (index + length) % length
 
-export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
+export function HomeCookieCarousel({
+  posters,
+  sceneVariant = 'grassland',
+}: HomeCookieCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [cookieCenterPx, setCookieCenterPx] = useState<number | null>(null)
   const [grassDropPx, setGrassDropPx] = useState(0)
+  const [sceneTone, setSceneTone] = usePersistentMenuSceneTone('classic')
+  const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
+  const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>(
+    buildSeededShowcaseFlowers('classic'),
+  )
   const [transition, setTransition] = useState<CarouselTransition>(null)
 
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
@@ -405,6 +573,15 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
   useEffect(() => {
     activeIndexRef.current = activeIndex
   }, [activeIndex])
+
+  useEffect(() => {
+    if (sceneVariant !== 'scenery') {
+      return
+    }
+
+    setSpawnedSceneClouds([])
+    setSpawnedSceneFlowers(buildSeededShowcaseFlowers(sceneTone))
+  }, [sceneTone, sceneVariant])
 
   useEffect(() => {
     const el = measureRef.current
@@ -437,6 +614,19 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         return
       }
 
+      if (!rigSize) {
+        setCookieCenterPx(null)
+        return
+      }
+
+      if (sceneVariant === 'scenery') {
+        setGrassDropPx(0)
+        const centerRatio =
+          viewportWidth < 640 ? 0.58 : viewportWidth < 900 ? 0.59 : viewportWidth < 1280 ? 0.6 : 0.61
+        setCookieCenterPx(sceneHeight * centerRatio)
+        return
+      }
+
       const grassVisibleHeightRatio =
         viewportWidth < 640 ? grassVisibleHeightRatioMobile : grassVisibleHeightRatioDesktop
       const grassCrestHeightPx = viewportWidth * grassVisibleHeightRatio
@@ -447,12 +637,6 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         viewportWidth < 640 ? 0.04 : viewportWidth < 900 ? 0.27 : viewportWidth < 1280 ? 0.25 : 0.24
 
       setGrassDropPx(Math.max(0, grassCrestHeightPx - allowedCrestHeightPx))
-
-      if (!rigSize) {
-        setCookieCenterPx(null)
-        return
-      }
-
       setCookieCenterPx(crestTopPx - rigSize * (0.5 - overlapRatio))
     }
 
@@ -476,7 +660,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
       resizeObserver?.disconnect()
       window.removeEventListener('resize', updateSceneMetrics)
     }
-  }, [])
+  }, [sceneVariant])
 
   if (!posters.length) {
     return null
@@ -487,6 +671,21 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
   const transitionVariant = transition?.direction === 1 ? 'next' : 'prev'
   const rigTop = cookieCenterPx != null ? `${cookieCenterPx}px` : `calc(54% - ${sceneLiftPx}px)`
   const hasMultiplePosters = posters.length > 1
+  const staticSceneClouds = sceneVariant === 'scenery' ? buildStaticShowcaseClouds(sceneTone) : []
+  const staticScenePieces =
+    sceneVariant === 'scenery' ? (menuHeroPiecesByScene[sceneTone] ?? menuHeroPiecesByScene.classic) : []
+  const staticSceneCritters =
+    sceneVariant === 'scenery'
+      ? (menuHeroCrittersByScene[sceneTone] ?? menuHeroCrittersByScene.classic)
+      : []
+  const sectionStyle =
+    sceneVariant === 'scenery'
+      ? ({
+          ...showcaseStyle,
+          ['--home-flower-seam' as string]: menuHeroFlowerSeamByScene[sceneTone],
+          ['--home-scene-charge' as string]: menuSceneButtonAuraByScene[sceneTone],
+        } as CSSProperties)
+      : showcaseStyle
 
   const finishTransition = () => {
     setTransition(null)
@@ -549,18 +748,120 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
     <section
       aria-label="Cookie showcase"
       aria-roledescription="carousel"
-      className="home-page-placeholder homeCookieShowcase relative flex flex-col px-4 pt-4 md:px-8"
-      style={showcaseStyle}
+      className={`home-page-placeholder homeCookieShowcase relative left-1/2 flex w-screen -translate-x-1/2 flex-col${
+        sceneVariant === 'scenery' ? ' homeCookieShowcase--scenery' : ''
+      }`}
+      style={sectionStyle}
     >
       <div className="homeCookieBackdrop absolute inset-0" />
 
-      <div aria-hidden="true" className="homeCookiePaperStage homeCookiePaperStage--sky">
-        {paperCloudOverlays.map((overlay) => overlay.render())}
-      </div>
+      {sceneVariant === 'grassland' ? (
+        <div aria-hidden="true" className="homeCookiePaperStage homeCookiePaperStage--sky">
+          {paperCloudOverlays.map((overlay) => overlay.render())}
+        </div>
+      ) : null}
 
-      <div className="relative z-10 mx-auto flex w-full flex-1 flex-col max-w-6xl">
+      <div className="relative z-10 flex w-full flex-1 flex-col">
         <div className="homeCookieStage relative flex-1">
           <div className="homeCookieSceneFrame absolute inset-0" ref={sceneFrameRef}>
+            {sceneVariant === 'scenery' ? (
+              <>
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="homeCookieSceneSky"
+                  draggable="false"
+                  loading="eager"
+                  src={menuHeroSkyByScene[sceneTone]}
+                />
+
+                {staticSceneClouds.map((cloud) => (
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className={`homeCookieSceneCloud ${cloud.className ?? ''}`}
+                    draggable="false"
+                    key={cloud.id}
+                    loading="eager"
+                    src={cloud.src}
+                    style={cloud.style}
+                  />
+                ))}
+
+                {spawnedSceneClouds.map((cloud) => (
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className={`homeCookieSceneCloud ${cloud.className ?? ''}`}
+                    draggable="false"
+                    key={cloud.id}
+                    loading="eager"
+                    src={cloud.src}
+                    style={cloud.style}
+                  />
+                ))}
+
+                {staticScenePieces.map((piece, index) => (
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className={`homeCookieScenePiece ${piece.className}`}
+                    draggable="false"
+                    key={`piece-${sceneTone}-${index}-${piece.src}`}
+                    loading="eager"
+                    src={piece.src}
+                    style={piece.style}
+                  />
+                ))}
+
+                {staticSceneCritters.map((critter, index) => (
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className={`homeCookieScenePiece ${critter.className}`}
+                    draggable="false"
+                    key={`critter-${sceneTone}-${index}-${critter.src}`}
+                    loading="eager"
+                    src={critter.src}
+                    style={critter.style}
+                  />
+                ))}
+
+                <div className="homeCookieSceneActions">
+                  <button
+                    className="homeCookieSceneButton"
+                    onClick={() => {
+                      setSceneTone(getNextMenuSceneTone(sceneTone))
+                    }}
+                    type="button"
+                  >
+                    Change scenery
+                  </button>
+                  <button
+                    className="homeCookieSceneButton"
+                    onClick={() =>
+                      setSpawnedSceneClouds((current) => [...current, createShowcaseCloud(sceneTone)])
+                    }
+                    type="button"
+                  >
+                    Spawn cloud
+                  </button>
+                  <button
+                    className="homeCookieSceneButton"
+                    onClick={() =>
+                      setSpawnedSceneFlowers((current) => [
+                        ...current,
+                        createShowcaseFlowerForScene(sceneTone),
+                      ])
+                    }
+                    type="button"
+                  >
+                    Spawn flower
+                  </button>
+                </div>
+              </>
+            ) : null}
+
             {transition && outgoingPoster ? (
               <>
                 <div
@@ -606,31 +907,70 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
               </div>
             )}
 
-            <div aria-hidden="true" className="homeCookieMeadowClip">
-              <picture>
-                <source media="(max-width: 639px)" srcSet="/grassland-bigger.png" />
+            {sceneVariant === 'scenery' ? (
+              <>
                 <img
                   alt=""
-                  className="homeCookieGrass"
+                  aria-hidden="true"
+                  className="homeCookieSceneMeadow"
                   draggable="false"
                   loading="eager"
-                  src="/grassland.svg"
-                  style={{ bottom: `${-grassDropPx}px` }}
+                  src={menuHeroMeadowByScene[sceneTone]}
                 />
-              </picture>
-
-              <div className="homeCookieMeadowFlowers">
-                {meadowFlowerAccents.map((flower) => (
-                  <span
+                <div aria-hidden="true" className="homeCookieFlowerRail">
+                  {buildShowcaseFlowerRail(sceneTone).map((flower) => (
+                    <img
+                      alt=""
+                      aria-hidden="true"
+                      className="homeCookieFlowerRailBloom"
+                      draggable="false"
+                      key={flower.id}
+                      loading="eager"
+                      src={flower.src}
+                      style={flower.style}
+                    />
+                  ))}
+                </div>
+                {spawnedSceneFlowers.map((flower) => (
+                  <img
+                    alt=""
                     aria-hidden="true"
-                    className="homeCookieMeadowFlower"
-                    data-tone={flower.tone}
+                    className="homeCookieSceneFlower"
+                    draggable="false"
                     key={flower.id}
+                    loading="eager"
+                    src={flower.src}
                     style={flower.style}
                   />
                 ))}
+              </>
+            ) : (
+              <div aria-hidden="true" className="homeCookieMeadowClip">
+                <picture>
+                  <source media="(max-width: 639px)" srcSet="/grassland-bigger.png" />
+                  <img
+                    alt=""
+                    className="homeCookieGrass"
+                    draggable="false"
+                    loading="eager"
+                    src="/grassland.svg"
+                    style={{ bottom: `${-grassDropPx}px` }}
+                  />
+                </picture>
+
+                <div className="homeCookieMeadowFlowers">
+                  {meadowFlowerAccents.map((flower) => (
+                    <span
+                      aria-hidden="true"
+                      className="homeCookieMeadowFlower"
+                      data-tone={flower.tone}
+                      key={flower.id}
+                      style={flower.style}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div
@@ -682,10 +1022,14 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
 
       <style>{`
         .homeCookieShowcase {
+          --home-header-underlap: 7.6rem;
+          --home-meadow-height: clamp(6.75rem, 12vh, 8.75rem);
           --copy-bottom: clamp(1rem, 3.8vw, 2.2rem);
           background: linear-gradient(to bottom, var(--showcase-sky) 55%, #4a7a3b 100%);
+          box-sizing: border-box;
           color: var(--showcase-ink);
-          overflow: visible;
+          height: 100svh;
+          overflow: hidden;
         }
 
         .homeCookieBackdrop {
@@ -693,8 +1037,8 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
         }
 
         .homeCookieStage {
-          min-height: var(--stage-min-height);
-          overflow: visible;
+          height: 100%;
+          overflow: hidden;
         }
 
         .homeCookieSceneFrame {
@@ -703,6 +1047,126 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
           right: auto;
           transform: translateX(-50%);
           width: 100vw;
+        }
+
+        .homeCookieShowcase--scenery,
+        .homeCookieShowcase--scenery .homeCookieBackdrop {
+          background: transparent;
+        }
+
+        .homeCookieSceneSky,
+        .homeCookieSceneMeadow,
+        .homeCookieSceneCloud,
+        .homeCookieScenePiece,
+        .homeCookieSceneFlower {
+          pointer-events: none;
+          position: absolute;
+        }
+
+        .homeCookieSceneSky {
+          inset: 0;
+          height: 100%;
+          object-fit: cover;
+          width: 100%;
+          z-index: 1;
+        }
+
+        .homeCookieSceneMeadow {
+          bottom: -0.15rem;
+          height: var(--home-meadow-height);
+          inset-inline: 0;
+          object-fit: cover;
+          object-position: center;
+          width: 100%;
+          z-index: 12;
+        }
+
+        .homeCookieFlowerRail {
+          bottom: var(--home-flower-seam, 0.5rem);
+          height: 0;
+          inset-inline: 0;
+          pointer-events: none;
+          position: absolute;
+          z-index: 15;
+        }
+
+        .homeCookieFlowerRailBloom {
+          bottom: 0;
+          height: auto;
+          pointer-events: none;
+          position: absolute;
+          width: clamp(2.2rem, 4.8vw, 3.8rem);
+        }
+
+        .homeCookieSceneCloud {
+          animation: homeCookieCloudDrift var(--home-cloud-duration, 20s) linear infinite;
+          filter: drop-shadow(0 10px 14px rgba(255, 255, 255, 0.28));
+          height: auto;
+          z-index: 8;
+        }
+
+        .homeCookieScenePiece {
+          height: auto;
+          transform-origin: center bottom;
+          z-index: 13;
+        }
+
+        .homeCookieSceneFlower {
+          animation: homeCookieSceneFlowerLife var(--home-flower-duration, 4.6s) ease-in-out infinite;
+          animation-delay: var(--home-flower-delay, 0s);
+          transform:
+            translateX(-50%)
+            translateY(0)
+            rotate(calc(var(--home-flower-tilt, 2deg) * -1))
+            scale(var(--home-flower-scale, 1));
+          transform-origin: center bottom;
+          width: clamp(1.9rem, 4vw, 3.1rem);
+          z-index: 16;
+        }
+
+        .homeCookieSceneActions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.65rem;
+          max-width: min(28rem, calc(100vw - 2rem));
+          pointer-events: auto;
+          position: absolute;
+          right: clamp(0.85rem, 3vw, 2.2rem);
+          top: calc(var(--home-header-underlap) + clamp(0.25rem, 1vw, 0.65rem));
+          z-index: 22;
+        }
+
+        .homeCookieSceneButton {
+          align-items: center;
+          background:
+            linear-gradient(
+              90deg,
+              color-mix(in srgb, var(--home-scene-charge, rgba(255, 215, 79, 0.86)) 70%, white 30%) 0%,
+              color-mix(in srgb, var(--home-scene-charge, rgba(255, 215, 79, 0.86)) 84%, white 16%) 100%
+            ),
+            rgba(255, 248, 242, 0.9);
+          border: 1px solid rgba(25, 57, 95, 0.16);
+          border-radius: 999px;
+          box-shadow: 0 12px 20px rgba(23, 58, 99, 0.08);
+          color: #173a63;
+          display: inline-flex;
+          font-family: var(--font-rounded-display);
+          font-size: 0.84rem;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          min-height: 2.2rem;
+          padding: 0.48rem 0.9rem;
+          transition:
+            transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 180ms ease,
+            box-shadow 180ms ease;
+        }
+
+        .homeCookieSceneButton:hover,
+        .homeCookieSceneButton:focus-visible {
+          border-color: rgba(25, 57, 95, 0.28);
+          box-shadow: 0 14px 24px rgba(23, 58, 99, 0.12);
+          transform: translateY(-1px);
         }
 
         .homeCookiePaperStage {
@@ -1095,6 +1559,25 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
           }
         }
 
+        @keyframes homeCookieSceneFlowerLife {
+          0%,
+          100% {
+            transform:
+              translateX(-50%)
+              translateY(0)
+              rotate(calc(var(--home-flower-tilt, 2deg) * -1))
+              scale(var(--home-flower-scale, 1));
+          }
+
+          50% {
+            transform:
+              translateX(-50%)
+              translateY(calc(var(--home-flower-bob, 0.18rem) * -1))
+              rotate(var(--home-flower-tilt, 2deg))
+              scale(var(--home-flower-scale, 1));
+          }
+        }
+
         @keyframes homeCookieMeadowFlowerBob {
           0%,
           100% {
@@ -1111,12 +1594,33 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             --control-gap: 0.85rem;
             --control-size: 2.95rem;
             --cookie-size: clamp(10.5rem, 43vw, 12.75rem);
-            --copy-bottom: clamp(3rem, 10vh, 5.5rem);
+            --copy-bottom: clamp(0.85rem, 2.4vh, 1.35rem);
             --copy-width: min(86vw, 21rem);
             --cta-font-size: 0.88rem;
             --cta-padding-x: 1rem;
             --cta-width: clamp(7rem, 26vw, 8.5rem);
-            --stage-min-height: 24rem;
+            --home-header-underlap: 7.2rem;
+            --home-meadow-height: 6.4rem;
+          }
+
+          .homeCookieSceneActions {
+            justify-content: center;
+            left: 0.85rem;
+            max-width: none;
+            right: 0.85rem;
+            top: calc(var(--home-header-underlap) + 0.35rem);
+          }
+
+          .homeCookieSceneButton {
+            font-size: 0.74rem;
+            min-height: 2rem;
+            padding-left: 0.72rem;
+            padding-right: 0.72rem;
+          }
+
+          .homeCookieFlowerRailBloom:nth-child(2),
+          .homeCookieFlowerRailBloom:nth-child(4) {
+            display: none;
           }
 
           .homeCookieMeadowFlower:nth-child(1) {
@@ -1366,7 +1870,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             --cta-font-size: clamp(1rem, 1.8vw, 1.15rem);
             --cta-padding-x: 1.3rem;
             --cta-width: clamp(9.25rem, 22vw, 11rem);
-            --stage-min-height: clamp(24rem, 52vh, 29rem);
+            --home-meadow-height: 6.9rem;
           }
         }
 
@@ -1380,7 +1884,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             --cta-font-size: clamp(1.05rem, 1.55vw, 1.25rem);
             --cta-padding-x: 1.45rem;
             --cta-width: clamp(9.75rem, 17vw, 11.75rem);
-            --stage-min-height: clamp(24rem, 48vh, 30rem);
+            --home-meadow-height: 7.4rem;
           }
         }
 
@@ -1394,7 +1898,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             --cta-font-size: clamp(1.1rem, 1.4vw, 1.35rem);
             --cta-padding-x: 1.55rem;
             --cta-width: clamp(10rem, 15vw, 12.25rem);
-            --stage-min-height: clamp(24rem, 50vh, 32rem);
+            --home-meadow-height: 7.9rem;
           }
         }
 
@@ -1408,7 +1912,7 @@ export function HomeCookieCarousel({ posters }: HomeCookieCarouselProps) {
             --cta-font-size: clamp(1.15rem, 1.2vw, 1.4rem);
             --cta-padding-x: 1.7rem;
             --cta-width: clamp(10.5rem, 13vw, 13rem);
-            --stage-min-height: clamp(25rem, 52vh, 34rem);
+            --home-meadow-height: 8.4rem;
           }
         }
       `}</style>

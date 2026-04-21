@@ -9,5 +9,5 @@ export const metadata = {
 export default async function RotatingCookieFlavorsPage() {
   const posters = await queryHomeCookiePosters()
 
-  return <HomeCookieCarousel posters={posters} />
+  return <HomeCookieCarousel posters={posters} sceneVariant="scenery" />
 }

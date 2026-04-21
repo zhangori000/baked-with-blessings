@@ -2,7 +2,7 @@
 
 import { menuHref } from '@/utilities/routes'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { toast } from 'sonner'
@@ -14,6 +14,28 @@ type PosterCloud = {
   delay: string
   duration: string
   style: React.CSSProperties
+}
+
+type PosterSceneTone = 'dawn' | 'under-tree' | 'moonlit' | 'classic' | 'blossom'
+
+type SpawnedPosterCloud = {
+  delay: string
+  duration: string
+  id: number
+  left: string
+  src: string
+  top: string
+  width: string
+}
+
+type SpawnedPosterFlower = {
+  bob: string
+  delay: string
+  duration: string
+  id: number
+  left: string
+  scale: number
+  tilt: string
 }
 
 type CookiePosterSketchFrameProps = {
@@ -51,6 +73,232 @@ const posterClouds: PosterCloud[] = [
     },
   },
 ]
+
+const posterSceneryTones: PosterSceneTone[] = ['classic', 'dawn', 'under-tree', 'moonlit', 'blossom']
+const posterSkyByScenery: Record<PosterSceneTone, string> = {
+  dawn: '/catering/scenery/brown-anime-gradient-sky.svg',
+  'under-tree': '/catering/scenery/girl-under-tree-sky.svg',
+  moonlit: '/catering/scenery/moonlit-purple-sky.svg',
+  classic: '/catering/scenery/classic-sky.svg',
+  blossom: '/catering/scenery/blossom-breeze-sky.svg',
+}
+const posterMeadowByScenery: Record<PosterSceneTone, string> = {
+  dawn: '/catering/scenery/brown-anime-rolling-meadow.svg',
+  'under-tree': '/catering/scenery/girl-under-tree-meadow.svg',
+  moonlit: '/catering/scenery/moonlit-purple-meadow.svg',
+  classic: '/catering/scenery/classic-meadow.svg',
+  blossom: '/catering/scenery/blossom-grass-mound.svg',
+}
+const posterButtonAuraByScenery: Record<PosterSceneTone, string> = {
+  dawn: 'rgba(255, 214, 101, 0.86)',
+  'under-tree': 'rgba(197, 228, 142, 0.84)',
+  moonlit: 'rgba(153, 115, 255, 0.9)',
+  classic: 'rgba(255, 215, 79, 0.85)',
+  blossom: 'rgba(255, 176, 208, 0.92)',
+}
+const posterCloudAssetsByScenery: Record<PosterSceneTone, readonly string[]> = {
+  dawn: ['/clouds/brown-anime-cloud-fluffy.svg', '/clouds/brown-anime-cloud-layered.svg'],
+  'under-tree': ['/clouds/three-ball-cloud-wide.svg', '/clouds/three-ball-cloud.svg'],
+  moonlit: ['/clouds/moonlit-purple-swoop-cloud.svg', '/clouds/moonlit-purple-upper-cloud.svg'],
+  classic: ['/clouds/three-ball-cloud-compact.svg', '/clouds/three-ball-cloud.svg'],
+  blossom: ['/clouds/three-ball-cloud-wide.svg', '/clouds/three-ball-cloud.svg'],
+}
+
+let spawnedPosterCloudID = 0
+let spawnedPosterFlowerID = 0
+
+const buildSeededPosterFlowers = (cardIndex: number): SpawnedPosterFlower[] => {
+  const leftOffset = (cardIndex % 3) * 2.4
+
+  return [
+    {
+      bob: '0.18rem',
+      delay: '-0.8s',
+      duration: '4.4s',
+      id: cardIndex * 10 + 1,
+      left: `${12 + leftOffset}%`,
+      scale: 0.96,
+      tilt: '-2deg',
+    },
+    {
+      bob: '0.22rem',
+      delay: '-2.1s',
+      duration: '4.9s',
+      id: cardIndex * 10 + 2,
+      left: `${84 - leftOffset}%`,
+      scale: 1.04,
+      tilt: '2deg',
+    },
+  ]
+}
+
+const createSpawnedPosterCloud = (sceneryTone: PosterSceneTone): SpawnedPosterCloud => {
+  const assets = posterCloudAssetsByScenery[sceneryTone] ?? posterCloudAssetsByScenery.classic
+  const src = assets[Math.floor(Math.random() * assets.length)] ?? assets[0]
+
+  return {
+    delay: `-${(Math.random() * 7).toFixed(2)}s`,
+    duration: `${(16 + Math.random() * 8).toFixed(2)}s`,
+    id: ++spawnedPosterCloudID,
+    left: `${(4 + Math.random() * 40).toFixed(2)}%`,
+    src,
+    top: `${(6 + Math.random() * 22).toFixed(2)}%`,
+    width: `${(4.8 + Math.random() * 2.7).toFixed(2)}rem`,
+  }
+}
+
+const createSpawnedPosterFlower = (): SpawnedPosterFlower => ({
+  bob: `${(0.16 + Math.random() * 0.14).toFixed(2)}rem`,
+  delay: `-${(Math.random() * 4.2).toFixed(2)}s`,
+  duration: `${(4.1 + Math.random() * 1.7).toFixed(2)}s`,
+  id: ++spawnedPosterFlowerID,
+  left: `${(8 + Math.random() * 84).toFixed(2)}%`,
+  scale: Number((0.88 + Math.random() * 0.44).toFixed(2)),
+  tilt: `${(Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 2.4)}deg`,
+})
+
+function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster: CookiePosterAsset }) {
+  const [sceneryTone, setSceneryTone] = useState<PosterSceneTone>(
+    posterSceneryTones[cardIndex % posterSceneryTones.length] ?? 'classic',
+  )
+  const [spawnedClouds, setSpawnedClouds] = useState<SpawnedPosterCloud[]>([])
+  const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedPosterFlower[]>(
+    buildSeededPosterFlowers(cardIndex),
+  )
+
+  const staticCloudAssets = posterCloudAssetsByScenery[sceneryTone] ?? posterCloudAssetsByScenery.classic
+  const sceneStyle = {
+    ['--cookie-bottom' as string]: '2.85rem',
+    ['--cookie-size' as string]: 'clamp(14.8rem, 64%, 16.4rem)',
+    ['--poster-scene-charge' as string]: posterButtonAuraByScenery[sceneryTone],
+  } as React.CSSProperties
+
+  const handleChangeScenery = () => {
+    setSceneryTone((current) => {
+      const currentIndex = posterSceneryTones.indexOf(current)
+      return posterSceneryTones[(currentIndex + 1) % posterSceneryTones.length] ?? posterSceneryTones[0]
+    })
+    setSpawnedClouds([])
+    setSpawnedFlowers(buildSeededPosterFlowers(cardIndex))
+  }
+
+  return (
+    <article className="group cookiePosterRailItem h-full">
+      <div className="cookiePosterCard relative flex h-full flex-col overflow-hidden">
+        <div className="cookiePosterMeta flex justify-between gap-3 px-1">
+          <h3 className="cookiePosterTitle min-w-0 flex-1 text-[1.28rem] font-medium leading-[0.96] tracking-[-0.03em] text-[#171510] md:text-[1.38rem]">
+            <Link href={poster.href}>{poster.title}</Link>
+          </h3>
+
+          <div className="shrink-0">
+            <CookiePosterAddToCartButton poster={poster} />
+          </div>
+        </div>
+
+        <CookiePosterSketchFrame slug={poster.slug} style={sceneStyle}>
+          <div className="cookiePosterSceneControls absolute left-3 top-3 z-30 flex max-w-[calc(100%-1.5rem)] flex-wrap gap-2">
+            <button className="cookiePosterSceneButton" onClick={handleChangeScenery} type="button">
+              Change scenery
+            </button>
+            <button
+              className="cookiePosterSceneButton"
+              onClick={() => setSpawnedClouds((current) => [...current, createSpawnedPosterCloud(sceneryTone)])}
+              type="button"
+            >
+              Spawn cloud
+            </button>
+            <button
+              className="cookiePosterSceneButton"
+              onClick={() => setSpawnedFlowers((current) => [...current, createSpawnedPosterFlower()])}
+              type="button"
+            >
+              Spawn flower
+            </button>
+          </div>
+
+          <img
+            alt=""
+            aria-hidden="true"
+            className="cookiePosterSky absolute inset-0 h-full w-full object-cover"
+            src={posterSkyByScenery[sceneryTone]}
+          />
+
+          {posterClouds.map((cloud, index) => (
+            <img
+              alt=""
+              aria-hidden="true"
+              className="cookiePosterSceneCloud"
+              key={`${poster.slug}-cloud-${sceneryTone}-${index}`}
+              src={staticCloudAssets[index % staticCloudAssets.length] ?? staticCloudAssets[0]}
+              style={
+                {
+                  ...cloud.style,
+                  ['--cloud-delay' as string]: cloud.delay,
+                  ['--cloud-duration' as string]: cloud.duration,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+
+          {spawnedClouds.map((cloud) => (
+            <img
+              alt=""
+              aria-hidden="true"
+              className="cookiePosterSceneCloud"
+              key={cloud.id}
+              src={cloud.src}
+              style={
+                {
+                  ['--cloud-delay' as string]: cloud.delay,
+                  ['--cloud-duration' as string]: cloud.duration,
+                  left: cloud.left,
+                  top: cloud.top,
+                  width: cloud.width,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
+
+          <img
+            alt=""
+            aria-hidden="true"
+            className="cookiePosterMeadow absolute inset-x-0 bottom-0 z-[2] h-full w-full object-cover object-bottom"
+            src={posterMeadowByScenery[sceneryTone]}
+          />
+
+          {spawnedFlowers.map((flower) => (
+            <img
+              alt=""
+              aria-hidden="true"
+              className="cookiePosterSceneFlower"
+              key={flower.id}
+              src="/flowers/menu-nav-flower.svg"
+              style={
+                {
+                  ['--poster-flower-bob' as string]: flower.bob,
+                  ['--poster-flower-delay' as string]: flower.delay,
+                  ['--poster-flower-duration' as string]: flower.duration,
+                  ['--poster-flower-scale' as string]: `${flower.scale}`,
+                  ['--poster-flower-tilt' as string]: flower.tilt,
+                  left: flower.left,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+
+          <CookieSheepRig
+            bodyFallbackSrc={poster.bodyFallbackSrc}
+            href={poster.href}
+            image={poster.image}
+            title={poster.title}
+          />
+        </CookiePosterSketchFrame>
+      </div>
+    </article>
+  )
+}
 
 function CookiePosterSketchFrame({ children, slug, style }: CookiePosterSketchFrameProps) {
   return (
@@ -146,61 +394,9 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           <div className="cookiePosterRailFrame">
             <div className="cookiePosterRail w-full">
               <div className="cookiePosterRailInner">
-                {posters.map((poster) => {
-                  const sceneStyle = {
-                    ['--cookie-bottom' as string]: '2.85rem',
-                    ['--cookie-size' as string]: 'clamp(14.8rem, 64%, 16.4rem)',
-                  } as React.CSSProperties
-
-                  return (
-                      <article key={poster.slug} className="group cookiePosterRailItem h-full">
-                        <div className="cookiePosterCard relative flex h-full flex-col overflow-hidden">
-                          <div className="cookiePosterMeta flex justify-between gap-3 px-1">
-                            <h3 className="cookiePosterTitle min-w-0 flex-1 text-[1.28rem] font-medium leading-[0.96] tracking-[-0.03em] text-[#171510] md:text-[1.38rem]">
-                              <Link href={poster.href}>
-                                {poster.title}
-                              </Link>
-                            </h3>
-
-                            <div className="shrink-0">
-                              <CookiePosterAddToCartButton poster={poster} />
-                            </div>
-                          </div>
-
-                          <CookiePosterSketchFrame slug={poster.slug} style={sceneStyle}>
-                            <img
-                              alt=""
-                              aria-hidden="true"
-                              className="absolute inset-0 h-full w-full object-cover"
-                              src="/grassland.svg"
-                            />
-
-                            {posterClouds.map((cloud, index) => (
-                              <img
-                                alt=""
-                                aria-hidden="true"
-                                className="cookiePosterCloud pointer-events-none absolute z-10"
-                                key={`${poster.slug}-cloud-${index}`}
-                                src="/clouds/three-ball-cloud-compact.svg"
-                                style={cloud.style}
-                                data-cloud-delay={cloud.delay}
-                                data-cloud-duration={cloud.duration}
-                              />
-                            ))}
-
-                            <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
-
-                            <CookieSheepRig
-                              bodyFallbackSrc={poster.bodyFallbackSrc}
-                              href={poster.href}
-                              image={poster.image}
-                              title={poster.title}
-                            />
-                          </CookiePosterSketchFrame>
-                        </div>
-                      </article>
-                  )
-                })}
+                {posters.map((poster, index) => (
+                  <CookiePosterRailCard cardIndex={index} key={poster.slug} poster={poster} />
+                ))}
               </div>
             </div>
           </div>
@@ -418,26 +614,66 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           );
         }
 
-        .cookiePosterCloud {
-          left: -18%;
-          animation: cookiePosterCloudDrift 18s linear infinite;
+        .cookiePosterSceneButton {
+          align-items: center;
+          background:
+            linear-gradient(
+              90deg,
+              color-mix(in srgb, var(--poster-scene-charge, rgba(255, 215, 79, 0.85)) 70%, white 30%) 0%,
+              color-mix(in srgb, var(--poster-scene-charge, rgba(255, 215, 79, 0.85)) 84%, white 16%) 100%
+            ),
+            rgba(255, 248, 242, 0.9);
+          border: 1px solid rgba(25, 57, 95, 0.16);
+          border-radius: 999px;
+          color: #173a63;
+          cursor: pointer;
+          display: inline-flex;
+          font-family: var(--font-rounded-display);
+          font-size: 0.74rem;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          min-height: 1.95rem;
+          padding: 0.4rem 0.72rem;
+          position: relative;
+          transition:
+            transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 180ms ease,
+            box-shadow 180ms ease,
+            background-color 180ms ease;
+        }
+
+        .cookiePosterSceneButton:hover,
+        .cookiePosterSceneButton:focus-visible {
+          border-color: rgba(25, 57, 95, 0.28);
+          box-shadow: 0 10px 18px rgba(23, 58, 99, 0.12);
+          transform: translateY(-1px);
+        }
+
+        .cookiePosterSceneCloud {
+          animation: cookiePosterCloudDrift var(--cloud-duration, 18s) linear infinite;
+          animation-delay: var(--cloud-delay, 0s);
           filter: drop-shadow(0 6px 10px rgba(255, 255, 255, 0.28));
+          left: -18%;
+          pointer-events: none;
+          position: absolute;
+          z-index: 10;
         }
 
-        .cookiePosterCloud[data-cloud-duration='18s'] {
-          animation-duration: 18s;
-        }
-
-        .cookiePosterCloud[data-cloud-delay='0s'] {
-          animation-delay: 0s;
-        }
-
-        .cookiePosterCloud[data-cloud-delay='-6s'] {
-          animation-delay: -6s;
-        }
-
-        .cookiePosterCloud[data-cloud-delay='-12s'] {
-          animation-delay: -12s;
+        .cookiePosterSceneFlower {
+          animation: cookiePosterFlowerLife var(--poster-flower-duration, 4.6s) ease-in-out infinite;
+          animation-delay: var(--poster-flower-delay, 0s);
+          bottom: 0.45rem;
+          left: 0;
+          pointer-events: none;
+          position: absolute;
+          transform:
+            translateX(-50%)
+            translateY(0)
+            rotate(calc(var(--poster-flower-tilt, 2deg) * -1))
+            scale(var(--poster-flower-scale, 1));
+          transform-origin: center bottom;
+          width: 2.2rem;
+          z-index: 8;
         }
 
         .cookieSheepBodyImage {
@@ -479,6 +715,25 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           }
         }
 
+        @keyframes cookiePosterFlowerLife {
+          0%,
+          100% {
+            transform:
+              translateX(-50%)
+              translateY(0)
+              rotate(calc(var(--poster-flower-tilt, 2deg) * -1))
+              scale(var(--poster-flower-scale, 1));
+          }
+
+          50% {
+            transform:
+              translateX(-50%)
+              translateY(calc(var(--poster-flower-bob, 0.18rem) * -1))
+              rotate(var(--poster-flower-tilt, 2deg))
+              scale(var(--poster-flower-scale, 1));
+          }
+        }
+
         @media (max-width: 767px) {
           .cookiePosterActionButton {
             min-width: 0;
@@ -491,6 +746,19 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
             flex-direction: column;
             gap: 0.7rem;
             margin-bottom: 0.75rem;
+          }
+
+          .cookiePosterSceneControls {
+            left: 0.75rem;
+            right: 0.75rem;
+            top: 0.75rem;
+          }
+
+          .cookiePosterSceneButton {
+            font-size: 0.7rem;
+            min-height: 1.82rem;
+            padding-left: 0.62rem;
+            padding-right: 0.62rem;
           }
 
           .cookiePosterRailShell {

@@ -269,6 +269,8 @@
   main:has(.home-page-placeholder) {
     display: flex;
     flex-direction: column;
+    min-height: 100svh;
+    overflow: hidden;
   }
 
   main:has(.home-page-placeholder) .home-page-placeholder {
@@ -281,6 +283,30 @@
 
   body:has(.home-page-placeholder) .viewportFlowerField {
     display: none;
+  }
+
+  body:has(.home-page-placeholder) .siteHeader {
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+  }
+
+  body:has(.home-page-placeholder) .siteHeaderViewport {
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  body:has(.home-page-placeholder) .siteHeaderShellRow {
+    min-height: 0 !important;
+    padding-bottom: 0.9rem !important;
+    padding-top: 1.15rem !important;
+  }
+
+  body:has(.home-page-placeholder) .siteFrame {
+    min-height: 100svh;
   }
 
   button,
