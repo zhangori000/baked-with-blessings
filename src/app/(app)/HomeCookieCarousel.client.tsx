@@ -8,11 +8,15 @@ import {
   buildSeededMenuSceneAccents,
   createSpawnedMenuSceneAccent,
   getNextMenuSceneTone,
+  menuCloudSpawnDesignsByScene,
+  menuSceneAccentLabelByScene,
+  menuSceneCloudLabelByScene,
   menuHeroCloudsByScene,
   menuHeroCrittersByScene,
   menuHeroFlowerSeamByScene,
   menuHeroFlowersByScene,
   menuHeroMeadowByScene,
+  menuHeroMobileSkyByScene,
   menuHeroPiecesByScene,
   menuHeroSkyByScene,
   menuSceneButtonAuraByScene,
@@ -214,16 +218,9 @@ const buildStaticShowcaseClouds = (sceneTone: SceneTone): ShowcaseSceneCloud[] =
 }
 
 const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
-  const clouds = menuHeroCloudsByScene[sceneTone] ?? menuHeroCloudsByScene.classic
-  const cloud = clouds[Math.floor(Math.random() * clouds.length)] ?? clouds[0]
-  const widthRangeByScene: Record<SceneTone, [number, number]> = {
-    dawn: [10.5, 21],
-    'under-tree': [8.5, 16.5],
-    moonlit: [12, 22],
-    classic: [9.5, 18.5],
-    blossom: [9.5, 16.5],
-  }
-  const [minWidth, maxWidth] = widthRangeByScene[sceneTone]
+  const spawnDesigns = menuCloudSpawnDesignsByScene[sceneTone] ?? menuCloudSpawnDesignsByScene.classic
+  const cloud =
+    spawnDesigns[Math.floor(Math.random() * spawnDesigns.length)] ?? spawnDesigns[0] ?? null
   const left = Math.random() * 84
   const top = 5 + Math.random() * 26
 
@@ -232,11 +229,13 @@ const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
     id: `spawned-cloud-${++spawnedShowcaseCloudID}`,
     src: cloud?.src ?? '/clouds/three-ball-cloud-wide.svg',
     style: {
-      ...(cloud?.style ?? {}),
       animationDelay: `-${(Math.random() * 7).toFixed(2)}s`,
       left: `${left.toFixed(2)}%`,
       top: `${top.toFixed(2)}%`,
-      width: `${(minWidth + Math.random() * (maxWidth - minWidth)).toFixed(2)}rem`,
+      width: `${(
+        (cloud?.minWidth ?? 10.6) +
+        Math.random() * ((cloud?.maxWidth ?? 14.8) - (cloud?.minWidth ?? 10.6))
+      ).toFixed(2)}rem`,
     } as CSSProperties,
   }
 }
@@ -750,7 +749,7 @@ export function HomeCookieCarousel({
       aria-roledescription="carousel"
       className={`home-page-placeholder homeCookieShowcase relative left-1/2 flex w-screen -translate-x-1/2 flex-col${
         sceneVariant === 'scenery' ? ' homeCookieShowcase--scenery' : ''
-      }`}
+      } homeCookieScene-${sceneTone}`}
       style={sectionStyle}
     >
       <div className="homeCookieBackdrop absolute inset-0" />
@@ -766,14 +765,19 @@ export function HomeCookieCarousel({
           <div className="homeCookieSceneFrame absolute inset-0" ref={sceneFrameRef}>
             {sceneVariant === 'scenery' ? (
               <>
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  className="homeCookieSceneSky"
-                  draggable="false"
-                  loading="eager"
-                  src={menuHeroSkyByScene[sceneTone]}
-                />
+                <picture className="homeCookieSceneSky">
+                  {menuHeroMobileSkyByScene[sceneTone] ? (
+                    <source media="(max-width: 767px)" srcSet={menuHeroMobileSkyByScene[sceneTone]} />
+                  ) : null}
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="h-full w-full object-cover"
+                    draggable="false"
+                    loading="eager"
+                    src={menuHeroSkyByScene[sceneTone]}
+                  />
+                </picture>
 
                 {staticSceneClouds.map((cloud) => (
                   <img
@@ -844,7 +848,7 @@ export function HomeCookieCarousel({
                     }
                     type="button"
                   >
-                    Spawn cloud
+                    {menuSceneCloudLabelByScene[sceneTone]}
                   </button>
                   <button
                     className="homeCookieSceneButton"
@@ -856,7 +860,7 @@ export function HomeCookieCarousel({
                     }
                     type="button"
                   >
-                    Spawn flower
+                    {menuSceneAccentLabelByScene[sceneTone]}
                   </button>
                 </div>
               </>
@@ -1616,6 +1620,28 @@ export function HomeCookieCarousel({
             min-height: 2rem;
             padding-left: 0.72rem;
             padding-right: 0.72rem;
+          }
+
+          .homeCookieScene-blossom .homeCookieSceneSky {
+            object-position: 16% center;
+          }
+
+          .homeCookieScene-fairy-castle .homeCookieSceneSky {
+            left: -8%;
+            object-position: center top;
+            width: 116%;
+          }
+
+          .homeCookieScene-moonlit .homeCookieSceneSky {
+            object-position: 28% top;
+          }
+
+          .homeCookieScene-moonlit .homeCookieFlowerRailBloom {
+            width: clamp(2.6rem, 6vw, 4.2rem);
+          }
+
+          .homeCookieScene-moonlit .homeCookieSceneFlower {
+            width: clamp(2.2rem, 5vw, 3.4rem);
           }
 
           .homeCookieFlowerRailBloom:nth-child(2),

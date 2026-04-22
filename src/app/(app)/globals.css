@@ -309,6 +309,40 @@
     min-height: 100svh;
   }
 
+  body:has(.homeCookieScene-moonlit) .siteHeader,
+  body:has(.cateringScene-moonlit) .siteHeader {
+    --site-header-text: #f3f8ff;
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
+  body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
+    filter:
+      brightness(0)
+      invert(1)
+      drop-shadow(0 10px 20px rgba(6, 18, 48, 0.34));
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderMobileIconButton,
+  body:has(.homeCookieScene-moonlit) .siteHeaderMobileBagCount,
+  body:has(.cateringScene-moonlit) .siteHeaderMobileIconButton,
+  body:has(.cateringScene-moonlit) .siteHeaderMobileBagCount {
+    color: #f3f8ff;
+    text-shadow: 0 8px 18px rgba(6, 18, 48, 0.34);
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderActionButton,
+  body:has(.homeCookieScene-moonlit) .siteHeaderBannerLink,
+  body:has(.cateringScene-moonlit) .siteHeaderActionButton,
+  body:has(.cateringScene-moonlit) .siteHeaderBannerLink {
+    color: #f3f8ff;
+    text-shadow: 0 10px 18px rgba(6, 18, 48, 0.34);
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderActionBadge,
+  body:has(.cateringScene-moonlit) .siteHeaderActionBadge {
+    color: inherit;
+  }
+
   button,
   input,
   textarea,

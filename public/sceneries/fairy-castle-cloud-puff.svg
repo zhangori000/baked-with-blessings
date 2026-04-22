@@ -1,0 +1,9 @@
+<svg width="100%" viewBox="0 0 220 82" xmlns="http://www.w3.org/2000/svg">
+  <!-- Spawnable bright-fantasy cloud:
+       Built from overlapping white ellipses with a pale blue-gray
+       underside so interactive clouds match the painted sky clouds. -->
+  <ellipse cx="86" cy="42" rx="62" ry="18" fill="#ffffff" opacity="0.96"/>
+  <ellipse cx="126" cy="28" rx="48" ry="20" fill="#ffffff" opacity="0.96"/>
+  <ellipse cx="164" cy="42" rx="34" ry="15" fill="#ffffff" opacity="0.92"/>
+  <ellipse cx="116" cy="52" rx="66" ry="14" fill="#e8eef4" opacity="0.86"/>
+</svg>

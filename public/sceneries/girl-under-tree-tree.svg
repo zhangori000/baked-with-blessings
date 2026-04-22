@@ -1,0 +1,103 @@
+<svg width="100%" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="girlTreeTrunk" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4a2d16" />
+      <stop offset="55%" stop-color="#6c4220" />
+      <stop offset="100%" stop-color="#84522a" />
+    </linearGradient>
+  </defs>
+
+  <!-- Trunk and main limbs: centered so the canopy feels balanced instead of hanging only to the right. -->
+  <path
+    d="M210 300Q216 248 226 208Q238 162 256 130L302 126Q294 164 286 206Q280 246 278 300Z"
+    fill="url(#girlTreeTrunk)"
+  />
+  <path
+    d="M228 300Q232 254 240 214Q252 170 266 144Q262 180 258 220Q254 256 252 300Z"
+    fill="#3e2510"
+  />
+  <path
+    d="M278 300Q282 256 288 214Q296 174 302 132Q308 170 312 214Q316 252 318 300Z"
+    fill="#88542c"
+  />
+  <path
+    d="M284 136Q228 108 166 98Q110 90 54 98"
+    fill="none"
+    stroke="#6c4220"
+    stroke-linecap="round"
+    stroke-width="10"
+  />
+  <path
+    d="M288 132Q352 102 426 94Q500 86 614 102"
+    fill="none"
+    stroke="#6c4220"
+    stroke-linecap="round"
+    stroke-width="10"
+  />
+  <path
+    d="M270 118Q232 82 192 58"
+    fill="none"
+    stroke="#6c4220"
+    stroke-linecap="round"
+    stroke-width="8"
+  />
+  <path
+    d="M304 114Q350 78 404 54"
+    fill="none"
+    stroke="#6c4220"
+    stroke-linecap="round"
+    stroke-width="8"
+  />
+  <path
+    d="M238 146Q206 126 172 120"
+    fill="none"
+    stroke="#7c4c26"
+    stroke-linecap="round"
+    stroke-width="6"
+  />
+  <path
+    d="M330 142Q372 124 412 122"
+    fill="none"
+    stroke="#7c4c26"
+    stroke-linecap="round"
+    stroke-width="6"
+  />
+
+  <!-- Canopy: overlapping rounded foliage across both sides of the trunk. -->
+  <g>
+    <ellipse cx="128" cy="108" rx="98" ry="54" fill="#406f21" />
+    <ellipse cx="228" cy="86" rx="110" ry="60" fill="#4c7c28" />
+    <ellipse cx="340" cy="82" rx="108" ry="58" fill="#55862d" />
+    <ellipse cx="456" cy="90" rx="102" ry="54" fill="#4c7c28" />
+    <ellipse cx="566" cy="110" rx="86" ry="46" fill="#467625" />
+  </g>
+  <g>
+    <circle cx="100" cy="82" r="40" fill="#6aa53a" />
+    <circle cx="154" cy="70" r="44" fill="#76b044" />
+    <circle cx="214" cy="56" r="46" fill="#86c24d" />
+    <circle cx="280" cy="46" r="50" fill="#9ed054" />
+    <circle cx="352" cy="44" r="48" fill="#b6dd5a" />
+    <circle cx="424" cy="50" r="46" fill="#9fd356" />
+    <circle cx="492" cy="62" r="44" fill="#86c24d" />
+    <circle cx="556" cy="80" r="40" fill="#73af42" />
+  </g>
+  <g>
+    <circle cx="132" cy="118" r="28" fill="#5b9533" />
+    <circle cx="202" cy="112" r="30" fill="#6aa53a" />
+    <circle cx="276" cy="108" r="32" fill="#78b244" />
+    <circle cx="356" cy="110" r="32" fill="#83bf4b" />
+    <circle cx="436" cy="114" r="30" fill="#72ad40" />
+    <circle cx="510" cy="124" r="28" fill="#609935" />
+  </g>
+
+  <!-- Small hanging petals/leaves to keep the dreamy under-tree feel. -->
+  <g fill="#e8ed5e" opacity="0.84">
+    <ellipse cx="162" cy="168" rx="3" ry="5" transform="rotate(22 162 168)" />
+    <ellipse cx="216" cy="196" rx="3" ry="5" transform="rotate(-26 216 196)" />
+    <ellipse cx="300" cy="176" rx="3" ry="5" transform="rotate(38 300 176)" />
+    <ellipse cx="378" cy="206" rx="3" ry="5" transform="rotate(-30 378 206)" />
+    <ellipse cx="454" cy="186" rx="3" ry="5" transform="rotate(44 454 186)" />
+    <ellipse cx="526" cy="222" rx="3" ry="5" transform="rotate(-24 526 222)" />
+    <ellipse cx="340" cy="252" rx="3" ry="5" transform="rotate(20 340 252)" />
+  </g>
+</svg>

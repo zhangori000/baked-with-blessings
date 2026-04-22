@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+     BRIGHT FANTASY CASTLE VALLEY — DESKTOP VERSION
+     Viewport: 1200 x 600 (widescreen landscape, 2:1 aspect ratio)
+     Style: Bright fantasy medieval, saturated greens, storybook
+     More horizontal breathing room: extra clouds, village sprawl,
+     and tree framing to fill the wider canvas.
+     ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="100%"
+     viewBox="0 0 1200 600"
+     role="img"
+     aria-label="Bright fantasy castle valley scene">
+  <title>Bright fantasy castle valley</title>
+  <desc>A hilltop castle surrounded by a red-roofed village sits in a sunlit valley of bright green rolling hills, distant blue mountains, and a golden wheat field in the foreground.</desc>
+
+  <!-- ============ GRADIENT DEFINITIONS ============ -->
+  <defs>
+    <!-- Sky: deeper blue at top fading to pale blue at horizon -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a8fd4"/>
+      <stop offset="100%" stop-color="#b8dff0"/>
+    </linearGradient>
+
+    <!-- Distant mountains: dusty blue -->
+    <linearGradient id="farHills" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6b9dc4"/>
+      <stop offset="100%" stop-color="#8ab5d0"/>
+    </linearGradient>
+
+    <!-- Mid-distance hills: medium vivid green -->
+    <linearGradient id="midGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4fa83a"/>
+      <stop offset="100%" stop-color="#6bc248"/>
+    </linearGradient>
+
+    <!-- Signature bright fantasy green (the hero color) -->
+    <linearGradient id="brightGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7dd148"/>
+      <stop offset="100%" stop-color="#a4e055"/>
+    </linearGradient>
+
+    <!-- Foreground green: darker, richer -->
+    <linearGradient id="foreGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5fb838"/>
+      <stop offset="100%" stop-color="#3d8a28"/>
+    </linearGradient>
+
+    <!-- Wheat field: warm gold -->
+    <linearGradient id="wheat" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0d050"/>
+      <stop offset="100%" stop-color="#d4a830"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ============ SKY (top ~42% of canvas) ============ -->
+  <rect x="0" y="0" width="1200" height="250" fill="url(#sky)"/>
+
+  <!-- ============ CLOUDS ============
+       Style: Soft, puffy, cumulus-style clouds made from overlapping
+       white ellipses with slight opacity variations. Each cloud is
+       a cluster of 3-4 ellipses — a main body, an upper bump, and a
+       subtle shadow underbelly in pale gray-blue.
+       Five cloud clusters spread across the wider canvas:
+       - Far left wisp (small)
+       - Upper-left cluster (medium)
+       - Center cluster (LARGEST, dominant)
+       - Upper-right cluster (medium)
+       - Far right wisp (small, near horizon)
+       ============================================================ -->
+
+  <!-- FAR LEFT WISP: small, thin streak -->
+  <ellipse cx="80" cy="90" rx="45" ry="12" fill="#ffffff" opacity="0.9"/>
+  <ellipse cx="105" cy="85" rx="30" ry="14" fill="#ffffff" opacity="0.85"/>
+
+  <!-- UPPER-LEFT CLOUD: medium rounded cumulus -->
+  <ellipse cx="230" cy="70" rx="55" ry="15" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="265" cy="58" rx="42" ry="18" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="245" cy="80" rx="45" ry="12" fill="#f0f4f8" opacity="0.85"/>
+
+  <!-- CENTER CLOUD: largest, dominant multi-puff -->
+  <ellipse cx="600" cy="55" rx="75" ry="18" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="650" cy="40" rx="60" ry="22" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="620" cy="70" rx="65" ry="15" fill="#e8eef4" opacity="0.85"/>
+  <ellipse cx="700" cy="62" rx="45" ry="16" fill="#ffffff" opacity="0.9"/>
+  <ellipse cx="555" cy="68" rx="35" ry="14" fill="#ffffff" opacity="0.9"/>
+
+  <!-- UPPER-RIGHT CLOUD: medium cluster -->
+  <ellipse cx="900" cy="75" rx="58" ry="16" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="940" cy="62" rx="44" ry="19" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="915" cy="88" rx="50" ry="13" fill="#e8eef4" opacity="0.85"/>
+
+  <!-- FAR RIGHT WISP: horizon-adjacent streak -->
+  <ellipse cx="1100" cy="105" rx="50" ry="13" fill="#ffffff" opacity="0.9"/>
+  <ellipse cx="1130" cy="98" rx="35" ry="15" fill="#ffffff" opacity="0.85"/>
+
+  <!-- ============ DISTANT MOUNTAINS ============ -->
+  <path d="M0,225 Q150,205 300,215 Q450,228 600,210 Q750,198 900,215 Q1050,228 1200,212 L1200,285 L0,285 Z"
+        fill="url(#farHills)" opacity="0.85"/>
+  <path d="M0,248 Q180,233 360,242 Q540,254 720,240 Q900,230 1200,240 L1200,295 L0,295 Z"
+        fill="#7ca8c9" opacity="0.7"/>
+
+  <!-- ============ MID-DISTANCE GREEN HILLS ============ -->
+  <path d="M0,275 Q120,258 260,268 Q400,280 540,266 Q680,254 820,266 Q960,278 1200,265 L1200,325 L0,325 Z"
+        fill="url(#midGreen)"/>
+
+  <!-- ============ CASTLE HILL ============ -->
+  <ellipse cx="600" cy="313" rx="175" ry="40" fill="#4fa83a"/>
+  <ellipse cx="600" cy="304" rx="158" ry="33" fill="#5fb840"/>
+
+  <!-- ============ CASTLE ============ -->
+  <rect x="545" y="235" width="112" height="82" fill="#b8b8b8"/>
+  <rect x="549" y="228" width="104" height="10" fill="#8a8a8a"/>
+  <rect x="533" y="212" width="28" height="105" fill="#c4c4c4"/>
+  <rect x="528" y="206" width="38" height="10" fill="#8a8a8a"/>
+  <polygon points="528,206 547,184 566,206" fill="#9a2a22"/>
+  <rect x="636" y="217" width="31" height="100" fill="#c4c4c4"/>
+  <rect x="630" y="211" width="42" height="10" fill="#8a8a8a"/>
+  <polygon points="630,211 651,188 672,211" fill="#9a2a22"/>
+  <rect x="582" y="190" width="34" height="127" fill="#c8c8c8"/>
+  <rect x="576" y="184" width="46" height="10" fill="#888888"/>
+  <polygon points="576,184 599,135 622,184" fill="#8a1f18"/>
+  <rect x="598" y="90" width="3" height="46" fill="#555555"/>
+  <polygon points="601,93 627,101 601,109" fill="#d43828"/>
+  <rect x="560" y="253" width="7" height="18" fill="#1a2530"/>
+  <rect x="581" y="260" width="9" height="22" fill="#1a2530"/>
+  <rect x="605" y="253" width="7" height="18" fill="#1a2530"/>
+  <rect x="636" y="260" width="9" height="22" fill="#1a2530"/>
+
+  <!-- ============ VILLAGE HOUSES ============
+       Cream walls, bright red-orange triangular roofs, no visible
+       windows at this scale. These silhouettes are the basis for the
+       spawnable house assets used in the interactive scene.
+       ============================================================ -->
+  <g>
+    <rect x="330" y="298" width="32" height="26" fill="#e8d8a8"/>
+    <polygon points="327,298 346,281 365,298" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="378" y="304" width="28" height="22" fill="#e8d8a8"/>
+    <polygon points="375,304 392,288 409,304" fill="#b83020"/>
+  </g>
+  <g>
+    <rect x="425" y="298" width="30" height="25" fill="#e8d8a8"/>
+    <polygon points="422,298 440,282 458,298" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="740" y="302" width="32" height="26" fill="#e8d8a8"/>
+    <polygon points="737,302 756,285 775,302" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="790" y="308" width="28" height="22" fill="#e8d8a8"/>
+    <polygon points="787,308 804,292 821,308" fill="#b83020"/>
+  </g>
+  <g>
+    <rect x="832" y="303" width="30" height="24" fill="#e8d8a8"/>
+    <polygon points="829,303 847,287 865,303" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="220" y="360" width="36" height="30" fill="#e8d8a8"/>
+    <polygon points="217,360 238,340 259,360" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="270" y="368" width="31" height="26" fill="#e8d8a8"/>
+    <polygon points="267,368 286,350 305,368" fill="#b83020"/>
+  </g>
+  <g>
+    <rect x="315" y="363" width="33" height="28" fill="#e8d8a8"/>
+    <polygon points="312,363 332,344 352,363" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="890" y="365" width="36" height="30" fill="#e8d8a8"/>
+    <polygon points="887,365 908,345 929,365" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="940" y="372" width="31" height="26" fill="#e8d8a8"/>
+    <polygon points="937,372 956,354 975,372" fill="#b83020"/>
+  </g>
+  <g>
+    <rect x="985" y="368" width="33" height="27" fill="#e8d8a8"/>
+    <polygon points="982,368 1002,350 1022,368" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="110" y="415" width="42" height="35" fill="#e8d8a8"/>
+    <polygon points="106,415 131,392 156,415" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="168" y="425" width="36" height="30" fill="#e8d8a8"/>
+    <polygon points="165,425 186,405 207,425" fill="#b83020"/>
+  </g>
+  <g>
+    <rect x="1040" y="418" width="42" height="35" fill="#e8d8a8"/>
+    <polygon points="1036,418 1061,395 1086,418" fill="#c43525"/>
+  </g>
+  <g>
+    <rect x="1095" y="428" width="36" height="30" fill="#e8d8a8"/>
+    <polygon points="1092,428 1113,408 1134,428" fill="#b83020"/>
+  </g>
+
+  <!-- ============ BRIGHT GREEN ROLLING HILLS ============ -->
+  <path d="M0,345 Q300,325 600,348 Q900,370 1200,342 L1200,440 L0,440 Z"
+        fill="url(#brightGreen)"/>
+  <path d="M0,385 Q315,363 630,390 Q945,410 1200,380 L1200,465 L0,465 Z"
+        fill="#8dd648"/>
+  <ellipse cx="220" cy="410" rx="16" ry="7" fill="#3d8a28" opacity="0.5"/>
+  <ellipse cx="880" cy="418" rx="18" ry="8" fill="#3d8a28" opacity="0.5"/>
+  <ellipse cx="500" cy="432" rx="14" ry="6" fill="#3d8a28" opacity="0.5"/>
+  <ellipse cx="1000" cy="440" rx="15" ry="6" fill="#3d8a28" opacity="0.5"/>
+
+  <!-- ============ FRAMING TREES ============ -->
+  <g>
+    <ellipse cx="25" cy="270" rx="45" ry="60" fill="#1f3a1a"/>
+    <ellipse cx="45" cy="250" rx="34" ry="45" fill="#2d5225"/>
+  </g>
+  <g>
+    <ellipse cx="1175" cy="265" rx="48" ry="64" fill="#1f3a1a"/>
+    <ellipse cx="1152" cy="243" rx="36" ry="48" fill="#2d5225"/>
+  </g>
+  <g>
+    <ellipse cx="60" cy="390" rx="22" ry="28" fill="#1f3a1a"/>
+    <ellipse cx="53" cy="378" rx="16" ry="20" fill="#3d7028"/>
+  </g>
+  <g>
+    <ellipse cx="1130" cy="405" rx="21" ry="26" fill="#1f3a1a"/>
+    <ellipse cx="1124" cy="394" rx="15" ry="18" fill="#3d7028"/>
+  </g>
+  <g>
+    <ellipse cx="400" cy="420" rx="14" ry="18" fill="#1f3a1a"/>
+    <ellipse cx="396" cy="412" rx="10" ry="13" fill="#3d7028"/>
+  </g>
+  <g>
+    <ellipse cx="800" cy="425" rx="14" ry="18" fill="#1f3a1a"/>
+    <ellipse cx="796" cy="417" rx="10" ry="13" fill="#3d7028"/>
+  </g>
+
+  <!-- ============ FOREGROUND DARK GREEN GRASS ============ -->
+  <path d="M0,440 Q315,420 630,445 Q945,465 1200,442 L1200,530 L0,530 Z"
+        fill="url(#foreGreen)"/>
+
+  <!-- ============ GOLDEN WHEAT FIELD ============ -->
+  <path d="M0,505 Q300,485 600,510 Q900,528 1200,500 L1200,600 L0,600 Z"
+        fill="url(#wheat)"/>
+  <path d="M0,525 Q250,510 500,528 Q750,545 1000,528 Q1130,518 1200,525 L1200,600 L0,600 Z"
+        fill="#e8c240"/>
+  <g stroke="#a88420" stroke-width="1" opacity="0.6">
+    <line x1="30" y1="532" x2="30" y2="552"/>
+    <line x1="70" y1="534" x2="70" y2="554"/>
+    <line x1="110" y1="532" x2="110" y2="552"/>
+    <line x1="150" y1="536" x2="150" y2="556"/>
+    <line x1="190" y1="532" x2="190" y2="552"/>
+    <line x1="230" y1="534" x2="230" y2="554"/>
+    <line x1="270" y1="532" x2="270" y2="552"/>
+    <line x1="310" y1="536" x2="310" y2="556"/>
+    <line x1="350" y1="532" x2="350" y2="552"/>
+    <line x1="390" y1="534" x2="390" y2="554"/>
+    <line x1="430" y1="532" x2="430" y2="552"/>
+    <line x1="470" y1="536" x2="470" y2="556"/>
+    <line x1="510" y1="532" x2="510" y2="552"/>
+    <line x1="550" y1="534" x2="550" y2="554"/>
+    <line x1="590" y1="532" x2="590" y2="552"/>
+    <line x1="630" y1="536" x2="630" y2="556"/>
+    <line x1="670" y1="532" x2="670" y2="552"/>
+    <line x1="710" y1="534" x2="710" y2="554"/>
+    <line x1="750" y1="532" x2="750" y2="552"/>
+    <line x1="790" y1="536" x2="790" y2="556"/>
+    <line x1="830" y1="534" x2="830" y2="554"/>
+    <line x1="870" y1="532" x2="870" y2="552"/>
+    <line x1="910" y1="536" x2="910" y2="556"/>
+    <line x1="950" y1="532" x2="950" y2="552"/>
+    <line x1="990" y1="534" x2="990" y2="554"/>
+    <line x1="1030" y1="532" x2="1030" y2="552"/>
+    <line x1="1070" y1="536" x2="1070" y2="556"/>
+    <line x1="1110" y1="532" x2="1110" y2="552"/>
+    <line x1="1150" y1="534" x2="1150" y2="554"/>
+  </g>
+  <path d="M0,578 Q600,595 1200,582 L1200,600 L0,600 Z"
+        fill="#2d5225" opacity="0.5"/>
+</svg>

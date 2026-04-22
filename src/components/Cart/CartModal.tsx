@@ -1,6 +1,7 @@
 'use client'
 
 import { Price } from '@/components/Price'
+import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { menuHref } from '@/utilities/routes'
 import {
@@ -61,62 +62,72 @@ export function CartModal() {
       </SheetTrigger>
 
       <SheetContent
-        className="!top-4 !bottom-4 !right-4 !left-auto !h-[calc(100vh-32px)] !w-[min(430px,calc(100vw-24px))] border border-black/10 border-l-0 rounded-[28px] bg-[#f7f3ea]/95 p-0 text-black shadow-none backdrop-blur-xl"
+        className="!top-2 !right-2 !bottom-2 !left-2 !h-[calc(100dvh-16px)] !w-[calc(100vw-16px)] sm:!top-4 sm:!bottom-4 sm:!right-4 sm:!left-auto sm:!h-[calc(100dvh-32px)] sm:!w-[min(430px,calc(100vw-24px))] border border-black/10 border-l-0 rounded-[28px] bg-[#f7f3ea]/92 p-0 text-black shadow-none backdrop-blur-xl"
         hideClose
         overlayClassName="bg-[rgba(244,240,232,0.34)] backdrop-blur-md"
       >
-        <div className="flex h-full min-h-0 flex-col">
-          <SheetHeader className="border-b border-black/8 px-5 py-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.24em] text-black/65">
-                  <ShoppingBag className="h-4 w-4" />
-                  <span>{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}</span>
+        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px]">
+          <CartSceneShell
+            className="border-b border-black/8 px-5 py-5"
+            contentClassName="pr-24"
+          >
+            <SheetHeader className="space-y-0 border-none p-0 text-left">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/76 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.24em] text-black/65 shadow-[0_6px_18px_rgba(17,17,17,0.06)]">
+                    <ShoppingBag className="h-4 w-4" />
+                    <span>{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <SheetTitle className="text-[28px] font-medium tracking-[-0.05em]">
+                      Cart
+                    </SheetTitle>
+                    <SheetDescription className="max-w-[28ch] text-sm leading-6 text-black/62">
+                      Review the order before checkout. The cart now follows the same scene tone as
+                      the homepage and menu.
+                    </SheetDescription>
+                  </div>
+                </div>
+
+                <SheetClose asChild>
+                  <button
+                    aria-label="Close cart"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white/88 text-black/70 shadow-[0_6px_18px_rgba(17,17,17,0.08)] transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
+                    type="button"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetHeader>
+          </CartSceneShell>
+
+          {!hasItems ? (
+            <div className="flex flex-1 flex-col px-4 py-4">
+              <CartSceneShell
+                className="flex min-h-0 flex-1 items-center justify-center rounded-[24px] border border-black/8 px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+                contentClassName="mx-auto max-w-[20rem] space-y-5"
+              >
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white/84 shadow-[0_12px_26px_rgba(17,17,17,0.08)]">
+                  <ShoppingBag className="h-8 w-8 text-black/70" />
                 </div>
 
                 <div className="space-y-2">
-                  <SheetTitle className="text-[28px] font-medium tracking-[-0.05em]">
-                    Cart
-                  </SheetTitle>
-                  <SheetDescription className="max-w-[32ch] text-sm leading-6 text-black/60">
-                    Review the order before checkout. The panel stays scrollable so the rest of the
-                    page can fall away behind it.
-                  </SheetDescription>
+                  <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
+                  <p className="text-sm leading-6 text-black/60">
+                    Add a few bakery items first, then come back here to review quantity and checkout.
+                  </p>
                 </div>
-              </div>
 
-              <SheetClose asChild>
-                <button
-                  aria-label="Close cart"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-black/70 transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
-                  type="button"
+                <Link
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+                  href={menuHref}
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              </SheetClose>
-            </div>
-          </SheetHeader>
-
-          {!hasItems ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white/80">
-                <ShoppingBag className="h-8 w-8 text-black/70" />
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
-                <p className="text-sm leading-6 text-black/60">
-                  Add a few bakery items first, then come back here to review quantity and checkout.
-                </p>
-              </div>
-
-              <Link
-                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
-                href={menuHref}
-              >
-                Browse the menu
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+                  Browse the menu
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </CartSceneShell>
             </div>
           ) : (
             <>
@@ -146,7 +157,7 @@ export function CartModal() {
                 </p>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-28">
                 <ul className="space-y-3">
                   {cart?.items?.map((item, index) => {
                     const product = item.product
@@ -242,7 +253,7 @@ export function CartModal() {
                                 ) : null}
                                 <TraySelectionSummary
                                   className="mt-3"
-                                  compact
+                                  label="Exact tray contents"
                                   selections={item.batchSelections}
                                   tone="muted"
                                 />
@@ -272,7 +283,7 @@ export function CartModal() {
                 </ul>
               </div>
 
-              <div className="border-t border-black/8 bg-white/55 px-5 py-5">
+              <div className="sticky bottom-0 z-10 border-t border-black/8 bg-white/88 px-5 py-5 backdrop-blur-sm">
                 <div className="mb-4 flex items-center justify-between gap-3 border-b border-black/8 pb-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.24em] text-black/45">Subtotal</p>
@@ -307,6 +318,62 @@ export function CartModal() {
             </>
           )}
         </div>
+
+        <style>{`
+          .cartSceneShell {
+            isolation: isolate;
+            overflow: hidden;
+            position: relative;
+          }
+
+          .cartSceneSky,
+          .cartSceneMeadow,
+          .cartSceneCloud,
+          .cartScenePiece {
+            pointer-events: none;
+            position: absolute;
+          }
+
+          .cartSceneSky {
+            height: 100%;
+            inset: 0;
+            object-fit: cover;
+            width: 100%;
+            z-index: 0;
+          }
+
+          .cartSceneCloud {
+            animation: cartSceneCloudBob 9.2s ease-in-out infinite;
+            opacity: 0.94;
+            z-index: 1;
+          }
+
+          .cartScenePiece {
+            transform-origin: center bottom;
+            z-index: 1;
+          }
+
+          .cartSceneMeadow {
+            bottom: -0.3rem;
+            height: clamp(4.5rem, 24%, 6.6rem);
+            left: 0;
+            object-fit: cover;
+            object-position: center bottom;
+            width: 100%;
+            z-index: 0;
+          }
+
+          @keyframes cartSceneCloudBob {
+            0%,
+            100% {
+              transform: translate3d(0, 0, 0);
+            }
+
+            50% {
+              transform: translate3d(0, -6px, 0);
+            }
+          }
+        `}</style>
       </SheetContent>
     </Sheet>
   )

@@ -1,0 +1,65 @@
+Create mobile-first SVG backdrop variants for the Baked With Blessings scenery system.
+
+Goal:
+These are NOT full scenes with every flower/cloud/foreground embellishment. They are backdrop-focused mobile variants meant to preserve the focal subject on narrow screens. Desktop versions already exist. Mobile versions should solve cropping/composition problems on phones.
+
+Scenes needed:
+1. `blossom`
+2. `moonlit`
+3. `fairy-castle`
+
+Output format:
+- One SVG per scene.
+- Keep each SVG self-contained.
+- Match the current visual language of the existing desktop scene.
+- Use clean, organized SVG structure with groups/comments if helpful.
+- Use `viewBox` values designed for portrait mobile, not landscape desktop.
+- Do not include external assets.
+
+Important constraints:
+- Do NOT spend effort on decorative flower rails, spawned flowers, rabbits, sheep, or button chrome.
+- Do NOT include extra floating cloud systems unless the backdrop itself truly needs them.
+- Focus on the background composition only: sky, landforms, tree/castle/moon, large scene silhouette, and any absolutely essential atmospheric forms.
+- These should work well as `object-fit: cover` backgrounds inside a tall mobile hero.
+
+Scene-specific art direction:
+
+1. Blossom mobile backdrop
+- The focal point must be the cherry blossom tree.
+- The tree should be clearly visible on mobile without getting cropped into abstract pink circles.
+- Favor a composition where the trunk and main canopy mass are readable.
+- Keep a soft blue sky and a small amount of drifting petal atmosphere.
+- The open sky area should still leave room for menu text/buttons on the upper-left/mid-left.
+- Avoid excessive zoom. The current problem is that mobile crops too tightly and loses the tree structure.
+
+2. Moonlit mobile backdrop
+- The focal point must be the moon and moon-glow.
+- The moon must remain visible on mobile.
+- Keep the dreamy dark-to-teal gradient and a restrained atmospheric feel.
+- If there are cloud forms, they should not cover the moon or make the top-left unreadable.
+- Preserve the aurora/glow feeling.
+- Mobile composition should intentionally place the moon where it survives narrow cropping.
+
+3. Fairy-castle mobile backdrop
+- This should be more zoomed out than the current mobile crop.
+- The castle must read as a full fairy-tale landmark, not just a cropped central tower.
+- Maintain the layered mountain/mist valley mood.
+- Keep the composition tall enough that the castle sits within a readable landscape context.
+- Preserve the “storybook valley” feel, but simplify if needed for mobile clarity.
+
+Technical guidance:
+- Design these as portrait-first mobile backdrops, roughly conceptually similar to a 9:16 stage.
+- Leave clean negative space where the UI text/buttons can sit.
+- Avoid too much tiny detail that will disappear on phones.
+- Large shapes and clear silhouettes matter more than dense decoration.
+
+Suggested filenames:
+- `blossom-breeze-sky-mobile.svg`
+- `moonlit-purple-sky-mobile.svg`
+- `fairy-castle-mobile.svg`
+
+What success looks like:
+- On a phone, blossom clearly shows a tree.
+- On a phone, moonlit clearly shows the moon.
+- On a phone, fairy-castle feels zoomed out and readable.
+- The SVGs feel like mobile companions to the existing desktop backdrops, not unrelated redraws.

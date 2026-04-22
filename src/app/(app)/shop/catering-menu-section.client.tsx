@@ -27,7 +27,13 @@ type CateringMenuSectionProps = {
 }
 
 type BloomTone = 'gold' | 'plum' | 'rose' | 'sage' | 'sunflower'
-type MenuSceneryTone = 'dawn' | 'under-tree' | 'moonlit' | 'classic' | 'blossom'
+type MenuSceneryTone =
+  | 'dawn'
+  | 'under-tree'
+  | 'moonlit'
+  | 'classic'
+  | 'blossom'
+  | 'fairy-castle'
 
 type SelectableFlavor = {
   bodyFallbackSrc: string
@@ -101,7 +107,14 @@ const cateringDisplayOrder = [
   'focaccia-tray',
 ] as const
 
-const menuSceneryTones: MenuSceneryTone[] = ['dawn', 'under-tree', 'moonlit', 'classic', 'blossom']
+const menuSceneryTones: MenuSceneryTone[] = [
+  'dawn',
+  'under-tree',
+  'moonlit',
+  'classic',
+  'blossom',
+  'fairy-castle',
+]
 const progressBloomTones: BloomTone[] = ['gold', 'sage', 'plum', 'rose', 'gold', 'sunflower']
 const brownAnimeCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
   { maxWidth: 18.8, minWidth: 13.4, src: '/clouds/brown-anime-cloud-layered.svg' },
@@ -122,26 +135,37 @@ const blossomCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
   { maxWidth: 15.8, minWidth: 11.2, src: '/clouds/three-ball-cloud-wide.svg' },
   { maxWidth: 12.8, minWidth: 9.8, src: '/clouds/three-ball-cloud.svg' },
 ] as const
+const fairyCastleCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
+  { maxWidth: 16.8, minWidth: 11.8, src: '/sceneries/fairy-castle-cloud-puff.svg' },
+] as const
 const cloudSpawnDesignsByScenery: Record<MenuSceneryTone, readonly CloudSpawnDesign[]> = {
   dawn: brownAnimeCloudSpawnDesigns,
   'under-tree': girlUnderTreeCloudSpawnDesigns,
   moonlit: moonlitCloudSpawnDesigns,
   classic: classicCloudSpawnDesigns,
   blossom: blossomCloudSpawnDesigns,
+  'fairy-castle': fairyCastleCloudSpawnDesigns,
 }
 const skyByScenery: Record<MenuSceneryTone, string> = {
-  dawn: '/catering/scenery/brown-anime-gradient-sky.svg',
-  'under-tree': '/catering/scenery/girl-under-tree-sky.svg',
-  moonlit: '/catering/scenery/moonlit-purple-sky.svg',
-  classic: '/catering/scenery/classic-sky.svg',
-  blossom: '/catering/scenery/blossom-breeze-sky.svg',
+  dawn: '/sceneries/brown-anime-gradient-sky.svg',
+  'under-tree': '/sceneries/girl-under-tree-sky.svg',
+  moonlit: '/sceneries/moonlit-purple-sky.svg',
+  classic: '/sceneries/classic-sky.svg',
+  blossom: '/sceneries/blossom-breeze-sky.svg',
+  'fairy-castle': '/sceneries/fairy-castle.svg',
+}
+const mobileSkyByScenery: Partial<Record<MenuSceneryTone, string>> = {
+  moonlit: '/sceneries/moonlit-purple-sky-mobile-experimental.svg',
+  blossom: '/sceneries/blossom-breeze-sky-mobile-experimental.svg',
+  'fairy-castle': '/sceneries/fairy-castle-mobile-experimental.svg',
 }
 const meadowByScenery: Record<MenuSceneryTone, string> = {
-  dawn: '/catering/scenery/brown-anime-rolling-meadow.svg',
-  'under-tree': '/catering/scenery/girl-under-tree-meadow.svg',
-  moonlit: '/catering/scenery/moonlit-purple-meadow.svg',
-  classic: '/catering/scenery/classic-meadow.svg',
-  blossom: '/catering/scenery/blossom-grass-mound.svg',
+  dawn: '/sceneries/brown-anime-rolling-meadow.svg',
+  'under-tree': '/sceneries/girl-under-tree-meadow.svg',
+  moonlit: '/sceneries/moonlit-purple-meadow.svg',
+  classic: '/sceneries/classic-meadow.svg',
+  blossom: '/sceneries/blossom-grass-mound.svg',
+  'fairy-castle': '/sceneries/transparent-meadow.svg',
 }
 const dividerFillByScenery: Record<MenuSceneryTone, string> = {
   dawn: 'linear-gradient(180deg, #cda639 0%, #b88623 100%)',
@@ -149,6 +173,7 @@ const dividerFillByScenery: Record<MenuSceneryTone, string> = {
   moonlit: 'linear-gradient(180deg, #20385a 0%, #132440 100%)',
   classic: 'linear-gradient(180deg, #a7cb58 0%, #7faa34 100%)',
   blossom: 'linear-gradient(180deg, #f7d7e3 0%, #edbfd0 100%)',
+  'fairy-castle': 'linear-gradient(180deg, #839785 0%, #5e7a5a 100%)',
 }
 const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
   dawn: 'linear-gradient(180deg, rgba(223, 239, 255, 0.92) 0%, rgba(216, 233, 246, 0.94) 100%)',
@@ -157,6 +182,7 @@ const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
   moonlit: 'linear-gradient(180deg, rgba(19, 41, 76, 0.96) 0%, rgba(29, 66, 98, 0.94) 100%)',
   classic: 'linear-gradient(180deg, rgba(233, 245, 255, 0.96) 0%, rgba(219, 236, 247, 0.95) 100%)',
   blossom: 'linear-gradient(180deg, rgba(248, 235, 240, 0.94) 0%, rgba(242, 224, 232, 0.94) 100%)',
+  'fairy-castle': 'linear-gradient(180deg, rgba(214, 220, 209, 0.96) 0%, rgba(191, 201, 186, 0.94) 100%)',
 }
 const sceneButtonAuraByScenery: Record<MenuSceneryTone, string> = {
   dawn: 'rgba(255, 214, 101, 0.85)',
@@ -164,78 +190,75 @@ const sceneButtonAuraByScenery: Record<MenuSceneryTone, string> = {
   moonlit: 'rgba(153, 115, 255, 0.88)',
   classic: 'rgba(255, 215, 79, 0.84)',
   blossom: 'rgba(255, 176, 208, 0.9)',
+  'fairy-castle': 'rgba(154, 172, 138, 0.88)',
 }
 const noScenePieces: readonly StaticScenePiece[] = []
 const brownAnimeHeroPieces: readonly StaticScenePiece[] = [
   {
     className: 'left-[3%] bottom-[0.2rem] w-[5rem] md:w-[6.2rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'left-[16%] bottom-[4.6rem] w-[3.2rem] opacity-75 md:w-[3.8rem]',
-    src: '/catering/scenery/brown-anime-dry-grass-stalk.svg',
+    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
   },
   {
     className: 'right-[13%] bottom-[0.2rem] w-[5.2rem] md:w-[6.6rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'right-[23%] bottom-[1.1rem] w-[1.7rem] opacity-80 md:w-[2rem]',
-    src: '/catering/scenery/brown-anime-wheat-plume.svg',
+    src: '/sceneries/brown-anime-wheat-plume.svg',
   },
 ]
 const brownAnimeDividerPieces: readonly StaticScenePiece[] = [
   {
     className: 'left-[3%] bottom-[0.2rem] w-[4.2rem] md:w-[5rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'left-[34%] bottom-[0.1rem] hidden w-[4rem] md:block md:w-[4.8rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'right-[6%] bottom-[0.16rem] w-[4.3rem] md:w-[5.1rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'left-[20%] bottom-[1.8rem] w-[2.6rem] opacity-70 md:w-[3rem]',
-    src: '/catering/scenery/brown-anime-dry-grass-stalk.svg',
+    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
   },
   {
     className: 'right-[22%] bottom-[1.4rem] hidden w-[2.8rem] opacity-75 md:block md:w-[3.2rem]',
-    src: '/catering/scenery/brown-anime-dry-grass-stalk.svg',
+    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
   },
   {
     className: 'right-[31%] bottom-[0.5rem] w-[1.6rem] opacity-80 md:w-[1.9rem]',
-    src: '/catering/scenery/brown-anime-wheat-plume.svg',
+    src: '/sceneries/brown-anime-wheat-plume.svg',
   },
 ]
 const brownAnimePanelPieces: readonly StaticScenePiece[] = [
   {
     className: 'left-[4%] bottom-[0.15rem] w-[4.2rem] md:w-[4.8rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'left-[18%] bottom-[2rem] w-[2.8rem] opacity-70 md:w-[3.2rem]',
-    src: '/catering/scenery/brown-anime-dry-grass-stalk.svg',
+    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
   },
   {
     className: 'right-[4%] bottom-[0.15rem] w-[4.4rem] md:w-[5rem]',
-    src: '/catering/scenery/brown-anime-grass-clump.svg',
+    src: '/sceneries/brown-anime-grass-clump.svg',
   },
   {
     className: 'right-[28%] bottom-[0.55rem] w-[1.55rem] opacity-80 md:w-[1.8rem]',
-    src: '/catering/scenery/brown-anime-wheat-plume.svg',
+    src: '/sceneries/brown-anime-wheat-plume.svg',
   },
 ]
 const underTreeHeroPieces: readonly StaticScenePiece[] = [
   {
     className: 'left-[-18%] bottom-[-0.15rem] w-[30rem] md:left-[-9%] md:w-[46rem]',
-    src: '/catering/scenery/girl-under-tree-tree.svg',
-  },
-  {
-    className: 'left-[12%] bottom-[0.35rem] w-[4.8rem] md:left-[18%] md:w-[6.4rem]',
-    src: '/catering/scenery/girl-under-tree-girl.svg',
+    src: '/sceneries/girl-under-tree-tree.svg',
   },
 ]
 const heroPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
@@ -244,6 +267,7 @@ const heroPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> 
   moonlit: noScenePieces,
   classic: noScenePieces,
   blossom: noScenePieces,
+  'fairy-castle': noScenePieces,
 }
 const dividerPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
   dawn: brownAnimeDividerPieces,
@@ -251,6 +275,7 @@ const dividerPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[
   moonlit: noScenePieces,
   classic: noScenePieces,
   blossom: noScenePieces,
+  'fairy-castle': noScenePieces,
 }
 const panelPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
   dawn: brownAnimePanelPieces,
@@ -258,6 +283,7 @@ const panelPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]>
   moonlit: noScenePieces,
   classic: noScenePieces,
   blossom: noScenePieces,
+  'fairy-castle': noScenePieces,
 }
 const noSceneCritters: readonly StaticSceneCritter[] = []
 const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
@@ -268,14 +294,23 @@ const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter
   blossom: [
     {
       className: 'left-[9%] bottom-[0.42rem] w-[3rem] md:w-[3.8rem]',
-      src: '/catering/decor/bunny-crouch.svg',
+      src: '/catering/decor/bunny-sit.svg',
     },
     {
-      className: 'right-[14%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
+      className: 'left-[28%] bottom-[0.34rem] w-[2.7rem] md:w-[3.3rem]',
+      src: '/catering/decor/bunny-hop.svg',
+    },
+    {
+      className: 'right-[24%] bottom-[0.36rem] w-[2.8rem] md:w-[3.5rem]',
+      src: '/catering/decor/bunny-stretch.svg',
+    },
+    {
+      className: 'right-[8%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
       src: '/catering/decor/bunny-crouch.svg',
       style: { transform: 'scaleX(-1)' },
     },
   ],
+  'fairy-castle': noSceneCritters,
 }
 const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
   dawn: noSceneCritters,
@@ -284,15 +319,24 @@ const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritte
   classic: noSceneCritters,
   blossom: [
     {
-      className: 'left-[16%] bottom-[0.34rem] w-[2.4rem]',
-      src: '/catering/decor/bunny-crouch.svg',
+      className: 'left-[12%] bottom-[0.34rem] w-[2.35rem]',
+      src: '/catering/decor/bunny-sit.svg',
     },
     {
-      className: 'right-[18%] bottom-[0.34rem] w-[2.2rem]',
+      className: 'left-[30%] bottom-[0.3rem] w-[2.2rem]',
+      src: '/catering/decor/bunny-hop.svg',
+    },
+    {
+      className: 'right-[22%] bottom-[0.34rem] w-[2.2rem]',
+      src: '/catering/decor/bunny-stretch.svg',
+    },
+    {
+      className: 'right-[10%] bottom-[0.34rem] w-[2.2rem]',
       src: '/catering/decor/bunny-crouch.svg',
       style: { transform: 'scaleX(-1)' },
     },
   ],
+  'fairy-castle': noSceneCritters,
 }
 const heroCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
   dawn: [
@@ -378,6 +422,7 @@ const heroCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> 
       style: { animationDelay: '-11s' },
     },
   ],
+  'fairy-castle': [],
 }
 const panelCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
   dawn: [
@@ -451,6 +496,7 @@ const panelCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]>
       style: { animationDelay: '-8s' },
     },
   ],
+  'fairy-castle': [],
 }
 const flavorCardCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
   dawn: [
@@ -503,6 +549,7 @@ const flavorCardCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneClo
       src: '/clouds/three-ball-cloud-wide.svg',
     },
   ],
+  'fairy-castle': [],
 }
 const bloomVariantPresets: BloomVariant[] = [
   {
@@ -588,17 +635,61 @@ const flowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> = {
   moonlit: moonlitFlowerAssets,
   classic: classicFlowerAssets,
   blossom: blossomFlowerAssets,
+  'fairy-castle': [],
 }
 const spawnedFlowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> = {
-  dawn: daylightFlowerAssets,
+  dawn: ['/flowers/daisy-medium.svg', '/flowers/rose.svg', '/flowers/tulip.svg'],
   'under-tree': [
     '/flowers/daisy-large.svg',
     '/flowers/daisy-medium.svg',
     '/flowers/daisy-small.svg',
   ],
-  moonlit: ['/flowers/moonlit-purple-flower.svg'],
-  classic: classicFlowerAssets,
-  blossom: ['/catering/decor/bunny-crouch.svg'],
+  moonlit: ['/flowers/moonlit-purple-flower.svg', '/flowers/moonlit-purple-flower.svg'],
+  classic: [
+    '/flowers/daisy-medium.svg',
+    '/flowers/pink-daisy-wildflower.svg',
+    '/flowers/white-wildflower.svg',
+    '/flowers/tulip.svg',
+    '/flowers/rose.svg',
+    '/flowers/poppy.svg',
+  ],
+  blossom: [
+    '/catering/decor/bunny-crouch.svg',
+    '/catering/decor/bunny-hop.svg',
+    '/catering/decor/bunny-sit.svg',
+    '/catering/decor/bunny-stretch.svg',
+  ],
+  'fairy-castle': [
+    '/sceneries/fairy-castle-house.svg',
+    '/sceneries/fairy-castle-house-wide.svg',
+  ],
+}
+
+const seededAccentCountByScenery: Record<MenuSceneryTone, number> = {
+  dawn: 9,
+  'under-tree': 9,
+  moonlit: 9,
+  classic: 9,
+  blossom: 9,
+  'fairy-castle': 0,
+}
+
+const spawnedAccentLabelByScenery: Record<MenuSceneryTone, string> = {
+  dawn: 'Spawn a flower',
+  'under-tree': 'Spawn a flower',
+  moonlit: 'Spawn a flower',
+  classic: 'Spawn a flower',
+  blossom: 'Spawn a rabbit',
+  'fairy-castle': 'Spawn a house',
+}
+
+const spawnedCloudLabelByScenery: Record<MenuSceneryTone, string> = {
+  dawn: 'Spawn a cloud',
+  'under-tree': 'Spawn a cloud',
+  moonlit: 'Spawn a cloud',
+  classic: 'Spawn a cloud',
+  blossom: 'Spawn a cloud',
+  'fairy-castle': 'Spawn a cloud',
 }
 
 const defaultHeroLineFlowers: readonly LandscapeFlower[] = [
@@ -618,21 +709,22 @@ const underTreeHeroLineFlowers: readonly LandscapeFlower[] = [
   { asset: '/flowers/daisy-medium.svg', left: '90%', scale: 0.74 },
 ] as const
 const moonlitHeroLineFlowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.78 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.72 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '32%', scale: 0.76 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '42%', scale: 0.68 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '52%', scale: 0.8 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '62%', scale: 0.72 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '72%', scale: 0.76 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.7 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '92%', scale: 0.8 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.9 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.84 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '32%', scale: 0.88 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '42%', scale: 0.82 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '52%', scale: 0.94 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '62%', scale: 0.84 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '72%', scale: 0.88 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.82 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '92%', scale: 0.94 },
 ] as const
 const classicHeroLineFlowers: readonly LandscapeFlower[] = [
   { asset: '/flowers/daisy-large.svg', left: '62%', scale: 0.82 },
   { asset: '/flowers/daisy-small.svg', left: '76%', scale: 0.72, variant: 'wildflower' },
   { asset: '/flowers/rose.svg', left: '89%', scale: 0.78 },
 ] as const
+const noLandscapeFlowers: readonly LandscapeFlower[] = []
 const heroLineFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
   dawn: defaultHeroLineFlowers,
   'under-tree': underTreeHeroLineFlowers,
@@ -644,6 +736,7 @@ const heroLineFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower
     { asset: '/flowers/cherry-blossom-branch.svg', left: '66%', scale: 0.29 },
     { asset: '/flowers/cherry-blossom-branch.svg', left: '88%', scale: 0.27 },
   ],
+  'fairy-castle': noLandscapeFlowers,
 }
 
 const defaultPersuasionWildflowers: readonly LandscapeFlower[] = [
@@ -655,8 +748,8 @@ const underTreePersuasionWildflowers: readonly LandscapeFlower[] = [
   { asset: '/flowers/daisy-small.svg', left: '58%', scale: 0.78 },
 ] as const
 const moonlitPersuasionWildflowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.84 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '58%', scale: 0.74 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.96 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '58%', scale: 0.86 },
 ] as const
 const classicPersuasionWildflowers: readonly LandscapeFlower[] = [
   { asset: '/flowers/daisy-small.svg', left: '22%', scale: 0.82 },
@@ -671,6 +764,7 @@ const persuasionWildflowersByScenery: Record<MenuSceneryTone, readonly Landscape
     { asset: '/flowers/cherry-blossom-branch.svg', left: '24%', scale: 0.24 },
     { asset: '/flowers/cherry-blossom-branch.svg', left: '62%', scale: 0.23 },
   ],
+  'fairy-castle': noLandscapeFlowers,
 }
 
 const defaultPersuasionGardenFlowers = [
@@ -690,11 +784,11 @@ const underTreePersuasionGardenFlowers = [
   { asset: '/flowers/daisy-medium.svg', left: '84%', scale: 0.76 },
 ] as const
 const moonlitPersuasionGardenFlowers = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.86 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '28%', scale: 0.8 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '45%', scale: 0.72 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '60%', scale: 0.94 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '76%', scale: 0.84 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.98 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '28%', scale: 0.92 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '45%', scale: 0.84 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '60%', scale: 1.06 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '76%', scale: 0.96 },
 ] as const
 const classicPersuasionGardenFlowers = [
   { asset: '/flowers/daisy-large.svg', left: '12%', scale: 0.9 },
@@ -714,6 +808,7 @@ const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly Landsca
     { asset: '/flowers/cherry-blossom-branch.svg', left: '58%', scale: 0.27 },
     { asset: '/flowers/cherry-blossom-branch.svg', left: '80%', scale: 0.25 },
   ],
+  'fairy-castle': noLandscapeFlowers,
 }
 
 const defaultDividerFlowers = [
@@ -734,11 +829,11 @@ const underTreeDividerFlowers = [
   { asset: '/flowers/daisy-large.svg', left: '86%', scale: 0.8 },
 ] as const
 const moonlitDividerFlowers = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '10%', scale: 0.78 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '28%', scale: 0.72 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '46%', scale: 0.7 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '64%', scale: 0.82 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.76 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '10%', scale: 0.9 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '28%', scale: 0.84 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '46%', scale: 0.82 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '64%', scale: 0.94 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.88 },
 ] as const
 const classicDividerFlowers = [
   { asset: '/flowers/daisy-medium.svg', left: '10%', scale: 0.78 },
@@ -758,6 +853,7 @@ const dividerFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[
     { asset: '/flowers/cherry-blossom-branch.svg', left: '62%', scale: 0.74 },
     { asset: '/flowers/cherry-blossom-branch.svg', left: '86%', scale: 0.72 },
   ],
+  'fairy-castle': noLandscapeFlowers,
 }
 const defaultDividerWildflowers = [
   { asset: '/flowers/daisy-small.svg', left: '14%', scale: 0.72 },
@@ -771,9 +867,9 @@ const underTreeDividerWildflowers = [
   { asset: '/flowers/daisy-small.svg', left: '79%', scale: 0.64 },
 ] as const
 const moonlitDividerWildflowers = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '18%', scale: 0.68 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '50%', scale: 0.72 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.68 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '18%', scale: 0.82 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '50%', scale: 0.86 },
+  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.82 },
 ] as const
 const classicDividerWildflowers = [
   { asset: '/flowers/daisy-small.svg', left: '18%', scale: 0.7 },
@@ -790,6 +886,7 @@ const dividerWildflowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlo
     { asset: '/flowers/cherry-blossom-branch.svg', left: '50%', scale: 0.64 },
     { asset: '/flowers/cherry-blossom-branch.svg', left: '78%', scale: 0.62 },
   ],
+  'fairy-castle': noLandscapeFlowers,
 }
 
 const persuasionSheep = [{ left: '89%', src: '/catering/decor/sheep-grin.svg' }] as const
@@ -892,6 +989,10 @@ const defaultToneVariants: Record<BloomTone, BloomVariant> = {
 }
 
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
+const randomMoonlitFlowerScale = () => {
+  const useMedium = Math.random() < 0.5
+  return randomBetween(useMedium ? 0.88 : 1.02, useMedium ? 0.98 : 1.16)
+}
 const getNextSceneryTone = (current: MenuSceneryTone) => {
   const currentIndex = menuSceneryTones.indexOf(current)
   const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % menuSceneryTones.length : 0
@@ -966,6 +1067,7 @@ const heroFlowerSeamByScenery: Record<MenuSceneryTone, string> = {
   moonlit: '0.5rem',
   classic: '0.5rem',
   blossom: '0rem',
+  'fairy-castle': '0.5rem',
 }
 
 const createSpawnedCloud = (
@@ -1023,6 +1125,8 @@ const createSpawnedFlower = (
           ? [0.72, 0.92]
           : sceneryTone === 'classic'
             ? [0.74, 0.94]
+            : sceneryTone === 'fairy-castle'
+              ? [1.04, 1.52]
             : [0.76, 0.98]
   const panelScaleRange =
     sceneryTone === 'under-tree'
@@ -1033,6 +1137,8 @@ const createSpawnedFlower = (
           ? [0.82, 1.04]
           : sceneryTone === 'classic'
             ? [0.84, 1.06]
+            : sceneryTone === 'fairy-castle'
+              ? [1.08, 1.58]
             : [0.86, 1.08]
   const [minLeft, maxLeft] = kind === 'hero' ? heroLeftRange : [8, 92]
   const [minScale, maxScale] = kind === 'hero' ? heroScaleRange : panelScaleRange
@@ -1044,7 +1150,9 @@ const createSpawnedFlower = (
       ] ?? '/flowers/daisy.svg',
     id: Date.now() + Math.random(),
     left: `${randomBetween(minLeft, maxLeft).toFixed(2)}%`,
-    scale: Number(randomBetween(minScale, maxScale).toFixed(2)),
+    scale: Number(
+      (sceneryTone === 'moonlit' ? randomMoonlitFlowerScale() : randomBetween(minScale, maxScale)).toFixed(2),
+    ),
   }
 }
 
@@ -1052,33 +1160,41 @@ const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'pan
   const leftRange: [number, number] = kind === 'hero' ? [8, 92] : [6, 94]
 
   if (kind === 'hero') {
+    const scaleRange: [number, number] =
+      sceneryTone === 'under-tree'
+        ? [0.66, 0.86]
+        : sceneryTone === 'blossom'
+          ? [0.96, 1.24]
+          : sceneryTone === 'moonlit'
+            ? [0.84, 1.16]
+            : sceneryTone === 'classic'
+              ? [0.74, 0.94]
+              : sceneryTone === 'fairy-castle'
+                ? [1.04, 1.52]
+                : [0.76, 0.98]
+
     return {
       leftRange,
-      scaleRange:
-        sceneryTone === 'under-tree'
-          ? ([0.66, 0.86] as [number, number])
-          : sceneryTone === 'blossom'
-            ? ([0.96, 1.24] as [number, number])
-            : sceneryTone === 'moonlit'
-              ? ([0.72, 0.92] as [number, number])
-              : sceneryTone === 'classic'
-                ? ([0.74, 0.94] as [number, number])
-                : ([0.76, 0.98] as [number, number]),
+      scaleRange,
     }
   }
 
+  const scaleRange: [number, number] =
+    sceneryTone === 'under-tree'
+      ? [0.78, 1]
+      : sceneryTone === 'blossom'
+        ? [0.88, 1.14]
+        : sceneryTone === 'moonlit'
+          ? [0.9, 1.16]
+          : sceneryTone === 'classic'
+            ? [0.84, 1.06]
+            : sceneryTone === 'fairy-castle'
+              ? [1.08, 1.58]
+              : [0.86, 1.08]
+
   return {
     leftRange,
-    scaleRange:
-      sceneryTone === 'under-tree'
-        ? ([0.78, 1] as [number, number])
-        : sceneryTone === 'blossom'
-          ? ([0.88, 1.14] as [number, number])
-          : sceneryTone === 'moonlit'
-            ? ([0.82, 1.04] as [number, number])
-            : sceneryTone === 'classic'
-              ? ([0.84, 1.06] as [number, number])
-              : ([0.86, 1.08] as [number, number]),
+    scaleRange,
   }
 }
 
@@ -1087,6 +1203,10 @@ const buildSeededFlowers = (
   kind: 'hero' | 'panel',
   count = 20,
 ): SpawnedFlower[] => {
+  if (count <= 0) {
+    return []
+  }
+
   const {
     leftRange: [minLeft, maxLeft],
     scaleRange: [minScale, maxScale],
@@ -1227,6 +1347,7 @@ function FlowerSprite({
 function DecorativeSceneImage({
   className,
   fit = 'contain',
+  mobileSrc,
   priority,
   sizes = '100vw',
   src,
@@ -1234,11 +1355,31 @@ function DecorativeSceneImage({
 }: {
   className: string
   fit?: 'contain' | 'cover'
+  mobileSrc?: string
   priority?: boolean
   sizes?: string
   src: string
   style?: React.CSSProperties
 }) {
+  if (mobileSrc) {
+    return (
+      <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
+        <picture className="block h-full w-full">
+          <source media="(max-width: 767px)" srcSet={mobileSrc} />
+          <img
+            alt=""
+            aria-hidden="true"
+            className={fit === 'cover' ? 'h-full w-full object-cover' : 'h-auto w-full object-contain'}
+            draggable="false"
+            loading={priority ? 'eager' : 'lazy'}
+            sizes={sizes}
+            src={src}
+          />
+        </picture>
+      </span>
+    )
+  }
+
   return (
     <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
       {fit === 'cover' ? (
@@ -1279,21 +1420,23 @@ function MenuHero({
   sceneryTone: MenuSceneryTone
 }) {
   const flowerSeedCount = useResponsiveFlowerSeedCount()
+  const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
   const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>(() =>
-    buildSeededFlowers(sceneryTone, 'hero', flowerSeedCount),
+    buildSeededFlowers(sceneryTone, 'hero', seededAccentCount),
   )
   const sceneClouds = heroCloudsByScenery[sceneryTone] ?? heroCloudsByScenery.dawn
   const heroCritters = heroCrittersByScenery[sceneryTone] ?? heroCrittersByScenery.dawn
   const heroPieces = heroPiecesByScenery[sceneryTone] ?? heroPiecesByScenery.dawn
   const heroFlowers = heroLineFlowersByScenery[sceneryTone] ?? heroLineFlowersByScenery.dawn
   const heroSkySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
+  const heroMobileSkySrc = mobileSkyByScenery[sceneryTone]
   const meadowSrc = meadowByScenery[sceneryTone] ?? meadowByScenery.dawn
 
   useEffect(() => {
     setSpawnedClouds([])
-    setSpawnedFlowers(buildSeededFlowers(sceneryTone, 'hero', flowerSeedCount))
-  }, [flowerSeedCount, sceneryTone])
+    setSpawnedFlowers(buildSeededFlowers(sceneryTone, 'hero', seededAccentCount))
+  }, [sceneryTone, seededAccentCount])
 
   const spawnCloud = () => {
     setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'hero')])
@@ -1321,6 +1464,7 @@ function MenuHero({
         <DecorativeSceneImage
           className="cateringSceneSky cateringHeroSky"
           fit="cover"
+          mobileSrc={heroMobileSkySrc}
           priority
           sizes="100vw"
           src={heroSkySrc}
@@ -1409,10 +1553,10 @@ function MenuHero({
             </p>
             <div className="flex flex-wrap gap-2 pt-2">
               <button className="cateringSpawnButton" onClick={spawnCloud} type="button">
-                Spawn a cloud
+                {spawnedCloudLabelByScenery[sceneryTone]}
               </button>
               <button className="cateringSpawnButton" onClick={spawnFlower} type="button">
-                Spawn a flower
+                {spawnedAccentLabelByScenery[sceneryTone]}
               </button>
               <button
                 className={cn(
@@ -1446,9 +1590,10 @@ function PersuasionGardenPanel({
   summary: string
 }) {
   const flowerSeedCount = useResponsiveFlowerSeedCount()
+  const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
   const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>(() =>
-    buildSeededFlowers(sceneryTone, 'panel', flowerSeedCount),
+    buildSeededFlowers(sceneryTone, 'panel', seededAccentCount),
   )
   const persuasionCopy = buildPersuasionCopy(product, summary)
   const sceneClouds = panelCloudsByScenery[sceneryTone] ?? panelCloudsByScenery.dawn
@@ -1459,12 +1604,13 @@ function PersuasionGardenPanel({
   const panelWildflowers =
     persuasionWildflowersByScenery[sceneryTone] ?? persuasionWildflowersByScenery.dawn
   const skySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
+  const mobileSkySrc = mobileSkyByScenery[sceneryTone]
   const meadowSrc = meadowByScenery[sceneryTone] ?? meadowByScenery.dawn
 
   useEffect(() => {
     setSpawnedClouds([])
-    setSpawnedFlowers(buildSeededFlowers(sceneryTone, 'panel', flowerSeedCount))
-  }, [flowerSeedCount, sceneryTone])
+    setSpawnedFlowers(buildSeededFlowers(sceneryTone, 'panel', seededAccentCount))
+  }, [sceneryTone, seededAccentCount])
 
   const spawnCloud = () => {
     setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'panel')])
@@ -1490,6 +1636,7 @@ function PersuasionGardenPanel({
       <DecorativeSceneImage
         className="cateringSceneSky cateringPersuasionSky"
         fit="cover"
+        mobileSrc={mobileSkySrc}
         sizes="100vw"
         src={skySrc}
       />
@@ -1546,10 +1693,10 @@ function PersuasionGardenPanel({
 
         <div className="flex flex-wrap gap-2 pt-1">
           <button className="cateringSpawnButton" onClick={spawnCloud} type="button">
-            Spawn a cloud
+            {spawnedCloudLabelByScenery[sceneryTone]}
           </button>
           <button className="cateringSpawnButton" onClick={spawnFlower} type="button">
-            Spawn a flower
+            {spawnedAccentLabelByScenery[sceneryTone]}
           </button>
           <button
             className={cn('cateringSpawnButton', isSceneChanging && 'cateringSpawnButtonCharging')}
@@ -1651,9 +1798,10 @@ function TrayFlavorCard({
   const flavorCardClouds =
     flavorCardCloudsByScenery[sceneryTone] ?? flavorCardCloudsByScenery.classic
   const flavorCardSky = skyByScenery[sceneryTone] ?? skyByScenery.classic
+  const flavorCardMobileSky = mobileSkyByScenery[sceneryTone]
   const flavorCardMeadow =
     sceneryTone === 'blossom'
-      ? '/catering/scenery/blossom-grass-mound.svg'
+      ? '/sceneries/blossom-grass-mound.svg'
       : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
 
   return (
@@ -1713,6 +1861,7 @@ function TrayFlavorCard({
         <DecorativeSceneImage
           className="absolute inset-0"
           fit="cover"
+          mobileSrc={flavorCardMobileSky}
           sizes="18rem"
           src={flavorCardSky}
         />
@@ -2162,7 +2311,7 @@ function CateringMenuRow({
 export function CateringMenuSection({ products }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
-  const [isSceneChanging, setIsSceneChanging] = useState(false)
+  const isSceneChanging = false
 
   if (orderedProducts.length === 0) {
     return null
@@ -2175,13 +2324,11 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
   }, [])
 
   const handleChangeHeroScenery = () => {
-    setIsSceneChanging(true)
     const nextSceneryTone = getNextSceneryTone(heroSceneryTone)
     preloadSceneryAssets(nextSceneryTone)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
-    window.setTimeout(() => setIsSceneChanging(false), 360)
   }
 
   return (
@@ -2488,25 +2635,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           border-radius: inherit;
           transition: opacity 140ms ease;
           z-index: 0;
-        }
-
-        .cateringSpawnButtonCharging {
-          background-size:
-            100% 100%,
-            100% 100%;
-          border-color: color-mix(
-            in srgb,
-            var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 45%,
-            rgba(25, 57, 95, 0.18)
-          );
-          box-shadow: inset 0 0 0 1px
-            color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 22%, transparent 78%);
-          transform: translateY(-1px) scale(1.01);
-        }
-
-        .cateringSpawnButtonCharging::before {
-          animation: cateringSceneBeamSweep 680ms linear infinite;
-          opacity: 0.82;
         }
 
         .cateringSpawnButton:hover,
@@ -2956,27 +3084,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
-        @keyframes cateringSceneBeamSweep {
-          0% {
-            opacity: 0;
-            transform: translateX(-120%);
-          }
-
-          18% {
-            opacity: 0.65;
-          }
-
-          55% {
-            opacity: 0.92;
-            transform: translateX(-8%);
-          }
-
-          100% {
-            opacity: 0;
-            transform: translateX(108%);
-          }
-        }
-
         @media (min-width: 960px) {
           .cateringFlavorRailItem {
             flex-basis: 20.75rem;
@@ -3000,6 +3107,28 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
             height: var(--catering-hero-meadow-height);
           }
 
+          .cateringScene-blossom .cateringHeroSky img,
+          .cateringScene-blossom .cateringPersuasionSky img {
+            object-position: 16% center;
+          }
+
+          .cateringScene-fairy-castle .cateringHeroSky,
+          .cateringScene-fairy-castle .cateringPersuasionSky {
+            left: -8%;
+            right: auto;
+            width: 116%;
+          }
+
+          .cateringScene-fairy-castle .cateringHeroSky img,
+          .cateringScene-fairy-castle .cateringPersuasionSky img {
+            object-position: center top;
+          }
+
+          .cateringScene-moonlit .cateringHeroSky img,
+          .cateringScene-moonlit .cateringPersuasionSky img {
+            object-position: 28% top;
+          }
+
           .cateringHeroLineFlower {
             width: 1.74rem;
           }
@@ -3018,6 +3147,22 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           .cateringPersuasionWildflower {
             width: 1.28rem;
+          }
+
+          .cateringScene-moonlit .cateringHeroLineFlower {
+            width: 2.08rem;
+          }
+
+          .cateringScene-moonlit .cateringHeroLineWildflower {
+            width: 1.32rem;
+          }
+
+          .cateringScene-moonlit .cateringPersuasionFlower {
+            width: 2.34rem;
+          }
+
+          .cateringScene-moonlit .cateringPersuasionWildflower {
+            width: 1.42rem;
           }
 
           .cateringPixelSheep {

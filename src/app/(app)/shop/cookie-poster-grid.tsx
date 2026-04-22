@@ -76,18 +76,18 @@ const posterClouds: PosterCloud[] = [
 
 const posterSceneryTones: PosterSceneTone[] = ['classic', 'dawn', 'under-tree', 'moonlit', 'blossom']
 const posterSkyByScenery: Record<PosterSceneTone, string> = {
-  dawn: '/catering/scenery/brown-anime-gradient-sky.svg',
-  'under-tree': '/catering/scenery/girl-under-tree-sky.svg',
-  moonlit: '/catering/scenery/moonlit-purple-sky.svg',
-  classic: '/catering/scenery/classic-sky.svg',
-  blossom: '/catering/scenery/blossom-breeze-sky.svg',
+  dawn: '/sceneries/brown-anime-gradient-sky.svg',
+  'under-tree': '/sceneries/girl-under-tree-sky.svg',
+  moonlit: '/sceneries/moonlit-purple-sky.svg',
+  classic: '/sceneries/classic-sky.svg',
+  blossom: '/sceneries/blossom-breeze-sky.svg',
 }
 const posterMeadowByScenery: Record<PosterSceneTone, string> = {
-  dawn: '/catering/scenery/brown-anime-rolling-meadow.svg',
-  'under-tree': '/catering/scenery/girl-under-tree-meadow.svg',
-  moonlit: '/catering/scenery/moonlit-purple-meadow.svg',
-  classic: '/catering/scenery/classic-meadow.svg',
-  blossom: '/catering/scenery/blossom-grass-mound.svg',
+  dawn: '/sceneries/brown-anime-rolling-meadow.svg',
+  'under-tree': '/sceneries/girl-under-tree-meadow.svg',
+  moonlit: '/sceneries/moonlit-purple-meadow.svg',
+  classic: '/sceneries/classic-meadow.svg',
+  blossom: '/sceneries/blossom-grass-mound.svg',
 }
 const posterButtonAuraByScenery: Record<PosterSceneTone, string> = {
   dawn: 'rgba(255, 214, 101, 0.86)',

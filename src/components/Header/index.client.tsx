@@ -3,6 +3,7 @@
 import { DeleteItemButton } from '@/components/Cart/DeleteItemButton'
 import { EditItemQuantityButton } from '@/components/Cart/EditItemQuantityButton'
 import { Price } from '@/components/Price'
+import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
@@ -428,6 +429,13 @@ export function HeaderClient({ brand, header }: Props) {
                                             {variantSummary}
                                           </p>
                                         ) : null}
+                                        <TraySelectionSummary
+                                          className="mt-3"
+                                          compact
+                                          label="Exact tray contents"
+                                          selections={item.batchSelections}
+                                          tone="muted"
+                                        />
                                       </div>
 
                                       <DeleteItemButton item={item} />

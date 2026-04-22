@@ -12,22 +12,32 @@ const isSceneTone = (value: string): value is SceneTone =>
   menuSceneTones.includes(value as SceneTone)
 
 export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
-  const [sceneTone, setSceneTone] = useState<SceneTone>(() => {
-    if (typeof window === 'undefined') {
-      return fallback
-    }
-
-    const storedTone = window.localStorage.getItem(persistentMenuSceneStorageKey)
-    return storedTone && isSceneTone(storedTone) ? storedTone : fallback
-  })
+  const [sceneTone, setSceneTone] = useState<SceneTone>(fallback)
+  const [hasHydratedStorage, setHasHydratedStorage] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
     }
 
+    const storedTone = window.localStorage.getItem(persistentMenuSceneStorageKey)
+
+    if (storedTone && isSceneTone(storedTone)) {
+      setSceneTone(storedTone)
+    } else {
+      window.localStorage.setItem(persistentMenuSceneStorageKey, fallback)
+    }
+
+    setHasHydratedStorage(true)
+  }, [fallback])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !hasHydratedStorage) {
+      return
+    }
+
     window.localStorage.setItem(persistentMenuSceneStorageKey, sceneTone)
-  }, [sceneTone])
+  }, [hasHydratedStorage, sceneTone])
 
   useEffect(() => {
     if (typeof window === 'undefined') {
