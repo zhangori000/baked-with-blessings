@@ -29,7 +29,7 @@
   <g transform="translate(294 104)">
     <!-- single trunk silhouette -->
     <path
-      d="M188 260
+      d="M188 308
          Q186 210 190 170
          Q194 124 204 88
          Q212 58 216 36
@@ -38,7 +38,7 @@
          Q252 14 252 28
          Q252 44 246 60
          Q238 86 236 130
-         Q234 184 238 260 Z"
+         Q234 184 238 308 Z"
       fill="url(#treeBark)"
     />
 

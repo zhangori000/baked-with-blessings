@@ -18,6 +18,8 @@ import {
   menuHeroMeadowByScene,
   menuHeroMobileSkyByScene,
   menuHeroPiecesByScene,
+  menuScenePriceColorByScene,
+  menuScenePriceShadowByScene,
   menuHeroSkyByScene,
   menuSceneButtonAuraByScene,
   type SceneTone,
@@ -546,9 +548,7 @@ export function HomeCookieCarousel({
   const [grassDropPx, setGrassDropPx] = useState(0)
   const [sceneTone, setSceneTone] = usePersistentMenuSceneTone('classic')
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
-  const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>(
-    buildSeededShowcaseFlowers('classic'),
-  )
+  const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
   const [transition, setTransition] = useState<CarouselTransition>(null)
 
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
@@ -683,6 +683,8 @@ export function HomeCookieCarousel({
           ...showcaseStyle,
           ['--home-flower-seam' as string]: menuHeroFlowerSeamByScene[sceneTone],
           ['--home-scene-charge' as string]: menuSceneButtonAuraByScene[sceneTone],
+          ['--home-price-color' as string]: menuScenePriceColorByScene[sceneTone],
+          ['--home-price-shadow' as string]: menuScenePriceShadowByScene[sceneTone],
         } as CSSProperties)
       : showcaseStyle
 
@@ -1493,13 +1495,18 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieAmount {
-          color: rgba(23, 52, 31, 0.68);
+          color: var(--home-price-color, rgba(23, 52, 31, 0.68));
           display: block;
           font-size: 0.78rem;
           font-weight: 700;
           letter-spacing: 0.18em;
-          margin-top: 0.95rem;
+          margin-top: 1.15rem;
+          position: relative;
+          text-shadow:
+            var(--home-price-shadow, none),
+            0 0 10px rgba(255, 255, 255, 0.18);
           text-transform: uppercase;
+          z-index: 42;
         }
 
         .homeCookieArrow {

@@ -2,13 +2,14 @@
 
 import { cn } from '@/utilities/cn'
 import { menuHref } from '@/utilities/routes'
-import { MenuIcon, Search, X } from 'lucide-react'
+import { MenuIcon, Search, ShoppingBag, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 type Props = {
   cartQuantity: number
+  onOpenCart: () => void
   items: Array<{
     id: string
     href: string
@@ -21,7 +22,7 @@ type Props = {
   }>
 }
 
-export function MobileMenu({ cartQuantity, items }: Props) {
+export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -85,9 +86,18 @@ export function MobileMenu({ cartQuantity, items }: Props) {
           {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
         </button>
 
-        <Link aria-label={`Cart with ${cartQuantity} items`} className="siteHeaderMobileBagCount" href="/checkout">
-          [{cartQuantity}]
-        </Link>
+        <button
+          aria-label={`Open cart with ${cartQuantity} items`}
+          className="siteHeaderMobileBagButton"
+          onClick={() => {
+            setIsOpen(false)
+            onOpenCart()
+          }}
+          type="button"
+        >
+          <ShoppingBag className="siteHeaderMobileBagIcon h-4 w-4" />
+          <span className="siteHeaderMobileBagCount">[{cartQuantity}]</span>
+        </button>
       </div>
 
       <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>

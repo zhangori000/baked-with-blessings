@@ -9,16 +9,16 @@
 
   <!-- Trunk and main limbs: centered so the canopy feels balanced instead of hanging only to the right. -->
   <path
-    d="M210 300Q216 248 226 208Q238 162 256 130L302 126Q294 164 286 206Q280 246 278 300Z"
+    d="M236 300Q241 252 248 212Q258 168 272 130L294 128Q305 164 312 208Q319 250 324 300Z"
     fill="url(#girlTreeTrunk)"
   />
   <path
-    d="M228 300Q232 254 240 214Q252 170 266 144Q262 180 258 220Q254 256 252 300Z"
+    d="M248 300Q252 258 258 222Q265 186 273 148Q271 186 269 224Q267 262 264 300Z"
     fill="#3e2510"
   />
   <path
-    d="M278 300Q282 256 288 214Q296 174 302 132Q308 170 312 214Q316 252 318 300Z"
-    fill="#88542c"
+    d="M274 300Q279 260 284 224Q290 184 297 140Q303 182 308 224Q313 260 317 300Z"
+    fill="#805027"
   />
   <path
     d="M284 136Q228 108 166 98Q110 90 54 98"
@@ -48,21 +48,6 @@
     stroke-linecap="round"
     stroke-width="8"
   />
-  <path
-    d="M238 146Q206 126 172 120"
-    fill="none"
-    stroke="#7c4c26"
-    stroke-linecap="round"
-    stroke-width="6"
-  />
-  <path
-    d="M330 142Q372 124 412 122"
-    fill="none"
-    stroke="#7c4c26"
-    stroke-linecap="round"
-    stroke-width="6"
-  />
-
   <!-- Canopy: overlapping rounded foliage across both sides of the trunk. -->
   <g>
     <ellipse cx="128" cy="108" rx="98" ry="54" fill="#406f21" />

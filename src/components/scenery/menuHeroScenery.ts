@@ -89,6 +89,24 @@ export const menuSceneButtonAuraByScene: Record<SceneTone, string> = {
   'fairy-castle': 'rgba(154, 172, 138, 0.88)',
 }
 
+export const menuScenePriceColorByScene: Record<SceneTone, string> = {
+  dawn: 'rgba(62, 68, 20, 0.86)',
+  'under-tree': 'rgba(49, 69, 28, 0.84)',
+  moonlit: 'rgba(243, 235, 255, 0.94)',
+  classic: 'rgba(23, 52, 31, 0.68)',
+  blossom: 'rgba(91, 48, 80, 0.84)',
+  'fairy-castle': 'rgba(248, 242, 214, 0.94)',
+}
+
+export const menuScenePriceShadowByScene: Record<SceneTone, string> = {
+  dawn: '0 1px 0 rgba(255, 249, 220, 0.35)',
+  'under-tree': '0 1px 0 rgba(245, 255, 230, 0.38)',
+  moonlit: '0 2px 10px rgba(23, 18, 54, 0.52)',
+  classic: 'none',
+  blossom: '0 1px 0 rgba(255, 245, 251, 0.45)',
+  'fairy-castle': '0 2px 10px rgba(71, 86, 53, 0.35)',
+}
+
 export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[]> = {
   dawn: [
     {
@@ -162,17 +180,7 @@ export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[
       style: { animationDelay: '-4s' },
     },
   ],
-  blossom: [
-    {
-      className: 'right-[7%] top-[10%] w-[12rem] md:w-[16rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-    },
-    {
-      className: 'right-[20%] top-[22%] hidden w-[10rem] md:block md:w-[13rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-11s' },
-    },
-  ],
+  blossom: [],
   'fairy-castle': [],
 }
 
@@ -183,15 +191,15 @@ export const menuHeroFlowersByScene: Record<SceneTone, readonly SceneFlowerConfi
     { asset: '/flowers/daisy-small.svg', left: '86%', scale: 0.76, variant: 'wildflower' },
   ],
   'under-tree': [
-    { asset: '/flowers/daisy-small.svg', left: '12%', scale: 0.72 },
-    { asset: '/flowers/daisy-medium.svg', left: '21%', scale: 0.76 },
-    { asset: '/flowers/daisy-small.svg', left: '30%', scale: 0.68 },
-    { asset: '/flowers/daisy-large.svg', left: '40%', scale: 0.82 },
-    { asset: '/flowers/daisy-small.svg', left: '50%', scale: 0.7 },
-    { asset: '/flowers/daisy-medium.svg', left: '60%', scale: 0.76 },
-    { asset: '/flowers/daisy-small.svg', left: '70%', scale: 0.68 },
-    { asset: '/flowers/daisy-large.svg', left: '80%', scale: 0.8 },
-    { asset: '/flowers/daisy-medium.svg', left: '90%', scale: 0.74 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '12%', scale: 0.46 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '21%', scale: 0.5 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '30%', scale: 0.44 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '40%', scale: 0.54 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '50%', scale: 0.45 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '60%', scale: 0.5 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '70%', scale: 0.44 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '80%', scale: 0.53 },
+    { asset: '/flowers/girl-under-tree-daisy.svg', left: '90%', scale: 0.49 },
   ],
   moonlit: [
     { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.9 },
@@ -317,7 +325,7 @@ export const menuSceneSeededAccentCountByScene: Record<SceneTone, number> = {
 
 export const menuSpawnedAccentSourcesByScene: Record<SceneTone, readonly string[]> = {
   dawn: ['/flowers/daisy-medium.svg', '/flowers/rose.svg', '/flowers/tulip.svg'],
-  'under-tree': ['/flowers/daisy-large.svg', '/flowers/daisy-medium.svg', '/flowers/daisy-small.svg'],
+  'under-tree': ['/flowers/girl-under-tree-daisy.svg'],
   moonlit: ['/flowers/moonlit-purple-flower.svg', '/flowers/moonlit-purple-flower.svg'],
   classic: [
     '/flowers/daisy-medium.svg',
@@ -422,22 +430,16 @@ export const buildSeededMenuSceneAccents = (
   const assets = menuSpawnedAccentSourcesByScene[sceneTone]
   const minLeft = 8
   const maxLeft = 92
-  const span = maxLeft - minLeft
 
   return Array.from({ length: count }, (_, index) => {
-    const segmentStart = minLeft + (span / count) * index
-    const segmentEnd = minLeft + (span / count) * (index + 1)
-    const seedRoot = `${sceneTone}-hero-${index}`
-    const assetIndex = Math.floor(
-      deterministicBetween(`${seedRoot}-asset`, 0, assets.length - 0.0001),
-    )
+    const assetIndex = Math.floor(randomBetween(0, Math.max(assets.length, 1)))
     const asset = assets[assetIndex] ?? assets[0] ?? '/flowers/daisy-large.svg'
-    const left = deterministicBetween(`${seedRoot}-left`, segmentStart + 0.16, segmentEnd - 0.16)
-    const scale = deterministicBetween(`${seedRoot}-scale`, minScale, maxScale)
+    const left = randomBetween(minLeft, maxLeft)
+    const scale = randomBetween(minScale, maxScale)
 
     return {
       asset,
-      id: index + 1,
+      id: Date.now() + Math.random() + index,
       left: `${left.toFixed(2)}%`,
       scale: Number(scale.toFixed(2)),
     }

@@ -40,13 +40,13 @@
       <rect x="89" y="229" width="7" height="1.1" />
     </g>
   </g>
-  <circle cx="120" cy="144" r="108" fill="url(#moonGlowMobile)" />
-  <circle cx="120" cy="144" r="48" fill="url(#moonFaceMobile)" />
+  <circle cx="320" cy="128" r="108" fill="url(#moonGlowMobile)" />
+  <circle cx="320" cy="128" r="48" fill="url(#moonFaceMobile)" />
   <g fill="#c7d8bb" opacity="0.58">
-    <circle cx="103" cy="132" r="5" />
-    <circle cx="134" cy="151" r="3.5" />
-    <circle cx="117" cy="166" r="4.5" />
-    <circle cx="143" cy="126" r="2.8" />
+    <circle cx="303" cy="116" r="5" />
+    <circle cx="334" cy="135" r="3.5" />
+    <circle cx="317" cy="150" r="4.5" />
+    <circle cx="343" cy="110" r="2.8" />
   </g>
   <g fill="#7ba8b7" opacity="0.74">
     <ellipse cx="208" cy="120" rx="84" ry="16" />

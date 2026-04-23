@@ -1,66 +1,80 @@
-import type { Footer } from '@/payload-types'
-
-import { FooterMenu } from '@/components/Footer/menu'
-import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
+import { FooterClient } from '@/components/Footer/FooterClient'
 import { getCachedGlobal } from '@/utilities/getGlobals'
-import Link from 'next/link'
-import React, { Suspense } from 'react'
-import { LogoIcon } from '@/components/icons/logo'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
 
 const { COMPANY_NAME, SITE_NAME } = process.env
 
-export async function Footer() {
-  const footer: Footer = await getCachedGlobal('footer', 1)()
-  const menu = footer.navItems || []
-  const currentYear = new Date().getFullYear()
-  const copyrightDate = 2023 + (currentYear > 2023 ? `-${currentYear}` : '')
-  const skeleton = 'w-full h-6 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700'
+type BrandGlobalDocument = {
+  brandName?: string | null
+  logoAlt?: string | null
+  logoSource?: 'mediaUpload' | 'publicPath' | null
+  logoPath?: string | null
+  logo?:
+    | {
+        url?: string | null
+      }
+    | number
+    | null
+}
 
-  const copyrightName = COMPANY_NAME || SITE_NAME || ''
+const defaultFooterBrand = {
+  brandName: 'Baked with Blessings',
+  logoAlt: 'Baked with Blessings logo',
+  logoUrl: '/baked-with-blessings-logo-pasture-restored.svg',
+}
+
+const normalizeBrandLogoUrl = (value: BrandGlobalDocument['logo']) => {
+  if (!value || typeof value === 'number') return null
+  return typeof value.url === 'string' && value.url.length > 0 ? value.url : null
+}
+
+const buildFooterBrand = (brand: BrandGlobalDocument | null) => {
+  const brandName = brand?.brandName?.trim() || defaultFooterBrand.brandName
+  const logoAlt = brand?.logoAlt?.trim() || defaultFooterBrand.logoAlt
+  const uploadedLogoUrl = normalizeBrandLogoUrl(brand?.logo)
+
+  if (brand?.logoSource === 'mediaUpload') {
+    return {
+      brandName,
+      logoAlt,
+      logoUrl: uploadedLogoUrl || defaultFooterBrand.logoUrl,
+    }
+  }
+
+  return {
+    brandName,
+    logoAlt,
+    logoUrl:
+      brand?.logoPath?.trim() === '/baked-with-blessings-logo.svg' ||
+      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture.svg'
+        ? defaultFooterBrand.logoUrl
+        : brand?.logoPath?.trim() || defaultFooterBrand.logoUrl,
+  }
+}
+
+export async function Footer() {
+  const payload = await getPayload({ config: configPromise })
+  const [footer, brandDocument] = await Promise.all([
+    getCachedGlobal('footer', 1)(),
+    payload
+      .findGlobal({
+        depth: 1,
+        slug: 'brand' as any,
+      })
+      .catch(() => null),
+  ])
+
+  const brand = buildFooterBrand(brandDocument as BrandGlobalDocument | null)
+  const currentYear = new Date().getFullYear()
+  const copyrightName = COMPANY_NAME || SITE_NAME || brand.brandName
 
   return (
-    <footer className="text-sm text-neutral-500 dark:text-neutral-400">
-      <div className="container">
-        <div className="flex w-full flex-col gap-6 py-12 text-sm md:flex-row md:gap-12">
-          <div>
-            <Link className="flex items-center gap-2 text-black md:pt-1 dark:text-white" href="/">
-              <LogoIcon className="w-6" />
-              <span className="sr-only">{SITE_NAME}</span>
-            </Link>
-          </div>
-          <Suspense
-            fallback={
-              <div className="flex h-[188px] w-[200px] flex-col gap-2">
-                <div className={skeleton} />
-                <div className={skeleton} />
-                <div className={skeleton} />
-                <div className={skeleton} />
-                <div className={skeleton} />
-                <div className={skeleton} />
-              </div>
-            }
-          >
-            <FooterMenu menu={menu} />
-          </Suspense>
-          <div className="md:ml-auto flex flex-col gap-4 items-end">
-            <ThemeSelector />
-          </div>
-        </div>
-      </div>
-      <div className="py-6 text-sm">
-        <div className="container mx-auto flex w-full flex-col items-center gap-1 md:flex-row md:gap-0">
-          <p>
-            &copy; {copyrightDate} {copyrightName}
-            {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
-          </p>
-          <p className="md:ml-4">Designed in Michigan</p>
-          <p className="md:ml-auto">
-            <a className="text-black dark:text-white" href="https://payloadcms.com">
-              Crafted by Payload
-            </a>
-          </p>
-        </div>
-      </div>
-    </footer>
+    <FooterClient
+      brand={brand}
+      copyrightName={copyrightName}
+      currentYear={currentYear}
+      navItems={footer.navItems || []}
+    />
   )
 }

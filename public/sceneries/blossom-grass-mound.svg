@@ -1,18 +1,6 @@
 <svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
   <path d="M 0 95 Q 140 100 260 90 Q 380 75 480 55 Q 580 40 680 80 L 680 200 L 0 200 Z" fill="#8bb858"/>
   <path d="M 0 135 Q 140 130 280 128 Q 420 125 540 115 Q 620 108 680 130 L 680 200 L 0 200 Z" fill="#5a8a3a" opacity="0.6"/>
-  <g stroke="#4a7a28" stroke-width="1.5" fill="none" stroke-linecap="round">
-    <path d="M 50 96 Q 52 84 50 72"/>
-    <path d="M 130 98 Q 132 86 130 74"/>
-    <path d="M 220 92 Q 222 80 220 68"/>
-    <path d="M 300 82 Q 302 70 300 58"/>
-    <path d="M 380 65 Q 382 52 380 40"/>
-    <path d="M 440 55 Q 442 42 440 30"/>
-    <path d="M 500 48 Q 502 36 500 24"/>
-    <path d="M 560 42 Q 562 30 560 18"/>
-    <path d="M 610 55 Q 612 42 610 30"/>
-    <path d="M 640 70 Q 642 58 640 46"/>
-  </g>
   <g fill="#f4a8c4">
     <circle cx="60" cy="120" r="3"/>
     <circle cx="160" cy="115" r="3"/>

@@ -1,103 +1,41 @@
 'use client'
 
-import Image from 'next/image'
-import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
-import { RichText } from '@/components/RichText'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
-import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import type { Media as MediaType, Product } from '@/payload-types'
-import { cn } from '@/utilities/cn'
+import type { Product } from '@/payload-types'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
-import { Minus, Plus } from 'lucide-react'
-import React, { startTransition, useEffect, useMemo, useState } from 'react'
+import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import {
+  BatchBuilderPanel,
+  SimpleItemPanel,
+} from './catering-menu-panels'
+import {
+  DecorativeSceneImage,
+  MenuHero,
+  PersuasionGardenPanel,
+  flavorCardCloudsByScenery,
+  meadowByScenery,
+  menuSceneryTones,
+  mobileSkyByScenery,
+  preloadSceneryAssets,
+  skyByScenery,
+} from './catering-menu-scenery'
+import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
 import { buildCookiePosterAsset } from './cookiePosterData'
-import { CookieSheepRig } from './cookie-sheep-rig'
 
 type CateringMenuSectionProps = {
   products: Partial<Product>[]
 }
 
-type BloomTone = 'gold' | 'plum' | 'rose' | 'sage' | 'sunflower'
-type MenuSceneryTone =
-  | 'dawn'
-  | 'under-tree'
-  | 'moonlit'
-  | 'classic'
-  | 'blossom'
-  | 'fairy-castle'
-
-type SelectableFlavor = {
-  bodyFallbackSrc: string
-  id: number
-  image: MediaType | null
-  summary: string
-  title: string
-}
-
-type SpawnedCloud = {
-  id: number
-  left: string
-  src: string
-  top: string
-  width: string
-}
-
-type SpawnedFlower = {
-  asset: string
-  id: number
-  left: string
-  scale: number
-}
-
-type LandscapeFlower = {
-  asset: string
-  desktopOnly?: boolean
-  left: string
-  scale: number
-  variant?: 'full' | 'wildflower'
-}
-
-type StaticSceneCloud = {
-  className: string
-  src: string
-  style?: React.CSSProperties
-}
-
-type StaticScenePiece = {
-  className: string
-  src: string
-  style?: React.CSSProperties
-}
-
-type CloudSpawnDesign = {
-  maxWidth: number
-  minWidth: number
-  src: string
-}
-
-type BloomVariant = {
-  centerSize: number
-  petalCount: number
-  petalHeight: number
-  petalOffset: number
-  petalWidth: number
-  rotation: number
-}
-
-type StaticSceneCritter = {
-  className: string
-  src: string
-  style?: React.CSSProperties
-}
+type SceneryPickerAnchor = 'hero' | 'panel'
 
 const cateringDisplayOrder = [
   'cookie-tray',
@@ -106,790 +44,6 @@ const cateringDisplayOrder = [
   'sticky-toffee-pudding-10-pack',
   'focaccia-tray',
 ] as const
-
-const menuSceneryTones: MenuSceneryTone[] = [
-  'dawn',
-  'under-tree',
-  'moonlit',
-  'classic',
-  'blossom',
-  'fairy-castle',
-]
-const progressBloomTones: BloomTone[] = ['gold', 'sage', 'plum', 'rose', 'gold', 'sunflower']
-const brownAnimeCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 18.8, minWidth: 13.4, src: '/clouds/brown-anime-cloud-layered.svg' },
-  { maxWidth: 15.2, minWidth: 10.4, src: '/clouds/brown-anime-cloud-fluffy.svg' },
-] as const
-const girlUnderTreeCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 19.4, minWidth: 13.8, src: '/clouds/girl-under-tree-cloud-bank.svg' },
-  { maxWidth: 13.6, minWidth: 8.4, src: '/clouds/girl-under-tree-wispy-cloud.svg' },
-] as const
-const moonlitCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 18.2, minWidth: 13.4, src: '/clouds/moonlit-purple-swoop-cloud.svg' },
-  { maxWidth: 15.8, minWidth: 10.8, src: '/clouds/moonlit-purple-upper-cloud.svg' },
-] as const
-const classicCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 14.8, minWidth: 10.6, src: '/clouds/three-ball-cloud-wide.svg' },
-] as const
-const blossomCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 15.8, minWidth: 11.2, src: '/clouds/three-ball-cloud-wide.svg' },
-  { maxWidth: 12.8, minWidth: 9.8, src: '/clouds/three-ball-cloud.svg' },
-] as const
-const fairyCastleCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 16.8, minWidth: 11.8, src: '/sceneries/fairy-castle-cloud-puff.svg' },
-] as const
-const cloudSpawnDesignsByScenery: Record<MenuSceneryTone, readonly CloudSpawnDesign[]> = {
-  dawn: brownAnimeCloudSpawnDesigns,
-  'under-tree': girlUnderTreeCloudSpawnDesigns,
-  moonlit: moonlitCloudSpawnDesigns,
-  classic: classicCloudSpawnDesigns,
-  blossom: blossomCloudSpawnDesigns,
-  'fairy-castle': fairyCastleCloudSpawnDesigns,
-}
-const skyByScenery: Record<MenuSceneryTone, string> = {
-  dawn: '/sceneries/brown-anime-gradient-sky.svg',
-  'under-tree': '/sceneries/girl-under-tree-sky.svg',
-  moonlit: '/sceneries/moonlit-purple-sky.svg',
-  classic: '/sceneries/classic-sky.svg',
-  blossom: '/sceneries/blossom-breeze-sky.svg',
-  'fairy-castle': '/sceneries/fairy-castle.svg',
-}
-const mobileSkyByScenery: Partial<Record<MenuSceneryTone, string>> = {
-  moonlit: '/sceneries/moonlit-purple-sky-mobile-experimental.svg',
-  blossom: '/sceneries/blossom-breeze-sky-mobile-experimental.svg',
-  'fairy-castle': '/sceneries/fairy-castle-mobile-experimental.svg',
-}
-const meadowByScenery: Record<MenuSceneryTone, string> = {
-  dawn: '/sceneries/brown-anime-rolling-meadow.svg',
-  'under-tree': '/sceneries/girl-under-tree-meadow.svg',
-  moonlit: '/sceneries/moonlit-purple-meadow.svg',
-  classic: '/sceneries/classic-meadow.svg',
-  blossom: '/sceneries/blossom-grass-mound.svg',
-  'fairy-castle': '/sceneries/transparent-meadow.svg',
-}
-const dividerFillByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'linear-gradient(180deg, #cda639 0%, #b88623 100%)',
-  'under-tree': 'linear-gradient(180deg, #d5ad35 0%, #b98419 100%)',
-  moonlit: 'linear-gradient(180deg, #20385a 0%, #132440 100%)',
-  classic: 'linear-gradient(180deg, #a7cb58 0%, #7faa34 100%)',
-  blossom: 'linear-gradient(180deg, #f7d7e3 0%, #edbfd0 100%)',
-  'fairy-castle': 'linear-gradient(180deg, #839785 0%, #5e7a5a 100%)',
-}
-const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'linear-gradient(180deg, rgba(223, 239, 255, 0.92) 0%, rgba(216, 233, 246, 0.94) 100%)',
-  'under-tree':
-    'linear-gradient(180deg, rgba(108, 165, 210, 0.94) 0%, rgba(165, 204, 228, 0.94) 100%)',
-  moonlit: 'linear-gradient(180deg, rgba(19, 41, 76, 0.96) 0%, rgba(29, 66, 98, 0.94) 100%)',
-  classic: 'linear-gradient(180deg, rgba(233, 245, 255, 0.96) 0%, rgba(219, 236, 247, 0.95) 100%)',
-  blossom: 'linear-gradient(180deg, rgba(248, 235, 240, 0.94) 0%, rgba(242, 224, 232, 0.94) 100%)',
-  'fairy-castle': 'linear-gradient(180deg, rgba(214, 220, 209, 0.96) 0%, rgba(191, 201, 186, 0.94) 100%)',
-}
-const sceneButtonAuraByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'rgba(255, 214, 101, 0.85)',
-  'under-tree': 'rgba(197, 228, 142, 0.82)',
-  moonlit: 'rgba(153, 115, 255, 0.88)',
-  classic: 'rgba(255, 215, 79, 0.84)',
-  blossom: 'rgba(255, 176, 208, 0.9)',
-  'fairy-castle': 'rgba(154, 172, 138, 0.88)',
-}
-const noScenePieces: readonly StaticScenePiece[] = []
-const brownAnimeHeroPieces: readonly StaticScenePiece[] = [
-  {
-    className: 'left-[3%] bottom-[0.2rem] w-[5rem] md:w-[6.2rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'left-[16%] bottom-[4.6rem] w-[3.2rem] opacity-75 md:w-[3.8rem]',
-    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
-  },
-  {
-    className: 'right-[13%] bottom-[0.2rem] w-[5.2rem] md:w-[6.6rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'right-[23%] bottom-[1.1rem] w-[1.7rem] opacity-80 md:w-[2rem]',
-    src: '/sceneries/brown-anime-wheat-plume.svg',
-  },
-]
-const brownAnimeDividerPieces: readonly StaticScenePiece[] = [
-  {
-    className: 'left-[3%] bottom-[0.2rem] w-[4.2rem] md:w-[5rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'left-[34%] bottom-[0.1rem] hidden w-[4rem] md:block md:w-[4.8rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'right-[6%] bottom-[0.16rem] w-[4.3rem] md:w-[5.1rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'left-[20%] bottom-[1.8rem] w-[2.6rem] opacity-70 md:w-[3rem]',
-    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
-  },
-  {
-    className: 'right-[22%] bottom-[1.4rem] hidden w-[2.8rem] opacity-75 md:block md:w-[3.2rem]',
-    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
-  },
-  {
-    className: 'right-[31%] bottom-[0.5rem] w-[1.6rem] opacity-80 md:w-[1.9rem]',
-    src: '/sceneries/brown-anime-wheat-plume.svg',
-  },
-]
-const brownAnimePanelPieces: readonly StaticScenePiece[] = [
-  {
-    className: 'left-[4%] bottom-[0.15rem] w-[4.2rem] md:w-[4.8rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'left-[18%] bottom-[2rem] w-[2.8rem] opacity-70 md:w-[3.2rem]',
-    src: '/sceneries/brown-anime-dry-grass-stalk.svg',
-  },
-  {
-    className: 'right-[4%] bottom-[0.15rem] w-[4.4rem] md:w-[5rem]',
-    src: '/sceneries/brown-anime-grass-clump.svg',
-  },
-  {
-    className: 'right-[28%] bottom-[0.55rem] w-[1.55rem] opacity-80 md:w-[1.8rem]',
-    src: '/sceneries/brown-anime-wheat-plume.svg',
-  },
-]
-const underTreeHeroPieces: readonly StaticScenePiece[] = [
-  {
-    className: 'left-[-18%] bottom-[-0.15rem] w-[30rem] md:left-[-9%] md:w-[46rem]',
-    src: '/sceneries/girl-under-tree-tree.svg',
-  },
-]
-const heroPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
-  dawn: brownAnimeHeroPieces,
-  'under-tree': underTreeHeroPieces,
-  moonlit: noScenePieces,
-  classic: noScenePieces,
-  blossom: noScenePieces,
-  'fairy-castle': noScenePieces,
-}
-const dividerPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
-  dawn: brownAnimeDividerPieces,
-  'under-tree': noScenePieces,
-  moonlit: noScenePieces,
-  classic: noScenePieces,
-  blossom: noScenePieces,
-  'fairy-castle': noScenePieces,
-}
-const panelPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
-  dawn: brownAnimePanelPieces,
-  'under-tree': noScenePieces,
-  moonlit: noScenePieces,
-  classic: noScenePieces,
-  blossom: noScenePieces,
-  'fairy-castle': noScenePieces,
-}
-const noSceneCritters: readonly StaticSceneCritter[] = []
-const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
-  dawn: noSceneCritters,
-  'under-tree': noSceneCritters,
-  moonlit: noSceneCritters,
-  classic: noSceneCritters,
-  blossom: [
-    {
-      className: 'left-[9%] bottom-[0.42rem] w-[3rem] md:w-[3.8rem]',
-      src: '/catering/decor/bunny-sit.svg',
-    },
-    {
-      className: 'left-[28%] bottom-[0.34rem] w-[2.7rem] md:w-[3.3rem]',
-      src: '/catering/decor/bunny-hop.svg',
-    },
-    {
-      className: 'right-[24%] bottom-[0.36rem] w-[2.8rem] md:w-[3.5rem]',
-      src: '/catering/decor/bunny-stretch.svg',
-    },
-    {
-      className: 'right-[8%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
-      src: '/catering/decor/bunny-crouch.svg',
-      style: { transform: 'scaleX(-1)' },
-    },
-  ],
-  'fairy-castle': noSceneCritters,
-}
-const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
-  dawn: noSceneCritters,
-  'under-tree': noSceneCritters,
-  moonlit: noSceneCritters,
-  classic: noSceneCritters,
-  blossom: [
-    {
-      className: 'left-[12%] bottom-[0.34rem] w-[2.35rem]',
-      src: '/catering/decor/bunny-sit.svg',
-    },
-    {
-      className: 'left-[30%] bottom-[0.3rem] w-[2.2rem]',
-      src: '/catering/decor/bunny-hop.svg',
-    },
-    {
-      className: 'right-[22%] bottom-[0.34rem] w-[2.2rem]',
-      src: '/catering/decor/bunny-stretch.svg',
-    },
-    {
-      className: 'right-[10%] bottom-[0.34rem] w-[2.2rem]',
-      src: '/catering/decor/bunny-crouch.svg',
-      style: { transform: 'scaleX(-1)' },
-    },
-  ],
-  'fairy-castle': noSceneCritters,
-}
-const heroCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
-  dawn: [
-    {
-      className: 'left-[30%] top-[8%] w-[13rem] md:left-[36%] md:w-[17rem]',
-      src: '/clouds/brown-anime-cloud-fluffy.svg',
-      style: { animationDelay: '-9s' },
-    },
-    {
-      className: 'right-[10%] top-[14%] w-[17rem] md:right-[8%] md:w-[21rem]',
-      src: '/clouds/brown-anime-cloud-layered.svg',
-      style: { animationDelay: '-16s' },
-    },
-    {
-      className: 'right-[4%] top-[28%] hidden w-[12rem] md:block md:w-[15rem]',
-      src: '/clouds/brown-anime-cloud-fluffy.svg',
-      style: { animationDelay: '-4s' },
-    },
-  ],
-  'under-tree': [
-    {
-      className: 'right-[5%] top-[15%] w-[13rem] md:right-[6%] md:w-[16rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-13s' },
-    },
-    {
-      className: 'left-[44%] top-[24%] hidden w-[8rem] md:block md:w-[9.5rem]',
-      src: '/clouds/three-ball-cloud.svg',
-      style: { animationDelay: '-5s' },
-    },
-    {
-      className: 'right-[22%] top-[31%] hidden w-[8.5rem] md:block md:w-[10rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-18s' },
-    },
-  ],
-  moonlit: [
-    {
-      className: 'left-[2%] top-[9%] w-[18rem] md:w-[22rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-    },
-    {
-      className: 'right-[6%] top-[14%] w-[18rem] md:w-[22rem]',
-      src: '/clouds/moonlit-purple-swoop-cloud.svg',
-      style: { animationDelay: '-7s' },
-    },
-    {
-      className: 'left-[18%] top-[27%] hidden w-[12rem] md:block md:w-[15rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-      style: { animationDelay: '-15s' },
-    },
-    {
-      className: 'right-[18%] top-[23%] hidden w-[13rem] md:block md:w-[16rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-      style: { animationDelay: '-2s' },
-    },
-  ],
-  classic: [
-    {
-      className: 'left-[38%] top-[8%] w-[11rem] md:left-[42%] md:w-[14rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-10s' },
-    },
-    {
-      className: 'right-[7%] top-[16%] w-[15rem] md:w-[19rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-14s' },
-    },
-    {
-      className: 'right-[20%] top-[29%] hidden w-[11rem] md:block md:w-[13rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-4s' },
-    },
-  ],
-  blossom: [
-    {
-      className: 'right-[7%] top-[10%] w-[12rem] md:w-[16rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-    },
-    {
-      className: 'right-[20%] top-[22%] hidden w-[10rem] md:block md:w-[13rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-11s' },
-    },
-  ],
-  'fairy-castle': [],
-}
-const panelCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
-  dawn: [
-    {
-      className: 'left-[2%] top-[1.2rem] w-[15rem]',
-      src: '/clouds/brown-anime-cloud-layered.svg',
-    },
-    {
-      className: 'right-[24%] top-[1.5rem] w-[9.2rem]',
-      src: '/clouds/brown-anime-cloud-fluffy.svg',
-      style: { animationDelay: '-8s' },
-    },
-    {
-      className: 'right-[2%] top-[3.7rem] w-[14rem]',
-      src: '/clouds/brown-anime-cloud-layered.svg',
-      style: { animationDelay: '-14s' },
-    },
-  ],
-  'under-tree': [
-    {
-      className: 'left-[10%] top-[1.2rem] w-[9rem]',
-      src: '/clouds/three-ball-cloud.svg',
-    },
-    {
-      className: 'right-[4%] top-[1.45rem] w-[8.8rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-10s' },
-    },
-    {
-      className: 'left-[42%] top-[3rem] w-[6.8rem]',
-      src: '/clouds/three-ball-cloud.svg',
-      style: { animationDelay: '-4s' },
-    },
-  ],
-  moonlit: [
-    {
-      className: 'left-[4%] top-[1.25rem] w-[14rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-    },
-    {
-      className: 'right-[8%] top-[1.5rem] w-[12rem]',
-      src: '/clouds/moonlit-purple-swoop-cloud.svg',
-      style: { animationDelay: '-10s' },
-    },
-    {
-      className: 'left-[38%] top-[3.2rem] w-[7.5rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-      style: { animationDelay: '-5s' },
-    },
-  ],
-  classic: [
-    {
-      className: 'right-[28%] top-[1.6rem] w-[8.4rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-9s' },
-    },
-    {
-      className: 'right-[2%] top-[3.4rem] w-[12rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-14s' },
-    },
-  ],
-  blossom: [
-    {
-      className: 'right-[8%] top-[1.1rem] w-[8rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-    },
-    {
-      className: 'right-[26%] top-[3rem] w-[6.4rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-8s' },
-    },
-  ],
-  'fairy-castle': [],
-}
-const flavorCardCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
-  dawn: [
-    {
-      className: 'left-[-18%] top-[14%] z-10 w-[5rem]',
-      src: '/clouds/brown-anime-cloud-fluffy.svg',
-    },
-    {
-      className: 'left-[-12%] top-[30%] z-10 w-[4.2rem]',
-      src: '/clouds/brown-anime-cloud-layered.svg',
-      style: { animationDelay: '-6s' },
-    },
-  ],
-  'under-tree': [
-    {
-      className: 'left-[-10%] top-[10%] z-10 w-[5.6rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-    },
-    {
-      className: 'right-[6%] top-[18%] z-10 w-[4.8rem]',
-      src: '/clouds/three-ball-cloud.svg',
-      style: { animationDelay: '-5s' },
-    },
-  ],
-  moonlit: [
-    {
-      className: 'left-[-8%] top-[10%] z-10 w-[6.4rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-    },
-    {
-      className: 'right-[6%] top-[26%] z-10 w-[5.6rem]',
-      src: '/clouds/moonlit-purple-upper-cloud.svg',
-      style: { animationDelay: '-7s' },
-    },
-  ],
-  classic: [
-    {
-      className: 'left-[-10%] top-[12%] z-10 w-[5.8rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-    },
-    {
-      className: 'right-[4%] top-[18%] z-10 w-[6rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-      style: { animationDelay: '-6s' },
-    },
-  ],
-  blossom: [
-    {
-      className: 'right-[2%] top-[12%] z-10 w-[5.4rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
-    },
-  ],
-  'fairy-castle': [],
-}
-const bloomVariantPresets: BloomVariant[] = [
-  {
-    centerSize: 0.38,
-    petalCount: 4,
-    petalHeight: 0.72,
-    petalOffset: 0.26,
-    petalWidth: 0.66,
-    rotation: 0,
-  },
-  {
-    centerSize: 0.4,
-    petalCount: 4,
-    petalHeight: 0.78,
-    petalOffset: 0.29,
-    petalWidth: 0.58,
-    rotation: 14,
-  },
-  {
-    centerSize: 0.36,
-    petalCount: 5,
-    petalHeight: 0.7,
-    petalOffset: 0.28,
-    petalWidth: 0.46,
-    rotation: 8,
-  },
-  {
-    centerSize: 0.38,
-    petalCount: 4,
-    petalHeight: 0.68,
-    petalOffset: 0.26,
-    petalWidth: 0.54,
-    rotation: -10,
-  },
-  {
-    centerSize: 0.52,
-    petalCount: 8,
-    petalHeight: 0.64,
-    petalOffset: 0.34,
-    petalWidth: 0.3,
-    rotation: 0,
-  },
-] as const
-const cookieTrayPersuasionCopy = [
-  'We love Crumbl cookies. But sometimes they are too sweet. These cookies are less sweet than Crumbl.',
-  'The normal size cookies are quite thick, so they are good value. But if you want smaller cookies, go buy the mini cookies.',
-] as const
-const daylightFlowerAssets = [
-  '/flowers/daisy-large.svg',
-  '/flowers/daisy-medium.svg',
-  '/flowers/daisy-small.svg',
-  '/flowers/pink-daisy-wildflower.svg',
-  '/flowers/rose.svg',
-  '/flowers/sunflower.svg',
-  '/flowers/tulip.svg',
-  '/flowers/white-wildflower.svg',
-  '/flowers/cherry-blossom-branch.svg',
-] as const
-const moonlitFlowerAssets = [
-  '/flowers/moonlit-purple-flower.svg',
-  '/flowers/moonlit-purple-flower.svg',
-  '/flowers/moonlit-purple-flower.svg',
-] as const
-const blossomFlowerAssets = ['/flowers/cherry-blossom-branch.svg'] as const
-const classicFlowerAssets = [
-  '/flowers/daisy-large.svg',
-  '/flowers/daisy-medium.svg',
-  '/flowers/daisy-small.svg',
-  '/flowers/pink-daisy-wildflower.svg',
-  '/flowers/rose.svg',
-  '/flowers/sunflower.svg',
-  '/flowers/tulip.svg',
-  '/flowers/white-wildflower.svg',
-  '/flowers/cherry-blossom-branch.svg',
-] as const
-const flowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> = {
-  dawn: daylightFlowerAssets,
-  'under-tree': [
-    '/flowers/daisy-large.svg',
-    '/flowers/daisy-medium.svg',
-    '/flowers/daisy-small.svg',
-  ],
-  moonlit: moonlitFlowerAssets,
-  classic: classicFlowerAssets,
-  blossom: blossomFlowerAssets,
-  'fairy-castle': [],
-}
-const spawnedFlowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> = {
-  dawn: ['/flowers/daisy-medium.svg', '/flowers/rose.svg', '/flowers/tulip.svg'],
-  'under-tree': [
-    '/flowers/daisy-large.svg',
-    '/flowers/daisy-medium.svg',
-    '/flowers/daisy-small.svg',
-  ],
-  moonlit: ['/flowers/moonlit-purple-flower.svg', '/flowers/moonlit-purple-flower.svg'],
-  classic: [
-    '/flowers/daisy-medium.svg',
-    '/flowers/pink-daisy-wildflower.svg',
-    '/flowers/white-wildflower.svg',
-    '/flowers/tulip.svg',
-    '/flowers/rose.svg',
-    '/flowers/poppy.svg',
-  ],
-  blossom: [
-    '/catering/decor/bunny-crouch.svg',
-    '/catering/decor/bunny-hop.svg',
-    '/catering/decor/bunny-sit.svg',
-    '/catering/decor/bunny-stretch.svg',
-  ],
-  'fairy-castle': [
-    '/sceneries/fairy-castle-house.svg',
-    '/sceneries/fairy-castle-house-wide.svg',
-  ],
-}
-
-const seededAccentCountByScenery: Record<MenuSceneryTone, number> = {
-  dawn: 9,
-  'under-tree': 9,
-  moonlit: 9,
-  classic: 9,
-  blossom: 9,
-  'fairy-castle': 0,
-}
-
-const spawnedAccentLabelByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'Spawn a flower',
-  'under-tree': 'Spawn a flower',
-  moonlit: 'Spawn a flower',
-  classic: 'Spawn a flower',
-  blossom: 'Spawn a rabbit',
-  'fairy-castle': 'Spawn a house',
-}
-
-const spawnedCloudLabelByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'Spawn a cloud',
-  'under-tree': 'Spawn a cloud',
-  moonlit: 'Spawn a cloud',
-  classic: 'Spawn a cloud',
-  blossom: 'Spawn a cloud',
-  'fairy-castle': 'Spawn a cloud',
-}
-
-const defaultHeroLineFlowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/daisy-large.svg', left: '60%', scale: 0.86 },
-  { asset: '/flowers/rose.svg', left: '74%', scale: 0.8 },
-  { asset: '/flowers/daisy-small.svg', left: '86%', scale: 0.76, variant: 'wildflower' },
-] as const
-const underTreeHeroLineFlowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/daisy-small.svg', left: '12%', scale: 0.72 },
-  { asset: '/flowers/daisy-medium.svg', left: '21%', scale: 0.76 },
-  { asset: '/flowers/daisy-small.svg', left: '30%', scale: 0.68 },
-  { asset: '/flowers/daisy-large.svg', left: '40%', scale: 0.82 },
-  { asset: '/flowers/daisy-small.svg', left: '50%', scale: 0.7 },
-  { asset: '/flowers/daisy-medium.svg', left: '60%', scale: 0.76 },
-  { asset: '/flowers/daisy-small.svg', left: '70%', scale: 0.68 },
-  { asset: '/flowers/daisy-large.svg', left: '80%', scale: 0.8 },
-  { asset: '/flowers/daisy-medium.svg', left: '90%', scale: 0.74 },
-] as const
-const moonlitHeroLineFlowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.9 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.84 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '32%', scale: 0.88 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '42%', scale: 0.82 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '52%', scale: 0.94 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '62%', scale: 0.84 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '72%', scale: 0.88 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.82 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '92%', scale: 0.94 },
-] as const
-const classicHeroLineFlowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/daisy-large.svg', left: '62%', scale: 0.82 },
-  { asset: '/flowers/daisy-small.svg', left: '76%', scale: 0.72, variant: 'wildflower' },
-  { asset: '/flowers/rose.svg', left: '89%', scale: 0.78 },
-] as const
-const noLandscapeFlowers: readonly LandscapeFlower[] = []
-const heroLineFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
-  dawn: defaultHeroLineFlowers,
-  'under-tree': underTreeHeroLineFlowers,
-  moonlit: moonlitHeroLineFlowers,
-  classic: classicHeroLineFlowers,
-  blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '18%', scale: 0.28 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '42%', scale: 0.3 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '66%', scale: 0.29 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '88%', scale: 0.27 },
-  ],
-  'fairy-castle': noLandscapeFlowers,
-}
-
-const defaultPersuasionWildflowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/daisy-small.svg', left: '18%', scale: 0.84 },
-  { asset: '/flowers/daisy-small.svg', left: '55%', scale: 0.8 },
-] as const
-const underTreePersuasionWildflowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/daisy-small.svg', left: '22%', scale: 0.74 },
-  { asset: '/flowers/daisy-small.svg', left: '58%', scale: 0.78 },
-] as const
-const moonlitPersuasionWildflowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '22%', scale: 0.96 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '58%', scale: 0.86 },
-] as const
-const classicPersuasionWildflowers: readonly LandscapeFlower[] = [
-  { asset: '/flowers/daisy-small.svg', left: '22%', scale: 0.82 },
-  { asset: '/flowers/daisy-small.svg', left: '58%', scale: 0.76 },
-] as const
-const persuasionWildflowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
-  dawn: defaultPersuasionWildflowers,
-  'under-tree': underTreePersuasionWildflowers,
-  moonlit: moonlitPersuasionWildflowers,
-  classic: classicPersuasionWildflowers,
-  blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '24%', scale: 0.24 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '62%', scale: 0.23 },
-  ],
-  'fairy-castle': noLandscapeFlowers,
-}
-
-const defaultPersuasionGardenFlowers = [
-  { asset: '/flowers/daisy-large.svg', left: '10%', scale: 0.98 },
-  { asset: '/flowers/rose.svg', left: '25%', scale: 0.92 },
-  { asset: '/flowers/sunflower.svg', left: '41%', scale: 1.08 },
-  { asset: '/flowers/daisy-medium.svg', left: '58%', scale: 0.92 },
-  { asset: '/flowers/daisy-small.svg', left: '73%', scale: 0.72 },
-] as const
-const underTreePersuasionGardenFlowers = [
-  { asset: '/flowers/daisy-medium.svg', left: '12%', scale: 0.78 },
-  { asset: '/flowers/daisy-small.svg', left: '24%', scale: 0.68 },
-  { asset: '/flowers/daisy-large.svg', left: '36%', scale: 0.82 },
-  { asset: '/flowers/daisy-small.svg', left: '48%', scale: 0.68 },
-  { asset: '/flowers/daisy-medium.svg', left: '60%', scale: 0.78 },
-  { asset: '/flowers/daisy-large.svg', left: '72%', scale: 0.82 },
-  { asset: '/flowers/daisy-medium.svg', left: '84%', scale: 0.76 },
-] as const
-const moonlitPersuasionGardenFlowers = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '12%', scale: 0.98 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '28%', scale: 0.92 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '45%', scale: 0.84 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '60%', scale: 1.06 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '76%', scale: 0.96 },
-] as const
-const classicPersuasionGardenFlowers = [
-  { asset: '/flowers/daisy-large.svg', left: '12%', scale: 0.9 },
-  { asset: '/flowers/daisy-small.svg', left: '28%', scale: 0.74 },
-  { asset: '/flowers/rose.svg', left: '44%', scale: 0.88 },
-  { asset: '/flowers/sunflower.svg', left: '60%', scale: 1.02 },
-  { asset: '/flowers/daisy-medium.svg', left: '76%', scale: 0.84 },
-] as const
-const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
-  dawn: defaultPersuasionGardenFlowers,
-  'under-tree': underTreePersuasionGardenFlowers,
-  moonlit: moonlitPersuasionGardenFlowers,
-  classic: classicPersuasionGardenFlowers,
-  blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '14%', scale: 0.26 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '36%', scale: 0.28 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '58%', scale: 0.27 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '80%', scale: 0.25 },
-  ],
-  'fairy-castle': noLandscapeFlowers,
-}
-
-const defaultDividerFlowers = [
-  { asset: '/flowers/daisy-medium.svg', desktopOnly: true, left: '8%', scale: 0.82 },
-  { asset: '/flowers/rose.svg', left: '22%', scale: 0.8 },
-  { asset: '/flowers/cherry-blossom-branch.svg', desktopOnly: true, left: '36%', scale: 0.78 },
-  { asset: '/flowers/daisy-small.svg', left: '50%', scale: 0.72 },
-  { asset: '/flowers/sunflower.svg', left: '64%', scale: 0.98 },
-  { asset: '/flowers/rose.svg', left: '78%', scale: 0.8 },
-  { asset: '/flowers/daisy-medium.svg', desktopOnly: true, left: '91%', scale: 0.8 },
-] as const
-const underTreeDividerFlowers = [
-  { asset: '/flowers/daisy-medium.svg', left: '9%', scale: 0.74 },
-  { asset: '/flowers/daisy-small.svg', left: '23%', scale: 0.66 },
-  { asset: '/flowers/daisy-large.svg', left: '38%', scale: 0.8 },
-  { asset: '/flowers/daisy-small.svg', left: '54%', scale: 0.66 },
-  { asset: '/flowers/daisy-medium.svg', left: '70%', scale: 0.72 },
-  { asset: '/flowers/daisy-large.svg', left: '86%', scale: 0.8 },
-] as const
-const moonlitDividerFlowers = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '10%', scale: 0.9 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '28%', scale: 0.84 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '46%', scale: 0.82 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '64%', scale: 0.94 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.88 },
-] as const
-const classicDividerFlowers = [
-  { asset: '/flowers/daisy-medium.svg', left: '10%', scale: 0.78 },
-  { asset: '/flowers/rose.svg', left: '28%', scale: 0.76 },
-  { asset: '/flowers/daisy-small.svg', left: '46%', scale: 0.68 },
-  { asset: '/flowers/sunflower.svg', left: '64%', scale: 0.9 },
-  { asset: '/flowers/daisy-medium.svg', left: '82%', scale: 0.76 },
-] as const
-const dividerFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
-  dawn: defaultDividerFlowers,
-  'under-tree': underTreeDividerFlowers,
-  moonlit: moonlitDividerFlowers,
-  classic: classicDividerFlowers,
-  blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '14%', scale: 0.74 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '38%', scale: 0.76 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '62%', scale: 0.74 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '86%', scale: 0.72 },
-  ],
-  'fairy-castle': noLandscapeFlowers,
-}
-const defaultDividerWildflowers = [
-  { asset: '/flowers/daisy-small.svg', left: '14%', scale: 0.72 },
-  { asset: '/flowers/daisy-small.svg', left: '34%', scale: 0.68 },
-  { asset: '/flowers/daisy-small.svg', left: '57%', scale: 0.74 },
-  { asset: '/flowers/daisy-small.svg', left: '86%', scale: 0.7 },
-] as const
-const underTreeDividerWildflowers = [
-  { asset: '/flowers/daisy-small.svg', left: '17%', scale: 0.64 },
-  { asset: '/flowers/daisy-small.svg', left: '46%', scale: 0.62 },
-  { asset: '/flowers/daisy-small.svg', left: '79%', scale: 0.64 },
-] as const
-const moonlitDividerWildflowers = [
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '18%', scale: 0.82 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '50%', scale: 0.86 },
-  { asset: '/flowers/moonlit-purple-flower.svg', left: '82%', scale: 0.82 },
-] as const
-const classicDividerWildflowers = [
-  { asset: '/flowers/daisy-small.svg', left: '18%', scale: 0.7 },
-  { asset: '/flowers/daisy-small.svg', left: '50%', scale: 0.68 },
-  { asset: '/flowers/daisy-small.svg', left: '82%', scale: 0.7 },
-] as const
-const dividerWildflowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
-  dawn: defaultDividerWildflowers,
-  'under-tree': underTreeDividerWildflowers,
-  moonlit: moonlitDividerWildflowers,
-  classic: classicDividerWildflowers,
-  blossom: [
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '22%', scale: 0.64 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '50%', scale: 0.64 },
-    { asset: '/flowers/cherry-blossom-branch.svg', left: '78%', scale: 0.62 },
-  ],
-  'fairy-castle': noLandscapeFlowers,
-}
-
-const persuasionSheep = [{ left: '89%', src: '/catering/decor/sheep-grin.svg' }] as const
 
 const normalizeImage = (product: Partial<Product>) => {
   const firstGalleryItem = product.gallery?.[0]
@@ -966,1180 +120,32 @@ const sortProductsForDisplay = (products: Partial<Product>[]) => {
   })
 }
 
-const buildPersuasionHeading = () => 'Honest persuasion...'
-
-const buildPersuasionCopy = (product: Partial<Product>, summary: string) => {
-  if (product.slug === 'cookie-tray') {
-    return cookieTrayPersuasionCopy
-  }
-
-  if (summary.trim()) {
-    return [summary.trim()]
-  }
-
-  return []
-}
-
-const defaultToneVariants: Record<BloomTone, BloomVariant> = {
-  gold: bloomVariantPresets[1],
-  plum: bloomVariantPresets[0],
-  rose: bloomVariantPresets[2],
-  sage: bloomVariantPresets[3],
-  sunflower: bloomVariantPresets[4],
-}
-
-const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
-const randomMoonlitFlowerScale = () => {
-  const useMedium = Math.random() < 0.5
-  return randomBetween(useMedium ? 0.88 : 1.02, useMedium ? 0.98 : 1.16)
-}
-const getNextSceneryTone = (current: MenuSceneryTone) => {
-  const currentIndex = menuSceneryTones.indexOf(current)
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % menuSceneryTones.length : 0
-
-  return menuSceneryTones[nextIndex] ?? menuSceneryTones[0]
-}
-
-const collectSceneryAssetSources = (sceneryTone: MenuSceneryTone) => [
-  skyByScenery[sceneryTone],
-  meadowByScenery[sceneryTone],
-  ...(heroCloudsByScenery[sceneryTone] ?? []).map((cloud) => cloud.src),
-  ...(panelCloudsByScenery[sceneryTone] ?? []).map((cloud) => cloud.src),
-  ...(heroPiecesByScenery[sceneryTone] ?? []).map((piece) => piece.src),
-  ...(panelPiecesByScenery[sceneryTone] ?? []).map((piece) => piece.src),
-]
-
-const preloadSceneryAssets = (sceneryTone: MenuSceneryTone) => {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  for (const source of new Set(collectSceneryAssetSources(sceneryTone).filter(Boolean))) {
-    const image = new window.Image()
-    image.decoding = 'async'
-    image.src = source
-  }
-}
-
-const createSceneChangeChargeId = () =>
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random()}`
-
-const getRandomBloomVariant = () =>
-  bloomVariantPresets[Math.floor(Math.random() * bloomVariantPresets.length)] ??
-  bloomVariantPresets[0]
-
-const hashSeed = (seed: string) =>
-  Array.from(seed).reduce(
-    (total, character, index) => total + character.charCodeAt(0) * (index + 1),
-    0,
-  )
-
-const deterministicBetween = (seed: string, min: number, max: number) => {
-  const normalized = (Math.sin(hashSeed(seed) * 12.9898) + 1) / 2
-  return min + (max - min) * normalized
-}
-
-const buildFlowerMotionStyle = (key: string, left: string, scale: number): React.CSSProperties => {
-  const seed = Array.from(key).reduce(
-    (total, character, index) => total + character.charCodeAt(0) * (index + 1),
-    0,
-  )
-  const bob = 0.12 + (seed % 7) * 0.02
-  const tilt = 1.5 + (seed % 5) * 0.55
-  const duration = 4 + (seed % 6) * 0.22
-  const delay = (seed % 8) * -0.34
-
-  return {
-    left,
-    ['--flower-bob' as string]: `${bob.toFixed(2)}rem`,
-    ['--flower-delay' as string]: `${delay.toFixed(2)}s`,
-    ['--flower-duration' as string]: `${duration.toFixed(2)}s`,
-    ['--flower-scale' as string]: `${scale}`,
-    ['--flower-tilt' as string]: `${tilt.toFixed(2)}deg`,
-  } as React.CSSProperties
-}
-
-const heroFlowerSeamByScenery: Record<MenuSceneryTone, string> = {
-  dawn: '0.5rem',
-  'under-tree': '0.55rem',
-  moonlit: '0.5rem',
-  classic: '0.5rem',
-  blossom: '0rem',
-  'fairy-castle': '0.5rem',
-}
-
-const createSpawnedCloud = (
-  sceneryTone: MenuSceneryTone,
-  kind: 'hero' | 'panel' = 'panel',
-): SpawnedCloud => {
-  const spawnDesigns = cloudSpawnDesignsByScenery[sceneryTone] ?? brownAnimeCloudSpawnDesigns
-  const design =
-    spawnDesigns[Math.floor(Math.random() * spawnDesigns.length)] ?? brownAnimeCloudSpawnDesigns[0]
-  const leftRange =
-    kind === 'hero'
-      ? sceneryTone === 'under-tree'
-        ? [24, 76]
-        : [6, 60]
-      : sceneryTone === 'under-tree'
-        ? [12, 64]
-        : [5, 68]
-  const topRange =
-    kind === 'hero'
-      ? sceneryTone === 'under-tree'
-        ? [4.8, 14.2]
-        : sceneryTone === 'moonlit'
-          ? [5.2, 14.8]
-          : sceneryTone === 'classic'
-            ? [5.4, 14.6]
-            : [5.2, 15.2]
-      : sceneryTone === 'under-tree'
-        ? [1.6, 5.4]
-        : sceneryTone === 'moonlit'
-          ? [1.8, 5.8]
-          : sceneryTone === 'classic'
-            ? [1.7, 5.7]
-            : [1.8, 6.1]
-
-  return {
-    id: Date.now() + Math.random(),
-    left: `${randomBetween(leftRange[0], leftRange[1]).toFixed(2)}%`,
-    src: design.src,
-    top: `${randomBetween(topRange[0], topRange[1]).toFixed(2)}rem`,
-    width: `${randomBetween(design.minWidth, design.maxWidth).toFixed(2)}rem`,
-  }
-}
-
-const createSpawnedFlower = (
-  sceneryTone: MenuSceneryTone,
-  kind: 'hero' | 'panel' = 'panel',
-): SpawnedFlower => {
-  const heroLeftRange: [number, number] = [8, 92]
-  const heroScaleRange =
-    sceneryTone === 'under-tree'
-      ? [0.66, 0.86]
-      : sceneryTone === 'blossom'
-        ? [0.96, 1.24]
-        : sceneryTone === 'moonlit'
-          ? [0.72, 0.92]
-          : sceneryTone === 'classic'
-            ? [0.74, 0.94]
-            : sceneryTone === 'fairy-castle'
-              ? [1.04, 1.52]
-            : [0.76, 0.98]
-  const panelScaleRange =
-    sceneryTone === 'under-tree'
-      ? [0.78, 1]
-      : sceneryTone === 'blossom'
-        ? [0.88, 1.14]
-        : sceneryTone === 'moonlit'
-          ? [0.82, 1.04]
-          : sceneryTone === 'classic'
-            ? [0.84, 1.06]
-            : sceneryTone === 'fairy-castle'
-              ? [1.08, 1.58]
-            : [0.86, 1.08]
-  const [minLeft, maxLeft] = kind === 'hero' ? heroLeftRange : [8, 92]
-  const [minScale, maxScale] = kind === 'hero' ? heroScaleRange : panelScaleRange
-
-  return {
-    asset:
-      spawnedFlowerAssetsByScenery[sceneryTone][
-        Math.floor(Math.random() * spawnedFlowerAssetsByScenery[sceneryTone].length)
-      ] ?? '/flowers/daisy.svg',
-    id: Date.now() + Math.random(),
-    left: `${randomBetween(minLeft, maxLeft).toFixed(2)}%`,
-    scale: Number(
-      (sceneryTone === 'moonlit' ? randomMoonlitFlowerScale() : randomBetween(minScale, maxScale)).toFixed(2),
-    ),
-  }
-}
-
-const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'panel') => {
-  const leftRange: [number, number] = kind === 'hero' ? [8, 92] : [6, 94]
-
-  if (kind === 'hero') {
-    const scaleRange: [number, number] =
-      sceneryTone === 'under-tree'
-        ? [0.66, 0.86]
-        : sceneryTone === 'blossom'
-          ? [0.96, 1.24]
-          : sceneryTone === 'moonlit'
-            ? [0.84, 1.16]
-            : sceneryTone === 'classic'
-              ? [0.74, 0.94]
-              : sceneryTone === 'fairy-castle'
-                ? [1.04, 1.52]
-                : [0.76, 0.98]
-
-    return {
-      leftRange,
-      scaleRange,
-    }
-  }
-
-  const scaleRange: [number, number] =
-    sceneryTone === 'under-tree'
-      ? [0.78, 1]
-      : sceneryTone === 'blossom'
-        ? [0.88, 1.14]
-        : sceneryTone === 'moonlit'
-          ? [0.9, 1.16]
-          : sceneryTone === 'classic'
-            ? [0.84, 1.06]
-            : sceneryTone === 'fairy-castle'
-              ? [1.08, 1.58]
-              : [0.86, 1.08]
-
-  return {
-    leftRange,
-    scaleRange,
-  }
-}
-
-const buildSeededFlowers = (
-  sceneryTone: MenuSceneryTone,
-  kind: 'hero' | 'panel',
-  count = 20,
-): SpawnedFlower[] => {
-  if (count <= 0) {
-    return []
-  }
-
-  const {
-    leftRange: [minLeft, maxLeft],
-    scaleRange: [minScale, maxScale],
-  } = getSeededFlowerRanges(sceneryTone, kind)
-  const assets = spawnedFlowerAssetsByScenery[sceneryTone]
-  const span = maxLeft - minLeft
-
-  return Array.from({ length: count }, (_, index) => {
-    const segmentStart = minLeft + (span / count) * index
-    const segmentEnd = minLeft + (span / count) * (index + 1)
-    const seedRoot = `${sceneryTone}-${kind}-${index}`
-    const assetIndex = Math.floor(
-      deterministicBetween(`${seedRoot}-asset`, 0, assets.length - 0.0001),
-    )
-    const asset = assets[assetIndex] ?? '/flowers/daisy.svg'
-    const left = deterministicBetween(`${seedRoot}-left`, segmentStart + 0.16, segmentEnd - 0.16)
-    const scale = deterministicBetween(`${seedRoot}-scale`, minScale, maxScale)
-
-    return {
-      asset,
-      id: index + 1,
-      left: `${left.toFixed(2)}%`,
-      scale: Number(scale.toFixed(2)),
-    }
-  })
-}
-
-const getResponsiveFlowerSeedCount = () => {
-  if (typeof window === 'undefined') {
-    return 9
-  }
-
-  return 9
-}
-
-const useResponsiveFlowerSeedCount = () => {
-  const [flowerCount, setFlowerCount] = useState(getResponsiveFlowerSeedCount)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const mediaQuery = window.matchMedia('(max-width: 767px)')
-    const sync = () => setFlowerCount(9)
-
-    sync()
-    mediaQuery.addEventListener('change', sync)
-    window.addEventListener('resize', sync)
-
-    return () => {
-      mediaQuery.removeEventListener('change', sync)
-      window.removeEventListener('resize', sync)
-    }
-  }, [])
-
-  return flowerCount
-}
-
-function MenuBloomMark({
-  className,
-  style,
-  tone = 'sage',
-  variant,
-}: {
-  className?: string
-  style?: React.CSSProperties
-  tone?: BloomTone
-  variant?: BloomVariant
-}) {
-  const bloomVariant = variant ?? defaultToneVariants[tone]
-
-  return (
-    <span
-      aria-hidden="true"
-      className={cn('cateringBloomMark', `tone-${tone}`, className)}
-      style={
-        {
-          ...style,
-          ['--bloom-center-size' as string]: `${bloomVariant.centerSize}em`,
-          ['--bloom-petal-height' as string]: `${bloomVariant.petalHeight}em`,
-          ['--bloom-petal-offset' as string]: `${bloomVariant.petalOffset}em`,
-          ['--bloom-petal-width' as string]: `${bloomVariant.petalWidth}em`,
-        } as React.CSSProperties
-      }
-    >
-      <span
-        className="cateringBloomFlower"
-        style={
-          {
-            ['--bloom-rotation' as string]: `${bloomVariant.rotation}deg`,
-          } as React.CSSProperties
-        }
-      >
-        {Array.from({ length: bloomVariant.petalCount }).map((_, index) => (
-          <span
-            className="cateringBloomPetal"
-            key={`${tone}-${index}`}
-            style={
-              {
-                ['--petal-rotation' as string]: `${(360 / bloomVariant.petalCount) * index}deg`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-        <span className="cateringBloomCenter" />
-      </span>
-      <span className="cateringBloomStem" />
-    </span>
-  )
-}
-
-function FlowerSprite({
-  asset,
-  className,
-  style,
-}: {
-  asset: string
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <span aria-hidden="true" className={cn('cateringFlowerSprite', className)} style={style}>
-      <Image
-        alt=""
-        aria-hidden="true"
-        className="cateringFlowerSpriteImage"
-        height={160}
-        sizes="64px"
-        src={asset}
-        unoptimized
-        width={160}
-      />
-    </span>
-  )
-}
-
-function DecorativeSceneImage({
-  className,
-  fit = 'contain',
-  mobileSrc,
-  priority,
-  sizes = '100vw',
-  src,
-  style,
-}: {
-  className: string
-  fit?: 'contain' | 'cover'
-  mobileSrc?: string
-  priority?: boolean
-  sizes?: string
-  src: string
-  style?: React.CSSProperties
-}) {
-  if (mobileSrc) {
-    return (
-      <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
-        <picture className="block h-full w-full">
-          <source media="(max-width: 767px)" srcSet={mobileSrc} />
-          <img
-            alt=""
-            aria-hidden="true"
-            className={fit === 'cover' ? 'h-full w-full object-cover' : 'h-auto w-full object-contain'}
-            draggable="false"
-            loading={priority ? 'eager' : 'lazy'}
-            sizes={sizes}
-            src={src}
-          />
-        </picture>
-      </span>
-    )
-  }
-
-  return (
-    <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
-      {fit === 'cover' ? (
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="object-cover"
-          fill
-          priority={priority}
-          sizes={sizes}
-          src={src}
-          unoptimized
-        />
-      ) : (
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="h-auto w-full object-contain"
-          height={1200}
-          priority={priority}
-          sizes={sizes}
-          src={src}
-          unoptimized
-          width={1200}
-        />
-      )}
-    </span>
-  )
-}
-
-function MenuHero({
-  isSceneChanging,
-  onChangeScenery,
-  sceneryTone,
-}: {
-  isSceneChanging: boolean
-  onChangeScenery: () => void
-  sceneryTone: MenuSceneryTone
-}) {
-  const flowerSeedCount = useResponsiveFlowerSeedCount()
-  const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
-  const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
-  const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>(() =>
-    buildSeededFlowers(sceneryTone, 'hero', seededAccentCount),
-  )
-  const sceneClouds = heroCloudsByScenery[sceneryTone] ?? heroCloudsByScenery.dawn
-  const heroCritters = heroCrittersByScenery[sceneryTone] ?? heroCrittersByScenery.dawn
-  const heroPieces = heroPiecesByScenery[sceneryTone] ?? heroPiecesByScenery.dawn
-  const heroFlowers = heroLineFlowersByScenery[sceneryTone] ?? heroLineFlowersByScenery.dawn
-  const heroSkySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
-  const heroMobileSkySrc = mobileSkyByScenery[sceneryTone]
-  const meadowSrc = meadowByScenery[sceneryTone] ?? meadowByScenery.dawn
-
-  useEffect(() => {
-    setSpawnedClouds([])
-    setSpawnedFlowers(buildSeededFlowers(sceneryTone, 'hero', seededAccentCount))
-  }, [sceneryTone, seededAccentCount])
-
-  const spawnCloud = () => {
-    setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'hero')])
-  }
-
-  const spawnFlower = () => {
-    setSpawnedFlowers((current) => [...current, createSpawnedFlower(sceneryTone, 'hero')])
-  }
-
-  return (
-    <section
-      className={cn(
-        'cateringHeroBand relative left-1/2 w-screen -translate-x-1/2',
-        `cateringScene-${sceneryTone}`,
-      )}
-      style={
-        {
-          ['--catering-scene-charge' as string]: sceneButtonAuraByScenery[sceneryTone],
-          ['--catering-hero-flower-seam' as string]:
-            heroFlowerSeamByScenery[sceneryTone] ?? heroFlowerSeamByScenery.dawn,
-        } as React.CSSProperties
-      }
-    >
-      <div className="cateringHeroBackdrop">
-        <DecorativeSceneImage
-          className="cateringSceneSky cateringHeroSky"
-          fit="cover"
-          mobileSrc={heroMobileSkySrc}
-          priority
-          sizes="100vw"
-          src={heroSkySrc}
-        />
-        <DecorativeSceneImage
-          className="cateringSceneMeadow cateringHeroMeadow"
-          fit="cover"
-          sizes="100vw"
-          src={meadowSrc}
-        />
-        {heroPieces.map((piece) => (
-          <DecorativeSceneImage
-            className={cn('cateringHeroSceneryPiece', piece.className)}
-            key={`${sceneryTone}-${piece.className}-${piece.src}`}
-            sizes="50vw"
-            src={piece.src}
-            style={piece.style}
-          />
-        ))}
-        {heroCritters.map((critter) => (
-          <DecorativeSceneImage
-            className={cn('cateringHeroSceneryPiece', critter.className)}
-            key={`${sceneryTone}-${critter.className}-${critter.src}`}
-            sizes="6rem"
-            src={critter.src}
-            style={critter.style}
-          />
-        ))}
-        <div aria-hidden="true" className="cateringHeroFlowerRail">
-          {heroFlowers.map((flower) => (
-            <FlowerSprite
-              asset={flower.asset}
-              className={cn(
-                'cateringHeroLineFlower cateringLivingFlower',
-                flower.variant === 'wildflower' && 'cateringHeroLineWildflower',
-              )}
-              key={`hero-line-${flower.left}-${flower.asset}`}
-              style={buildFlowerMotionStyle(
-                `hero-line-${flower.left}-${flower.asset}`,
-                flower.left,
-                flower.scale,
-              )}
-            />
-          ))}
-          {spawnedFlowers.map((flower) => (
-            <FlowerSprite
-              asset={flower.asset}
-              className="cateringHeroLineFlower cateringHeroLineFlowerSpawned cateringLivingFlower"
-              key={flower.id}
-              style={buildFlowerMotionStyle(`hero-spawn-${flower.id}`, flower.left, flower.scale)}
-            />
-          ))}
-        </div>
-      </div>
-      {sceneClouds.map((cloud) => (
-        <DecorativeSceneImage
-          className={cn('cateringHeroCloud', cloud.className)}
-          key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
-          sizes="30vw"
-          src={cloud.src}
-          style={cloud.style}
-        />
-      ))}
-      {spawnedClouds.map((cloud) => (
-        <DecorativeSceneImage
-          className="cateringHeroCloud"
-          key={cloud.id}
-          src={cloud.src}
-          style={{
-            left: cloud.left,
-            top: cloud.top,
-            width: cloud.width,
-          }}
-        />
-      ))}
-      <div className="cateringHeroContent container relative z-[3]">
-        <div className="max-w-[42rem] space-y-4">
-          <div className="space-y-4">
-            <p className="cateringMenuEyebrow cateringHeroEyebrow">Baked with Blessings</p>
-            <h1 className="cateringMenuHeroDisplay max-w-[10ch] text-[clamp(3.5rem,8.6vw,6rem)] leading-[0.88] tracking-[-0.045em] text-[#19395f]">
-              Catering Menu
-            </h1>
-            <p className="cateringHeroSummary max-w-[35rem] text-[1.02rem] leading-8 md:text-[1.14rem]">
-              Clear portions, honest descriptions, and expandable ordering details for each item so
-              the customer understands exactly what the group is buying.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-2">
-              <button className="cateringSpawnButton" onClick={spawnCloud} type="button">
-                {spawnedCloudLabelByScenery[sceneryTone]}
-              </button>
-              <button className="cateringSpawnButton" onClick={spawnFlower} type="button">
-                {spawnedAccentLabelByScenery[sceneryTone]}
-              </button>
-              <button
-                className={cn(
-                  'cateringSpawnButton',
-                  isSceneChanging && 'cateringSpawnButtonCharging',
-                )}
-                onClick={onChangeScenery}
-                type="button"
-              >
-                Change scenery
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PersuasionGardenPanel({
-  isSceneChanging,
-  onChangeScenery,
-  product,
-  sceneryTone,
-  summary,
-}: {
-  isSceneChanging: boolean
-  onChangeScenery: () => void
-  product: Partial<Product>
-  sceneryTone: MenuSceneryTone
-  summary: string
-}) {
-  const flowerSeedCount = useResponsiveFlowerSeedCount()
-  const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
-  const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
-  const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>(() =>
-    buildSeededFlowers(sceneryTone, 'panel', seededAccentCount),
-  )
-  const persuasionCopy = buildPersuasionCopy(product, summary)
-  const sceneClouds = panelCloudsByScenery[sceneryTone] ?? panelCloudsByScenery.dawn
-  const panelPieces = panelPiecesByScenery[sceneryTone] ?? panelPiecesByScenery.dawn
-  const panelFlowers =
-    persuasionGardenFlowersByScenery[sceneryTone] ?? persuasionGardenFlowersByScenery.dawn
-  const panelCritters = panelCrittersByScenery[sceneryTone] ?? panelCrittersByScenery.dawn
-  const panelWildflowers =
-    persuasionWildflowersByScenery[sceneryTone] ?? persuasionWildflowersByScenery.dawn
-  const skySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
-  const mobileSkySrc = mobileSkyByScenery[sceneryTone]
-  const meadowSrc = meadowByScenery[sceneryTone] ?? meadowByScenery.dawn
-
-  useEffect(() => {
-    setSpawnedClouds([])
-    setSpawnedFlowers(buildSeededFlowers(sceneryTone, 'panel', seededAccentCount))
-  }, [sceneryTone, seededAccentCount])
-
-  const spawnCloud = () => {
-    setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'panel')])
-  }
-
-  const spawnFlower = () => {
-    setSpawnedFlowers((current) => [...current, createSpawnedFlower(sceneryTone, 'panel')])
-  }
-
-  return (
-    <div
-      className={cn(
-        'cateringPersuasionPanel relative overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
-        `cateringScene-${sceneryTone}`,
-      )}
-      style={
-        {
-          ['--catering-scene-charge' as string]: sceneButtonAuraByScenery[sceneryTone],
-          ['--catering-panel-fill' as string]: panelBackgroundByScenery[sceneryTone],
-        } as React.CSSProperties
-      }
-    >
-      <DecorativeSceneImage
-        className="cateringSceneSky cateringPersuasionSky"
-        fit="cover"
-        mobileSrc={mobileSkySrc}
-        sizes="100vw"
-        src={skySrc}
-      />
-      {sceneClouds.map((cloud) => (
-        <DecorativeSceneImage
-          className={cn('cateringPersuasionCloud', cloud.className)}
-          key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
-          sizes="24vw"
-          src={cloud.src}
-          style={cloud.style}
-        />
-      ))}
-      {spawnedClouds.map((cloud) => (
-        <DecorativeSceneImage
-          className="cateringPersuasionCloud"
-          key={cloud.id}
-          src={cloud.src}
-          style={{
-            left: cloud.left,
-            top: cloud.top,
-            width: cloud.width,
-          }}
-        />
-      ))}
-
-      <div className="relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]">
-        <h4 className="cateringMenuRoundHeading cateringPersuasionHeading text-[clamp(1.85rem,3.6vw,2.45rem)] leading-[0.95] tracking-[-0.04em]">
-          {buildPersuasionHeading()}
-        </h4>
-
-        {product.slug === 'cookie-tray' ? (
-          <div className="cateringPersuasionBody space-y-4">
-            {persuasionCopy.map((paragraph) => (
-              <p className="text-[1rem] leading-8 md:text-[1.06rem]" key={paragraph}>
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        ) : product.menuExpandedPitch ? (
-          <RichText
-            className="cateringPitch cateringPersuasionBody prose-p:leading-7"
-            data={product.menuExpandedPitch}
-            enableGutter={false}
-          />
-        ) : (
-          <div className="cateringPersuasionBody space-y-4">
-            {persuasionCopy.map((paragraph) => (
-              <p className="text-[1rem] leading-8 md:text-[1.06rem]" key={paragraph}>
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-2 pt-1">
-          <button className="cateringSpawnButton" onClick={spawnCloud} type="button">
-            {spawnedCloudLabelByScenery[sceneryTone]}
-          </button>
-          <button className="cateringSpawnButton" onClick={spawnFlower} type="button">
-            {spawnedAccentLabelByScenery[sceneryTone]}
-          </button>
-          <button
-            className={cn('cateringSpawnButton', isSceneChanging && 'cateringSpawnButtonCharging')}
-            onClick={onChangeScenery}
-            type="button"
-          >
-            Change scenery
-          </button>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[6.7rem] overflow-hidden">
-        <DecorativeSceneImage
-          className="cateringSceneMeadow cateringPersuasionMeadow"
-          fit="cover"
-          sizes="100vw"
-          src={meadowSrc}
-        />
-        {panelPieces.map((piece) => (
-          <DecorativeSceneImage
-            className={cn('cateringPersuasionSceneryPiece', piece.className)}
-            key={`${sceneryTone}-${piece.className}-${piece.src}`}
-            sizes="40vw"
-            src={piece.src}
-            style={piece.style}
-          />
-        ))}
-        {panelCritters.map((critter) => (
-          <DecorativeSceneImage
-            className={cn('cateringPersuasionSceneryPiece', critter.className)}
-            key={`${sceneryTone}-${critter.className}-${critter.src}`}
-            sizes="4rem"
-            src={critter.src}
-            style={critter.style}
-          />
-        ))}
-        {persuasionSheep.map((sheep) => (
-          <DecorativeSceneImage
-            className="cateringPixelSheep"
-            key={sheep.left}
-            sizes="7rem"
-            src={sheep.src}
-            style={{ left: sheep.left }}
-          />
-        ))}
-
-        {panelWildflowers.map((flower) => (
-          <FlowerSprite
-            asset={flower.asset}
-            className="cateringPersuasionFlower cateringPersuasionWildflower cateringLivingFlower"
-            key={`panel-wild-${flower.left}-${flower.asset}`}
-            style={buildFlowerMotionStyle(
-              `panel-wild-${flower.left}-${flower.asset}`,
-              flower.left,
-              flower.scale,
-            )}
-          />
-        ))}
-        {panelFlowers.map((flower) => (
-          <FlowerSprite
-            asset={flower.asset}
-            className="cateringPersuasionFlower cateringLivingFlower"
-            key={`${flower.left}-${flower.asset}`}
-            style={buildFlowerMotionStyle(
-              `panel-${flower.left}-${flower.asset}`,
-              flower.left,
-              flower.scale,
-            )}
-          />
-        ))}
-        {spawnedFlowers.map((flower) => (
-          <FlowerSprite
-            asset={flower.asset}
-            className="cateringPersuasionFlower cateringPersuasionFlowerSpawned cateringLivingFlower"
-            key={flower.id}
-            style={buildFlowerMotionStyle(`panel-spawn-${flower.id}`, flower.left, flower.scale)}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function TrayFlavorCard({
-  addSelection,
-  canIncrement,
-  count,
-  flavor,
-  removeSelection,
-  sceneryTone,
-}: {
-  addSelection: () => void
-  canIncrement: boolean
-  count: number
-  flavor: SelectableFlavor
-  removeSelection: () => void
-  sceneryTone: MenuSceneryTone
-}) {
-  const flavorCardClouds =
-    flavorCardCloudsByScenery[sceneryTone] ?? flavorCardCloudsByScenery.classic
-  const flavorCardSky = skyByScenery[sceneryTone] ?? skyByScenery.classic
-  const flavorCardMobileSky = mobileSkyByScenery[sceneryTone]
-  const flavorCardMeadow =
-    sceneryTone === 'blossom'
-      ? '/sceneries/blossom-grass-mound.svg'
-      : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
-
-  return (
-    <article className="cateringFlavorCard flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]">
-      <div className="px-4 pt-3.5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <button
-              aria-label={`Remove one ${flavor.title}`}
-              className="cateringFlavorStep"
-              disabled={count < 1}
-              onClick={removeSelection}
-              type="button"
-            >
-              <Minus className="h-3.5 w-3.5" />
-            </button>
-
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[0.98rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
-                <span className="block line-clamp-2">{flavor.title}</span>
-              </h4>
-
-              <div className="flex shrink-0 items-center justify-center text-center">
-                <p className="text-[0.68rem] font-semibold tracking-[-0.01em] text-[rgba(23,21,16,0.48)]">
-                  {count}
-                </p>
-              </div>
-            </div>
-
-            <button
-              aria-label={`Add one ${flavor.title}`}
-              className="cateringFlavorStep ml-auto"
-              disabled={!canIncrement}
-              onClick={addSelection}
-              type="button"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          {flavor.summary ? (
-            <p className="mt-1 line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
-              {flavor.summary}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      <div
-        className="relative mt-2.5 overflow-hidden bg-[#dbeeff]"
-        style={
-          {
-            '--cookie-bottom': '1.75rem',
-            '--cookie-size': 'clamp(10.8rem, 68%, 12.4rem)',
-          } as React.CSSProperties
-        }
-      >
-        <DecorativeSceneImage
-          className="absolute inset-0"
-          fit="cover"
-          mobileSrc={flavorCardMobileSky}
-          sizes="18rem"
-          src={flavorCardSky}
-        />
-        <DecorativeSceneImage
-          className="absolute inset-x-0 bottom-[-0.15rem] z-[1] h-[36%]"
-          fit="cover"
-          sizes="18rem"
-          src={flavorCardMeadow}
-        />
-        {flavorCardClouds.map((cloud) => (
-          <DecorativeSceneImage
-            className={cn('cateringFlavorCloud pointer-events-none absolute', cloud.className)}
-            key={`${sceneryTone}-${flavor.title}-${cloud.className}-${cloud.src}`}
-            sizes="8rem"
-            src={cloud.src}
-            style={cloud.style}
-          />
-        ))}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
-
-        <div className="relative h-[16.3rem]">
-          <CookieSheepRig
-            bodyFallbackSrc={flavor.bodyFallbackSrc}
-            image={flavor.image}
-            title={flavor.title}
-          />
-        </div>
-      </div>
-    </article>
-  )
-}
-
-function SimpleItemPanel({
-  image,
-  onAddToCart,
-  priceInUSD,
-  product,
-}: {
-  image: MediaType | null
-  onAddToCart: () => void
-  priceInUSD?: number | null
-  product: Partial<Product>
-}) {
-  return (
-    <div className="space-y-5">
-      <div className="space-y-4">
-        {product.menuExpandedPitch ? (
-          <RichText
-            className="cateringPitch prose-p:leading-7 prose-headings:tracking-[-0.04em] prose-h2:text-[1.35rem] prose-h2:leading-tight"
-            data={product.menuExpandedPitch}
-            enableGutter={false}
-          />
-        ) : (
-          <p className="text-[1rem] leading-8 text-[rgba(23,21,16,0.76)]">
-            {resolveSummary(product)}
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-4 rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)]">
-        {image ? (
-          <div className="overflow-hidden rounded-[1.15rem] bg-[#f1e5cf]">
-            <Media
-              className="relative aspect-[5/4] w-full"
-              imgClassName="h-full w-full object-cover"
-              resource={image}
-            />
-          </div>
-        ) : null}
-
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-              Order summary
-            </p>
-            <p className="mt-1 text-[1rem] leading-7 text-[rgba(23,21,16,0.74)]">
-              {product.menuPortionLabel ?? 'Menu item'}
-            </p>
-          </div>
-
-          {typeof priceInUSD === 'number' ? (
-            <Price
-              amount={priceInUSD}
-              className="cateringMenuRoundHeading text-[1.28rem] tracking-[-0.03em] text-[#171510]"
-            />
-          ) : null}
-        </div>
-
-        <button
-          className="inline-flex min-h-[3rem] w-full items-center justify-center rounded-full bg-[#171510] px-5 text-[0.98rem] tracking-[-0.02em] text-white transition duration-200 hover:bg-[#2a2822]"
-          onClick={onAddToCart}
-          type="button"
-        >
-          Add to cart
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function BatchBuilderPanel({
-  isSceneChanging,
-  onAddFlavor,
-  onAddToCart,
-  onChangeScenery,
-  onRemoveFlavor,
-  priceInUSD,
-  product,
-  sceneryTone,
-  requiredSelectionCount,
-  selectableFlavors,
-  selectedCounts,
-  totalSelected,
-  traySelectionsForSummary,
-}: {
-  isSceneChanging: boolean
-  onAddFlavor: (flavorID: number) => void
-  onAddToCart: () => void
-  onChangeScenery: () => void
-  onRemoveFlavor: (flavorID: number) => void
-  priceInUSD?: number | null
-  product: Partial<Product>
-  sceneryTone: MenuSceneryTone
-  requiredSelectionCount: number
-  selectableFlavors: SelectableFlavor[]
-  selectedCounts: Record<number, number>
-  totalSelected: number
-  traySelectionsForSummary: {
-    product: Product
-    quantity: number
-  }[]
-}) {
-  const canAddTray =
-    requiredSelectionCount > 0 &&
-    totalSelected === requiredSelectionCount &&
-    traySelectionsForSummary.length > 0
-  const progressPercentage =
-    requiredSelectionCount > 0 ? Math.min(1, totalSelected / requiredSelectionCount) * 100 : 0
-  const progressFlowers = Array.from({ length: totalSelected }, (_, index) => ({
-    id: `slot-${index}`,
-    tone: progressBloomTones[index % progressBloomTones.length] ?? 'sage',
-  }))
-
-  return (
-    <div className="space-y-5">
-      <PersuasionGardenPanel
-        isSceneChanging={isSceneChanging}
-        onChangeScenery={onChangeScenery}
-        product={product}
-        sceneryTone={sceneryTone}
-        summary={resolveSummary(product)}
-      />
-
-      <div className="space-y-4">
-        <div className="relative overflow-hidden rounded-[1rem] border border-[rgba(91,70,37,0.1)] bg-[#fff8f2] px-3 py-2 shadow-[0_8px_16px_rgba(23,21,16,0.04)]">
-          <div className="relative z-[1] space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <div className="space-y-0">
-                <p className="cateringMenuEyebrow">Tray progress</p>
-                <h4 className="cateringMenuRoundHeading text-[0.88rem] leading-tight tracking-[-0.02em] text-[#171510]">
-                  {totalSelected}/{requiredSelectionCount} selected
-                </h4>
-              </div>
-
-              <div className="text-right">
-                <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-                  Tray price
-                </p>
-                {typeof priceInUSD === 'number' ? (
-                  <Price
-                    amount={priceInUSD}
-                    className="cateringMenuRoundHeading mt-0.5 text-[0.88rem] tracking-[-0.02em] text-[#171510]"
-                  />
-                ) : null}
-              </div>
-            </div>
-
-            <div className="pt-1.5">
-              <div className="relative h-2.5 rounded-full bg-[rgba(126,161,47,0.18)]">
-                <div
-                  className="h-full rounded-full bg-[#7ea12f] transition-[width] duration-300 ease-out"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-
-                {progressFlowers.map((bloom, index) => (
-                  <span
-                    className="cateringProgressBloom"
-                    key={bloom.id}
-                    style={{
-                      left: `${((index + 1) / requiredSelectionCount) * 100}%`,
-                    }}
-                  >
-                    <Image
-                      alt=""
-                      aria-hidden="true"
-                      className="cateringProgressBloomImage"
-                      height={80}
-                      src="/flowers/menu-nav-flower.svg"
-                      unoptimized
-                      width={80}
-                    />
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <TraySelectionSummary
-          compact
-          label="Current tray mix"
-          selections={traySelectionsForSummary}
-          tone="muted"
-        />
-
-        <div className="space-y-3">
-          <div>
-            <p className="cateringMenuEyebrow">Choose your cookies</p>
-            <p className="mt-1 text-[0.98rem] leading-7 text-[rgba(23,21,16,0.68)]">
-              Build the tray one cookie at a time, then add it only when the full batch is ready.
-            </p>
-          </div>
-
-          <div aria-label="Cookie flavor tray builder" className="cateringFlavorRail" role="region">
-            <div className="cateringFlavorRailInner">
-              {selectableFlavors.map((flavor) => {
-                const flavorCount = selectedCounts[flavor.id] ?? 0
-
-                return (
-                  <div className="cateringFlavorRailItem" key={flavor.id}>
-                    <TrayFlavorCard
-                      addSelection={() => onAddFlavor(flavor.id)}
-                      canIncrement={totalSelected < requiredSelectionCount}
-                      count={flavorCount}
-                      flavor={flavor}
-                      removeSelection={() => onRemoveFlavor(flavor.id)}
-                      sceneryTone={sceneryTone}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-
-        <button
-          className={cn(
-            'inline-flex min-h-[3rem] w-full items-center justify-center rounded-full px-5 text-[0.98rem] tracking-[-0.02em] transition duration-200',
-            canAddTray
-              ? 'cursor-pointer bg-[#171510] text-white hover:bg-[#2a2822]'
-              : 'cursor-not-allowed bg-[#171510]/12 text-[#171510]/42',
-          )}
-          disabled={!canAddTray}
-          onClick={onAddToCart}
-          type="button"
-        >
-          Add tray to cart
-        </button>
-      </div>
-    </div>
-  )
-}
-
 function CateringMenuRow({
+  isSceneryPickerOpen,
   isSceneChanging,
   index,
-  onChangeScenery,
+  onSelectScenery,
+  onToggleSceneryPicker,
   product,
   sceneryTone,
 }: {
+  isSceneryPickerOpen: boolean
   isSceneChanging: boolean
   index: number
-  onChangeScenery: () => void
+  onSelectScenery: (tone: MenuSceneryTone) => void
+  onToggleSceneryPicker: () => void
   product: Partial<Product>
   sceneryTone: MenuSceneryTone
 }) {
   const { addItem, isLoading } = useCart()
+  const flavorInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [selectedCounts, setSelectedCounts] = useState<Record<number, number>>({})
+  const [isSubmittingToCart, setIsSubmittingToCart] = useState(false)
+  const [recentFlavorInteraction, setRecentFlavorInteraction] = useState<{
+    action: 'add' | 'remove'
+    flavorID: number
+  } | null>(null)
+  const [shouldPulseTraySummary, setShouldPulseTraySummary] = useState(false)
   const image = normalizeImage(product)
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
@@ -2176,8 +182,39 @@ function CateringMenuRow({
       })),
     [traySelectionsForSummary],
   )
+  const flavorCardCloudsForScenery =
+    flavorCardCloudsByScenery[sceneryTone] ?? flavorCardCloudsByScenery.classic
+  const flavorCardSkyForScenery = skyByScenery[sceneryTone] ?? skyByScenery.classic
+  const flavorCardMobileSkyForScenery = mobileSkyByScenery[sceneryTone]
+  const flavorCardMeadowForScenery =
+    sceneryTone === 'blossom'
+      ? '/sceneries/blossom-grass-mound.svg'
+      : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
+
+  useEffect(() => {
+    return () => {
+      if (flavorInteractionTimeoutRef.current) {
+        clearTimeout(flavorInteractionTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const registerFlavorInteraction = (flavorID: number, action: 'add' | 'remove') => {
+    setRecentFlavorInteraction({ action, flavorID })
+    setShouldPulseTraySummary(true)
+
+    if (flavorInteractionTimeoutRef.current) {
+      clearTimeout(flavorInteractionTimeoutRef.current)
+    }
+
+    flavorInteractionTimeoutRef.current = setTimeout(() => {
+      setRecentFlavorInteraction(null)
+      setShouldPulseTraySummary(false)
+    }, 260)
+  }
 
   const handleAddFlavor = (flavorID: number) => {
+    registerFlavorInteraction(flavorID, 'add')
     setSelectedCounts((current) => {
       const currentTotal = Object.values(current).reduce((sum, count) => sum + count, 0)
 
@@ -2193,6 +230,10 @@ function CateringMenuRow({
   }
 
   const handleRemoveFlavor = (flavorID: number) => {
+    if ((selectedCounts[flavorID] ?? 0) > 0) {
+      registerFlavorInteraction(flavorID, 'remove')
+    }
+
     setSelectedCounts((current) => {
       const currentCount = current[flavorID] ?? 0
 
@@ -2212,8 +253,10 @@ function CateringMenuRow({
     })
   }
 
-  const handleAddToCart = () => {
-    if (!product.id || isLoading) {
+  const isCartPending = isLoading || isSubmittingToCart
+
+  const handleAddToCart = async () => {
+    if (!product.id || isCartPending) {
       return
     }
 
@@ -2227,20 +270,34 @@ function CateringMenuRow({
         return
       }
 
-      addItem({
-        batchSelections: traySelectionsForCart,
-        product: product.id,
-      } as Parameters<typeof addItem>[0]).then(() => {
+      setIsSubmittingToCart(true)
+
+      try {
+        await addItem({
+          batchSelections: traySelectionsForCart,
+          product: product.id,
+        } as Parameters<typeof addItem>[0])
         toast.success(`${product.title ?? 'Tray'} added to cart.`)
         setSelectedCounts({})
-      })
+      } catch {
+        toast.error('Unable to add tray to cart right now.')
+      } finally {
+        setIsSubmittingToCart(false)
+      }
 
       return
     }
 
-    addItem({ product: product.id }).then(() => {
+    setIsSubmittingToCart(true)
+
+    try {
+      await addItem({ product: product.id })
       toast.success(`${product.title ?? 'Item'} added to cart.`)
-    })
+    } catch {
+      toast.error('Unable to add item to cart right now.')
+    } finally {
+      setIsSubmittingToCart(false)
+    }
   }
 
   return (
@@ -2281,13 +338,30 @@ function CateringMenuRow({
       <AccordionContent className="pt-1 pb-9">
         {isBatchBuilder ? (
           <BatchBuilderPanel
-            isSceneChanging={isSceneChanging}
+            flavorCardCloudsForScenery={flavorCardCloudsForScenery}
+            flavorCardMeadowForScenery={flavorCardMeadowForScenery}
+            flavorCardMobileSkyForScenery={flavorCardMobileSkyForScenery}
+            flavorCardSkyForScenery={flavorCardSkyForScenery}
+            isTrayPending={isCartPending}
             onAddFlavor={handleAddFlavor}
             onAddToCart={handleAddToCart}
-            onChangeScenery={onChangeScenery}
             onRemoveFlavor={handleRemoveFlavor}
+            persuasionPanel={
+              <PersuasionGardenPanel
+                isSceneryPickerOpen={isSceneryPickerOpen}
+                isSceneChanging={isSceneChanging}
+                onSelectScenery={onSelectScenery}
+                onToggleSceneryPicker={onToggleSceneryPicker}
+                product={product}
+                key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
+                sceneryTone={sceneryTone}
+                summary={resolveSummary(product)}
+              />
+            }
+            recentFlavorInteraction={recentFlavorInteraction}
+            renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
+            shouldPulseTraySummary={shouldPulseTraySummary}
             priceInUSD={product.priceInUSD}
-            product={product}
             sceneryTone={sceneryTone}
             requiredSelectionCount={requiredSelectionCount}
             selectableFlavors={selectableFlavors}
@@ -2298,9 +372,11 @@ function CateringMenuRow({
         ) : (
           <SimpleItemPanel
             image={image}
+            isCartPending={isCartPending}
             onAddToCart={handleAddToCart}
             priceInUSD={product.priceInUSD}
             product={product}
+            resolveSummary={resolveSummary}
           />
         )}
       </AccordionContent>
@@ -2312,10 +388,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
   const isSceneChanging = false
-
-  if (orderedProducts.length === 0) {
-    return null
-  }
+  const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
 
   useEffect(() => {
     for (const sceneryTone of menuSceneryTones) {
@@ -2323,19 +396,38 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
     }
   }, [])
 
-  const handleChangeHeroScenery = () => {
-    const nextSceneryTone = getNextSceneryTone(heroSceneryTone)
+  if (orderedProducts.length === 0) {
+    return null
+  }
+
+  const toggleSceneryPicker = (anchor: SceneryPickerAnchor) => {
+    if (isSceneChanging) {
+      return
+    }
+
+    setSceneryPickerAnchor((current) => (current === anchor ? null : anchor))
+  }
+
+  const handleSelectHeroScenery = (nextSceneryTone: MenuSceneryTone) => {
+    if (isSceneChanging || nextSceneryTone === heroSceneryTone) {
+      return
+    }
+
     preloadSceneryAssets(nextSceneryTone)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
+    setSceneryPickerAnchor(null)
   }
 
   return (
     <div className="cateringMenuExperience" style={{ fontFamily: 'var(--font-rounded-body)' }}>
       <MenuHero
+        isSceneryPickerOpen={sceneryPickerAnchor === 'hero'}
         isSceneChanging={isSceneChanging}
-        onChangeScenery={handleChangeHeroScenery}
+        key={heroSceneryTone}
+        onSelectScenery={handleSelectHeroScenery}
+        onToggleSceneryPicker={() => toggleSceneryPicker('hero')}
         sceneryTone={heroSceneryTone}
       />
 
@@ -2347,15 +439,16 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           <div className="cateringMenuPanel">
             <Accordion
               collapsible
-              defaultValue={orderedProducts[0]?.slug ?? undefined}
               type="single"
             >
               {orderedProducts.map((product, index) => (
                 <CateringMenuRow
+                  isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
                   isSceneChanging={isSceneChanging}
                   index={index}
                   key={product.id ?? product.slug ?? index}
-                  onChangeScenery={handleChangeHeroScenery}
+                  onSelectScenery={handleSelectHeroScenery}
+                  onToggleSceneryPicker={() => toggleSceneryPicker('panel')}
                   product={product}
                   sceneryTone={heroSceneryTone}
                 />
@@ -2406,6 +499,12 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringPitch :is(p, li) {
           color: rgba(23, 21, 16, 0.78);
+        }
+
+        .cateringPitch :is(strong, b),
+        .cateringPersuasionBody :is(strong, b) {
+          color: inherit;
+          font-weight: 800;
         }
 
         .cateringPersuasionBody :is(h1, h2, h3, h4) {
@@ -2644,6 +743,119 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           transform: translateY(-1px);
         }
 
+        .cateringSpawnButtonCharging {
+          border-color: rgba(25, 57, 95, 0.24);
+          box-shadow: 0 10px 22px color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 38%, transparent);
+        }
+
+        .cateringActionButtonWrap {
+          position: relative;
+          display: inline-flex;
+          overflow: visible;
+        }
+
+        .cateringSceneryChooser {
+          width: min(calc(100vw - 0.9rem), 64rem);
+          max-width: none;
+          margin-top: 2rem;
+        }
+
+        .cateringSceneryChooserBubble {
+          position: relative;
+          overflow: visible;
+          border-radius: 1.45rem;
+          background: #ffffff;
+          box-shadow: 0 18px 38px rgba(23, 21, 16, 0.12);
+          padding: 0.72rem 0.48rem 0.54rem;
+        }
+
+        .cateringSceneryChooserTail {
+          position: absolute;
+          left: 8rem;
+          top: -1.28rem;
+          width: 0;
+          height: 0;
+          border-left: 1.35rem solid transparent;
+          border-right: 1.35rem solid transparent;
+          border-bottom: 1.34rem solid #ffffff;
+          filter: none;
+        }
+
+        .cateringSceneryChooserRail {
+          display: flex;
+          gap: 0.7rem;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding: 0.08rem 0.08rem 0.02rem;
+          scrollbar-gutter: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          border-radius: 1.08rem;
+        }
+
+        .cateringSceneryChooserRail::-webkit-scrollbar {
+          display: none;
+          height: 0;
+        }
+
+        .cateringSceneryChoice {
+          display: flex;
+          flex: 0 0 13.2rem;
+          min-height: 4.3rem;
+          flex-direction: column;
+          justify-content: center;
+          gap: 0.12rem;
+          border-radius: 1.1rem;
+          border: 2px solid rgba(18, 18, 18, 0.12);
+          background: #ffffff;
+          padding: 0.85rem 1rem;
+          text-align: left;
+          margin: 0.06rem 0;
+          transition:
+            transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 180ms ease,
+            box-shadow 180ms ease,
+            background-color 180ms ease;
+        }
+
+        .cateringSceneryChoice:hover,
+        .cateringSceneryChoice:focus-visible {
+          transform: translateY(-1px);
+          border-color: rgba(18, 18, 18, 0.32);
+          box-shadow: 0 10px 24px rgba(23, 21, 16, 0.08);
+        }
+
+        .cateringSceneryChoice:disabled {
+          cursor: default;
+        }
+
+        .cateringSceneryChoiceActive {
+          background:
+            linear-gradient(
+              135deg,
+              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 22%, white 78%) 0%,
+              #ffffff 100%
+            );
+          border-color: rgba(18, 18, 18, 0.35);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        }
+
+        .cateringSceneryChoiceLabel {
+          color: #173a63;
+          font-family: var(--font-rounded-display);
+          font-size: 0.98rem;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+
+        .cateringSceneryChoiceMeta {
+          color: rgba(23, 58, 99, 0.62);
+          font-size: 0.74rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
         .cateringPersuasionMeadow {
           bottom: -0.4rem;
           height: 100%;
@@ -2679,6 +891,33 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           bottom: 0.26rem;
         }
 
+        .cateringPhotoBoard {
+          scrollbar-gutter: stable;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(146, 146, 146, 0.42) rgba(255, 255, 255, 0.92);
+        }
+
+        .cateringPhotoBoard::-webkit-scrollbar {
+          width: 0.78rem;
+        }
+
+        .cateringPhotoBoard::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.92);
+          border-radius: 999px;
+        }
+
+        .cateringPhotoBoard::-webkit-scrollbar-thumb {
+          background:
+            linear-gradient(180deg, rgba(188, 188, 188, 0.9) 0%, rgba(144, 144, 144, 0.96) 100%);
+          border: 3px solid rgba(255, 255, 255, 0.9);
+          border-radius: 999px;
+        }
+
+        .cateringPhotoBoard::-webkit-scrollbar-thumb:hover {
+          background:
+            linear-gradient(180deg, rgba(170, 170, 170, 0.94) 0%, rgba(126, 126, 126, 0.98) 100%);
+        }
+
         .cateringPixelSheep {
           bottom: 0.78rem;
           display: block;
@@ -2701,6 +940,38 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         .cateringScene-moonlit .cateringHeroEyebrow {
           color: #eef6ff;
           text-shadow: 0 12px 22px rgba(5, 10, 28, 0.24);
+        }
+
+        .cateringScene-under-tree .cateringHeroLineFlower,
+        .cateringScene-under-tree .cateringHeroLineWildflower,
+        .cateringScene-under-tree .cateringPersuasionFlower,
+        .cateringScene-under-tree .cateringPersuasionWildflower,
+        .cateringScene-under-tree .cateringPersuasionFlowerSpawned {
+          --flower-stem-trim: 0%;
+        }
+
+        .cateringScene-under-tree .cateringHeroLineFlower,
+        .cateringScene-under-tree .cateringHeroLineWildflower,
+        .cateringScene-under-tree .cateringHeroLineFlowerSpawned {
+          bottom: 0.08rem;
+          overflow: visible;
+        }
+
+        .cateringScene-under-tree .cateringHeroLineFlower {
+          width: 2rem;
+        }
+
+        .cateringScene-under-tree .cateringHeroLineWildflower {
+          width: 1.24rem;
+        }
+
+        .cateringScene-under-tree .cateringPersuasionFlower,
+        .cateringScene-under-tree .cateringPersuasionFlowerSpawned {
+          bottom: 0.06rem;
+        }
+
+        .cateringScene-under-tree .cateringPersuasionWildflower {
+          bottom: 0.96rem;
         }
 
         .cateringScene-moonlit .cateringPersuasionHeading,
@@ -2829,10 +1100,26 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           border: 1px solid rgba(91, 70, 37, 0.14);
           box-shadow: 0 10px 24px rgba(23, 21, 16, 0.06);
           touch-action: pan-x pinch-zoom;
+          transition:
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 220ms ease,
+            border-color 220ms ease;
         }
 
         .cateringFlavorCard button {
           touch-action: manipulation;
+        }
+
+        .cateringFlavorCardActiveAdd {
+          animation: cateringFlavorCardPulseAdd 260ms cubic-bezier(0.22, 1, 0.36, 1);
+          border-color: rgba(126, 161, 47, 0.42);
+          box-shadow: 0 16px 32px rgba(126, 161, 47, 0.16);
+        }
+
+        .cateringFlavorCardActiveRemove {
+          animation: cateringFlavorCardPulseRemove 260ms cubic-bezier(0.22, 1, 0.36, 1);
+          border-color: rgba(171, 90, 61, 0.32);
+          box-shadow: 0 16px 32px rgba(171, 90, 61, 0.12);
         }
 
         .cateringRowTrigger[data-state='open'] {
@@ -2896,6 +1183,24 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           transform: none;
         }
 
+        .cateringFlavorStepActive {
+          background: #1c2e10;
+          border-color: #1c2e10;
+          color: white;
+          transform: translateY(-1px) scale(1.04);
+        }
+
+        .cateringFlavorCount {
+          transition:
+            color 180ms ease,
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .cateringFlavorCountActive {
+          color: #1c2e10;
+          transform: scale(1.16);
+        }
+
         .cateringFlavorRail {
           overflow-x: auto;
           overflow-y: visible;
@@ -2953,6 +1258,12 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           object-fit: contain;
           object-position: center bottom;
           width: 100%;
+        }
+
+        .cateringTraySummaryPulse {
+          animation: cateringTraySummaryPulse 260ms cubic-bezier(0.22, 1, 0.36, 1);
+          border-color: rgba(126, 161, 47, 0.24);
+          box-shadow: 0 14px 28px rgba(126, 161, 47, 0.08);
         }
 
         .cookieSheepBodyImage {
@@ -3020,6 +1331,48 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           50% {
             transform: translateX(-50%) translateY(-0.16rem) rotate(2deg) scale(1.02);
+          }
+        }
+
+        @keyframes cateringFlavorCardPulseAdd {
+          0% {
+            transform: scale(1);
+          }
+
+          45% {
+            transform: translateY(-2px) scale(1.015);
+          }
+
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes cateringFlavorCardPulseRemove {
+          0% {
+            transform: scale(1);
+          }
+
+          45% {
+            transform: translateY(1px) scale(0.992);
+          }
+
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes cateringTraySummaryPulse {
+          0% {
+            transform: scale(1);
+          }
+
+          45% {
+            transform: translateY(-1px) scale(1.008);
+          }
+
+          100% {
+            transform: scale(1);
           }
         }
 
@@ -3091,6 +1444,38 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         @media (max-width: 767px) {
+          .cateringSceneryChooser {
+            width: min(calc(100vw - 1rem), 36rem);
+          }
+
+          .cateringSceneryChooserBubble {
+            padding: 0.56rem 0.38rem 0.44rem;
+          }
+
+          .cateringSceneryChooserRail {
+            gap: 0.6rem;
+            padding: 0.06rem 0.04rem 0.02rem;
+          }
+
+          .cateringSceneryChoice {
+            margin: 0;
+          }
+
+          .cateringSceneryChooserTail {
+            top: -0.98rem;
+            border-left-width: 1.1rem;
+            border-right-width: 1.1rem;
+            border-bottom-width: 1.08rem;
+          }
+
+          .cateringSceneryChooserRail::-webkit-scrollbar {
+            height: 0;
+          }
+
+          .cateringSceneryChooserRail::-webkit-scrollbar-track {
+            margin-inline: 0;
+          }
+
           .cateringMenuExperience {
             --catering-header-underlap: 7.2rem;
           }

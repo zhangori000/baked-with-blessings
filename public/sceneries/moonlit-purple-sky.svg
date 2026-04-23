@@ -50,12 +50,12 @@
       <rect x="557" y="30" width="5" height="0.8" />
     </g>
   </g>
-  <circle cx="130" cy="100" r="70" fill="url(#moonGlow)" />
-  <circle cx="130" cy="100" r="32" fill="url(#moon)" />
-  <circle cx="120" cy="95" r="3" fill="#c8d8b8" opacity="0.5" />
-  <circle cx="138" cy="105" r="2" fill="#c8d8b8" opacity="0.5" />
-  <circle cx="128" cy="112" r="2.5" fill="#c8d8b8" opacity="0.5" />
-  <circle cx="142" cy="92" r="1.5" fill="#c8d8b8" opacity="0.5" />
-  <ellipse cx="130" cy="140" rx="50" ry="6" fill="#a8e8c4" opacity="0.3" />
-  <ellipse cx="130" cy="155" rx="35" ry="4" fill="#a8e8c4" opacity="0.2" />
+  <circle cx="548" cy="88" r="70" fill="url(#moonGlow)" />
+  <circle cx="548" cy="88" r="32" fill="url(#moon)" />
+  <circle cx="538" cy="83" r="3" fill="#c8d8b8" opacity="0.5" />
+  <circle cx="556" cy="93" r="2" fill="#c8d8b8" opacity="0.5" />
+  <circle cx="546" cy="100" r="2.5" fill="#c8d8b8" opacity="0.5" />
+  <circle cx="560" cy="80" r="1.5" fill="#c8d8b8" opacity="0.5" />
+  <ellipse cx="548" cy="128" rx="50" ry="6" fill="#a8e8c4" opacity="0.3" />
+  <ellipse cx="548" cy="143" rx="35" ry="4" fill="#a8e8c4" opacity="0.2" />
 </svg>

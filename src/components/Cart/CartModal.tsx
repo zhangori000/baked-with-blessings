@@ -25,13 +25,6 @@ import { EditItemQuantityButton } from './EditItemQuantityButton'
 import { OpenCartButton } from './OpenCart'
 import { Product, Variant } from '@/payload-types'
 
-const FREE_SHIPPING_THRESHOLD = 100
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
-
 export function CartModal() {
   const { cart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
@@ -50,9 +43,6 @@ export function CartModal() {
     return cart.items.reduce((quantity, item) => (item.quantity || 0) + quantity, 0)
   }, [cart])
 
-  const subtotal = typeof cart?.subtotal === 'number' ? cart.subtotal : 0
-  const amountUntilFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
-  const freeShippingProgress = Math.max(0, Math.min(1, subtotal / FREE_SHIPPING_THRESHOLD))
   const hasItems = Boolean(cart?.items?.length)
 
   return (
@@ -62,30 +52,32 @@ export function CartModal() {
       </SheetTrigger>
 
       <SheetContent
-        className="!top-2 !right-2 !bottom-2 !left-2 !h-[calc(100dvh-16px)] !w-[calc(100vw-16px)] sm:!top-4 sm:!bottom-4 sm:!right-4 sm:!left-auto sm:!h-[calc(100dvh-32px)] sm:!w-[min(430px,calc(100vw-24px))] border border-black/10 border-l-0 rounded-[28px] bg-[#f7f3ea]/92 p-0 text-black shadow-none backdrop-blur-xl"
+        className="!top-1 !right-1 !bottom-1 !left-1 !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] sm:!top-3 sm:!bottom-3 sm:!right-3 sm:!left-auto sm:!h-[calc(100dvh-24px)] sm:!w-[min(430px,calc(100vw-20px))] border border-black/10 border-l-0 rounded-[28px] bg-[#f7f3ea]/92 p-0 text-black shadow-none backdrop-blur-xl"
         hideClose
+        onEscapeKeyDown={closeCart}
+        onInteractOutside={closeCart}
+        onPointerDownOutside={closeCart}
         overlayClassName="bg-[rgba(244,240,232,0.34)] backdrop-blur-md"
       >
         <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px]">
           <CartSceneShell
-            className="border-b border-black/8 px-5 py-5"
-            contentClassName="pr-24"
+            className="border-b border-black/8 px-4 py-3"
+            contentClassName="pr-16"
           >
             <SheetHeader className="space-y-0 border-none p-0 text-left">
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/76 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.24em] text-black/65 shadow-[0_6px_18px_rgba(17,17,17,0.06)]">
-                    <ShoppingBag className="h-4 w-4" />
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/76 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-black/65 shadow-[0_6px_18px_rgba(17,17,17,0.06)]">
+                    <ShoppingBag className="h-3.5 w-3.5" />
                     <span>{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}</span>
                   </div>
 
-                  <div className="space-y-2">
-                    <SheetTitle className="text-[28px] font-medium tracking-[-0.05em]">
+                  <div className="space-y-1">
+                    <SheetTitle className="text-[22px] font-medium tracking-[-0.05em]">
                       Cart
                     </SheetTitle>
-                    <SheetDescription className="max-w-[28ch] text-sm leading-6 text-black/62">
-                      Review the order before checkout. The cart now follows the same scene tone as
-                      the homepage and menu.
+                    <SheetDescription className="max-w-[24ch] text-[13px] leading-5 text-black/58">
+                      Review the order before checkout.
                     </SheetDescription>
                   </div>
                 </div>
@@ -93,7 +85,7 @@ export function CartModal() {
                 <SheetClose asChild>
                   <button
                     aria-label="Close cart"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white/88 text-black/70 shadow-[0_6px_18px_rgba(17,17,17,0.08)] transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/88 text-black/70 shadow-[0_6px_18px_rgba(17,17,17,0.08)] transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
                     type="button"
                   >
                     <X className="h-4 w-4" />
@@ -131,33 +123,7 @@ export function CartModal() {
             </div>
           ) : (
             <>
-              <div className="border-b border-black/8 px-5 py-4">
-                <div className="h-1 rounded-full bg-black/8">
-                  <div
-                    className="h-full rounded-full bg-black transition-[width] duration-500 ease-out"
-                    style={{ width: `${freeShippingProgress * 100}%` }}
-                  />
-                </div>
-
-                <div className="mt-3 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.22em] text-black/55">
-                  <span>
-                    {amountUntilFreeShipping > 0
-                      ? 'Delivery threshold progress'
-                      : 'Delivery threshold reached'}
-                  </span>
-                  {typeof cart?.subtotal === 'number' ? (
-                    <Price amount={cart.subtotal} className="text-sm text-black" />
-                  ) : null}
-                </div>
-
-                <p className="mt-3 text-sm leading-6 text-black/65">
-                  {amountUntilFreeShipping > 0
-                    ? `You are ${currencyFormatter.format(amountUntilFreeShipping)} away from free shipping on orders over ${currencyFormatter.format(FREE_SHIPPING_THRESHOLD)}.`
-                    : 'This order has crossed the free-shipping threshold.'}
-                </p>
-              </div>
-
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-28">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 pb-3">
                 <ul className="space-y-3">
                   {cart?.items?.map((item, index) => {
                     const product = item.product
@@ -252,7 +218,7 @@ export function CartModal() {
                                   </p>
                                 ) : null}
                                 <TraySelectionSummary
-                                  className="mt-3"
+                                  className="mt-2 max-h-28 overflow-y-auto pr-1"
                                   label="Exact tray contents"
                                   selections={item.batchSelections}
                                   tone="muted"
@@ -262,7 +228,7 @@ export function CartModal() {
                               <DeleteItemButton item={item} />
                             </div>
 
-                            <div className="mt-4 flex items-end justify-between gap-3">
+                            <div className="mt-3 flex items-end justify-between gap-3">
                               <div className="inline-flex items-center rounded-full border border-black/10 bg-black/[0.03] px-1 py-1">
                                 <EditItemQuantityButton item={item} type="minus" />
                                 <span className="w-8 text-center text-sm font-medium">
@@ -283,23 +249,23 @@ export function CartModal() {
                 </ul>
               </div>
 
-              <div className="sticky bottom-0 z-10 border-t border-black/8 bg-white/88 px-5 py-5 backdrop-blur-sm">
-                <div className="mb-4 flex items-center justify-between gap-3 border-b border-black/8 pb-4">
+              <div className="shrink-0 border-t border-black/8 bg-white/88 px-4 py-2.5 backdrop-blur-sm">
+                <div className="mb-2 flex items-center justify-between gap-3 border-b border-black/8 pb-2">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.24em] text-black/45">Subtotal</p>
-                    <p className="mt-1 text-sm leading-6 text-black/60">
+                    <p className="mt-0.5 text-[13px] leading-5 text-black/60">
                       Shipping and taxes are calculated during checkout.
                     </p>
                   </div>
 
                   {typeof cart?.subtotal === 'number' ? (
-                    <Price amount={cart.subtotal} className="text-2xl font-medium text-black" />
+                    <Price amount={cart.subtotal} className="text-xl font-medium text-black" />
                   ) : null}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   <Link
-                    className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-4 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
                     href="/checkout"
                   >
                     Proceed to checkout
@@ -307,7 +273,7 @@ export function CartModal() {
 
                   <SheetClose asChild>
                     <button
-                      className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-4 text-[11px] font-medium uppercase tracking-[0.24em] text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
+                      className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.24em] text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
                       type="button"
                     >
                       Keep browsing

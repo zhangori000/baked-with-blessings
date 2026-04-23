@@ -12,7 +12,7 @@ import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
 import { ArrowRight, ChevronDown, ShoppingBag, UserRound } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants'
@@ -29,13 +29,6 @@ type Props = {
   }
   header: Header
 }
-
-const FREE_SHIPPING_THRESHOLD = 100
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 const headerClassNames = {
   brand: 'siteHeaderBrand',
@@ -66,6 +59,7 @@ const headerClassNames = {
 
 export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
+  const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
   const { isScrolled } = useHeaderVisibility()
@@ -91,8 +85,6 @@ export function HeaderClient({ brand, header }: Props) {
     [cartItems],
   )
   const cartSubtotal = typeof cart?.subtotal === 'number' ? cart.subtotal : 0
-  const amountUntilFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - cartSubtotal)
-  const freeShippingProgress = Math.max(0, Math.min(1, cartSubtotal / FREE_SHIPPING_THRESHOLD))
 
   const accountLinks = useMemo(
     () => (user ? ['/account', '/orders', '/account/addresses'] : ['/login', '/create-account']),
@@ -114,6 +106,11 @@ export function HeaderClient({ brand, header }: Props) {
   useEffect(() => {
     setActivePanel(null)
   }, [pathname])
+
+  useEffect(() => {
+    router.prefetch(menuHref)
+    router.prefetch(rotatingCookieFlavorsHref)
+  }, [router])
 
   useEffect(() => {
     const closePanel = () => setActivePanel(null)
@@ -183,7 +180,13 @@ export function HeaderClient({ brand, header }: Props) {
               )}
             </Link>
 
-            <MobileMenu cartQuantity={cartQuantity} items={navigationItems} />
+            <MobileMenu
+              cartQuantity={cartQuantity}
+              items={navigationItems}
+              onOpenCart={() => {
+                setActivePanel((current) => (current === 'bag' ? null : 'bag'))
+              }}
+            />
 
             <nav className={headerClassNames.banner} aria-label="Main sections">
               <div className={headerClassNames.bannerFrame}>
@@ -310,24 +313,6 @@ export function HeaderClient({ brand, header }: Props) {
 
                   {cartItems.length ? (
                     <>
-                      <div className="siteHeaderCartQuickProgress">
-                        <div className="siteHeaderCartQuickProgressTrack">
-                          <div
-                            className="siteHeaderCartQuickProgressFill"
-                            style={{ width: `${freeShippingProgress * 100}%` }}
-                          />
-                        </div>
-
-                        <div className="siteHeaderCartQuickProgressMeta">
-                          <span>
-                            {amountUntilFreeShipping > 0
-                              ? `${currencyFormatter.format(amountUntilFreeShipping)} away from free shipping`
-                              : 'Free shipping unlocked'}
-                          </span>
-                          <Price amount={cartSubtotal} as="span" className="text-sm text-black" />
-                        </div>
-                      </div>
-
                       <div className="siteHeaderCartQuickItems">
                         <ul className="siteHeaderCartQuickItemsList">
                           {cartItems.map((item, index) => {
@@ -432,6 +417,7 @@ export function HeaderClient({ brand, header }: Props) {
                                         <TraySelectionSummary
                                           className="mt-3"
                                           compact
+                                          itemsClassName="siteHeaderCartQuickTraySelections"
                                           label="Exact tray contents"
                                           selections={item.batchSelections}
                                           tone="muted"
@@ -484,13 +470,6 @@ export function HeaderClient({ brand, header }: Props) {
                             onClick={() => setActivePanel(null)}
                           >
                             Go to checkout
-                          </Link>
-                          <Link
-                            className="siteHeaderCartQuickSecondaryLink"
-                            href={menuHref}
-                            onClick={() => setActivePanel(null)}
-                          >
-                            Keep browsing
                           </Link>
                         </div>
                       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 
 import {
   menuSceneTones,
@@ -11,9 +11,26 @@ import {
 const isSceneTone = (value: string): value is SceneTone =>
   menuSceneTones.includes(value as SceneTone)
 
+const persistentMenuSceneChangeEvent = 'baked-with-blessings-menu-scene-change'
+
 export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
   const [sceneTone, setSceneTone] = useState<SceneTone>(fallback)
   const [hasHydratedStorage, setHasHydratedStorage] = useState(false)
+
+  const syncSceneTone = useCallback((nextTone: SceneTone) => {
+    setSceneTone(nextTone)
+
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    window.localStorage.setItem(persistentMenuSceneStorageKey, nextTone)
+    window.dispatchEvent(
+      new CustomEvent(persistentMenuSceneChangeEvent, {
+        detail: { sceneTone: nextTone },
+      }),
+    )
+  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -52,12 +69,38 @@ export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
       setSceneTone(event.newValue)
     }
 
+    const handleSceneToneChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ sceneTone?: string }>
+      const nextTone = customEvent.detail?.sceneTone
+
+      if (!nextTone || !isSceneTone(nextTone)) {
+        return
+      }
+
+      setSceneTone(nextTone)
+    }
+
     window.addEventListener('storage', handleStorage)
+    window.addEventListener(persistentMenuSceneChangeEvent, handleSceneToneChange as EventListener)
 
     return () => {
       window.removeEventListener('storage', handleStorage)
+      window.removeEventListener(persistentMenuSceneChangeEvent, handleSceneToneChange as EventListener)
     }
   }, [])
 
-  return [sceneTone, setSceneTone] as const
+  const updateSceneTone = useCallback<Dispatch<SetStateAction<SceneTone>>>(
+    (value) => {
+      const nextTone = typeof value === 'function' ? value(sceneTone) : value
+
+      if (!isSceneTone(nextTone)) {
+        return
+      }
+
+      syncSceneTone(nextTone)
+    },
+    [sceneTone, syncSceneTone],
+  )
+
+  return [sceneTone, updateSceneTone] as const
 }

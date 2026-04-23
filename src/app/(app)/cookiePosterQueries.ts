@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { measureServerStep } from '@/utilities/devTiming'
 
 import {
   buildCookiePosterAssets,
@@ -17,23 +18,27 @@ export const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
   }))
 
 export const queryHomeCookiePosters = async () => {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'products',
-    draft: false,
-    limit: 100,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      gallery: true,
-      id: true,
-      meta: true,
-      priceInUSD: true,
-      slug: true,
-      title: true,
-    },
-    sort: 'title',
-  })
+  const payload = await measureServerStep('payload init: rotating cookie posters', () =>
+    getPayload({ config: configPromise }),
+  )
+  const result = await measureServerStep('payload.find products: rotating cookie posters', () =>
+    payload.find({
+      collection: 'products',
+      draft: false,
+      limit: 100,
+      overrideAccess: false,
+      pagination: false,
+      select: {
+        gallery: true,
+        id: true,
+        meta: true,
+        priceInUSD: true,
+        slug: true,
+        title: true,
+      },
+      sort: 'title',
+    }),
+  )
 
   const posters = buildCookiePosterAssets(result.docs)
 

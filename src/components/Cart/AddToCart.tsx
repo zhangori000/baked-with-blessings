@@ -99,7 +99,7 @@ export function AddToCart({ product }: Props) {
       aria-label="Add to cart"
       variant={'outline'}
       className={clsx({
-        'hover:opacity-90': true,
+        'cursor-pointer hover:opacity-90': true,
       })}
       disabled={disabled || isLoading}
       onClick={addToCart}
