@@ -16,7 +16,17 @@
 }
 
 .siteHeader[data-open='true'] .siteHeaderViewport {
-  z-index: 12;
+  z-index: 61;
+}
+
+.siteHeaderPanelBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: default;
 }
 
 .siteHeaderViewport {
@@ -1159,5 +1169,79 @@
 
   .siteHeaderActionPanelInner {
     width: min(470px, calc(100vw - 2.8rem));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1340px) {
+  .siteHeaderShellRow {
+    gap: clamp(0.6rem, 1.2vw, 1.1rem);
+  }
+
+  .siteHeaderBrand.has-logo {
+    width: 154px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 62px;
+  }
+
+  .siteHeaderBannerList {
+    gap: 0.16rem;
+    padding: 0.18rem;
+  }
+
+  .siteHeaderBannerLink {
+    font-size: 0.82rem;
+    padding: 0.68rem 1rem 1.08rem;
+  }
+
+  .siteHeaderActionArea {
+    gap: 0.85rem;
+  }
+
+  .siteHeaderActionButton {
+    font-size: 0.84rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .siteHeaderShellRow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+  }
+
+  .siteHeaderBrand.has-logo {
+    width: 138px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 56px;
+  }
+
+  .siteHeaderBanner {
+    min-width: 0;
+  }
+
+  .siteHeaderBannerFrame,
+  .siteHeaderBannerList {
+    width: 100%;
+  }
+
+  .siteHeaderBannerList {
+    gap: 0.12rem;
+  }
+
+  .siteHeaderBannerLink {
+    font-size: 0.76rem;
+    padding: 0.62rem 0.82rem 1rem;
+  }
+
+  .siteHeaderActionArea {
+    gap: 0.72rem;
+  }
+
+  .siteHeaderActionButton {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
   }
 }

@@ -1,13 +1,12 @@
 'use client'
 
-import Image from 'next/image'
 import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
 import { RichText } from '@/components/RichText'
-import { TraySelectionSummary } from '@/components/TraySelectionSummary'
+import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
-import { LoaderCircle, Minus, Plus } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import React from 'react'
 
 import { CookieSheepRig } from './cookie-sheep-rig'
@@ -28,31 +27,89 @@ type DecorativeSceneImageProps = {
   style?: React.CSSProperties
 }
 
+function SelectedFlavorButton() {
+  return (
+    <button
+      className="cateringMenuRoundHeading relative inline-flex min-h-[2.5rem] w-full items-center justify-center overflow-hidden rounded-full border border-[rgba(31,43,20,0.16)] bg-[rgba(31,43,20,0.08)] px-4 text-[0.84rem] tracking-[-0.01em] text-[#1f2b14]"
+      disabled
+      type="button"
+    >
+      <span className="pointer-events-none absolute inset-x-0 bottom-[-1px] h-[1.05rem] overflow-visible">
+        <span
+          className="absolute left-1/2 bottom-[0.22rem] h-[0.3rem] w-[0.3rem] -translate-x-1/2 rounded-full bg-[#6f8f29]"
+          style={{ animation: 'selectedGrassDotIn 140ms ease-out both' }}
+        />
+        <span
+          className="absolute inset-x-0 bottom-0 h-[0.34rem] rounded-full bg-[linear-gradient(90deg,#6f8f29_0%,#6f8f29_100%)] opacity-100"
+          style={{ animation: 'selectedGrassLineGrow 260ms cubic-bezier(0.22,1,0.36,1) 80ms both' }}
+        />
+      </span>
+
+      <FlowerSprite
+        animateIn
+        asset="/flowers/menu-nav-flower.svg"
+        className="pointer-events-none"
+        living
+        sizes="28px"
+        style={
+          {
+            '--flower-bob': '0.05rem',
+            '--flower-delay': '0.04s',
+            '--flower-grow-delay': '260ms',
+            '--flower-scale': '1.9',
+            '--flower-tilt': '2deg',
+            left: '75.5%',
+            width: '2.75rem',
+            bottom: '-0.02rem',
+          } as React.CSSProperties
+        }
+      />
+      <FlowerSprite
+        animateIn
+        asset="/flowers/menu-nav-flower.svg"
+        className="pointer-events-none"
+        living
+        sizes="28px"
+        style={
+          {
+            '--flower-bob': '0.05rem',
+            '--flower-delay': '0.1s',
+            '--flower-grow-delay': '320ms',
+            '--flower-scale': '1.9',
+            '--flower-tilt': '3deg',
+            left: '85.5%',
+            width: '2.75rem',
+            bottom: '-0.02rem',
+          } as React.CSSProperties
+        }
+      />
+
+      <span className="relative z-[1]">Selected</span>
+    </button>
+  )
+}
+
 type TrayFlavorCardProps = {
-  addSelection: () => void
-  canIncrement: boolean
+  actionLabel: string
   clouds: readonly StaticSceneCloud[]
-  count: number
   flavor: SelectableFlavor
-  interactionState?: 'add' | 'remove' | null
+  isSelected: boolean
   meadowSrc: string
   mobileSkySrc?: string
-  removeSelection: () => void
+  onChoose: () => void
   renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
   sceneryTone: MenuSceneryTone
   skySrc: string
 }
 
 export function TrayFlavorCard({
-  addSelection,
-  canIncrement,
+  actionLabel,
   clouds,
-  count,
   flavor,
-  interactionState,
+  isSelected,
   meadowSrc,
   mobileSkySrc,
-  removeSelection,
+  onChoose,
   renderSceneImage,
   sceneryTone,
   skySrc,
@@ -61,61 +118,33 @@ export function TrayFlavorCard({
     <article
       className={cn(
         'cateringFlavorCard flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]',
-        interactionState === 'add' && 'cateringFlavorCardActiveAdd',
-        interactionState === 'remove' && 'cateringFlavorCardActiveRemove',
+        isSelected && 'border-[rgba(34,84,32,0.22)] shadow-[0_16px_30px_rgba(46,76,27,0.12)]',
       )}
     >
       <div className="px-4 pt-3.5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 space-y-3">
+          <div className="flex items-start gap-3">
             <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[0.98rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
               <span className="block line-clamp-2">{flavor.title}</span>
             </h4>
-
-            <div className="flex shrink-0 items-center gap-1.5">
-              <button
-                aria-label={`Remove one ${flavor.title}`}
-                className={cn(
-                  'cateringFlavorStep',
-                  interactionState === 'remove' && 'cateringFlavorStepActive',
-                )}
-                disabled={count < 1}
-                onClick={removeSelection}
-                type="button"
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-
-              <div className="flex min-w-[1.35rem] items-center justify-center text-center">
-                <p
-                  className={cn(
-                    'cateringFlavorCount text-[0.68rem] font-semibold tracking-[-0.01em] text-[rgba(23,21,16,0.48)]',
-                    interactionState && 'cateringFlavorCountActive',
-                  )}
-                >
-                  {count}
-                </p>
-              </div>
-
-              <button
-                aria-label={`Add one ${flavor.title}`}
-                className={cn(
-                  'cateringFlavorStep',
-                  interactionState === 'add' && 'cateringFlavorStepActive',
-                )}
-                disabled={!canIncrement}
-                onClick={addSelection}
-                type="button"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
           </div>
           {flavor.summary ? (
             <p className="mt-1 line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
               {flavor.summary}
             </p>
           ) : null}
+
+          {isSelected ? (
+            <SelectedFlavorButton />
+          ) : (
+            <button
+              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.14)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
+              onClick={onChoose}
+              type="button"
+            >
+              {actionLabel}
+            </button>
+          )}
         </div>
       </div>
 
@@ -258,20 +287,12 @@ type BatchBuilderPanelProps = {
   isTrayPending: boolean
   onAddFlavor: (flavorID: number) => void
   onAddToCart: () => void
-  onRemoveFlavor: (flavorID: number) => void
   persuasionPanel: React.ReactNode
-  recentFlavorInteraction: { action: 'add' | 'remove'; flavorID: number } | null
   renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
-  requiredSelectionCount: number
   sceneryTone: MenuSceneryTone
+  selectedFlavor: SelectableFlavor | null
   selectableFlavors: SelectableFlavor[]
-  selectedCounts: Record<number, number>
   shouldPulseTraySummary: boolean
-  totalSelected: number
-  traySelectionsForSummary: {
-    product: Product
-    quantity: number
-  }[]
   priceInUSD?: number | null
 }
 
@@ -283,143 +304,84 @@ export function BatchBuilderPanel({
   isTrayPending,
   onAddFlavor,
   onAddToCart,
-  onRemoveFlavor,
   persuasionPanel,
-  recentFlavorInteraction,
   renderSceneImage,
-  requiredSelectionCount,
   sceneryTone,
+  selectedFlavor,
   selectableFlavors,
-  selectedCounts,
   shouldPulseTraySummary,
-  totalSelected,
-  traySelectionsForSummary,
   priceInUSD,
 }: BatchBuilderPanelProps) {
-  const canAddTray =
-    requiredSelectionCount > 0 &&
-    totalSelected === requiredSelectionCount &&
-    traySelectionsForSummary.length > 0
-  const progressPercentage =
-    requiredSelectionCount > 0 ? Math.min(1, totalSelected / requiredSelectionCount) * 100 : 0
+  const canAddTray = Boolean(selectedFlavor)
 
   return (
     <div className="space-y-5">
       {persuasionPanel}
 
       <div className="space-y-4">
-        <div className="relative overflow-hidden rounded-[1rem] border border-[rgba(91,70,37,0.1)] bg-[#fff8f2] px-3 py-2 shadow-[0_8px_16px_rgba(23,21,16,0.04)]">
-          <div className="relative z-[1] space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <div className="space-y-0">
-                <p className="cateringMenuEyebrow">Tray progress</p>
-                <h4 className="cateringMenuRoundHeading text-[0.88rem] leading-tight tracking-[-0.02em] text-[#171510]">
-                  {totalSelected}/{requiredSelectionCount} selected
-                </h4>
-              </div>
+        <div
+          className={cn(
+            'rounded-[1.1rem] border border-[rgba(91,70,37,0.1)] bg-[rgba(255,255,255,0.7)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.03)] transition-[transform,box-shadow,border-color] duration-200',
+            shouldPulseTraySummary && 'cateringTraySummaryPulse',
+          )}
+        >
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="cateringMenuEyebrow">Cookie tray</p>
+              <p className="mt-1 text-[0.98rem] leading-7 text-[rgba(23,21,16,0.72)]">
+                {selectedFlavor
+                  ? `${selectedFlavor.title} is selected. Pick a different cookie only if you want to switch.`
+                  : 'Tray price is $30. Pick one cookie flavor.'}
+              </p>
+            </div>
 
-              <div className="text-right">
+            {typeof priceInUSD === 'number' ? (
+              <div className="text-left md:text-right">
                 <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
                   Tray price
                 </p>
-                {typeof priceInUSD === 'number' ? (
-                  <Price
-                    amount={priceInUSD}
-                    className="cateringMenuRoundHeading mt-0.5 text-[0.88rem] tracking-[-0.02em] text-[#171510]"
-                  />
-                ) : null}
-              </div>
-            </div>
-
-            <div className="pt-1.5">
-              <div className="relative h-2.5 rounded-full bg-[rgba(126,161,47,0.18)]">
-                <div
-                  className="h-full rounded-full bg-[#7ea12f] transition-[width] duration-300 ease-out"
-                  style={{ width: `${progressPercentage}%` }}
+                <Price
+                  amount={priceInUSD}
+                  className="cateringMenuRoundHeading mt-0.5 text-[1.02rem] tracking-[-0.02em] text-[#171510]"
                 />
-
-                {Array.from({ length: totalSelected }, (_, index) => (
-                  <span
-                    className="cateringProgressBloom"
-                    key={`slot-${index}`}
-                    style={{
-                      left: `${((index + 1) / requiredSelectionCount) * 100}%`,
-                    }}
-                  >
-                    <Image
-                      alt=""
-                      aria-hidden="true"
-                      className="cateringProgressBloomImage"
-                      height={80}
-                      src="/flowers/menu-nav-flower.svg"
-                      unoptimized
-                      width={80}
-                    />
-                  </span>
-                ))}
               </div>
-            </div>
+            ) : null}
           </div>
         </div>
 
-        <TraySelectionSummary
-          alwaysRender
-          className={cn(
-            'rounded-[1rem] border border-[rgba(91,70,37,0.1)] bg-[rgba(255,255,255,0.58)] px-3 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.03)] transition-[transform,box-shadow,border-color] duration-200',
-            shouldPulseTraySummary && 'cateringTraySummaryPulse',
-          )}
-          compact
-          emptyMessage="Your tray mix will stay here while you build it, so nothing jumps when you start adding cookies."
-          itemsClassName="min-h-[4.8rem] content-start"
-          label="Current tray mix"
-          placeholderCount={Math.min(Math.max(requiredSelectionCount, 4), 6)}
-          selections={traySelectionsForSummary}
-          tone="muted"
-        />
+        <div aria-label="Cookie flavor chooser" className="cateringFlavorRail" role="region">
+          <div className="cateringFlavorRailInner">
+            {selectableFlavors.map((flavor) => {
+              const isSelected = selectedFlavor?.id === flavor.id
+              const actionLabel = isSelected
+                ? 'Selected'
+                : selectedFlavor
+                  ? `Switch to ${flavor.title}`
+                  : `Choose ${flavor.title}`
 
-        <div className="space-y-3">
-          <div>
-            <p className="cateringMenuEyebrow">Choose your cookies</p>
-            <p className="mt-1 text-[0.98rem] leading-7 text-[rgba(23,21,16,0.68)]">
-              Build the tray one cookie at a time, then add it only when the full batch is ready.
-            </p>
-          </div>
-
-          <div aria-label="Cookie flavor tray builder" className="cateringFlavorRail" role="region">
-            <div className="cateringFlavorRailInner">
-              {selectableFlavors.map((flavor) => {
-                const flavorCount = selectedCounts[flavor.id] ?? 0
-
-                return (
-                  <div className="cateringFlavorRailItem" key={flavor.id}>
+              return (
+                <div className="cateringFlavorRailItem" key={flavor.id}>
                     <TrayFlavorCard
-                      addSelection={() => onAddFlavor(flavor.id)}
-                      canIncrement={totalSelected < requiredSelectionCount}
+                      actionLabel={actionLabel}
                       clouds={flavorCardCloudsForScenery}
-                      count={flavorCount}
                       flavor={flavor}
-                      interactionState={
-                        recentFlavorInteraction?.flavorID === flavor.id
-                          ? recentFlavorInteraction.action
-                          : null
-                      }
+                      isSelected={isSelected}
                       meadowSrc={flavorCardMeadowForScenery}
-                      mobileSkySrc={flavorCardMobileSkyForScenery}
-                      removeSelection={() => onRemoveFlavor(flavor.id)}
-                      renderSceneImage={renderSceneImage}
-                      sceneryTone={sceneryTone}
-                      skySrc={flavorCardSkyForScenery}
-                    />
-                  </div>
-                )
-              })}
-            </div>
+                    mobileSkySrc={flavorCardMobileSkyForScenery}
+                    onChoose={() => onAddFlavor(flavor.id)}
+                    renderSceneImage={renderSceneImage}
+                    sceneryTone={sceneryTone}
+                    skySrc={flavorCardSkyForScenery}
+                  />
+                </div>
+              )
+            })}
           </div>
         </div>
 
         <button
           className={cn(
-            'inline-flex min-h-[3rem] w-full items-center justify-center rounded-full px-5 text-[0.98rem] tracking-[-0.02em] transition duration-200',
+            'cateringMenuRoundHeading inline-flex min-h-[3rem] w-full items-center justify-center rounded-full px-5 text-[0.98rem] tracking-[-0.02em] transition duration-200',
             canAddTray && !isTrayPending
               ? 'cursor-pointer bg-[#171510] text-white hover:bg-[#2a2822]'
               : isTrayPending
@@ -430,14 +392,18 @@ export function BatchBuilderPanel({
           onClick={onAddToCart}
           type="button"
         >
-          {isTrayPending ? (
-            <span className="inline-flex items-center gap-2">
-              <LoaderCircle className="h-4 w-4 animate-spin" />
-              Adding tray to cart...
-            </span>
-          ) : (
-            'Add tray to cart'
-          )}
+          <span className="inline-flex items-center justify-center gap-2">
+            {isTrayPending ? (
+              <>
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+                Adding tray...
+              </>
+            ) : selectedFlavor ? (
+              `Add ${selectedFlavor.title} Tray to cart`
+            ) : (
+              'Choose a tray flavor first'
+            )}
+          </span>
         </button>
       </div>
     </div>

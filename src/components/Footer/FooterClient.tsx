@@ -5,6 +5,7 @@ import type { SceneTone } from '@/components/scenery/menuHeroScenery'
 import { CMSLink } from '@/components/Link'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { Instagram, Linkedin } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
@@ -34,6 +35,7 @@ const footerPaletteByScene: Record<
     text: string
     muted: string
     border: string
+    accent: string
     icon: string
     iconBg: string
   }
@@ -44,6 +46,7 @@ const footerPaletteByScene: Record<
     text: '#5b4716',
     muted: 'rgba(91, 71, 22, 0.72)',
     border: 'rgba(143, 115, 39, 0.18)',
+    accent: '#ffe8a3',
     icon: '#7a5812',
     iconBg: 'rgba(255, 239, 183, 0.88)',
   },
@@ -53,6 +56,7 @@ const footerPaletteByScene: Record<
     text: '#324520',
     muted: 'rgba(50, 69, 32, 0.7)',
     border: 'rgba(62, 87, 51, 0.16)',
+    accent: '#d9f0b5',
     icon: '#3c5325',
     iconBg: 'rgba(245, 235, 205, 0.88)',
   },
@@ -62,6 +66,7 @@ const footerPaletteByScene: Record<
     text: '#f6f1ff',
     muted: 'rgba(246, 241, 255, 0.72)',
     border: 'rgba(214, 206, 255, 0.14)',
+    accent: '#8976ff',
     icon: '#faf7ff',
     iconBg: 'rgba(119, 102, 210, 0.3)',
   },
@@ -71,6 +76,7 @@ const footerPaletteByScene: Record<
     text: '#1c3d29',
     muted: 'rgba(28, 61, 41, 0.62)',
     border: 'rgba(44, 88, 62, 0.12)',
+    accent: '#d6f1c5',
     icon: '#21492d',
     iconBg: 'rgba(228, 245, 235, 0.92)',
   },
@@ -80,6 +86,7 @@ const footerPaletteByScene: Record<
     text: '#63385b',
     muted: 'rgba(99, 56, 91, 0.68)',
     border: 'rgba(121, 74, 113, 0.12)',
+    accent: '#ffd6ea',
     icon: '#834679',
     iconBg: 'rgba(255, 226, 237, 0.9)',
   },
@@ -89,6 +96,7 @@ const footerPaletteByScene: Record<
     text: '#4c5630',
     muted: 'rgba(76, 86, 48, 0.7)',
     border: 'rgba(93, 104, 60, 0.15)',
+    accent: '#e7e0b3',
     icon: '#5e6940',
     iconBg: 'rgba(238, 231, 206, 0.92)',
   },
@@ -133,71 +141,167 @@ export function FooterClient({
   ]
 
   return (
-    <footer className="px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5 md:px-6 md:pb-6 md:pt-6" style={{ background: palette.shell }}>
+    <footer
+      className="px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5 md:px-6 md:pb-6 md:pt-6"
+      style={{ background: palette.shell }}
+    >
       <div
-        className="mx-auto max-w-[1400px] rounded-[1.75rem] border px-4 py-4 shadow-[0_18px_42px_rgba(22,18,10,0.08)] sm:px-5 sm:py-5 md:px-6 md:py-5"
+        className="mx-auto max-w-[1400px] rounded-[2rem] border px-4 py-4 shadow-[0_18px_42px_rgba(22,18,10,0.08)] sm:px-5 sm:py-5 md:px-6 md:py-6"
         style={{
           backgroundColor: palette.panel,
           borderColor: palette.border,
           color: palette.text,
         }}
       >
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-6">
-          <div className="flex items-center gap-3 md:gap-4">
-            <Link aria-label={brand.brandName} className="shrink-0" href="/">
-              <img
-                alt={brand.logoAlt}
-                className="h-auto w-[8.25rem] object-contain sm:w-[9rem] md:w-[10rem]"
-                loading="eager"
-                src={brand.logoUrl}
-              />
-            </Link>
-
-            <p className="hidden text-[0.92rem] leading-relaxed md:block" style={{ color: palette.muted }}>
-              Fresh bakes, rotating scenes, and cookie-sheep energy.
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+          <section
+            className="rounded-[1.6rem] border p-5 sm:p-6"
+            style={{
+              background:
+                sceneTone === 'moonlit'
+                  ? 'linear-gradient(135deg, rgba(20,31,70,0.72), rgba(35,63,104,0.58))'
+                  : 'linear-gradient(135deg, rgba(255,255,255,0.52), rgba(255,255,255,0.16))',
+              borderColor: palette.border,
+            }}
+          >
+            <p
+              className="text-[0.68rem] font-semibold uppercase tracking-[0.24em]"
+              style={{ color: palette.muted }}
+            >
+              Baked With Blessings
             </p>
-          </div>
 
-          <nav aria-label="Footer links" className="min-w-0 md:flex-1 md:justify-center">
-            <ul className="flex flex-wrap gap-x-4 gap-y-2 text-[0.98rem] font-semibold tracking-[-0.02em] md:justify-center">
-              {navItems.map((item, index) => {
-                const linkProps =
-                  item.link && typeof item.link === 'object'
-                    ? (item.link as Record<string, unknown>)
-                    : {}
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-4">
+                <Link aria-label={brand.brandName} className="block shrink-0" href="/">
+                  <Image
+                    alt={brand.logoAlt}
+                    className="h-auto w-[9rem] object-contain sm:w-[10.5rem] md:w-[11rem]"
+                    height={64}
+                    loading="eager"
+                    src={brand.logoUrl}
+                    unoptimized
+                    width={176}
+                  />
+                </Link>
 
-                return (
-                  <li key={item.id ?? `footer-link-${index}`}>
-                    <CMSLink
-                      appearance="link"
-                      className="inline-flex transition hover:opacity-70"
-                      {...(linkProps as any)}
-                    />
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
+                <div className="max-w-[28rem] space-y-2">
+                  <p className="text-[1.45rem] leading-[1.02] tracking-[-0.04em] sm:text-[1.8rem]">
+                    Fresh cookie trays, honest portions, and a storefront that still feels handmade.
+                  </p>
+                  <p className="max-w-[24rem] text-[0.96rem] leading-7" style={{ color: palette.muted }}>
+                    The custom mixed tray will come later. For now, we are keeping it clean:
+                    one flavor, one full tray, one less thing to second-guess.
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex items-center gap-2 md:justify-end">
-            {socialLinks.map(({ href, icon: Icon, label }) => (
-              <a
-                aria-label={label}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition hover:-translate-y-0.5"
-                href={href}
-                key={label}
-                rel="noreferrer"
-                style={{ backgroundColor: palette.iconBg, color: palette.icon }}
-                target="_blank"
+              <div
+                className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.18em]"
+                style={{
+                  backgroundColor: palette.accent,
+                  borderColor: palette.border,
+                  color: palette.text,
+                }}
               >
-                <Icon className="h-4.5 w-4.5" />
-              </a>
-            ))}
-          </div>
+                <span className="h-2.5 w-2.5 rounded-full bg-current opacity-70" />
+                Designed for group orders
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <div
+              className="rounded-[1.6rem] border p-5"
+              style={{
+                background:
+                  sceneTone === 'moonlit'
+                    ? 'rgba(255,255,255,0.06)'
+                    : 'rgba(255,255,255,0.42)',
+                borderColor: palette.border,
+              }}
+            >
+              <p
+                className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]"
+                style={{ color: palette.muted }}
+              >
+                Browse fast
+              </p>
+              <nav aria-label="Footer links" className="mt-3">
+                <ul className="flex flex-wrap gap-2">
+                  {navItems.map((item, index) => {
+                    const linkProps =
+                      item.link && typeof item.link === 'object'
+                        ? (item.link as Record<string, unknown>)
+                        : {}
+                    const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
+
+                    return (
+                      <li key={item.id ?? `footer-link-${index}`}>
+                        <CMSLink
+                          appearance="link"
+                          className="inline-flex rounded-full border px-3 py-2 text-[0.9rem] font-semibold tracking-[-0.02em] transition hover:-translate-y-0.5"
+                          style={{
+                            borderColor: palette.border,
+                            backgroundColor:
+                              sceneTone === 'moonlit' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.74)',
+                            color: palette.text,
+                          }}
+                          {...footerLinkProps}
+                        />
+                      </li>
+                    )
+                  })}
+                </ul>
+              </nav>
+            </div>
+
+            <div
+              className="rounded-[1.6rem] border p-5"
+              style={{
+                background:
+                  sceneTone === 'moonlit'
+                    ? 'rgba(255,255,255,0.06)'
+                    : 'rgba(255,255,255,0.42)',
+                borderColor: palette.border,
+              }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p
+                    className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]"
+                    style={{ color: palette.muted }}
+                  >
+                    Stay in the loop
+                  </p>
+                  <p className="mt-2 text-[0.94rem] leading-6" style={{ color: palette.muted }}>
+                    Follow the bakery for rotating drops, tray updates, and the eventual custom tray launch.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {socialLinks.map(({ href, icon: Icon, label }) => (
+                  <a
+                    aria-label={label}
+                    className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[0.86rem] font-semibold transition hover:-translate-y-0.5"
+                    href={href}
+                    key={label}
+                    rel="noreferrer"
+                    style={{ backgroundColor: palette.iconBg, color: palette.icon }}
+                    target="_blank"
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
 
         <div
-          className="mt-4 flex flex-col gap-2 border-t pt-3 text-[0.82rem] sm:text-[0.86rem] md:flex-row md:items-center md:justify-between"
+          className="mt-4 flex flex-col gap-3 border-t pt-4 text-[0.82rem] sm:text-[0.86rem] md:flex-row md:items-center md:justify-between"
           style={{ borderColor: palette.border, color: palette.muted }}
         >
           <p>
@@ -205,7 +309,7 @@ export function FooterClient({
             {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
           </p>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium">
             <Link className="transition hover:opacity-70" href="/account">
               Account
             </Link>

@@ -231,7 +231,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'select',
               admin: {
                 description:
-                  'Use batch builder when customers must build a tray by picking child products before adding this item to cart.',
+                  'Use configurable tray when this product is built from child product flavors instead of being added directly. The storefront currently supports single-flavor trays, and custom mix trays can be enabled later without changing the relationship model.',
               },
               defaultValue: 'simple',
               options: [
@@ -240,7 +240,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   value: 'simple',
                 },
                 {
-                  label: 'Batch Builder',
+                  label: 'Configurable Tray',
                   value: 'batchBuilder',
                 },
               ],
@@ -251,7 +251,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'How many child items must be chosen before a tray-builder product can be added to cart.',
+                  'How many cookies belong in the tray. For today\'s single-flavor trays, this becomes the quantity of the chosen flavor.',
               },
               min: 1,
               validate: (
@@ -281,7 +281,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'Choose which existing product rows can be picked inside this tray-builder product.',
+                  'Choose which cookie flavors are allowed for this tray. The storefront currently lets the customer pick one of these flavors for the full tray.',
               },
               filterOptions: ({ id }) => {
                 if (id) {

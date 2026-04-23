@@ -61,7 +61,7 @@ export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
-  const panelRef = useRef<HTMLDivElement | null>(null)
+  const panelInnerRef = useRef<HTMLDivElement | null>(null)
   const { isScrolled } = useHeaderVisibility()
   const { cart } = useCart()
   const { user, logout } = useAuth()
@@ -114,9 +114,13 @@ export function HeaderClient({ brand, header }: Props) {
 
   useEffect(() => {
     const closePanel = () => setActivePanel(null)
-    const onOutsideClick = (event: MouseEvent) => {
-      if (!headerRef.current || !event.target || !activePanel) return
-      if (headerRef.current.contains(event.target as Node)) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!panelInnerRef.current || !event.target || !activePanel) return
+      if (panelInnerRef.current.contains(event.target as Node)) return
+
+      const target = event.target as HTMLElement
+      if (target.closest(`.${headerClassNames.actionButton}`)) return
+
       closePanel()
     }
     const onEscape = (event: KeyboardEvent) => {
@@ -125,10 +129,10 @@ export function HeaderClient({ brand, header }: Props) {
       }
     }
 
-    window.addEventListener('mousedown', onOutsideClick)
+    window.addEventListener('pointerdown', onPointerDown, true)
     window.addEventListener('keydown', onEscape)
     return () => {
-      window.removeEventListener('mousedown', onOutsideClick)
+      window.removeEventListener('pointerdown', onPointerDown, true)
       window.removeEventListener('keydown', onEscape)
     }
   }, [activePanel])
@@ -155,6 +159,15 @@ export function HeaderClient({ brand, header }: Props) {
       data-scrolled={isScrolled}
       ref={headerRef}
     >
+      {activePanel ? (
+        <button
+          aria-label="Close open header panel"
+          className="siteHeaderPanelBackdrop"
+          onClick={() => setActivePanel(null)}
+          type="button"
+        />
+      ) : null}
+
       <div className={headerClassNames.viewport}>
         <div className={cn(headerClassNames.shell, 'container')}>
           <div className={headerClassNames.shellRow}>
@@ -258,9 +271,8 @@ export function HeaderClient({ brand, header }: Props) {
               activePanel ? 'is-open' : null,
               activePanel === 'account' ? 'is-account' : activePanel === 'bag' ? 'is-bag' : '',
             )}
-            ref={panelRef}
           >
-            <div className={headerClassNames.actionPanelInner}>
+            <div className={headerClassNames.actionPanelInner} ref={panelInnerRef}>
               {activePanel === 'account' ? (
                 <>
                   <p className={headerClassNames.actionPanelTitle}>

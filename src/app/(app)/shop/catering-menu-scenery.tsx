@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { Media } from '@/components/Media'
 import { RichText } from '@/components/RichText'
 import type { Media as MediaType, Product } from '@/payload-types'
@@ -680,6 +681,28 @@ const normalizeGalleryImages = (product: Partial<Product>): MediaType[] => {
 
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
 
+const hashString = (value: string) => {
+  let hash = 2166136261
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+
+  return hash >>> 0
+}
+
+const createSeededRandom = (seed: string) => {
+  let state = hashString(seed) || 1
+
+  return () => {
+    state = (state + 0x6d2b79f5) | 0
+    let result = Math.imul(state ^ (state >>> 15), 1 | state)
+    result ^= result + Math.imul(result ^ (result >>> 7), 61 | result)
+    return ((result ^ (result >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 const collectSceneryAssetSources = (sceneryTone: MenuSceneryTone) => [
   skyByScenery[sceneryTone],
   meadowByScenery[sceneryTone],
@@ -863,16 +886,18 @@ const buildSeededFlowers = (
     scaleRange: [minScale, maxScale],
   } = getSeededFlowerRanges(sceneryTone, kind)
   const assets = spawnedFlowerAssetsByScenery[sceneryTone]
+  const random = createSeededRandom(`${sceneryTone}-${kind}-${count}`)
+  const pickBetween = (min: number, max: number) => random() * (max - min) + min
 
   return Array.from({ length: count }, (_, index) => {
-    const assetIndex = Math.floor(randomBetween(0, Math.max(assets.length, 1)))
+    const assetIndex = Math.floor(pickBetween(0, Math.max(assets.length, 1)))
     const asset = assets[assetIndex] ?? '/flowers/daisy.svg'
-    const left = randomBetween(minLeft, maxLeft)
-    const scale = randomBetween(minScale, maxScale)
+    const left = pickBetween(minLeft, maxLeft)
+    const scale = pickBetween(minScale, maxScale)
 
     return {
       asset,
-      id: Date.now() + Math.random() + index,
+      id: hashString(`${sceneryTone}-${kind}-${index}-${asset}`),
       left: `${left.toFixed(2)}%`,
       scale: Number(scale.toFixed(2)),
     }
@@ -903,31 +928,6 @@ const useResponsiveFlowerSeedCount = () => {
   }, [])
 
   return flowerCount
-}
-
-function FlowerSprite({
-  asset,
-  className,
-  style,
-}: {
-  asset: string
-  className?: string
-  style?: React.CSSProperties
-}) {
-  return (
-    <span aria-hidden="true" className={cn('cateringFlowerSprite', className)} style={style}>
-      <Image
-        alt=""
-        aria-hidden="true"
-        className="cateringFlowerSpriteImage"
-        height={160}
-        sizes="64px"
-        src={asset}
-        unoptimized
-        width={160}
-      />
-    </span>
-  )
 }
 
 const isEagerSceneAsset = (src: string) => src === '/sceneries/girl-under-tree-tree.svg'
@@ -1208,10 +1208,11 @@ export function MenuHero({
             <FlowerSprite
               asset={flower.asset}
               className={cn(
-                'cateringHeroLineFlower cateringLivingFlower',
+                'cateringHeroLineFlower',
                 flower.variant === 'wildflower' && 'cateringHeroLineWildflower',
               )}
               key={`hero-line-${flower.left}-${flower.asset}`}
+              living
               style={buildFlowerMotionStyle(
                 `hero-line-${flower.left}-${flower.asset}`,
                 flower.left,
@@ -1222,8 +1223,10 @@ export function MenuHero({
           {spawnedFlowers.map((flower) => (
             <FlowerSprite
               asset={flower.asset}
-              className="cateringHeroLineFlower cateringHeroLineFlowerSpawned cateringLivingFlower"
+              animateIn
+              className="cateringHeroLineFlower cateringHeroLineFlowerSpawned"
               key={flower.id}
+              living
               style={buildFlowerMotionStyle(`hero-spawn-${flower.id}`, flower.left, flower.scale)}
             />
           ))}
@@ -1567,8 +1570,9 @@ export function PersuasionGardenPanel({
               {panelWildflowers.map((flower) => (
                 <FlowerSprite
                   asset={flower.asset}
-                  className="cateringPersuasionFlower cateringPersuasionWildflower cateringLivingFlower"
+                  className="cateringPersuasionFlower cateringPersuasionWildflower"
                   key={`panel-wild-${flower.left}-${flower.asset}`}
+                  living
                   style={buildFlowerMotionStyle(
                     `panel-wild-${flower.left}-${flower.asset}`,
                     flower.left,
@@ -1579,8 +1583,9 @@ export function PersuasionGardenPanel({
               {panelFlowers.map((flower) => (
                 <FlowerSprite
                   asset={flower.asset}
-                  className="cateringPersuasionFlower cateringLivingFlower"
+                  className="cateringPersuasionFlower"
                   key={`${flower.left}-${flower.asset}`}
+                  living
                   style={buildFlowerMotionStyle(
                     `panel-${flower.left}-${flower.asset}`,
                     flower.left,
@@ -1591,8 +1596,10 @@ export function PersuasionGardenPanel({
               {spawnedFlowers.map((flower) => (
                 <FlowerSprite
                   asset={flower.asset}
-                  className="cateringPersuasionFlower cateringPersuasionFlowerSpawned cateringLivingFlower"
+                  animateIn
+                  className="cateringPersuasionFlower cateringPersuasionFlowerSpawned"
                   key={flower.id}
+                  living
                   style={buildFlowerMotionStyle(
                     `panel-spawn-${flower.id}`,
                     flower.left,

@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/accordion'
 import type { Product } from '@/payload-types'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { ChevronDownIcon, LoaderCircle } from 'lucide-react'
+import Image from 'next/image'
 import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -120,6 +122,33 @@ const sortProductsForDisplay = (products: Partial<Product>[]) => {
   })
 }
 
+function TrayRowIndicator() {
+  return (
+    <span className="cateringRowIndicator" aria-hidden="true">
+      <span className="cateringRowIndicatorFlowerWrap">
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="cateringRowIndicatorFlower"
+          height={40}
+          src="/flowers/menu-nav-flower.svg"
+          unoptimized
+          width={40}
+        />
+      </span>
+      <LoaderCircle className="cateringRowIndicatorSpinner" />
+    </span>
+  )
+}
+
+function TrayChevronIndicator() {
+  return (
+    <span className="cateringRowChevron" aria-hidden="true">
+      <ChevronDownIcon className="cateringRowChevronIcon" />
+    </span>
+  )
+}
+
 function CateringMenuRow({
   isSceneryPickerOpen,
   isSceneChanging,
@@ -138,14 +167,10 @@ function CateringMenuRow({
   sceneryTone: MenuSceneryTone
 }) {
   const { addItem, isLoading } = useCart()
-  const flavorInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [selectedCounts, setSelectedCounts] = useState<Record<number, number>>({})
+  const [selectedFlavorID, setSelectedFlavorID] = useState<number | null>(null)
   const [isSubmittingToCart, setIsSubmittingToCart] = useState(false)
-  const [recentFlavorInteraction, setRecentFlavorInteraction] = useState<{
-    action: 'add' | 'remove'
-    flavorID: number
-  } | null>(null)
-  const [shouldPulseTraySummary, setShouldPulseTraySummary] = useState(false)
+  const [showOpeningIndicator, setShowOpeningIndicator] = useState(false)
+  const openingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const image = normalizeImage(product)
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
@@ -155,23 +180,25 @@ function CateringMenuRow({
       : 0
   const selectableFlavors = useMemo(() => buildSelectableFlavors(product), [product])
 
-  const totalSelected = useMemo(
-    () => Object.values(selectedCounts).reduce((sum, count) => sum + count, 0),
-    [selectedCounts],
+  const selectedFlavor = useMemo(
+    () => selectableFlavors.find((flavor) => flavor.id === selectedFlavorID) ?? null,
+    [selectableFlavors, selectedFlavorID],
   )
 
   const traySelectionsForSummary = useMemo(
     () =>
-      selectableFlavors
-        .map((flavor) => ({
-          product: {
-            id: flavor.id,
-            title: flavor.title,
-          } as Product,
-          quantity: selectedCounts[flavor.id] ?? 0,
-        }))
-        .filter((selection) => selection.quantity > 0),
-    [selectableFlavors, selectedCounts],
+      selectedFlavor && requiredSelectionCount > 0
+        ? [
+            {
+              product: {
+                id: selectedFlavor.id,
+                title: selectedFlavor.title,
+              } as Product,
+              quantity: requiredSelectionCount,
+            },
+          ]
+        : [],
+    [requiredSelectionCount, selectedFlavor],
   )
 
   const traySelectionsForCart = useMemo(
@@ -191,69 +218,44 @@ function CateringMenuRow({
       ? '/sceneries/blossom-grass-mound.svg'
       : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
 
+  const handleAddFlavor = (flavorID: number) => {
+    if (selectedFlavorID === flavorID) {
+      return
+    }
+
+    setSelectedFlavorID(flavorID)
+  }
+
+  const isCartPending = isLoading || isSubmittingToCart
+
   useEffect(() => {
     return () => {
-      if (flavorInteractionTimeoutRef.current) {
-        clearTimeout(flavorInteractionTimeoutRef.current)
+      if (openingIndicatorTimeoutRef.current) {
+        clearTimeout(openingIndicatorTimeoutRef.current)
       }
     }
   }, [])
 
-  const registerFlavorInteraction = (flavorID: number, action: 'add' | 'remove') => {
-    setRecentFlavorInteraction({ action, flavorID })
-    setShouldPulseTraySummary(true)
-
-    if (flavorInteractionTimeoutRef.current) {
-      clearTimeout(flavorInteractionTimeoutRef.current)
+  const queueOpeningIndicatorReset = () => {
+    if (openingIndicatorTimeoutRef.current) {
+      clearTimeout(openingIndicatorTimeoutRef.current)
     }
 
-    flavorInteractionTimeoutRef.current = setTimeout(() => {
-      setRecentFlavorInteraction(null)
-      setShouldPulseTraySummary(false)
-    }, 260)
+    openingIndicatorTimeoutRef.current = setTimeout(() => {
+      setShowOpeningIndicator(false)
+      openingIndicatorTimeoutRef.current = null
+    }, 480)
   }
 
-  const handleAddFlavor = (flavorID: number) => {
-    registerFlavorInteraction(flavorID, 'add')
-    setSelectedCounts((current) => {
-      const currentTotal = Object.values(current).reduce((sum, count) => sum + count, 0)
-
-      if (requiredSelectionCount > 0 && currentTotal >= requiredSelectionCount) {
-        return current
-      }
-
-      return {
-        ...current,
-        [flavorID]: (current[flavorID] ?? 0) + 1,
-      }
-    })
-  }
-
-  const handleRemoveFlavor = (flavorID: number) => {
-    if ((selectedCounts[flavorID] ?? 0) > 0) {
-      registerFlavorInteraction(flavorID, 'remove')
+  const handleTriggerClick = () => {
+    if (openingIndicatorTimeoutRef.current) {
+      clearTimeout(openingIndicatorTimeoutRef.current)
+      openingIndicatorTimeoutRef.current = null
     }
 
-    setSelectedCounts((current) => {
-      const currentCount = current[flavorID] ?? 0
-
-      if (currentCount <= 0) {
-        return current
-      }
-
-      if (currentCount <= 1) {
-        const { [flavorID]: _removed, ...rest } = current
-        return rest
-      }
-
-      return {
-        ...current,
-        [flavorID]: currentCount - 1,
-      }
-    })
+    setShowOpeningIndicator(true)
+    queueOpeningIndicatorReset()
   }
-
-  const isCartPending = isLoading || isSubmittingToCart
 
   const handleAddToCart = async () => {
     if (!product.id || isCartPending) {
@@ -261,12 +263,8 @@ function CateringMenuRow({
     }
 
     if (isBatchBuilder) {
-      if (
-        requiredSelectionCount <= 0 ||
-        totalSelected !== requiredSelectionCount ||
-        traySelectionsForCart.length === 0
-      ) {
-        toast.info(`Choose exactly ${requiredSelectionCount} cookies before adding this tray.`)
+      if (requiredSelectionCount <= 0 || !selectedFlavor || traySelectionsForCart.length === 0) {
+        toast.info('Choose one cookie flavor for the tray before adding it to cart.')
         return
       }
 
@@ -278,7 +276,7 @@ function CateringMenuRow({
           product: product.id,
         } as Parameters<typeof addItem>[0])
         toast.success(`${product.title ?? 'Tray'} added to cart.`)
-        setSelectedCounts({})
+        setSelectedFlavorID(null)
       } catch {
         toast.error('Unable to add tray to cart right now.')
       } finally {
@@ -305,7 +303,11 @@ function CateringMenuRow({
       className="border-b border-[rgba(23,21,16,0.14)]"
       value={product.slug ?? `row-${index}`}
     >
-      <AccordionTrigger className="cateringRowTrigger gap-6 py-8 text-left hover:no-underline md:py-10">
+      <AccordionTrigger
+        className="cateringRowTrigger gap-6 py-8 text-left hover:no-underline md:py-10"
+        indicator={showOpeningIndicator ? <TrayRowIndicator /> : <TrayChevronIndicator />}
+        onClick={handleTriggerClick}
+      >
         <div className="grid w-full gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
           <div className="space-y-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
@@ -345,7 +347,6 @@ function CateringMenuRow({
             isTrayPending={isCartPending}
             onAddFlavor={handleAddFlavor}
             onAddToCart={handleAddToCart}
-            onRemoveFlavor={handleRemoveFlavor}
             persuasionPanel={
               <PersuasionGardenPanel
                 isSceneryPickerOpen={isSceneryPickerOpen}
@@ -358,16 +359,11 @@ function CateringMenuRow({
                 summary={resolveSummary(product)}
               />
             }
-            recentFlavorInteraction={recentFlavorInteraction}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
-            shouldPulseTraySummary={shouldPulseTraySummary}
             priceInUSD={product.priceInUSD}
             sceneryTone={sceneryTone}
-            requiredSelectionCount={requiredSelectionCount}
+            selectedFlavor={selectedFlavor}
             selectableFlavors={selectableFlavors}
-            selectedCounts={selectedCounts}
-            totalSelected={totalSelected}
-            traySelectionsForSummary={traySelectionsForSummary}
           />
         ) : (
           <SimpleItemPanel
@@ -620,39 +616,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           bottom: 0;
           width: 1.34rem;
           z-index: 1;
-        }
-
-        .cateringFlowerSprite {
-          display: inline-flex;
-          overflow: hidden;
-          pointer-events: none;
-          position: absolute;
-          transform-origin: center bottom;
-          z-index: 5;
-        }
-
-        .cateringLivingFlower {
-          animation: cateringFlowerLife var(--flower-duration, 4.6s) ease-in-out infinite;
-          animation-delay: var(--flower-delay, 0s);
-          transform:
-            translateX(-50%)
-            translateY(0)
-            rotate(calc(var(--flower-tilt, 2deg) * -1))
-            scale(var(--flower-scale, 1));
-          will-change: transform;
-        }
-
-        .cateringFlowerSpriteImage {
-          display: block;
-          height: auto;
-          transform: translateY(var(--flower-stem-trim, 0%));
-          transform-origin: center bottom;
-          width: 100%;
-        }
-
-        .cateringHeroLineFlowerSpawned .cateringFlowerSpriteImage,
-        .cateringPersuasionFlowerSpawned .cateringFlowerSpriteImage {
-          animation: cateringSpriteGrow 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
         .cateringPersuasionPanel {
@@ -1126,25 +1089,81 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           color: #171510;
         }
 
-        .cateringRowTrigger > svg {
-          align-self: flex-start;
+        .cateringRowIndicator {
+          align-items: center;
           color: rgba(23, 21, 16, 0.72);
+          display: inline-flex;
           height: 3rem;
-          margin-top: 0.25rem;
-          padding: 0.72rem;
+          justify-content: center;
+          position: relative;
           width: 3rem;
           border-radius: 999px;
           border: 1px solid rgba(23, 21, 16, 0.12);
           background: rgba(255, 255, 255, 0.84);
           box-shadow: 0 8px 18px rgba(23, 21, 16, 0.05);
+          overflow: visible;
         }
 
-        .cateringRowTrigger:hover > svg,
-        .cateringRowTrigger:focus-visible > svg,
-        .cateringRowTrigger[data-state='open'] > svg {
+        .cateringRowChevron {
+          align-items: center;
+          background: rgba(255, 255, 255, 0.84);
+          border: 1px solid rgba(23, 21, 16, 0.12);
+          border-radius: 999px;
+          box-shadow: 0 8px 18px rgba(23, 21, 16, 0.05);
+          color: rgba(23, 21, 16, 0.72);
+          display: inline-flex;
+          height: 3rem;
+          justify-content: center;
+          transition:
+            background-color 180ms ease,
+            border-color 180ms ease,
+            color 180ms ease,
+            transform 200ms ease;
+          width: 3rem;
+        }
+
+        .cateringRowChevronIcon {
+          height: 1.1rem;
+          transition: transform 220ms ease;
+          width: 1.1rem;
+        }
+
+        .cateringRowTrigger[data-state='open'] .cateringRowChevronIcon {
+          transform: rotate(180deg);
+        }
+
+        .cateringRowTrigger:hover .cateringRowIndicator,
+        .cateringRowTrigger:focus-visible .cateringRowIndicator,
+        .cateringRowTrigger[data-state='open'] .cateringRowIndicator,
+        .cateringRowTrigger:hover .cateringRowChevron,
+        .cateringRowTrigger:focus-visible .cateringRowChevron,
+        .cateringRowTrigger[data-state='open'] .cateringRowChevron {
           background: #17341f;
           border-color: #17341f;
           color: #f7f5ef;
+        }
+
+        .cateringRowIndicatorSpinner {
+          animation: cateringRowSpinner 1s linear infinite;
+          height: 1.06rem;
+          width: 1.06rem;
+        }
+
+        .cateringRowIndicatorFlowerWrap {
+          bottom: calc(100% - 0.18rem);
+          height: 2rem;
+          left: 50%;
+          pointer-events: none;
+          position: absolute;
+          transform: translateX(-50%);
+          width: 2rem;
+        }
+
+        .cateringRowIndicatorFlower {
+          animation: cateringRowFlowerBob 2.4s ease-in-out infinite;
+          display: block;
+          height: 100%;
+          width: 100%;
         }
 
         .cateringFlavorCloud {
@@ -1238,28 +1257,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           scroll-snap-align: start;
         }
 
-        .cateringProgressBloom {
-          animation: cateringProgressBloomGrow 760ms cubic-bezier(0.22, 1, 0.36, 1) both,
-            cateringProgressBloomBob 3.2s ease-in-out 760ms infinite;
-          bottom: -0.02rem;
-          height: 2.6rem;
-          opacity: 1;
-          pointer-events: none;
-          position: absolute;
-          transform: translateX(-50%);
-          transform-origin: center bottom;
-          width: 2.6rem;
-          z-index: 2;
-        }
-
-        .cateringProgressBloomImage {
-          display: block;
-          height: 100%;
-          object-fit: contain;
-          object-position: center bottom;
-          width: 100%;
-        }
-
         .cateringTraySummaryPulse {
           animation: cateringTraySummaryPulse 260ms cubic-bezier(0.22, 1, 0.36, 1);
           border-color: rgba(126, 161, 47, 0.24);
@@ -1306,34 +1303,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
-        @keyframes cateringProgressBloomGrow {
-          0% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(0.35rem) scale(0.38);
-          }
-
-          72% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-0.08rem) scale(1.06);
-          }
-
-          100% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0) scale(1);
-          }
-        }
-
-        @keyframes cateringProgressBloomBob {
-          0%,
-          100% {
-            transform: translateX(-50%) translateY(0) rotate(-2deg) scale(1);
-          }
-
-          50% {
-            transform: translateX(-50%) translateY(-0.16rem) rotate(2deg) scale(1.02);
-          }
-        }
-
         @keyframes cateringFlavorCardPulseAdd {
           0% {
             transform: scale(1);
@@ -1348,6 +1317,44 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
+        @keyframes selectedGrassDotIn {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.2);
+          }
+
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+          }
+        }
+
+        @keyframes selectedGrassLineGrow {
+          0% {
+            opacity: 0;
+            transform: scaleX(0);
+          }
+
+          100% {
+            opacity: 1;
+            transform: scaleX(1);
+          }
+        }
+
+        @keyframes selectedGrassBladeGrow {
+          0% {
+            opacity: 0;
+            transform: scaleY(0);
+            transform-origin: bottom center;
+          }
+
+          100% {
+            opacity: 1;
+            transform: scaleY(1);
+            transform-origin: bottom center;
+          }
+        }
+
         @keyframes cateringFlavorCardPulseRemove {
           0% {
             transform: scale(1);
@@ -1359,6 +1366,23 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           100% {
             transform: scale(1);
+          }
+        }
+
+        @keyframes cateringRowSpinner {
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes cateringRowFlowerBob {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+
+          50% {
+            transform: translateY(-0.14rem);
           }
         }
 
@@ -1398,42 +1422,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           50% {
             transform: translate3d(0.9rem, -0.32rem, 0);
-          }
-        }
-
-        @keyframes cateringFlowerLife {
-          0%,
-          100% {
-            transform:
-              translateX(-50%)
-              translateY(0)
-              rotate(calc(var(--flower-tilt, 2deg) * -1))
-              scale(var(--flower-scale, 1));
-          }
-
-          50% {
-            transform:
-              translateX(-50%)
-              translateY(calc(var(--flower-bob, 0.14rem) * -1))
-              rotate(var(--flower-tilt, 2deg))
-              scale(var(--flower-scale, 1));
-          }
-        }
-
-        @keyframes cateringSpriteGrow {
-          0% {
-            opacity: 0;
-            transform: scale(0.28);
-          }
-
-          72% {
-            opacity: 1;
-            transform: scale(1.08);
-          }
-
-          100% {
-            opacity: 1;
-            transform: scale(1);
           }
         }
 
