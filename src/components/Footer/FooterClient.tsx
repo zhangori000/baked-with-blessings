@@ -142,160 +142,80 @@ export function FooterClient({
 
   return (
     <footer
-      className="px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5 md:px-6 md:pb-6 md:pt-6"
+      className="px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5 md:px-6 md:pb-5 md:pt-5"
       style={{ background: palette.shell }}
     >
       <div
-        className="mx-auto max-w-[1400px] rounded-[2rem] border px-4 py-4 shadow-[0_18px_42px_rgba(22,18,10,0.08)] sm:px-5 sm:py-5 md:px-6 md:py-6"
+        className="mx-auto max-w-[1320px] rounded-[1.7rem] border px-4 py-4 shadow-[0_16px_32px_rgba(22,18,10,0.08)] sm:px-5 sm:py-5 md:px-6 md:py-5"
         style={{
           backgroundColor: palette.panel,
           borderColor: palette.border,
           color: palette.text,
         }}
       >
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-          <section
-            className="rounded-[1.6rem] border p-5 sm:p-6"
-            style={{
-              background:
-                sceneTone === 'moonlit'
-                  ? 'linear-gradient(135deg, rgba(20,31,70,0.72), rgba(35,63,104,0.58))'
-                  : 'linear-gradient(135deg, rgba(255,255,255,0.52), rgba(255,255,255,0.16))',
-              borderColor: palette.border,
-            }}
-          >
-            <p
-              className="text-[0.68rem] font-semibold uppercase tracking-[0.24em]"
-              style={{ color: palette.muted }}
-            >
-              Baked With Blessings
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <section className="max-w-[34rem]">
+            <Link aria-label={brand.brandName} className="block shrink-0" href="/">
+              <Image
+                alt={brand.logoAlt}
+                className="h-auto w-[8.75rem] object-contain sm:w-[10rem]"
+                height={64}
+                loading="eager"
+                src={brand.logoUrl}
+                unoptimized
+                width={176}
+              />
+            </Link>
+
+            <p className="mt-3 max-w-[28rem] text-[1rem] leading-7" style={{ color: palette.muted }}>
+              Fresh cookie trays, honest portions, and a menu that stays easy to scan on the first pass.
             </p>
-
-            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-4">
-                <Link aria-label={brand.brandName} className="block shrink-0" href="/">
-                  <Image
-                    alt={brand.logoAlt}
-                    className="h-auto w-[9rem] object-contain sm:w-[10.5rem] md:w-[11rem]"
-                    height={64}
-                    loading="eager"
-                    src={brand.logoUrl}
-                    unoptimized
-                    width={176}
-                  />
-                </Link>
-
-                <div className="max-w-[28rem] space-y-2">
-                  <p className="text-[1.45rem] leading-[1.02] tracking-[-0.04em] sm:text-[1.8rem]">
-                    Fresh cookie trays, honest portions, and a storefront that still feels handmade.
-                  </p>
-                  <p className="max-w-[24rem] text-[0.96rem] leading-7" style={{ color: palette.muted }}>
-                    The custom mixed tray will come later. For now, we are keeping it clean:
-                    one flavor, one full tray, one less thing to second-guess.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.18em]"
-                style={{
-                  backgroundColor: palette.accent,
-                  borderColor: palette.border,
-                  color: palette.text,
-                }}
-              >
-                <span className="h-2.5 w-2.5 rounded-full bg-current opacity-70" />
-                Designed for group orders
-              </div>
-            </div>
           </section>
 
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <div
-              className="rounded-[1.6rem] border p-5"
-              style={{
-                background:
-                  sceneTone === 'moonlit'
-                    ? 'rgba(255,255,255,0.06)'
-                    : 'rgba(255,255,255,0.42)',
-                borderColor: palette.border,
-              }}
-            >
-              <p
-                className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]"
-                style={{ color: palette.muted }}
-              >
-                Browse fast
-              </p>
-              <nav aria-label="Footer links" className="mt-3">
-                <ul className="flex flex-wrap gap-2">
-                  {navItems.map((item, index) => {
-                    const linkProps =
-                      item.link && typeof item.link === 'object'
-                        ? (item.link as Record<string, unknown>)
-                        : {}
-                    const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
+          <section className="flex max-w-[34rem] flex-col gap-4 md:items-end">
+            <nav aria-label="Footer links">
+              <ul className="flex flex-wrap gap-2 md:justify-end">
+                {navItems.map((item, index) => {
+                  const linkProps =
+                    item.link && typeof item.link === 'object'
+                      ? (item.link as Record<string, unknown>)
+                      : {}
+                  const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
 
-                    return (
-                      <li key={item.id ?? `footer-link-${index}`}>
-                        <CMSLink
-                          appearance="link"
-                          className="inline-flex rounded-full border px-3 py-2 text-[0.9rem] font-semibold tracking-[-0.02em] transition hover:-translate-y-0.5"
-                          style={{
-                            borderColor: palette.border,
-                            backgroundColor:
-                              sceneTone === 'moonlit' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.74)',
-                            color: palette.text,
-                          }}
-                          {...footerLinkProps}
-                        />
-                      </li>
-                    )
-                  })}
-                </ul>
-              </nav>
-            </div>
+                  return (
+                    <li key={item.id ?? `footer-link-${index}`}>
+                      <CMSLink
+                        appearance="link"
+                        className="inline-flex rounded-full border px-3 py-2 text-[0.86rem] font-semibold tracking-[-0.02em] transition hover:-translate-y-0.5"
+                        style={{
+                          borderColor: palette.border,
+                          backgroundColor:
+                            sceneTone === 'moonlit' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.74)',
+                          color: palette.text,
+                        }}
+                        {...footerLinkProps}
+                      />
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
 
-            <div
-              className="rounded-[1.6rem] border p-5"
-              style={{
-                background:
-                  sceneTone === 'moonlit'
-                    ? 'rgba(255,255,255,0.06)'
-                    : 'rgba(255,255,255,0.42)',
-                borderColor: palette.border,
-              }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p
-                    className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: palette.muted }}
-                  >
-                    Stay in the loop
-                  </p>
-                  <p className="mt-2 text-[0.94rem] leading-6" style={{ color: palette.muted }}>
-                    Follow the bakery for rotating drops, tray updates, and the eventual custom tray launch.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {socialLinks.map(({ href, icon: Icon, label }) => (
-                  <a
-                    aria-label={label}
-                    className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[0.86rem] font-semibold transition hover:-translate-y-0.5"
-                    href={href}
-                    key={label}
-                    rel="noreferrer"
-                    style={{ backgroundColor: palette.iconBg, color: palette.icon }}
-                    target="_blank"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{label}</span>
-                  </a>
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-2 md:justify-end">
+              {socialLinks.map(({ href, icon: Icon, label }) => (
+                <a
+                  aria-label={label}
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[0.82rem] font-semibold transition hover:-translate-y-0.5"
+                  href={href}
+                  key={label}
+                  rel="noreferrer"
+                  style={{ backgroundColor: palette.iconBg, color: palette.icon }}
+                  target="_blank"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                </a>
+              ))}
             </div>
           </section>
         </div>

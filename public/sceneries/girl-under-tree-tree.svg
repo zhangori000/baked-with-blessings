@@ -9,15 +9,15 @@
 
   <!-- Trunk and main limbs: centered so the canopy feels balanced instead of hanging only to the right. -->
   <path
-    d="M236 300Q241 252 248 212Q258 168 272 130L294 128Q305 164 312 208Q319 250 324 300Z"
+    d="M236 276Q241 234 248 198Q258 160 272 130L294 128Q305 156 312 196Q319 232 324 276Z"
     fill="url(#girlTreeTrunk)"
   />
   <path
-    d="M248 300Q252 258 258 222Q265 186 273 148Q271 186 269 224Q267 262 264 300Z"
+    d="M248 276Q252 238 258 208Q265 178 273 148Q271 178 269 210Q267 242 264 276Z"
     fill="#3e2510"
   />
   <path
-    d="M274 300Q279 260 284 224Q290 184 297 140Q303 182 308 224Q313 260 317 300Z"
+    d="M274 276Q279 240 284 208Q290 176 297 140Q303 174 308 208Q313 240 317 276Z"
     fill="#805027"
   />
   <path
@@ -83,6 +83,6 @@
     <ellipse cx="378" cy="206" rx="3" ry="5" transform="rotate(-30 378 206)" />
     <ellipse cx="454" cy="186" rx="3" ry="5" transform="rotate(44 454 186)" />
     <ellipse cx="526" cy="222" rx="3" ry="5" transform="rotate(-24 526 222)" />
-    <ellipse cx="340" cy="252" rx="3" ry="5" transform="rotate(20 340 252)" />
+    <ellipse cx="340" cy="228" rx="3" ry="5" transform="rotate(20 340 228)" />
   </g>
 </svg>

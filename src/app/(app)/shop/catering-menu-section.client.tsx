@@ -101,6 +101,10 @@ const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] =
         bodyFallbackSrc: posterAsset?.bodyFallbackSrc ?? '/cookie-singular-brookie.svg',
         id: selectableProduct.id,
         image: posterAsset?.image ?? normalizeImage(selectableProduct),
+        infoButtonLabel: posterAsset?.infoButtonLabel,
+        ingredients: posterAsset?.ingredients ?? [],
+        ingredientsIntro: posterAsset?.ingredientsIntro,
+        ingredientsNoteTitle: posterAsset?.ingredientsNoteTitle,
         summary: posterAsset?.summary ?? resolveSummary(selectableProduct),
         title: posterAsset?.title ?? selectableProduct.title,
       }
@@ -1230,6 +1234,28 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           overscroll-behavior-x: contain;
           touch-action: pan-x pinch-zoom;
           scroll-snap-type: x proximity;
+        }
+
+        .cateringFlavorRailInner {
+          transform: translateX(var(--catering-edge-offset, 0)) scaleX(var(--catering-edge-scale, 1));
+          transform-origin: center center;
+          transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: transform;
+        }
+
+        .cateringFlavorRail[data-edge-stretch-side='left'] {
+          --catering-edge-offset: calc(var(--catering-edge-stretch, 0px) * 0.72);
+          --catering-edge-scale: calc(1 + (var(--catering-edge-stretch, 0px) / 900));
+        }
+
+        .cateringFlavorRail[data-edge-stretch-side='right'] {
+          --catering-edge-offset: calc(var(--catering-edge-stretch, 0px) * -0.72);
+          --catering-edge-scale: calc(1 + (var(--catering-edge-stretch, 0px) / 900));
+        }
+
+        .cateringFlavorRail[data-edge-stretch-side='left'] .cateringFlavorRailItem:first-child .cateringFlavorCard,
+        .cateringFlavorRail[data-edge-stretch-side='right'] .cateringFlavorRailItem:last-child .cateringFlavorCard {
+          transform: scaleX(calc(1 + (var(--catering-edge-stretch, 0px) / 240))) translateY(-1px);
         }
 
         .cateringFlavorRail::-webkit-scrollbar {

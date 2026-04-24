@@ -400,6 +400,58 @@ export interface Product {
    */
   layout?: (CallToActionBlock | ContentBlock | MediaBlock)[] | null;
   /**
+   * Display details for the cookie cards and cookie detail art. This is where the business owner edits the short cookie tags, summary, and the handwritten-style ingredient note popup.
+   */
+  poster?: {
+    /**
+     * Short line used under the cookie title on poster-style storefront cards.
+     */
+    subtitle?: string | null;
+    /**
+     * Short all-caps tags shown as visual pills, such as BROWN BUTTER or CHEWY.
+     */
+    chips?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Highlighted label shown above the cookie title on the poster detail page.
+     */
+    label?: string | null;
+    /**
+     * Background color for the poster label, usually a hex value like #f6c58f.
+     */
+    labelTone?: string | null;
+    /**
+     * Short marketing summary used on the poster card and poster detail page.
+     */
+    summary?: string | null;
+    /**
+     * Small label for the translucent scene button that opens the baker-note ingredient popup.
+     */
+    infoButtonLabel?: string | null;
+    /**
+     * Notebook-style heading shown inside the ingredient popup, for example Baker Notes.
+     */
+    ingredientsNoteTitle?: string | null;
+    /**
+     * Optional handwritten-style intro sentence above the ingredients list in the popup.
+     */
+    ingredientsIntro?: string | null;
+    /**
+     * Ingredients or cookie components that should appear inside the popup note.
+     */
+    ingredients?:
+      | {
+          name: string;
+          detail?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
    * Stock count for simple products. If you enable variants, manage stock on each variant instead of here.
    */
   inventory?: number | null;
@@ -426,15 +478,15 @@ export interface Product {
    */
   menuPortionLabel?: string | null;
   /**
-   * Use batch builder when customers must build a tray by picking child products before adding this item to cart.
+   * Use configurable tray when this product is built from child product flavors instead of being added directly. The storefront currently supports single-flavor trays, and custom mix trays can be enabled later without changing the relationship model.
    */
   menuBehavior?: ('simple' | 'batchBuilder') | null;
   /**
-   * How many child items must be chosen before a tray-builder product can be added to cart.
+   * How many cookies belong in the tray. For today's single-flavor trays, this becomes the quantity of the chosen flavor.
    */
   requiredSelectionCount?: number | null;
   /**
-   * Choose which existing product rows can be picked inside this tray-builder product.
+   * Choose which cookie flavors are allowed for this tray. The storefront currently lets the customer pick one of these flavors for the full tray.
    */
   selectableProducts?: (number | Product)[] | null;
   /**
@@ -1990,6 +2042,30 @@ export interface ProductsSelect<T extends boolean = true> {
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+      };
+  poster?:
+    | T
+    | {
+        subtitle?: T;
+        chips?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        label?: T;
+        labelTone?: T;
+        summary?: T;
+        infoButtonLabel?: T;
+        ingredientsNoteTitle?: T;
+        ingredientsIntro?: T;
+        ingredients?:
+          | T
+          | {
+              name?: T;
+              detail?: T;
+              id?: T;
+            };
       };
   inventory?: T;
   enableVariants?: T;

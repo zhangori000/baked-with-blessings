@@ -161,6 +161,7 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
   const [sceneryTone, setSceneryTone] = useState<PosterSceneTone>(
     posterSceneryTones[cardIndex % posterSceneryTones.length] ?? 'classic',
   )
+  const [isIngredientNoteOpen, setIsIngredientNoteOpen] = useState(false)
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedPosterCloud[]>([])
   const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedPosterFlower[]>(
     buildSeededPosterFlowers(cardIndex),
@@ -178,6 +179,7 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
       const currentIndex = posterSceneryTones.indexOf(current)
       return posterSceneryTones[(currentIndex + 1) % posterSceneryTones.length] ?? posterSceneryTones[0]
     })
+    setIsIngredientNoteOpen(false)
     setSpawnedClouds([])
     setSpawnedFlowers(buildSeededPosterFlowers(cardIndex))
   }
@@ -187,7 +189,7 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
       <div className="cookiePosterCard relative flex h-full flex-col overflow-hidden">
         <div className="cookiePosterMeta flex justify-between gap-3 px-1">
           <h3 className="cookiePosterTitle min-w-0 flex-1 text-[1.28rem] font-medium leading-[0.96] tracking-[-0.03em] text-[#171510] md:text-[1.38rem]">
-            <Link href={poster.href}>{poster.title}</Link>
+            <span>{poster.title}</span>
           </h3>
 
           <div className="shrink-0">
@@ -261,6 +263,8 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
 
           <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
 
+          {sceneryTone === 'moonlit' ? <CookiePosterMoonlitLinework /> : null}
+
           <img
             alt=""
             aria-hidden="true"
@@ -290,13 +294,104 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
 
           <CookieSheepRig
             bodyFallbackSrc={poster.bodyFallbackSrc}
-            href={poster.href}
             image={poster.image}
             title={poster.title}
+          />
+
+          <CookiePosterIngredientNote
+            isOpen={isIngredientNoteOpen}
+            onOpenChange={setIsIngredientNoteOpen}
+            poster={poster}
           />
         </CookiePosterSketchFrame>
       </div>
     </article>
+  )
+}
+
+function CookiePosterMoonlitLinework() {
+  return (
+    <div aria-hidden="true" className="cookiePosterMoonlitLinework absolute inset-0 z-[4]">
+      <div className="cookiePosterMoonlitRipple cookiePosterMoonlitRipple--one" />
+      <div className="cookiePosterMoonlitRipple cookiePosterMoonlitRipple--two" />
+      <div className="cookiePosterMoonlitRipple cookiePosterMoonlitRipple--three" />
+      <div className="cookiePosterMoonlitSpark cookiePosterMoonlitSpark--one" />
+      <div className="cookiePosterMoonlitSpark cookiePosterMoonlitSpark--two" />
+      <div className="cookiePosterMoonlitSpark cookiePosterMoonlitSpark--three" />
+      <div className="cookiePosterMoonlitReeds" />
+    </div>
+  )
+}
+
+function CookiePosterIngredientNote({
+  isOpen,
+  onOpenChange,
+  poster,
+}: {
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+  poster: CookiePosterAsset
+}) {
+  const dialogId = `${poster.slug}-ingredient-note`
+  const hasIngredients = poster.ingredients.length > 0
+
+  if (!hasIngredients) {
+    return null
+  }
+
+  return (
+    <>
+      <div className="cookiePosterInfoDock absolute bottom-3 right-3 z-30">
+        <button
+          aria-controls={dialogId}
+          aria-expanded={isOpen}
+          aria-label={`Show ingredients for ${poster.title}`}
+          className="cookiePosterInfoButton"
+          onClick={() => onOpenChange(!isOpen)}
+          type="button"
+        >
+          <span className="cookiePosterInfoButtonIcon" aria-hidden="true">
+            i
+          </span>
+          <span>{poster.infoButtonLabel}</span>
+        </button>
+      </div>
+
+      {isOpen ? (
+        <div
+          aria-label={`${poster.title} ingredients`}
+          className="cookiePosterIngredientCard absolute bottom-14 right-3 z-40 w-[min(13.8rem,calc(100%-1.5rem))]"
+          id={dialogId}
+          role="dialog"
+        >
+          <button
+            aria-label={`Close ingredients for ${poster.title}`}
+            className="cookiePosterIngredientClose"
+            onClick={() => onOpenChange(false)}
+            type="button"
+          >
+            x
+          </button>
+
+          <div className="cookiePosterIngredientPin" aria-hidden="true" />
+
+          <p className="cookiePosterIngredientEyebrow">For {poster.title}</p>
+          <h4 className="cookiePosterIngredientTitle">{poster.ingredientsNoteTitle}</h4>
+          <p className="cookiePosterIngredientIntro">{poster.ingredientsIntro}</p>
+
+          <ul className="cookiePosterIngredientList">
+            {poster.ingredients.map((ingredient) => (
+              <li className="cookiePosterIngredientRow" key={`${ingredient.name}-${ingredient.detail ?? ''}`}>
+                <span className="cookiePosterIngredientName">{ingredient.name}</span>
+                {ingredient.detail ? (
+                  <span className="cookiePosterIngredientDetail">{ingredient.detail}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </>
   )
 }
 
@@ -676,6 +771,277 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           z-index: 8;
         }
 
+        .cookiePosterMoonlitLinework {
+          pointer-events: none;
+        }
+
+        .cookiePosterMoonlitRipple {
+          border-top: 1.5px solid rgba(209, 229, 255, 0.38);
+          border-radius: 999px;
+          filter: drop-shadow(0 0 10px rgba(184, 221, 255, 0.12));
+          height: 1rem;
+          position: absolute;
+          right: 0;
+        }
+
+        .cookiePosterMoonlitRipple--one {
+          bottom: 1.1rem;
+          right: 1rem;
+          transform: rotate(-1deg);
+          width: 4.8rem;
+        }
+
+        .cookiePosterMoonlitRipple--two {
+          bottom: 1.5rem;
+          opacity: 0.84;
+          right: 1.45rem;
+          width: 3.8rem;
+        }
+
+        .cookiePosterMoonlitRipple--three {
+          bottom: 1.9rem;
+          opacity: 0.64;
+          right: 2rem;
+          width: 2.9rem;
+        }
+
+        .cookiePosterMoonlitSpark {
+          background: rgba(242, 250, 255, 0.88);
+          border-radius: 999px;
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.36);
+          height: 0.18rem;
+          position: absolute;
+          width: 0.18rem;
+        }
+
+        .cookiePosterMoonlitSpark--one {
+          bottom: 2.7rem;
+          right: 4.6rem;
+        }
+
+        .cookiePosterMoonlitSpark--two {
+          bottom: 3.15rem;
+          right: 2.9rem;
+        }
+
+        .cookiePosterMoonlitSpark--three {
+          bottom: 2.35rem;
+          right: 1.7rem;
+        }
+
+        .cookiePosterMoonlitReeds {
+          background:
+            linear-gradient(180deg, transparent, transparent 24%, rgba(173, 219, 214, 0.35) 24.5%, transparent 25%) right 0.5rem bottom/0.42rem 100% no-repeat,
+            linear-gradient(180deg, transparent, transparent 32%, rgba(173, 219, 214, 0.28) 32.5%, transparent 33%) right 1.1rem bottom/0.32rem 100% no-repeat,
+            linear-gradient(180deg, transparent, transparent 18%, rgba(173, 219, 214, 0.25) 18.5%, transparent 19%) right 1.55rem bottom/0.28rem 100% no-repeat;
+          bottom: 0.8rem;
+          height: 3.4rem;
+          position: absolute;
+          right: 0.55rem;
+          width: 2rem;
+        }
+
+        .cookiePosterInfoDock {
+          align-items: flex-end;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .cookiePosterInfoButton {
+          align-items: center;
+          backdrop-filter: blur(10px);
+          background: rgba(246, 251, 255, 0.2);
+          border: 1px solid rgba(235, 246, 255, 0.34);
+          border-radius: 999px;
+          box-shadow:
+            0 10px 28px rgba(6, 17, 36, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.26);
+          color: rgba(247, 252, 255, 0.84);
+          cursor: pointer;
+          display: inline-flex;
+          font-family: var(--font-rounded-display);
+          font-size: 0.78rem;
+          font-weight: 700;
+          gap: 0.38rem;
+          letter-spacing: 0.01em;
+          min-height: 2rem;
+          padding: 0.45rem 0.72rem;
+          transition:
+            background-color 180ms ease,
+            color 180ms ease,
+            transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 180ms ease,
+            border-color 180ms ease;
+        }
+
+        .cookiePosterInfoButton:hover,
+        .cookiePosterInfoButton:focus-visible,
+        .cookiePosterInfoButton[aria-expanded='true'] {
+          background: rgba(255, 250, 236, 0.92);
+          border-color: rgba(255, 248, 227, 0.96);
+          box-shadow:
+            0 14px 30px rgba(6, 17, 36, 0.22),
+            0 0 0 1px rgba(104, 77, 34, 0.06);
+          color: #5a4121;
+          transform: translateY(-1px);
+        }
+
+        .cookiePosterInfoButtonIcon {
+          align-items: center;
+          background: rgba(255, 255, 255, 0.24);
+          border-radius: 999px;
+          display: inline-flex;
+          font-family: Georgia, serif;
+          font-size: 0.86rem;
+          font-style: italic;
+          height: 1.1rem;
+          justify-content: center;
+          line-height: 1;
+          width: 1.1rem;
+        }
+
+        .cookiePosterIngredientCard {
+          background:
+            linear-gradient(180deg, rgba(255, 252, 236, 0.98), rgba(250, 243, 216, 0.98)),
+            #fff9e9;
+          border: 1px solid rgba(128, 98, 51, 0.18);
+          border-radius: 1rem 1rem 1.2rem 0.92rem;
+          box-shadow:
+            0 22px 36px rgba(16, 14, 10, 0.2),
+            0 6px 12px rgba(107, 81, 41, 0.12);
+          overflow: hidden;
+          padding: 1rem 0.95rem 0.9rem;
+          transform: rotate(-1.2deg);
+        }
+
+        .cookiePosterIngredientCard::before {
+          background:
+            repeating-linear-gradient(
+              180deg,
+              transparent 0,
+              transparent 1.42rem,
+              rgba(111, 140, 195, 0.18) 1.42rem,
+              rgba(111, 140, 195, 0.18) 1.5rem
+            );
+          content: '';
+          inset: 0;
+          opacity: 0.72;
+          pointer-events: none;
+          position: absolute;
+        }
+
+        .cookiePosterIngredientCard::after {
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.46), transparent 24%);
+          content: '';
+          inset: 0;
+          pointer-events: none;
+          position: absolute;
+        }
+
+        .cookiePosterIngredientPin {
+          background: radial-gradient(circle at 30% 30%, #fffbde, #d4a95f 72%, #9a6d2b 100%);
+          border-radius: 999px;
+          box-shadow: 0 5px 10px rgba(92, 63, 17, 0.24);
+          height: 0.8rem;
+          left: 50%;
+          position: absolute;
+          top: 0.45rem;
+          transform: translateX(-50%);
+          width: 0.8rem;
+          z-index: 2;
+        }
+
+        .cookiePosterIngredientClose {
+          align-items: center;
+          background: rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(118, 87, 39, 0.16);
+          border-radius: 999px;
+          color: rgba(93, 68, 31, 0.8);
+          cursor: pointer;
+          display: inline-flex;
+          font-size: 0.72rem;
+          height: 1.4rem;
+          justify-content: center;
+          position: absolute;
+          right: 0.45rem;
+          top: 0.45rem;
+          width: 1.4rem;
+          z-index: 2;
+        }
+
+        .cookiePosterIngredientEyebrow,
+        .cookiePosterIngredientTitle,
+        .cookiePosterIngredientIntro,
+        .cookiePosterIngredientList {
+          position: relative;
+          z-index: 1;
+        }
+
+        .cookiePosterIngredientEyebrow {
+          color: rgba(121, 88, 42, 0.78);
+          font-family: var(--font-rounded-display);
+          font-size: 0.7rem;
+          letter-spacing: 0.08em;
+          margin-bottom: 0.3rem;
+          margin-top: 0.55rem;
+          text-transform: uppercase;
+        }
+
+        .cookiePosterIngredientTitle {
+          color: #5d4119;
+          font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
+          font-size: 1.18rem;
+          line-height: 1.05;
+          margin: 0;
+        }
+
+        .cookiePosterIngredientIntro {
+          color: rgba(88, 64, 32, 0.78);
+          font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
+          font-size: 0.87rem;
+          line-height: 1.35;
+          margin-bottom: 0.55rem;
+          margin-top: 0.45rem;
+          padding-right: 1rem;
+        }
+
+        .cookiePosterIngredientList {
+          display: grid;
+          gap: 0.32rem;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        .cookiePosterIngredientRow {
+          align-items: baseline;
+          color: #4f3818;
+          display: grid;
+          gap: 0.05rem;
+          padding-left: 0.95rem;
+          position: relative;
+        }
+
+        .cookiePosterIngredientRow::before {
+          color: rgba(126, 92, 42, 0.9);
+          content: '•';
+          left: 0.2rem;
+          position: absolute;
+          top: 0;
+        }
+
+        .cookiePosterIngredientName {
+          font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
+          font-size: 0.92rem;
+          line-height: 1.2;
+        }
+
+        .cookiePosterIngredientDetail {
+          color: rgba(92, 67, 31, 0.68);
+          font-size: 0.72rem;
+          line-height: 1.2;
+        }
+
         .cookieSheepBodyImage {
           transform: scale(1.04);
           transform-origin: center center;
@@ -759,6 +1125,17 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
             min-height: 1.82rem;
             padding-left: 0.62rem;
             padding-right: 0.62rem;
+          }
+
+          .cookiePosterIngredientCard {
+            bottom: 3.45rem;
+            right: 0.75rem;
+            width: min(12.6rem, calc(100% - 1.5rem));
+          }
+
+          .cookiePosterInfoDock {
+            bottom: 0.75rem;
+            right: 0.75rem;
           }
 
           .cookiePosterRailShell {

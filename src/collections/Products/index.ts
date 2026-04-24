@@ -83,6 +83,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
     gallery: true,
     menuBehavior: true,
     menuExpandedPitch: true,
+    poster: true,
     menuPortionLabel: true,
     priceInUSD: true,
     inventory: true,
@@ -211,6 +212,108 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   'Optional long-form sections below the main product details. Use these for ingredient notes, FAQs, extra selling copy, or supporting media.',
               },
               blocks: [CallToAction, Content, MediaBlock],
+            },
+            {
+              name: 'poster',
+              label: 'Cookie Card Details',
+              type: 'group',
+              admin: {
+                description:
+                  'Display details for the cookie cards and cookie detail art. This is where the business owner edits the short cookie tags, summary, and the handwritten-style ingredient note popup.',
+              },
+              fields: [
+                {
+                  name: 'subtitle',
+                  type: 'text',
+                  admin: {
+                    description: 'Short line used under the cookie title on poster-style storefront cards.',
+                  },
+                },
+                {
+                  name: 'chips',
+                  type: 'array',
+                  admin: {
+                    description:
+                      'Short all-caps tags shown as visual pills, such as BROWN BUTTER or CHEWY.',
+                    initCollapsed: true,
+                  },
+                  fields: [
+                    {
+                      name: 'text',
+                      type: 'text',
+                      required: true,
+                    },
+                  ],
+                },
+                {
+                  name: 'label',
+                  type: 'text',
+                  admin: {
+                    description:
+                      'Highlighted label shown above the cookie title on the poster detail page.',
+                  },
+                },
+                {
+                  name: 'labelTone',
+                  type: 'text',
+                  admin: {
+                    description:
+                      'Background color for the poster label, usually a hex value like #f6c58f.',
+                  },
+                },
+                {
+                  name: 'summary',
+                  type: 'textarea',
+                  admin: {
+                    description:
+                      'Short marketing summary used on the poster card and poster detail page.',
+                  },
+                },
+                {
+                  name: 'infoButtonLabel',
+                  type: 'text',
+                  admin: {
+                    description:
+                      'Small label for the translucent scene button that opens the baker-note ingredient popup.',
+                  },
+                },
+                {
+                  name: 'ingredientsNoteTitle',
+                  type: 'text',
+                  admin: {
+                    description:
+                      'Notebook-style heading shown inside the ingredient popup, for example Baker Notes.',
+                  },
+                },
+                {
+                  name: 'ingredientsIntro',
+                  type: 'textarea',
+                  admin: {
+                    description:
+                      'Optional handwritten-style intro sentence above the ingredients list in the popup.',
+                  },
+                },
+                {
+                  name: 'ingredients',
+                  type: 'array',
+                  admin: {
+                    description:
+                      'Ingredients or cookie components that should appear inside the popup note.',
+                    initCollapsed: true,
+                  },
+                  fields: [
+                    {
+                      name: 'name',
+                      type: 'text',
+                      required: true,
+                    },
+                    {
+                      name: 'detail',
+                      type: 'text',
+                    },
+                  ],
+                },
+              ],
             },
           ],
           label: 'Content',

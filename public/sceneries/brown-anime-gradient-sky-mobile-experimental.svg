@@ -1,0 +1,11 @@
+<svg width="100%" viewBox="0 0 430 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dawnSkyMobile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7cc3e8" />
+      <stop offset="68%" stop-color="#c5dff0" />
+      <stop offset="92%" stop-color="#f5d5d8" />
+      <stop offset="100%" stop-color="#f8e4c8" />
+    </linearGradient>
+  </defs>
+  <rect width="430" height="760" fill="url(#dawnSkyMobile)" />
+</svg>

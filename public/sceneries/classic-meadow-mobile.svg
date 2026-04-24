@@ -1,0 +1,23 @@
+<svg width="680" height="220" viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="classicHill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9dc74c" />
+      <stop offset="100%" stop-color="#78a832" />
+    </linearGradient>
+    <linearGradient id="classicField" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8bc34a" />
+      <stop offset="100%" stop-color="#5d8f27" />
+    </linearGradient>
+  </defs>
+  <path d="M0 8Q132 -14 272 6Q408 22 544 4Q610 -4 680 2V78H0V8Z" fill="url(#classicHill)" />
+  <path d="M0 32Q162 12 332 24Q520 38 680 18V220H0V32Z" fill="url(#classicField)" />
+  <g fill="#f8f7eb" opacity="0.72">
+    <circle cx="70" cy="38" r="2" />
+    <circle cx="148" cy="30" r="2" />
+    <circle cx="228" cy="44" r="2" />
+    <circle cx="324" cy="34" r="2" />
+    <circle cx="424" cy="42" r="2" />
+    <circle cx="520" cy="32" r="2" />
+    <circle cx="612" cy="44" r="2" />
+  </g>
+</svg>

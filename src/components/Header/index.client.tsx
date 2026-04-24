@@ -120,6 +120,7 @@ export function HeaderClient({ brand, header }: Props) {
 
       const target = event.target as HTMLElement
       if (target.closest(`.${headerClassNames.actionButton}`)) return
+      if (target.closest('.siteHeaderMobileBagButton')) return
 
       closePanel()
     }

@@ -66,9 +66,19 @@ export const menuHeroSkyByScene: Record<SceneTone, string> = {
 }
 
 export const menuHeroMobileSkyByScene: Partial<Record<SceneTone, string>> = {
-  moonlit: '/sceneries/moonlit-purple-sky-mobile-experimental.svg',
+  dawn: '/sceneries/brown-anime-gradient-sky-mobile-experimental.svg',
   blossom: '/sceneries/blossom-breeze-sky-mobile-experimental.svg',
   'fairy-castle': '/sceneries/fairy-castle-mobile-experimental.svg',
+  classic: '/sceneries/classic-sky-mobile-experimental.svg',
+  'under-tree': '/sceneries/girl-under-tree-sky-mobile-experimental.svg',
+  moonlit: '/sceneries/moonlit-purple-sky-mobile-experimental.svg',
+}
+
+export const menuHeroMobileMeadowByScene: Partial<Record<SceneTone, string>> = {
+  dawn: '/sceneries/brown-anime-rolling-meadow-mobile.svg',
+  'under-tree': '/sceneries/girl-under-tree-meadow-mobile.svg',
+  moonlit: '/sceneries/moonlit-purple-meadow-mobile.svg',
+  classic: '/sceneries/classic-meadow-mobile.svg',
 }
 
 export const menuHeroMeadowByScene: Record<SceneTone, string> = {
@@ -250,7 +260,7 @@ export const menuHeroPiecesByScene: Record<SceneTone, readonly ScenePieceConfig[
   ],
   'under-tree': [
     {
-      className: 'left-[-18%] bottom-[-0.15rem] w-[30rem] md:left-[-9%] md:w-[46rem]',
+      className: 'left-[-18%] bottom-[4.2rem] w-[30rem] md:left-[-9%] md:bottom-[-0.15rem] md:w-[46rem]',
       src: '/sceneries/girl-under-tree-tree.svg',
     },
   ],
@@ -267,19 +277,19 @@ export const menuHeroCrittersByScene: Record<SceneTone, readonly SceneCritterCon
   classic: noSceneCritters,
   blossom: [
     {
-      className: 'left-[9%] bottom-[0.42rem] w-[3rem] md:w-[3.8rem]',
+      className: 'left-[9%] bottom-[1.05rem] w-[3rem] md:w-[3.8rem]',
       src: '/catering/decor/bunny-sit.svg',
     },
     {
-      className: 'left-[28%] bottom-[0.34rem] w-[2.7rem] md:w-[3.3rem]',
+      className: 'left-[28%] bottom-[0.85rem] w-[2.7rem] md:w-[3.3rem]',
       src: '/catering/decor/bunny-hop.svg',
     },
     {
-      className: 'right-[24%] bottom-[0.36rem] w-[2.8rem] md:w-[3.5rem]',
+      className: 'right-[24%] bottom-[0.9rem] w-[2.8rem] md:w-[3.5rem]',
       src: '/catering/decor/bunny-stretch.svg',
     },
     {
-      className: 'right-[8%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
+      className: 'right-[8%] bottom-[0.95rem] w-[2.8rem] md:w-[3.4rem]',
       src: '/catering/decor/bunny-crouch.svg',
       style: { transform: 'scaleX(-1)' },
     },

@@ -1,0 +1,10 @@
+<svg width="100%" viewBox="0 0 430 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="classicSkyMobile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8ec9f0" />
+      <stop offset="78%" stop-color="#cfeafd" />
+      <stop offset="100%" stop-color="#f8f8eb" />
+    </linearGradient>
+  </defs>
+  <rect width="430" height="760" fill="url(#classicSkyMobile)" />
+</svg>

@@ -11,7 +11,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { ArrowRight, ShoppingBag, X } from 'lucide-react'
@@ -47,17 +46,20 @@ export function CartModal() {
 
   return (
     <Sheet onOpenChange={setIsOpen} open={isOpen}>
-      <SheetTrigger asChild>
-        <OpenCartButton quantity={totalQuantity} />
-      </SheetTrigger>
+      <OpenCartButton
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((current) => !current)}
+        quantity={totalQuantity}
+      />
 
       <SheetContent
-        className="!top-1 !right-1 !bottom-1 !left-1 !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] sm:!top-3 sm:!bottom-3 sm:!right-3 sm:!left-auto sm:!h-[calc(100dvh-24px)] sm:!w-[min(430px,calc(100vw-20px))] border border-black/10 border-l-0 rounded-[28px] bg-[#f7f3ea]/92 p-0 text-black shadow-none backdrop-blur-xl"
+        className="!top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!h-[calc(100dvh-24px)] sm:!w-[min(430px,calc(100vw-24px))] border border-black/10 rounded-[28px] bg-[#f7f3ea]/92 p-0 text-black shadow-none backdrop-blur-xl"
         hideClose
-        onEscapeKeyDown={closeCart}
-        onInteractOutside={closeCart}
-        onPointerDownOutside={closeCart}
+        onEscapeKeyDown={() => setIsOpen(false)}
+        onInteractOutside={() => setIsOpen(false)}
+        onPointerDownOutside={() => setIsOpen(false)}
         overlayClassName="bg-[rgba(244,240,232,0.34)] backdrop-blur-md"
+        side="top"
       >
         <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px]">
           <CartSceneShell

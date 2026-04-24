@@ -1,0 +1,33 @@
+<svg width="680" height="240" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mountain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a5068" />
+      <stop offset="100%" stop-color="#2a3a50" />
+    </linearGradient>
+    <linearGradient id="meadowNight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a3a4a" />
+      <stop offset="100%" stop-color="#0a2030" />
+    </linearGradient>
+  </defs>
+  <ellipse cx="340" cy="-18" rx="340" ry="44" fill="#7ae8b0" opacity="0.56" />
+  <ellipse cx="340" cy="4" rx="340" ry="28" fill="#a8f0c4" opacity="0.44" />
+  <path
+    d="M0 4L60 -18L110 -2L180 -24L250 -6L310 -14L360 2L400 -2L440 6L500 2L560 10L620 -2L680 10V82H0V4Z"
+    fill="url(#mountain)"
+  />
+  <path d="M60 -18L110 -2" opacity="0.7" stroke="#6ad4a0" stroke-width="1" />
+  <path d="M180 -24L250 -6" opacity="0.6" stroke="#6ad4a0" stroke-width="1" />
+  <path d="M310 -14L360 2" opacity="0.5" stroke="#6ad4a0" stroke-width="1" />
+  <path
+    d="M0 32Q150 22 320 28Q520 34 680 26V60Q510 70 320 63Q145 58 0 68V32Z"
+    fill="#2a5868"
+    opacity="0.56"
+  />
+  <line x1="56" y1="46" x2="160" y2="42" opacity="0.34" stroke="#6ad4a0" stroke-width="0.8" />
+  <line x1="214" y1="48" x2="336" y2="46" opacity="0.28" stroke="#6ad4a0" stroke-width="0.8" />
+  <line x1="398" y1="44" x2="500" y2="42" opacity="0.28" stroke="#6ad4a0" stroke-width="0.8" />
+  <path
+    d="M0 56Q180 36 360 48Q540 60 680 48V240H0V56Z"
+    fill="url(#meadowNight)"
+  />
+</svg>

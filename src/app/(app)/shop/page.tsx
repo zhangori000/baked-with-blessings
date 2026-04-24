@@ -120,6 +120,7 @@ export default async function ShopPage({ searchParams }: Props) {
       gallery: true,
       categories: true,
       meta: true,
+      poster: true,
       priceInUSD: true,
       variants: true,
     },

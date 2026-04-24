@@ -32,6 +32,7 @@ export const queryHomeCookiePosters = async () => {
         gallery: true,
         id: true,
         meta: true,
+        poster: true,
         priceInUSD: true,
         slug: true,
         title: true,

@@ -1,12 +1,17 @@
 <svg width="100%" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="60" cy="70" rx="28" ry="18" fill="#fff7ef"/>
-  <ellipse cx="84" cy="60" rx="14" ry="13" fill="#fff7ef"/>
-  <ellipse cx="86" cy="36" rx="6" ry="18" fill="#fff7ef" transform="rotate(8 86 36)"/>
-  <ellipse cx="74" cy="38" rx="5" ry="17" fill="#fff7ef" transform="rotate(-10 74 38)"/>
-  <ellipse cx="95" cy="59" rx="3" ry="4" fill="#f7c7cf"/>
-  <circle cx="88" cy="57" r="1.8" fill="#4b433b"/>
-  <circle cx="48" cy="84" r="5" fill="#fff7ef"/>
-  <circle cx="65" cy="86" r="5" fill="#fff7ef"/>
-  <circle cx="32" cy="72" r="6" fill="#fff7ef"/>
-  <circle cx="29" cy="69" r="3" fill="#f7f0e6"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="58" cy="70" rx="28" ry="17" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.3"/>
+    <ellipse cx="83" cy="59" rx="14" ry="13" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.3"/>
+    <ellipse cx="86" cy="35" rx="5.2" ry="18" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.1" transform="rotate(9 86 35)"/>
+    <ellipse cx="74" cy="38" rx="5" ry="17" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.1" transform="rotate(-10 74 38)"/>
+    <ellipse cx="86" cy="35" rx="2" ry="10.5" fill="#f3bfd0" opacity="0.9" transform="rotate(9 86 35)"/>
+    <ellipse cx="74" cy="38" rx="1.9" ry="10" fill="#f3bfd0" opacity="0.9" transform="rotate(-10 74 38)"/>
+    <circle cx="88" cy="57" r="1.7" fill="#3b342f" stroke="none"/>
+    <circle cx="95" cy="60" r="2" fill="#efb5c4" stroke="none"/>
+    <path d="M89.5 61.8Q92 64 94 62.2" stroke="#7c6559" stroke-width="1.5"/>
+    <ellipse cx="46" cy="84" rx="5.5" ry="4.2" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+    <ellipse cx="64" cy="86" rx="5.5" ry="4.2" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+    <ellipse cx="31" cy="72" rx="6.5" ry="5.2" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+    <circle cx="28" cy="68" r="3.6" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.6"/>
+  </g>
 </svg>
