@@ -4,10 +4,9 @@
       <feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#9BB8D8" flood-opacity="0.18"/>
     </filter>
   </defs>
-  <g filter="url(#cloudShadowWide)" fill="#FFF8F4">
-    <rect x="74" y="60" width="134" height="46" rx="23"/>
-    <circle cx="98" cy="58" r="20"/>
-    <circle cx="137" cy="44" r="28"/>
-    <circle cx="175" cy="55" r="22"/>
-  </g>
+  <path
+    filter="url(#cloudShadowWide)"
+    d="M31 91C21 85 18 76 24 68C31 59 44 56 59 56C70 44 91 37 116 38C130 28 154 25 177 32C195 38 209 49 215 62C232 63 249 70 257 82C266 96 252 108 229 113C211 117 189 115 171 112C151 118 122 118 101 113C77 118 49 110 31 91Z"
+    fill="#FFF8F4"
+  />
 </svg>

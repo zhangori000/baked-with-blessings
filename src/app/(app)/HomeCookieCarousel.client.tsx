@@ -5,7 +5,6 @@ import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { GrowingGrassBorder } from '@/components/flowers/GrowingGrassBorder'
 import {
   buildSeededMenuSceneAccents,
@@ -766,6 +765,14 @@ export function HomeCookieCarousel({
   const isActivePosterPromptState = cartPromptState.slug === activePoster.slug
   const activePosterPromptPhase = isActivePosterPromptState ? cartPromptState.phase : 'idle'
   const activePosterCanAddToCart = typeof activePoster.productId === 'number'
+  const isInfoReceiptVisible =
+    infoPhase === 'lifting' ||
+    infoPhase === 'open' ||
+    infoPhase === 'closing' ||
+    infoPhase === 'withering'
+  const shouldShowInlineInfoControl =
+    sceneVariant === 'scenery' &&
+    infoPhase !== 'hidden'
   const isCartPromptOpen =
     activePosterPromptPhase === 'open' ||
     activePosterPromptPhase === 'loading' ||
@@ -822,6 +829,27 @@ export function HomeCookieCarousel({
         }, INFO_RETURN_DURATION_MS)
       }, INFO_GRASS_HIDE_DURATION_MS)
     }, INFO_CLOSE_DURATION_MS)
+  }
+
+  const startOpenInfo = () => {
+    if (infoLiftTimeoutRef.current != null) {
+      window.clearTimeout(infoLiftTimeoutRef.current)
+    }
+
+    setInfoPhase('lifting')
+    infoLiftTimeoutRef.current = window.setTimeout(() => {
+      setInfoPhase('open')
+      infoLiftTimeoutRef.current = null
+    }, INFO_LIFT_DURATION_MS)
+  }
+
+  const handleInfoControlClick = () => {
+    if (infoPhase === 'lifting' || infoPhase === 'open') {
+      startCloseInfo()
+      return
+    }
+
+    startOpenInfo()
   }
 
   const handleNavigate = (direction: -1 | 1) => {
@@ -1021,6 +1049,19 @@ export function HomeCookieCarousel({
                 ))}
 
                 <div className="homeCookieSceneActions">
+                  {shouldShowInlineInfoControl ? (
+                    <div className="homeCookieInfoDock homeCookieInfoDock--inline">
+                      <button
+                        aria-controls={`home-cookie-receipt-${activePoster.slug}`}
+                        aria-expanded={isInfoReceiptVisible}
+                        className={`homeCookieInfoButton${isInfoReceiptVisible ? ' is-active' : ''}`}
+                        onClick={handleInfoControlClick}
+                        type="button"
+                      >
+                        {activePoster.infoButtonLabel}
+                      </button>
+                    </div>
+                  ) : null}
                   <button
                     className="homeCookieSceneButton"
                     onClick={() => {
@@ -1107,43 +1148,17 @@ export function HomeCookieCarousel({
 
             {sceneVariant === 'scenery' && infoPhase === 'ready' ? (
               <div
-                className="homeCookieInfoDock"
+                className="homeCookieInfoDock homeCookieInfoDock--floating md:hidden"
                 style={{
                   left: '50%',
-                  top: `calc(${rigTop} - var(--cookie-size) * 0.7)`,
+                  top: `calc(${rigTop} - var(--cookie-size) * 0.66)`,
                 }}
               >
-                <FlowerSprite
-                  animateIn
-                  asset="/flowers/menu-nav-flower.svg"
-                  className="homeCookieInfoFlower"
-                  living
-                  sizes="42px"
-                  style={
-                    {
-                      '--flower-bob': '0.05rem',
-                      '--flower-delay': '0.08s',
-                      '--flower-grow-delay': '70ms',
-                      '--flower-scale': '1.98',
-                      '--flower-tilt': '-2deg',
-                    } as CSSProperties
-                  }
-                />
                 <button
                   aria-controls={`home-cookie-receipt-${activePoster.slug}`}
                   aria-expanded="false"
                   className="homeCookieInfoButton"
-                  onClick={() => {
-                    if (infoLiftTimeoutRef.current != null) {
-                      window.clearTimeout(infoLiftTimeoutRef.current)
-                    }
-
-                    setInfoPhase('lifting')
-                    infoLiftTimeoutRef.current = window.setTimeout(() => {
-                      setInfoPhase('open')
-                      infoLiftTimeoutRef.current = null
-                    }, INFO_LIFT_DURATION_MS)
-                  }}
+                  onClick={startOpenInfo}
                   type="button"
                 >
                   {activePoster.infoButtonLabel}
@@ -1239,8 +1254,9 @@ export function HomeCookieCarousel({
               }`}
               id={`home-cookie-receipt-${activePoster.slug}`}
               style={{
-                left: 'calc(50% + var(--home-receipt-left-nudge, 0rem))',
-                top: `calc(${rigTop} + (var(--cookie-size) * 0.5) - var(--home-info-lift, calc(var(--cookie-size) * 0.58)) + var(--home-receipt-top-nudge, 0.18rem))`,
+                left:
+                  'var(--home-receipt-left, calc(50% + var(--home-receipt-left-nudge, 0rem)))',
+                top: `var(--home-receipt-top, calc(${rigTop} + (var(--cookie-size) * 0.5) - var(--home-info-lift, calc(var(--cookie-size) * 0.58)) + var(--home-receipt-top-nudge, 0.18rem)))`,
               }}
             >
               <GrowingGrassBorder
@@ -1282,6 +1298,10 @@ export function HomeCookieCarousel({
                     </li>
                   ))}
                 </ul>
+
+                <div className="homeCookieReceiptBarcode" aria-hidden="true">
+                  <span />
+                </div>
               </div>
             </div>
           ) : null}
@@ -1493,9 +1513,9 @@ export function HomeCookieCarousel({
 
         .homeCookieSceneActions {
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           gap: 0.65rem;
-          max-width: min(28rem, calc(100vw - 2rem));
+          max-width: min(36rem, calc(100vw - 2rem));
           pointer-events: auto;
           position: absolute;
           right: clamp(0.85rem, 3vw, 2.2rem);
@@ -1662,16 +1682,15 @@ export function HomeCookieCarousel({
           z-index: 33;
         }
 
-        .homeCookieInfoFlower {
-          left: 50%;
-          position: absolute;
-          top: -1.95rem;
-          transform: translateX(-50%);
-          width: 2.08rem;
+        .homeCookieInfoDock--inline {
+          opacity: 1;
+          pointer-events: auto;
+          position: relative;
+          transform: none;
         }
 
-        .homeCookieInfoDock.is-open,
-        .homeCookieInfoDock:not(.is-open) {
+        .homeCookieInfoDock--floating.is-open,
+        .homeCookieInfoDock--floating:not(.is-open) {
           opacity: 1;
           pointer-events: auto;
           transform: translate(-50%, 0);
@@ -1703,6 +1722,13 @@ export function HomeCookieCarousel({
           background: rgba(255, 248, 225, 0.98);
           box-shadow: 0 16px 32px rgba(16, 13, 9, 0.2);
           transform: translateY(-1px);
+        }
+
+        .homeCookieInfoButton.is-active {
+          background: #fff6d5;
+          border-color: rgba(97, 74, 37, 0.26);
+          box-shadow: inset 0 0 0 1px rgba(97, 74, 37, 0.08);
+          transform: none;
         }
 
         .homeCookieReceipt {
@@ -1751,15 +1777,13 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieReceiptPaper {
-          background:
-            linear-gradient(180deg, rgba(255, 252, 240, 0.98), rgba(249, 240, 215, 0.98)),
-            #fff9e8;
-          border: 1px solid rgba(123, 94, 47, 0.16);
+          background: #fffefa;
+          border: 1px solid rgba(133, 160, 198, 0.2);
           border-top: 0;
           border-radius: 0;
           box-shadow:
             0 24px 40px rgba(16, 14, 10, 0.18),
-            0 4px 10px rgba(107, 81, 41, 0.08);
+            0 4px 10px rgba(77, 104, 156, 0.08);
           min-height: 19.5rem;
           opacity: 0;
           overflow: hidden;
@@ -1794,22 +1818,6 @@ export function HomeCookieCarousel({
         .homeCookieReceipt.is-withering .homeCookieReceiptBorder {
           opacity: 0;
           transform: scale(0.92);
-        }
-
-        .homeCookieReceiptPaper::before {
-          background:
-            repeating-linear-gradient(
-              180deg,
-              transparent 0,
-              transparent 1.46rem,
-              rgba(111, 140, 195, 0.16) 1.46rem,
-              rgba(111, 140, 195, 0.16) 1.54rem
-            );
-          content: '';
-          inset: 0;
-          opacity: 0.74;
-          pointer-events: none;
-          position: absolute;
         }
 
         .homeCookieReceiptHeader,
@@ -1874,9 +1882,35 @@ export function HomeCookieCarousel({
           padding: 0;
         }
 
+        .homeCookieReceiptBarcode {
+          align-items: end;
+          display: flex;
+          justify-content: center;
+          margin: 1.1rem auto 0;
+          position: relative;
+          width: min(8.8rem, 72%);
+          z-index: 1;
+        }
+
+        .homeCookieReceiptBarcode span {
+          background:
+            repeating-linear-gradient(
+              90deg,
+              #2b2418 0 2px,
+              transparent 2px 5px,
+              #2b2418 5px 6px,
+              transparent 6px 9px,
+              #2b2418 9px 12px,
+              transparent 12px 16px
+            );
+          display: block;
+          height: 2.05rem;
+          opacity: 0.78;
+          width: 100%;
+        }
+
         .homeCookieReceiptRow {
           align-items: start;
-          border-bottom: 1px dashed rgba(121, 92, 47, 0.16);
           display: grid;
           gap: 0.22rem;
           grid-template-columns: minmax(0, 1fr);
@@ -1884,7 +1918,6 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieReceiptRow:last-child {
-          border-bottom: 0;
           padding-bottom: 0;
         }
 
@@ -2404,6 +2437,7 @@ export function HomeCookieCarousel({
           }
 
           .homeCookieSceneActions {
+            flex-wrap: wrap;
             justify-content: center;
             left: 0.85rem;
             max-width: none;
@@ -2419,11 +2453,11 @@ export function HomeCookieCarousel({
           }
 
           .homeCookieInfoDock {
-            top: calc(${rigTop} - var(--cookie-size) * 0.8);
+            top: calc(${rigTop} - var(--cookie-size) * 0.74);
           }
 
-          .homeCookieInfoFlower {
-            top: -1.55rem;
+          .homeCookieInfoDock--inline {
+            display: none;
           }
 
           .homeCookieReceipt {
@@ -2791,16 +2825,18 @@ export function HomeCookieCarousel({
             --home-info-rotate-mid: -6deg;
             --home-info-rotate-end: -2deg;
             --home-info-shift-x: 0rem;
+            --home-receipt-left: clamp(8rem, calc(100% - 29.15rem), calc(100% - 8rem));
             --home-receipt-left-nudge: 0rem;
             --home-receipt-offset-x: -50%;
             --home-receipt-origin: center top;
+            --home-receipt-top: calc(var(--home-header-underlap) + 4.65rem);
             --home-receipt-top-nudge: 0.24rem;
-            --home-receipt-width: min(34rem, calc(100vw - 8rem));
+            --home-receipt-width: min(14.25rem, calc(100vw - 8rem));
             --home-meadow-height: 7.4rem;
           }
 
           .homeCookieReceiptPaper {
-            min-height: 12rem;
+            min-height: 18.5rem;
           }
         }
 
@@ -2820,16 +2856,18 @@ export function HomeCookieCarousel({
             --home-info-rotate-mid: -6deg;
             --home-info-rotate-end: -2deg;
             --home-info-shift-x: 0rem;
+            --home-receipt-left: clamp(8rem, calc(100% - 29.15rem), calc(100% - 8rem));
             --home-receipt-left-nudge: 0rem;
             --home-receipt-offset-x: -50%;
             --home-receipt-origin: center top;
+            --home-receipt-top: calc(var(--home-header-underlap) + 4.75rem);
             --home-receipt-top-nudge: 0.26rem;
-            --home-receipt-width: min(38rem, calc(100vw - 10rem));
+            --home-receipt-width: min(14.5rem, calc(100vw - 10rem));
             --home-meadow-height: 7.9rem;
           }
 
           .homeCookieReceiptPaper {
-            min-height: 12rem;
+            min-height: 18.75rem;
           }
         }
 
@@ -2849,16 +2887,38 @@ export function HomeCookieCarousel({
             --home-info-rotate-mid: -6deg;
             --home-info-rotate-end: -2deg;
             --home-info-shift-x: 0rem;
+            --home-receipt-left: clamp(8rem, calc(100% - 29.15rem), calc(100% - 8rem));
             --home-receipt-left-nudge: 0rem;
             --home-receipt-offset-x: -50%;
             --home-receipt-origin: center top;
+            --home-receipt-top: calc(var(--home-header-underlap) + 4.85rem);
             --home-receipt-top-nudge: 0.3rem;
-            --home-receipt-width: min(42rem, calc(100vw - 12rem));
+            --home-receipt-width: min(14.75rem, calc(100vw - 12rem));
             --home-meadow-height: 8.4rem;
           }
 
           .homeCookieReceiptPaper {
-            min-height: 12rem;
+            min-height: 19rem;
+          }
+        }
+
+        @media (min-width: 900px) {
+          .homeCookieShowcase--scenery .homeCookieRigShell--info-open,
+          .homeCookieShowcase--scenery .homeCookieRigShell--info-closing {
+            animation: none;
+            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
+            z-index: 30;
+          }
+
+          .homeCookieShowcase--scenery .homeCookieRigShell--info-open .cookieSheepBodyImage,
+          .homeCookieShowcase--scenery .homeCookieRigShell--info-closing .cookieSheepBodyImage {
+            transform: scale(1.02);
+          }
+
+          .homeCookieShowcase--scenery .homeCookieRigShell--info-open .cookieSheepBurstPart,
+          .homeCookieShowcase--scenery .homeCookieRigShell--info-closing .cookieSheepBurstPart {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
           }
         }
       `}</style>

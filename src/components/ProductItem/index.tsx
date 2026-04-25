@@ -1,11 +1,6 @@
 import { Media } from '@/components/Media'
-import { OrderStatus } from '@/components/OrderStatus'
 import { Price } from '@/components/Price'
-import { Button } from '@/components/ui/button'
-import { Media as MediaType, Order, Product, Variant } from '@/payload-types'
-import { formatDateTime } from '@/utilities/formatDateTime'
-import Link from 'next/link'
-
+import { Product, Variant } from '@/payload-types'
 type Props = {
   product: Product
   style?: 'compact' | 'default'
@@ -19,7 +14,7 @@ type Props = {
 
 export const ProductItem: React.FC<Props> = ({
   product,
-  style = 'default',
+  style: _style = 'default',
   quantity,
   variant,
   currencyCode,
@@ -56,7 +51,6 @@ export const ProductItem: React.FC<Props> = ({
   }
 
   const itemPrice = variant?.priceInUSD || product.priceInUSD
-  const itemURL = `/products/${product.slug}${variant ? `?variant=${variant.id}` : ''}`
 
   return (
     <div className="flex items-center gap-4">
@@ -70,7 +64,7 @@ export const ProductItem: React.FC<Props> = ({
       <div className="flex grow justify-between items-center">
         <div className="flex flex-col gap-1">
           <p className="font-medium text-lg">
-            <Link href={itemURL}>{title}</Link>
+            {title}
           </p>
           {variant && (
             <p className="text-sm font-mono text-primary/50 tracking-widest">

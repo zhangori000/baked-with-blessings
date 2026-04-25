@@ -18,7 +18,7 @@ async function List() {
 
   const categories = categoriesData.docs?.map((category) => {
     return {
-      href: `/shop/${category.slug}`,
+      href: `/menu?category=${category.slug}`,
       title: category.title,
     }
   })
@@ -27,7 +27,7 @@ async function List() {
     <React.Fragment>
       <nav>
         <ul className="flex gap-3">
-          <Item title="All" href="/shop" />
+          <Item title="All" href="/menu" />
           <Suspense fallback={null}>
             {categories.map((category) => {
               return <Item {...category} key={category.href} />

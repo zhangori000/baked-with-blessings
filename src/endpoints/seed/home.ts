@@ -21,7 +21,7 @@ export const homePageData: ({
             type: 'custom',
             appearance: 'default',
             label: 'Browse the menu',
-            url: '/shop',
+            url: '/menu',
           },
         },
         {
@@ -80,7 +80,7 @@ export const homePageData: ({
               type: 'custom',
               appearance: 'default',
               label: 'Open the menu',
-              url: '/shop',
+              url: '/menu',
             },
           },
           {

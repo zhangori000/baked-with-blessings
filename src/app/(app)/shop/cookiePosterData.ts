@@ -22,7 +22,6 @@ export type CookiePosterAsset = CookiePosterMeta & {
   amount: string
   href: string
   image: Media | null
-  productHref: string
   productId?: number
 }
 
@@ -374,7 +373,6 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
       key: 'labelTone',
       product,
     }),
-    productHref: `/products/${meta.slug}`,
     productId: typeof product.id === 'number' ? product.id : undefined,
     summary: resolveSummary(product, meta),
     subtitle: resolvePosterText({

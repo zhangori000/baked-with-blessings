@@ -203,6 +203,15 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 },
               ],
             },
+            {
+              name: 'bulkGalleryImages',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/admin/ProductGalleryBulkPicker#ProductGalleryBulkPicker',
+                },
+              },
+            },
 
             {
               name: 'layout',

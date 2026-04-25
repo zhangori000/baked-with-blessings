@@ -1,4 +1,4 @@
-<svg width="100%" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+<svg width="100%" viewBox="-72 -68 872 408" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="girlTreeTrunk" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#4a2d16" />
@@ -9,15 +9,15 @@
 
   <!-- Trunk and main limbs: centered so the canopy feels balanced instead of hanging only to the right. -->
   <path
-    d="M236 276Q241 234 248 198Q258 160 272 130L294 128Q305 156 312 196Q319 232 324 276Z"
+    d="M226 292Q232 242 242 202Q256 156 274 122L302 120Q316 154 326 198Q335 240 342 292Z"
     fill="url(#girlTreeTrunk)"
   />
   <path
-    d="M248 276Q252 238 258 208Q265 178 273 148Q271 178 269 210Q267 242 264 276Z"
+    d="M240 292Q246 248 254 214Q264 180 275 144Q272 180 270 218Q268 256 264 292Z"
     fill="#3e2510"
   />
   <path
-    d="M274 276Q279 240 284 208Q290 176 297 140Q303 174 308 208Q313 240 317 276Z"
+    d="M280 292Q286 250 292 214Q300 178 308 138Q316 176 322 214Q328 250 334 292Z"
     fill="#805027"
   />
   <path
@@ -48,31 +48,32 @@
     stroke-linecap="round"
     stroke-width="8"
   />
-  <!-- Canopy: overlapping rounded foliage across both sides of the trunk. -->
+  <!-- Canopy: intentionally oversized and extra fluffy so it reads clearly behind the cookie. -->
   <g>
-    <ellipse cx="128" cy="108" rx="98" ry="54" fill="#406f21" />
-    <ellipse cx="228" cy="86" rx="110" ry="60" fill="#4c7c28" />
-    <ellipse cx="340" cy="82" rx="108" ry="58" fill="#55862d" />
-    <ellipse cx="456" cy="90" rx="102" ry="54" fill="#4c7c28" />
-    <ellipse cx="566" cy="110" rx="86" ry="46" fill="#467625" />
+    <ellipse cx="64" cy="128" rx="134" ry="70" fill="#3f6d20" />
+    <ellipse cx="188" cy="92" rx="146" ry="78" fill="#4c7c28" />
+    <ellipse cx="338" cy="74" rx="154" ry="82" fill="#5b8a31" />
+    <ellipse cx="500" cy="94" rx="148" ry="78" fill="#4c7c28" />
+    <ellipse cx="644" cy="132" rx="126" ry="66" fill="#467625" />
   </g>
   <g>
-    <circle cx="100" cy="82" r="40" fill="#6aa53a" />
-    <circle cx="154" cy="70" r="44" fill="#76b044" />
-    <circle cx="214" cy="56" r="46" fill="#86c24d" />
-    <circle cx="280" cy="46" r="50" fill="#9ed054" />
-    <circle cx="352" cy="44" r="48" fill="#b6dd5a" />
-    <circle cx="424" cy="50" r="46" fill="#9fd356" />
-    <circle cx="492" cy="62" r="44" fill="#86c24d" />
-    <circle cx="556" cy="80" r="40" fill="#73af42" />
+    <circle cx="6" cy="114" r="52" fill="#5e9734" />
+    <circle cx="74" cy="88" r="56" fill="#6aa53a" />
+    <circle cx="152" cy="58" r="64" fill="#76b044" />
+    <circle cx="244" cy="32" r="70" fill="#86c24d" />
+    <circle cx="344" cy="16" r="76" fill="#9ed054" />
+    <circle cx="448" cy="14" r="74" fill="#bde455" />
+    <circle cx="548" cy="30" r="68" fill="#9fd356" />
+    <circle cx="634" cy="58" r="62" fill="#86c24d" />
+    <circle cx="706" cy="98" r="52" fill="#73af42" />
   </g>
   <g>
-    <circle cx="132" cy="118" r="28" fill="#5b9533" />
-    <circle cx="202" cy="112" r="30" fill="#6aa53a" />
-    <circle cx="276" cy="108" r="32" fill="#78b244" />
-    <circle cx="356" cy="110" r="32" fill="#83bf4b" />
-    <circle cx="436" cy="114" r="30" fill="#72ad40" />
-    <circle cx="510" cy="124" r="28" fill="#609935" />
+    <circle cx="96" cy="146" r="40" fill="#5b9533" />
+    <circle cx="188" cy="132" r="42" fill="#6aa53a" />
+    <circle cx="288" cy="122" r="48" fill="#78b244" />
+    <circle cx="394" cy="122" r="48" fill="#83bf4b" />
+    <circle cx="498" cy="134" r="42" fill="#72ad40" />
+    <circle cx="594" cy="154" r="40" fill="#609935" />
   </g>
 
   <!-- Small hanging petals/leaves to keep the dreamy under-tree feel. -->

@@ -4,6 +4,7 @@ import { Price } from '@/components/Price'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { menuHref } from '@/utilities/routes'
+import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
   Sheet,
   SheetClose,
@@ -53,15 +54,15 @@ export function CartModal() {
       />
 
       <SheetContent
-        className="!top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!h-[calc(100dvh-24px)] sm:!w-[min(430px,calc(100vw-24px))] border border-black/10 rounded-[28px] bg-[#f7f3ea]/92 p-0 text-black shadow-none backdrop-blur-xl"
+        className="!top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!top-[6.15rem] sm:!bottom-auto sm:!left-auto sm:!right-3 sm:!h-[min(42rem,calc(100dvh-7rem))] sm:!w-[min(430px,calc(100vw-24px))] sm:!translate-x-0 sm:!translate-y-0 border border-black/12 rounded-[8px] bg-[#fffefa] p-0 text-black shadow-none"
         hideClose
         onEscapeKeyDown={() => setIsOpen(false)}
         onInteractOutside={() => setIsOpen(false)}
         onPointerDownOutside={() => setIsOpen(false)}
-        overlayClassName="bg-[rgba(244,240,232,0.34)] backdrop-blur-md"
+        overlayClassName="bg-[rgba(244,240,232,0.26)]"
         side="top"
       >
-        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px]">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[8px]">
           <CartSceneShell
             className="border-b border-black/8 px-4 py-3"
             contentClassName="pr-16"
@@ -69,7 +70,7 @@ export function CartModal() {
             <SheetHeader className="space-y-0 border-none p-0 text-left">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/76 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-black/65 shadow-[0_6px_18px_rgba(17,17,17,0.06)]">
+                  <div className="inline-flex items-center gap-2 rounded-[4px] border border-black/10 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-black/65">
                     <ShoppingBag className="h-3.5 w-3.5" />
                     <span>{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}</span>
                   </div>
@@ -87,7 +88,7 @@ export function CartModal() {
                 <SheetClose asChild>
                   <button
                     aria-label="Close cart"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/88 text-black/70 shadow-[0_6px_18px_rgba(17,17,17,0.08)] transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-black/70 transition duration-200 hover:border-black/20 hover:bg-black hover:text-white"
                     type="button"
                   >
                     <X className="h-4 w-4" />
@@ -100,10 +101,10 @@ export function CartModal() {
           {!hasItems ? (
             <div className="flex flex-1 flex-col px-4 py-4">
               <CartSceneShell
-                className="flex min-h-0 flex-1 items-center justify-center rounded-[24px] border border-black/8 px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]"
+                className="flex min-h-0 flex-1 items-center justify-center rounded-[6px] border border-black/8 px-6 py-8 text-center"
                 contentClassName="mx-auto max-w-[20rem] space-y-5"
               >
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white/84 shadow-[0_12px_26px_rgba(17,17,17,0.08)]">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white">
                   <ShoppingBag className="h-8 w-8 text-black/70" />
                 </div>
 
@@ -125,8 +126,8 @@ export function CartModal() {
             </div>
           ) : (
             <>
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 pb-3">
-                <ul className="space-y-3">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-0">
+                <ul className="divide-y divide-black/10">
                   {cart?.items?.map((item, index) => {
                     const product = item.product
                     const variant = item.variant
@@ -175,26 +176,29 @@ export function CartModal() {
                       }
                     }
 
+                    const resolvedImageSrc = resolveMediaDisplayURL(image)
+
                     return (
                       <li
-                        className="rounded-[24px] border border-black/8 bg-white/72 p-4"
+                        className="bg-white px-0 py-4"
                         key={index}
                       >
-                        <div className="flex gap-4">
-                          <Link
-                            className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[20px] bg-[#ece6d8]"
-                            href={`/products/${(item.product as Product).slug}`}
+                        <div className="flex gap-3.5 sm:gap-4">
+                          <div
+                            aria-hidden="true"
+                            className="cartModalItemThumb relative h-28 w-28 shrink-0 overflow-hidden rounded-[6px] sm:h-[7.5rem] sm:w-[7.5rem]"
                           >
-                            {image?.url ? (
+                            {resolvedImageSrc ? (
                               <Image
                                 alt={image.alt || product.title || ''}
-                                className="h-full w-full object-cover"
+                                className="cartModalItemThumbImage"
                                 fill
-                                sizes="96px"
-                                src={image.url}
+                                quality={95}
+                                sizes="(min-width: 640px) 192px, 160px"
+                                src={resolvedImageSrc}
                               />
                             ) : null}
-                          </Link>
+                          </div>
 
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
@@ -202,12 +206,9 @@ export function CartModal() {
                                 <p className="text-[11px] uppercase tracking-[0.22em] text-black/45">
                                   {isVariant ? 'Configured item' : 'Bakery item'}
                                 </p>
-                                <Link
-                                  className="block text-lg font-medium leading-6 tracking-[-0.03em] text-black"
-                                  href={`/products/${(item.product as Product).slug}`}
-                                >
+                                <p className="block text-lg font-medium leading-6 tracking-[-0.03em] text-black">
                                   {product.title}
-                                </Link>
+                                </p>
                                 {isVariant && variant ? (
                                   <p className="text-sm leading-6 text-black/60 capitalize">
                                     {variant.options
@@ -251,7 +252,7 @@ export function CartModal() {
                 </ul>
               </div>
 
-              <div className="shrink-0 border-t border-black/8 bg-white/88 px-4 py-2.5 backdrop-blur-sm">
+              <div className="shrink-0 border-t border-black/10 bg-[#fffefa] px-4 py-2.5">
                 <div className="mb-2 flex items-center justify-between gap-3 border-b border-black/8 pb-2">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.24em] text-black/45">Subtotal</p>
@@ -288,6 +289,16 @@ export function CartModal() {
         </div>
 
         <style>{`
+          .cartModalItemThumb {
+            background: transparent;
+          }
+
+          .cartModalItemThumbImage {
+            filter: drop-shadow(0 12px 18px rgba(17, 17, 17, 0.14));
+            object-fit: cover;
+            padding: 0;
+          }
+
           .cartSceneShell {
             isolation: isolate;
             overflow: hidden;

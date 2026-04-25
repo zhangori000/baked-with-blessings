@@ -14,7 +14,6 @@ export const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
     amount: 'Fresh weekly',
     href: `/cookies/${meta.slug}`,
     image: null,
-    productHref: `/products/${meta.slug}`,
   }))
 
 export const queryHomeCookiePosters = async () => {

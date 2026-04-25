@@ -1,8 +1,7 @@
 'use client'
 
 import { cn } from '@/utilities/cn'
-import { menuHref } from '@/utilities/routes'
-import { MenuIcon, Search, ShoppingBag, X } from 'lucide-react'
+import { MenuIcon, ShoppingBag, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -66,14 +65,6 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   return (
     <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
       <div className="siteHeaderMobileControls">
-        <Link
-          aria-label="Search the menu"
-          className="siteHeaderMobileIconButton"
-          href={menuHref}
-        >
-          <Search className="h-4 w-4" />
-        </Link>
-
         <button
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Close navigation' : 'Open navigation'}

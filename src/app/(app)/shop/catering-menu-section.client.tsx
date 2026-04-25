@@ -175,7 +175,6 @@ function CateringMenuRow({
   const [isSubmittingToCart, setIsSubmittingToCart] = useState(false)
   const [showOpeningIndicator, setShowOpeningIndicator] = useState(false)
   const openingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const image = normalizeImage(product)
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
   const requiredSelectionCount =
@@ -371,12 +370,22 @@ function CateringMenuRow({
           />
         ) : (
           <SimpleItemPanel
-            image={image}
             isCartPending={isCartPending}
             onAddToCart={handleAddToCart}
+            persuasionPanel={
+              <PersuasionGardenPanel
+                isSceneryPickerOpen={isSceneryPickerOpen}
+                isSceneChanging={isSceneChanging}
+                onSelectScenery={onSelectScenery}
+                onToggleSceneryPicker={onToggleSceneryPicker}
+                product={product}
+                key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
+                sceneryTone={sceneryTone}
+                summary={resolveSummary(product)}
+              />
+            }
             priceInUSD={product.priceInUSD}
             product={product}
-            resolveSummary={resolveSummary}
           />
         )}
       </AccordionContent>
@@ -630,6 +639,52 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           isolation: isolate;
         }
 
+        @property --catering-wipe-edge {
+          syntax: '<percentage>';
+          inherits: false;
+          initial-value: 0%;
+        }
+
+        .cateringPanelForeground,
+        .cateringGalleryContent {
+          transition:
+            opacity 180ms ease,
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .cateringPanelForegroundHidden,
+        .cateringGalleryContentTransitioning {
+          opacity: 0;
+          transform: translateY(-0.18rem);
+        }
+
+        .cateringPanelWipeGhost {
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            var(--catering-wipe-mask-start),
+            var(--catering-wipe-mask-end)
+          );
+          mask-image: linear-gradient(
+            to bottom,
+            var(--catering-wipe-mask-start),
+            var(--catering-wipe-mask-end)
+          );
+        }
+
+        .cateringPanelWipeGhostToPhotos {
+          --catering-wipe-mask-start: transparent 0 var(--catering-wipe-edge, 0%);
+          --catering-wipe-mask-end: #000 var(--catering-wipe-edge, 0%) 100%;
+          animation: cateringWipeToPhotos var(--catering-tear-duration, 280ms)
+            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+        }
+
+        .cateringPanelWipeGhostToDetails {
+          --catering-wipe-mask-start: #000 0 var(--catering-wipe-edge, 100%);
+          --catering-wipe-mask-end: transparent var(--catering-wipe-edge, 100%) 100%;
+          animation: cateringWipeToDetails var(--catering-tear-duration, 280ms)
+            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+        }
+
         .cateringPersuasionSky {
           inset: 0;
           opacity: 0.92;
@@ -713,6 +768,32 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         .cateringSpawnButtonCharging {
           border-color: rgba(25, 57, 95, 0.24);
           box-shadow: 0 10px 22px color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 38%, transparent);
+        }
+
+        .cateringPhotosButton {
+          background: #fff8e4;
+          border-color: rgba(84, 82, 40, 0.28);
+          box-shadow: none;
+          color: #3f411c;
+          gap: 0.5rem;
+          min-height: 2.72rem;
+          padding: 0.58rem 1.18rem 0.6rem;
+        }
+
+        .cateringPhotosButton:hover,
+        .cateringPhotosButton:focus-visible {
+          background: #fff4c8;
+          border-color: rgba(84, 82, 40, 0.42);
+          box-shadow: none;
+          color: #2f3213;
+          transform: none;
+        }
+
+        .cateringPhotosButtonIcon {
+          display: block;
+          height: 1.45rem;
+          object-fit: contain;
+          width: 1.78rem;
         }
 
         .cateringActionButtonWrap {
@@ -858,6 +939,48 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           bottom: 0.26rem;
         }
 
+        .cateringPanelTearLine {
+          background:
+            linear-gradient(
+              90deg,
+              rgba(255, 255, 255, 0) 0%,
+              rgba(255, 255, 255, 0.74) 12%,
+              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 78%, white 22%) 50%,
+              rgba(255, 255, 255, 0.74) 88%,
+              rgba(255, 255, 255, 0) 100%
+            );
+          height: 0.2rem;
+          opacity: 1;
+          transform-origin: center;
+          box-shadow:
+            0 -0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 18%, transparent),
+            0 0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 24%, transparent);
+        }
+
+        .cateringPanelRepaintLineHidden {
+          opacity: 0;
+        }
+
+        .cateringPanelRepaintLineToPhotos {
+          animation: cateringRepaintLineToPhotos var(--catering-tear-duration, 280ms)
+            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+        }
+
+        .cateringPanelRepaintLineToDetails {
+          animation: cateringRepaintLineToDetails var(--catering-tear-duration, 280ms)
+            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+        }
+
+        .cateringScene-blossom .cateringHeroLineFlowerSpawned {
+          bottom: 0.86rem;
+          width: 3.27rem;
+        }
+
+        .cateringScene-blossom .cateringPersuasionFlowerSpawned {
+          bottom: 0.9rem;
+          width: 4.05rem;
+        }
+
         .cateringPhotoBoard {
           scrollbar-gutter: stable;
           scrollbar-width: thin;
@@ -883,6 +1006,23 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         .cateringPhotoBoard::-webkit-scrollbar-thumb:hover {
           background:
             linear-gradient(180deg, rgba(170, 170, 170, 0.94) 0%, rgba(126, 126, 126, 0.98) 100%);
+        }
+
+        .cateringPhotoEndMarker {
+          column-span: all;
+          display: block;
+          width: 100%;
+        }
+
+        .cateringPhotoScrollableBorder {
+          column-span: all;
+          display: block;
+          width: 100%;
+        }
+
+        .cateringPhotoBottomBorder {
+          --grass-border-visual-height: 2.35rem;
+          z-index: 3;
         }
 
         .cateringPixelSheep {
@@ -1074,7 +1214,12 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringFlavorCard button {
+          cursor: pointer;
           touch-action: manipulation;
+        }
+
+        .cateringFlavorCard button:disabled {
+          cursor: not-allowed;
         }
 
         .cateringFlavorCardActiveAdd {
@@ -1440,6 +1585,50 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
+        @keyframes cateringWipeToPhotos {
+          0% {
+            --catering-wipe-edge: 0%;
+          }
+
+          100% {
+            --catering-wipe-edge: 100%;
+          }
+        }
+
+        @keyframes cateringWipeToDetails {
+          0% {
+            --catering-wipe-edge: 100%;
+          }
+
+          100% {
+            --catering-wipe-edge: 0%;
+          }
+        }
+
+        @keyframes cateringRepaintLineToPhotos {
+          0% {
+            opacity: 0.96;
+            top: 0%;
+          }
+
+          100% {
+            opacity: 0.96;
+            top: 100%;
+          }
+        }
+
+        @keyframes cateringRepaintLineToDetails {
+          0% {
+            opacity: 0.96;
+            top: 100%;
+          }
+
+          100% {
+            opacity: 0.96;
+            top: 0%;
+          }
+        }
+
         @keyframes cateringFlavorCloudDrift {
           0%,
           100% {
@@ -1542,6 +1731,16 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           .cateringPersuasionFlower {
             width: 2.05rem;
+          }
+
+          .cateringScene-blossom .cateringHeroLineFlowerSpawned {
+            bottom: 0.72rem;
+            width: 3.08rem;
+          }
+
+          .cateringScene-blossom .cateringPersuasionFlowerSpawned {
+            bottom: 0.74rem;
+            width: 3.5rem;
           }
 
           .cateringPersuasionWildflower {

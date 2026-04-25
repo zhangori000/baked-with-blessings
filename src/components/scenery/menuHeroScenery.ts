@@ -190,7 +190,28 @@ export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[
       style: { animationDelay: '-4s' },
     },
   ],
-  blossom: [],
+  blossom: [
+    {
+      className: 'left-[7%] top-[12%] w-[13rem] md:w-[15rem]',
+      src: '/clouds/sakura-soft-cloud.svg',
+      style: { animationDelay: '-8s' },
+    },
+    {
+      className: 'left-[26%] top-[8%] hidden w-[15rem] md:block md:w-[18rem]',
+      src: '/clouds/sakura-soft-cloud.svg',
+      style: { animationDelay: '-15s' },
+    },
+    {
+      className: 'right-[31%] top-[18%] w-[12rem] md:w-[14rem]',
+      src: '/clouds/sakura-soft-cloud.svg',
+      style: { animationDelay: '-5s' },
+    },
+    {
+      className: 'right-[8%] top-[11%] w-[14rem] md:w-[17rem]',
+      src: '/clouds/sakura-soft-cloud.svg',
+      style: { animationDelay: '-12s' },
+    },
+  ],
   'fairy-castle': [],
 }
 
@@ -260,8 +281,8 @@ export const menuHeroPiecesByScene: Record<SceneTone, readonly ScenePieceConfig[
   ],
   'under-tree': [
     {
-      className: 'left-[-18%] bottom-[4.2rem] w-[30rem] md:left-[-9%] md:bottom-[-0.15rem] md:w-[46rem]',
-      src: '/sceneries/girl-under-tree-tree.svg',
+      className: 'left-[-4%] bottom-[3.25rem] w-[35rem] md:left-[0%] md:bottom-[-0.5rem] md:w-[54rem]',
+      src: '/sceneries/girl-under-tree-tree.svg?v=2',
     },
   ],
   moonlit: noScenePieces,
@@ -278,19 +299,19 @@ export const menuHeroCrittersByScene: Record<SceneTone, readonly SceneCritterCon
   blossom: [
     {
       className: 'left-[9%] bottom-[1.05rem] w-[3rem] md:w-[3.8rem]',
-      src: '/catering/decor/bunny-sit.svg',
+      src: '/catering/decor/sheep-sleepy.svg',
     },
     {
       className: 'left-[28%] bottom-[0.85rem] w-[2.7rem] md:w-[3.3rem]',
-      src: '/catering/decor/bunny-hop.svg',
+      src: '/catering/decor/sheep-curious.svg',
     },
     {
       className: 'right-[24%] bottom-[0.9rem] w-[2.8rem] md:w-[3.5rem]',
-      src: '/catering/decor/bunny-stretch.svg',
+      src: '/catering/decor/sheep-grin.svg',
     },
     {
       className: 'right-[8%] bottom-[0.95rem] w-[2.8rem] md:w-[3.4rem]',
-      src: '/catering/decor/bunny-crouch.svg',
+      src: '/catering/decor/sheep-curious.svg',
       style: { transform: 'scaleX(-1)' },
     },
   ],
@@ -311,7 +332,7 @@ export const menuSceneAccentLabelByScene: Record<SceneTone, string> = {
   'under-tree': 'Spawn flower',
   moonlit: 'Spawn flower',
   classic: 'Spawn flower',
-  blossom: 'Spawn rabbit',
+  blossom: 'Spawn sheep',
   'fairy-castle': 'Spawn house',
 }
 
@@ -346,10 +367,9 @@ export const menuSpawnedAccentSourcesByScene: Record<SceneTone, readonly string[
     '/flowers/poppy.svg',
   ],
   blossom: [
-    '/catering/decor/bunny-crouch.svg',
-    '/catering/decor/bunny-hop.svg',
-    '/catering/decor/bunny-sit.svg',
-    '/catering/decor/bunny-stretch.svg',
+    '/catering/decor/sheep-curious.svg',
+    '/catering/decor/sheep-grin.svg',
+    '/catering/decor/sheep-sleepy.svg',
   ],
   'fairy-castle': [
     '/sceneries/fairy-castle-house.svg',
@@ -371,10 +391,7 @@ export const menuCloudSpawnDesignsByScene: Record<SceneTone, readonly SceneCloud
     { maxWidth: 15.8, minWidth: 10.8, src: '/clouds/moonlit-purple-upper-cloud.svg' },
   ],
   classic: [{ maxWidth: 14.8, minWidth: 10.6, src: '/clouds/three-ball-cloud-wide.svg' }],
-  blossom: [
-    { maxWidth: 15.8, minWidth: 11.2, src: '/clouds/three-ball-cloud-wide.svg' },
-    { maxWidth: 12.8, minWidth: 9.8, src: '/clouds/three-ball-cloud.svg' },
-  ],
+  blossom: [{ maxWidth: 18.8, minWidth: 13.2, src: '/clouds/sakura-soft-cloud.svg' }],
   'fairy-castle': [
     { maxWidth: 16.8, minWidth: 11.8, src: '/sceneries/fairy-castle-cloud-puff.svg' },
   ],

@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
+import { GrowingGrassBorder } from '@/components/flowers/GrowingGrassBorder'
 import { Media } from '@/components/Media'
 import { RichText } from '@/components/RichText'
 import type { Media as MediaType, Product } from '@/payload-types'
@@ -122,8 +123,7 @@ const classicCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
 ] as const
 
 const blossomCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
-  { maxWidth: 15.8, minWidth: 11.2, src: '/clouds/three-ball-cloud-wide.svg' },
-  { maxWidth: 12.8, minWidth: 9.8, src: '/clouds/three-ball-cloud.svg' },
+  { maxWidth: 18.8, minWidth: 13.2, src: '/clouds/sakura-soft-cloud.svg' },
 ] as const
 
 const fairyCastleCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
@@ -259,19 +259,19 @@ const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter
   blossom: [
     {
       className: 'left-[9%] bottom-[0.42rem] w-[3rem] md:w-[3.8rem]',
-      src: '/catering/decor/bunny-sit.svg',
+      src: '/catering/decor/sheep-sleepy.svg',
     },
     {
       className: 'left-[28%] bottom-[0.34rem] w-[2.7rem] md:w-[3.3rem]',
-      src: '/catering/decor/bunny-hop.svg',
+      src: '/catering/decor/sheep-curious.svg',
     },
     {
       className: 'right-[24%] bottom-[0.36rem] w-[2.8rem] md:w-[3.5rem]',
-      src: '/catering/decor/bunny-stretch.svg',
+      src: '/catering/decor/sheep-grin.svg',
     },
     {
       className: 'right-[8%] bottom-[0.38rem] w-[2.8rem] md:w-[3.4rem]',
-      src: '/catering/decor/bunny-crouch.svg',
+      src: '/catering/decor/sheep-curious.svg',
       style: { transform: 'scaleX(-1)' },
     },
   ],
@@ -286,19 +286,19 @@ const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritte
   blossom: [
     {
       className: 'left-[12%] bottom-[0.34rem] w-[2.35rem]',
-      src: '/catering/decor/bunny-sit.svg',
+      src: '/catering/decor/sheep-sleepy.svg',
     },
     {
       className: 'left-[30%] bottom-[0.3rem] w-[2.2rem]',
-      src: '/catering/decor/bunny-hop.svg',
+      src: '/catering/decor/sheep-curious.svg',
     },
     {
       className: 'right-[22%] bottom-[0.34rem] w-[2.2rem]',
-      src: '/catering/decor/bunny-stretch.svg',
+      src: '/catering/decor/sheep-grin.svg',
     },
     {
       className: 'right-[10%] bottom-[0.34rem] w-[2.2rem]',
-      src: '/catering/decor/bunny-crouch.svg',
+      src: '/catering/decor/sheep-curious.svg',
       style: { transform: 'scaleX(-1)' },
     },
   ],
@@ -494,8 +494,8 @@ export const flavorCardCloudsByScenery: Record<MenuSceneryTone, readonly StaticS
   ],
   blossom: [
     {
-      className: 'right-[2%] top-[12%] z-10 w-[5.4rem]',
-      src: '/clouds/three-ball-cloud-wide.svg',
+      className: 'right-[2%] top-[12%] z-10 w-[6rem]',
+      src: '/clouds/sakura-soft-cloud.svg',
     },
   ],
   'fairy-castle': [],
@@ -514,10 +514,9 @@ const spawnedFlowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> =
     '/flowers/poppy.svg',
   ],
   blossom: [
-    '/catering/decor/bunny-crouch.svg',
-    '/catering/decor/bunny-hop.svg',
-    '/catering/decor/bunny-sit.svg',
-    '/catering/decor/bunny-stretch.svg',
+    '/catering/decor/sheep-curious.svg',
+    '/catering/decor/sheep-grin.svg',
+    '/catering/decor/sheep-sleepy.svg',
   ],
   'fairy-castle': ['/sceneries/fairy-castle-house.svg', '/sceneries/fairy-castle-house-wide.svg'],
 }
@@ -536,7 +535,7 @@ const spawnedAccentLabelByScenery: Record<MenuSceneryTone, string> = {
   'under-tree': 'Spawn a flower',
   moonlit: 'Spawn a flower',
   classic: 'Spawn a flower',
-  blossom: 'Spawn a rabbit',
+  blossom: 'Spawn a sheep',
   'fairy-castle': 'Spawn a house',
 }
 
@@ -1311,6 +1310,7 @@ export function PersuasionGardenPanel({
   )
   const [panelFace, setPanelFace] = useState<'details' | 'gallery'>('details')
   const [panelTransition, setPanelTransition] = useState<'idle' | 'closing' | 'opening'>('idle')
+  const [transitionGhostFace, setTransitionGhostFace] = useState<'details' | 'gallery' | null>(null)
   const persuasionCopy = buildPersuasionCopy(product, summary)
   const galleryImages = useMemo(() => normalizeGalleryImages(product), [product])
   const hasGallery = galleryImages.length > 0
@@ -1415,6 +1415,7 @@ export function PersuasionGardenPanel({
       window.clearTimeout(transitionTimeoutRef.current)
     }
 
+    setTransitionGhostFace(panelFace)
     setPanelTransition('closing')
 
     transitionTimeoutRef.current = window.setTimeout(() => {
@@ -1423,12 +1424,18 @@ export function PersuasionGardenPanel({
 
       transitionTimeoutRef.current = window.setTimeout(() => {
         setPanelTransition('idle')
+        setTransitionGhostFace(null)
         transitionTimeoutRef.current = null
       }, SHUTTER_PHASE_MS)
     }, SHUTTER_PHASE_MS)
   }
 
   const isGalleryFace = panelFace === 'gallery'
+  const isPanelTransitioning = panelTransition !== 'idle'
+  const showDetailsFace = !isGalleryFace || transitionGhostFace === 'details'
+  const showDetailsAsGhost = isGalleryFace && transitionGhostFace === 'details'
+  const showGalleryFace = isGalleryFace || transitionGhostFace === 'gallery'
+  const showGalleryAsGhost = !isGalleryFace && transitionGhostFace === 'gallery'
 
   return (
     <div
@@ -1445,11 +1452,13 @@ export function PersuasionGardenPanel({
         className="relative h-full overflow-hidden rounded-[1.45rem]"
         style={{ minHeight: hasGallery ? '34rem' : '30rem' }}
       >
-        {!isGalleryFace ? (
+        {showDetailsFace ? (
           <div
             className={cn(
               'cateringPersuasionPanel absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               `cateringScene-${sceneryTone}`,
+              showDetailsAsGhost &&
+                'cateringPanelWipeGhost cateringPanelWipeGhostToPhotos pointer-events-none z-[4]',
             )}
           >
             <DecorativeSceneImage
@@ -1477,7 +1486,12 @@ export function PersuasionGardenPanel({
               />
             ))}
 
-            <div className="relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]">
+            <div
+              className={cn(
+                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]',
+                (isPanelTransitioning || showDetailsAsGhost) && 'cateringPanelForegroundHidden',
+              )}
+            >
               <h4 className="cateringMenuRoundHeading cateringPersuasionHeading text-[clamp(1.85rem,3.6vw,2.45rem)] leading-[0.95] tracking-[-0.04em]">
                 {buildPersuasionHeading()}
               </h4>
@@ -1507,8 +1521,20 @@ export function PersuasionGardenPanel({
                     {spawnedAccentLabelByScenery[sceneryTone]}
                   </CateringActionButton>
                   {hasGallery ? (
-                    <CateringActionButton onClick={() => runPanelTransition('gallery')}>
-                      See photos
+                    <CateringActionButton
+                      className="cateringPhotosButton"
+                      onClick={() => runPanelTransition('gallery')}
+                    >
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        className="cateringPhotosButtonIcon"
+                        height={52}
+                        src="/flowers/menu-nav-flower.svg"
+                        unoptimized
+                        width={64}
+                      />
+                      <span>See photos</span>
                     </CateringActionButton>
                   ) : null}
                   <CateringActionButton
@@ -1611,44 +1637,68 @@ export function PersuasionGardenPanel({
           </div>
         ) : null}
 
-        {hasGallery && isGalleryFace ? (
-          <div className="absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6">
-            <div className="flex justify-end">
-              <button
-                className="cateringSpawnButton shrink-0"
-                onClick={() => runPanelTransition('details')}
-                type="button"
-              >
-                Back to details
-              </button>
-            </div>
+        {hasGallery && showGalleryFace ? (
+          <div
+            className={cn(
+              'absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
+              showGalleryAsGhost &&
+                'cateringPanelWipeGhost cateringPanelWipeGhostToDetails pointer-events-none z-[4]',
+            )}
+          >
+            <div
+              className={cn(
+                'cateringGalleryContent h-full',
+                panelTransition === 'closing' && 'cateringGalleryContentTransitioning',
+              )}
+            >
+              <div className="flex justify-start">
+                <button
+                  className="cateringSpawnButton shrink-0"
+                  onClick={() => runPanelTransition('details')}
+                  type="button"
+                >
+                  Back to details
+                </button>
+              </div>
 
-            <div className="cateringPhotoBoard mt-3 h-[calc(100%-3.25rem)] overflow-y-auto pr-1">
-              <div className="columns-1 gap-3 sm:columns-2">
-                {galleryImages.map((image, index) => (
-                  <div
-                    className="mb-3 break-inside-avoid overflow-hidden rounded-[1.25rem] border border-[rgba(91,70,37,0.12)] bg-white p-2 shadow-[0_10px_24px_rgba(23,21,16,0.06)]"
-                    key={image.id ?? `${product.id ?? 'product'}-gallery-${index}`}
-                  >
-                    <Media
-                      className={cn(
-                        'relative w-full overflow-hidden rounded-[0.9rem]',
-                        index % 3 === 0
-                          ? 'aspect-[4/5]'
-                          : index % 3 === 1
-                            ? 'aspect-[4/3]'
-                            : 'aspect-square',
-                      )}
-                      imgClassName="h-full w-full object-cover"
-                      resource={image}
-                    />
-                    <div className="px-1 pb-1 pt-2">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[rgba(23,21,16,0.42)]">
-                        Pin {index + 1}
-                      </p>
+              <div className="cateringPhotoBoard mt-3 h-[calc(100%-3.25rem)] overflow-y-auto pb-10 pr-1">
+                <div className="columns-1 gap-3 md:columns-3">
+                  {galleryImages.map((image, index) => (
+                    <div
+                      className="mb-3 break-inside-avoid overflow-hidden rounded-[1rem]"
+                      key={image.id ?? `${product.id ?? 'product'}-gallery-${index}`}
+                    >
+                      <Media
+                        className={cn(
+                          'relative w-full overflow-hidden rounded-[1rem]',
+                          index % 3 === 0
+                            ? 'aspect-[4/5]'
+                            : index % 3 === 1
+                              ? 'aspect-[4/3]'
+                              : 'aspect-square',
+                        )}
+                        imgClassName="h-full w-full object-cover"
+                        resource={image}
+                      />
                     </div>
+                  ))}
+                  <div className="cateringPhotoEndMarker mb-1 break-inside-avoid py-9 text-center md:py-12">
+                    <p className="cateringMenuEyebrow text-[0.82rem] text-[rgba(23,21,16,0.44)]">
+                      No more photos
+                    </p>
                   </div>
-                ))}
+                </div>
+                <div className="cateringPhotoScrollableBorder relative mt-2 h-10">
+                  <GrowingGrassBorder
+                    className="cateringPhotoBottomBorder"
+                    flowerPositions={[18, 39, 61, 82]}
+                    flowerSize="2.15rem"
+                    lineInset="0"
+                    lineHeight="0.26rem"
+                    sizes="36px"
+                    style={{ bottom: '0.2rem' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1663,34 +1713,16 @@ export function PersuasionGardenPanel({
             )}
           >
             <div
-              className="absolute left-0 right-0 top-0 bg-[#10121d]"
+              className={cn(
+                'cateringPanelTearLine absolute left-0 right-0 top-1/2 -translate-y-1/2',
+                panelTransition === 'closing' && 'cateringPanelRepaintLineHidden',
+                panelTransition === 'opening' &&
+                  (transitionGhostFace === 'gallery'
+                    ? 'cateringPanelRepaintLineToDetails'
+                    : 'cateringPanelRepaintLineToPhotos'),
+              )}
               style={{
-                bottom:
-                  panelTransition === 'closing'
-                    ? '50%'
-                    : panelTransition === 'opening'
-                      ? '100%'
-                      : '0%',
-                transition: `bottom ${SHUTTER_PHASE_MS}ms cubic-bezier(0.7, 0, 0.2, 1)`,
-              }}
-            />
-            <div
-              className="absolute bottom-0 left-0 right-0 bg-[#10121d]"
-              style={{
-                top:
-                  panelTransition === 'closing'
-                    ? '50%'
-                    : panelTransition === 'opening'
-                      ? '100%'
-                      : '0%',
-                transition: `top ${SHUTTER_PHASE_MS}ms cubic-bezier(0.7, 0, 0.2, 1)`,
-              }}
-            />
-            <div
-              className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 bg-[rgba(255,247,227,0.9)] shadow-[0_0_16px_rgba(255,246,210,0.6)]"
-              style={{
-                opacity: panelTransition === 'closing' ? 1 : 0,
-                transition: 'opacity 120ms ease',
+                ['--catering-tear-duration' as string]: `${SHUTTER_PHASE_MS}ms`,
               }}
             />
           </div>

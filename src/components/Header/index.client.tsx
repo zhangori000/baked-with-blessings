@@ -9,6 +9,7 @@ import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import { ArrowRight, ChevronDown, ShoppingBag, UserRound } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -377,8 +378,8 @@ export function HeaderClient({ brand, header }: Props) {
                               }
                             }
 
-                            const productHref =
-                              product.slug ? `/products/${product.slug}` : menuHref
+                            const resolvedImageSrc = resolveMediaDisplayURL(image)
+
                             const variantSummary =
                               isVariant && variant
                                 ? variant.options
@@ -393,21 +394,18 @@ export function HeaderClient({ brand, header }: Props) {
                             return (
                               <li className="siteHeaderCartQuickItem" key={itemKey}>
                                 <div className="siteHeaderCartQuickItemRow">
-                                  <Link
-                                    className="siteHeaderCartQuickThumb"
-                                    href={productHref}
-                                    onClick={() => setActivePanel(null)}
-                                  >
-                                    {image?.url ? (
+                                  <div className="siteHeaderCartQuickThumb" aria-hidden="true">
+                                    {resolvedImageSrc ? (
                                       <Image
                                         alt={image.alt || product.title || ''}
-                                        className="h-full w-full object-cover"
+                                        className="siteHeaderCartQuickThumbImage"
                                         fill
-                                        sizes="88px"
-                                        src={image.url}
+                                        quality={95}
+                                        sizes="192px"
+                                        src={resolvedImageSrc}
                                       />
                                     ) : null}
-                                  </Link>
+                                  </div>
 
                                   <div className="siteHeaderCartQuickItemBody">
                                     <div className="siteHeaderCartQuickItemTop">
@@ -415,13 +413,9 @@ export function HeaderClient({ brand, header }: Props) {
                                         <p className="siteHeaderCartQuickItemEyebrow">
                                           {isVariant ? 'Configured item' : 'Bakery item'}
                                         </p>
-                                        <Link
-                                          className="siteHeaderCartQuickItemName"
-                                          href={productHref}
-                                          onClick={() => setActivePanel(null)}
-                                        >
+                                        <p className="siteHeaderCartQuickItemName">
                                           {product.title}
-                                        </Link>
+                                        </p>
                                         {variantSummary ? (
                                           <p className="siteHeaderCartQuickItemVariant">
                                             {variantSummary}

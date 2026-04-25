@@ -101,7 +101,7 @@ const posterCloudAssetsByScenery: Record<PosterSceneTone, readonly string[]> = {
   'under-tree': ['/clouds/three-ball-cloud-wide.svg', '/clouds/three-ball-cloud.svg'],
   moonlit: ['/clouds/moonlit-purple-swoop-cloud.svg', '/clouds/moonlit-purple-upper-cloud.svg'],
   classic: ['/clouds/three-ball-cloud-compact.svg', '/clouds/three-ball-cloud.svg'],
-  blossom: ['/clouds/three-ball-cloud-wide.svg', '/clouds/three-ball-cloud.svg'],
+  blossom: ['/clouds/sakura-soft-cloud.svg'],
 }
 
 let spawnedPosterCloudID = 0
@@ -216,6 +216,13 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
             >
               Spawn flower
             </button>
+            <CookiePosterIngredientNote
+              className="cookiePosterInfoButton cookiePosterInfoButton--inline hidden md:inline-flex"
+              dockClassName="cookiePosterInfoDock cookiePosterInfoDock--inline hidden md:flex"
+              isOpen={isIngredientNoteOpen}
+              onOpenChange={setIsIngredientNoteOpen}
+              poster={poster}
+            />
           </div>
 
           <img
@@ -299,6 +306,8 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
           />
 
           <CookiePosterIngredientNote
+            className="cookiePosterInfoButton md:hidden"
+            dockClassName="cookiePosterInfoDock absolute bottom-3 right-3 z-30 md:hidden"
             isOpen={isIngredientNoteOpen}
             onOpenChange={setIsIngredientNoteOpen}
             poster={poster}
@@ -324,10 +333,14 @@ function CookiePosterMoonlitLinework() {
 }
 
 function CookiePosterIngredientNote({
+  className,
+  dockClassName,
   isOpen,
   onOpenChange,
   poster,
 }: {
+  className?: string
+  dockClassName?: string
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   poster: CookiePosterAsset
@@ -341,17 +354,17 @@ function CookiePosterIngredientNote({
 
   return (
     <>
-      <div className="cookiePosterInfoDock absolute bottom-3 right-3 z-30">
+      <div className={dockClassName ?? 'cookiePosterInfoDock absolute bottom-3 right-3 z-30'}>
         <button
           aria-controls={dialogId}
           aria-expanded={isOpen}
           aria-label={`Show ingredients for ${poster.title}`}
-          className="cookiePosterInfoButton"
+          className={className ?? 'cookiePosterInfoButton'}
           onClick={() => onOpenChange(!isOpen)}
           type="button"
         >
           <span className="cookiePosterInfoButtonIcon" aria-hidden="true">
-            i
+            <img alt="" className="cookiePosterInfoButtonFlower" src="/flowers/menu-nav-flower.svg" />
           </span>
           <span>{poster.infoButtonLabel}</span>
         </button>
@@ -847,6 +860,12 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           justify-content: flex-end;
         }
 
+        .cookiePosterInfoDock--inline {
+          align-items: stretch;
+          justify-content: flex-start;
+          position: static;
+        }
+
         .cookiePosterInfoButton {
           align-items: center;
           backdrop-filter: blur(10px);
@@ -891,19 +910,24 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           background: rgba(255, 255, 255, 0.24);
           border-radius: 999px;
           display: inline-flex;
-          font-family: Georgia, serif;
-          font-size: 0.86rem;
-          font-style: italic;
           height: 1.1rem;
           justify-content: center;
           line-height: 1;
           width: 1.1rem;
         }
 
+        .cookiePosterInfoButtonFlower {
+          display: block;
+          height: 1rem;
+          width: 1rem;
+        }
+
+        .cookiePosterInfoButton--inline {
+          box-shadow: none;
+        }
+
         .cookiePosterIngredientCard {
-          background:
-            linear-gradient(180deg, rgba(255, 252, 236, 0.98), rgba(250, 243, 216, 0.98)),
-            #fff9e9;
+          background: #fffefa;
           border: 1px solid rgba(128, 98, 51, 0.18);
           border-radius: 1rem 1rem 1.2rem 0.92rem;
           box-shadow:
@@ -912,22 +936,6 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           overflow: hidden;
           padding: 1rem 0.95rem 0.9rem;
           transform: rotate(-1.2deg);
-        }
-
-        .cookiePosterIngredientCard::before {
-          background:
-            repeating-linear-gradient(
-              180deg,
-              transparent 0,
-              transparent 1.42rem,
-              rgba(111, 140, 195, 0.18) 1.42rem,
-              rgba(111, 140, 195, 0.18) 1.5rem
-            );
-          content: '';
-          inset: 0;
-          opacity: 0.72;
-          pointer-events: none;
-          position: absolute;
         }
 
         .cookiePosterIngredientCard::after {
@@ -1136,6 +1144,10 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           .cookiePosterInfoDock {
             bottom: 0.75rem;
             right: 0.75rem;
+          }
+
+          .cookiePosterInfoButton--inline {
+            display: none;
           }
 
           .cookiePosterRailShell {

@@ -330,8 +330,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.24rem;
-  min-width: 2.25rem;
+  gap: 0.34rem;
+  min-width: 3.45rem;
   padding: 0;
   border: 0;
   background: transparent;
@@ -350,7 +350,9 @@
   color: #17341f;
   font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .siteHeaderMobilePanel {
@@ -628,6 +630,7 @@
   pointer-events: auto;
   opacity: 1;
   max-height: var(--site-header-panel-depth);
+  overflow: visible;
   transform: translateY(0) scaleY(1);
 }
 
@@ -877,11 +880,17 @@
 .siteHeaderCartQuickThumb {
   position: relative;
   flex-shrink: 0;
-  width: 4.9rem;
-  height: 4.9rem;
+  width: 6rem;
+  height: 6rem;
   overflow: hidden;
   border-radius: 18px;
-  background: #ece6d8;
+  background: transparent;
+}
+
+.siteHeaderCartQuickThumbImage {
+  object-fit: cover;
+  padding: 0;
+  filter: drop-shadow(0 12px 18px rgb(17 17 17 / 14%));
 }
 
 .siteHeaderCartQuickItemBody {
@@ -1246,5 +1255,67 @@
   .siteHeaderActionButton {
     font-size: 0.78rem;
     letter-spacing: 0.04em;
+  }
+}
+
+@media (min-width: 1041px) {
+  .siteHeaderActionPanel.is-bag {
+    justify-content: flex-end;
+  }
+
+  .siteHeaderActionPanel.is-bag .siteHeaderActionPanelInner {
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1040px) {
+  .siteHeaderViewport {
+    padding: 0.95rem 0 0.8rem;
+  }
+
+  .siteHeaderShellRow {
+    display: flex;
+    grid-template-columns: none;
+    gap: 1rem;
+    min-height: 72px;
+  }
+
+  .siteHeaderBrand.has-logo {
+    width: 122px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 50px;
+  }
+
+  .siteHeaderBanner,
+  .siteHeaderActionArea {
+    display: none;
+  }
+
+  .siteHeaderMobileMenu {
+    display: inline-flex;
+  }
+
+  .siteHeaderActionPanel.is-bag {
+    justify-content: stretch;
+    padding-inline: 1rem;
+  }
+
+  .siteHeaderActionPanel.is-bag .siteHeaderActionPanelInner {
+    width: 100%;
+    height: min(75dvh, calc(100dvh - 6rem));
+    max-height: min(75dvh, calc(100dvh - 6rem));
+    border-radius: 22px;
+  }
+
+  .siteHeaderActionPanel.is-bag .siteHeaderCartQuickHeader,
+  .siteHeaderActionPanel.is-bag .siteHeaderCartQuickFooter {
+    padding-inline: 1rem;
+  }
+
+  .siteHeaderMobilePanel {
+    width: min(46rem, calc(100vw - 2rem));
   }
 }

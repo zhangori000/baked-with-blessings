@@ -1,10 +1,8 @@
 'use client'
 
-import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
-import { RichText } from '@/components/RichText'
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
-import type { Media as MediaType, Product } from '@/payload-types'
+import type { Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import { LoaderCircle } from 'lucide-react'
 import React from 'react'
@@ -247,7 +245,7 @@ export function TrayFlavorCard({
             <ul className="mt-3 grid gap-2">
               {flavor.ingredients.map((ingredient) => (
                 <li
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-0.5 border-b border-dashed border-[rgba(121,92,47,0.14)] pb-2 text-[#4f3818] last:border-b-0 last:pb-0"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-0.5 text-[#4f3818]"
                   key={`${ingredient.name}-${ingredient.detail ?? ''}`}
                 >
                   <span className="cateringMenuRoundHeading text-[0.85rem] tracking-[-0.01em]">
@@ -290,49 +288,25 @@ function TrayFlavorMoonlitLinework() {
 }
 
 type SimpleItemPanelProps = {
-  image: MediaType | null
   isCartPending: boolean
   onAddToCart: () => void
+  persuasionPanel: React.ReactNode
   priceInUSD?: number | null
   product: Partial<Product>
-  resolveSummary: (product: Partial<Product>) => string
 }
 
 export function SimpleItemPanel({
-  image,
   isCartPending,
   onAddToCart,
+  persuasionPanel,
   priceInUSD,
   product,
-  resolveSummary,
 }: SimpleItemPanelProps) {
   return (
     <div className="space-y-5">
-      <div className="space-y-4">
-        {product.menuExpandedPitch ? (
-          <RichText
-            className="cateringPitch prose-p:leading-7 prose-headings:tracking-[-0.04em] prose-h2:text-[1.35rem] prose-h2:leading-tight"
-            data={product.menuExpandedPitch}
-            enableGutter={false}
-          />
-        ) : (
-          <p className="text-[1rem] leading-8 text-[rgba(23,21,16,0.76)]">
-            {resolveSummary(product)}
-          </p>
-        )}
-      </div>
+      {persuasionPanel}
 
       <div className="space-y-4 rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)]">
-        {image ? (
-          <div className="overflow-hidden rounded-[1.15rem] bg-[#f1e5cf]">
-            <Media
-              className="relative aspect-[5/4] w-full"
-              imgClassName="h-full w-full object-cover"
-              resource={image}
-            />
-          </div>
-        ) : null}
-
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
