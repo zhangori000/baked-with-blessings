@@ -3,7 +3,6 @@ import type { Media, Product } from '@/payload-types'
 
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import AutoScroll from 'embla-carousel-auto-scroll'
-import Link from 'next/link'
 import React from 'react'
 import { GridTileImage } from '@/components/Grid/tile'
 
@@ -32,7 +31,7 @@ export const CarouselClient: React.FC<{ products: Product[] }> = async ({ produc
             className="relative aspect-square h-[30vh] max-h-[275px] w-2/3 max-w-[475px] flex-none md:w-1/3"
             key={`${product.slug}${i}`}
           >
-            <Link className="relative h-full w-full" href={`/products/${product.slug}`}>
+            <div className="relative h-full w-full">
               <GridTileImage
                 label={{
                   amount: product.priceInUSD!,
@@ -40,7 +39,7 @@ export const CarouselClient: React.FC<{ products: Product[] }> = async ({ produc
                 }}
                 media={product.meta?.image as Media}
               />
-            </Link>
+            </div>
           </CarouselItem>
         ))}
       </CarouselContent>

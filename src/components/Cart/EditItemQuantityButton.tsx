@@ -39,7 +39,7 @@ export function EditItemQuantityButton({ type, item }: { item: CartItem; type: '
         disabled={disabled || isLoading}
         aria-label={type === 'plus' ? 'Increase item quantity' : 'Reduce item quantity'}
         className={clsx(
-          'inline-flex h-9 w-9 items-center justify-center rounded-full text-black/70 transition duration-200 hover:cursor-pointer hover:bg-black hover:text-white',
+          'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-black/70 transition duration-200 hover:bg-black hover:text-white',
           {
             'cursor-not-allowed opacity-40': disabled || isLoading,
           },

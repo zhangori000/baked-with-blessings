@@ -8,7 +8,7 @@ export type CookieSeedSpec = {
   title: string
 }
 
-const defaultCookiePriceInUSD = 500
+const defaultCookiePriceInUSD = 750
 
 export const cookieCategory = {
   menuOrder: 0,

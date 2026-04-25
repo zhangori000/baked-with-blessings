@@ -1,0 +1,17 @@
+<svg width="100%" viewBox="0 0 132 92" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="62" cy="60" rx="34" ry="16" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.3"/>
+    <ellipse cx="96" cy="52" rx="15" ry="12" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.3"/>
+    <ellipse cx="101" cy="29" rx="5" ry="17" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.1" transform="rotate(14 101 29)"/>
+    <ellipse cx="89" cy="31" rx="5" ry="15" fill="#fffaf4" stroke="#d9c8ba" stroke-width="2.1" transform="rotate(-2 89 31)"/>
+    <ellipse cx="101" cy="29" rx="1.9" ry="9.8" fill="#f3bfd0" opacity="0.9" transform="rotate(14 101 29)"/>
+    <ellipse cx="89" cy="31" rx="1.9" ry="8.8" fill="#f3bfd0" opacity="0.9" transform="rotate(-2 89 31)"/>
+    <circle cx="99" cy="50" r="1.7" fill="#3b342f" stroke="none"/>
+    <circle cx="106.5" cy="54" r="1.9" fill="#efb5c4" stroke="none"/>
+    <path d="M100.2 55.7Q102.8 58 105.2 56.4" stroke="#7c6559" stroke-width="1.5"/>
+    <ellipse cx="34" cy="70" rx="7" ry="4.1" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+    <ellipse cx="52" cy="76" rx="7" ry="4.1" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+    <ellipse cx="78" cy="76" rx="7" ry="4.1" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+    <circle cx="28" cy="61" r="5.2" fill="#fffaf4" stroke="#d9c8ba" stroke-width="1.7"/>
+  </g>
+</svg>

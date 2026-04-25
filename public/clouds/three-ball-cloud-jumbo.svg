@@ -1,0 +1,12 @@
+<svg width="392" height="220" viewBox="0 0 392 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="cloudShadowJumbo" x="6" y="14" width="380" height="194" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#A7C1DD" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <path
+    filter="url(#cloudShadowJumbo)"
+    d="M43 140C27 132 20 119 27 106C35 91 55 85 78 85C94 63 128 51 166 53C185 35 223 27 259 37C287 45 309 62 318 83C340 86 362 98 370 116C379 137 358 154 321 159C296 162 272 158 251 151C223 163 181 164 150 154C118 165 72 158 43 140Z"
+    fill="#FFF8F4"
+  />
+</svg>

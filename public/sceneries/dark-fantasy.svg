@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A lone knight stands on a ridge beneath a blood moon, looking toward a distant castle on a crag.">
+      <defs>
+        
+        <radialGradient id="sky" cx="68%" cy="38%" r="85%">
+          <stop offset="0%" stop-color="#7a1f1a"></stop>
+          <stop offset="22%" stop-color="#4a1519"></stop>
+          <stop offset="55%" stop-color="#1e0a12"></stop>
+          <stop offset="100%" stop-color="#07030a"></stop>
+        </radialGradient>
+
+        
+        <radialGradient id="moon" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffb59a"></stop>
+          <stop offset="25%" stop-color="#e85a3a"></stop>
+          <stop offset="70%" stop-color="#8a1b18"></stop>
+          <stop offset="100%" stop-color="#3a0a0c"></stop>
+        </radialGradient>
+
+        
+        <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#c03828" stop-opacity="0.55"></stop>
+          <stop offset="40%" stop-color="#6b1812" stop-opacity="0.25"></stop>
+          <stop offset="100%" stop-color="#6b1812" stop-opacity="0"></stop>
+        </radialGradient>
+
+        
+        <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a0f15" stop-opacity="0"></stop>
+          <stop offset="70%" stop-color="#1a0810" stop-opacity="0.7"></stop>
+          <stop offset="100%" stop-color="#0a0408" stop-opacity="0.95"></stop>
+        </linearGradient>
+
+        
+        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#160810"></stop>
+          <stop offset="100%" stop-color="#050204"></stop>
+        </linearGradient>
+
+        
+        <linearGradient id="knightRim" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#d44a2e" stop-opacity="0.9"></stop>
+          <stop offset="100%" stop-color="#4a0a08" stop-opacity="0"></stop>
+        </linearGradient>
+
+        <linearGradient id="knightBody" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1a1216"></stop>
+          <stop offset="100%" stop-color="#060406"></stop>
+        </linearGradient>
+
+        
+        <linearGradient id="castle" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#120610"></stop>
+          <stop offset="100%" stop-color="#05020a"></stop>
+        </linearGradient>
+
+        
+        <radialGradient id="windowGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffc27a"></stop>
+          <stop offset="60%" stop-color="#c7521c" stop-opacity="0.6"></stop>
+          <stop offset="100%" stop-color="#c7521c" stop-opacity="0"></stop>
+        </radialGradient>
+
+        
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"></feTurbulence>
+          <feColorMatrix values="0 0 0 0 0.5&#xA;                                 0 0 0 0 0.3&#xA;                                 0 0 0 0 0.3&#xA;                                 0 0 0 0.08 0"></feColorMatrix>
+          <feComposite in2="SourceGraphic" operator="in"></feComposite>
+        </filter>
+
+        
+        <filter id="softblur"><feGaussianBlur stdDeviation="1.4"></feGaussianBlur></filter>
+        <filter id="heavyblur"><feGaussianBlur stdDeviation="4"></feGaussianBlur></filter>
+
+        
+        <symbol id="bat" viewBox="-10 -4 20 8">
+          <path d="M -10 0 Q -7 -3 -5 -1 Q -3 -4 -1 -1 L 0 0 L 1 -1 Q 3 -4 5 -1 Q 7 -3 10 0 Q 7 1 5 0 Q 3 2 1 1 L 0 2 L -1 1 Q -3 2 -5 0 Q -7 1 -10 0 Z" fill="#0a0508"></path>
+        </symbol>
+
+        
+        <symbol id="crow" viewBox="-10 -5 20 10">
+          <path d="M -10 0 Q -6 -2 -3 0 Q 0 -3 3 0 Q 6 -2 10 0" stroke="#0a0508" stroke-width="1.5" fill="none" stroke-linecap="round"></path>
+        </symbol>
+
+        <clipPath id="frameClip">
+          <rect x="0" y="0" width="1200" height="800"></rect>
+        </clipPath>
+      </defs>
+
+      <g clip-path="url(#frameClip)">
+        
+        <rect width="1200" height="800" fill="url(#sky)"></rect>
+
+        
+        <g fill="#c9a88a" opacity="0.55">
+          <circle cx="120" cy="80" r="0.8"></circle>
+          <circle cx="240" cy="140" r="0.6"></circle>
+          <circle cx="60" cy="220" r="1"></circle>
+          <circle cx="380" cy="60" r="0.7"></circle>
+          <circle cx="480" cy="180" r="0.5"></circle>
+          <circle cx="180" cy="300" r="0.6"></circle>
+          <circle cx="320" cy="240" r="0.4"></circle>
+          <circle cx="560" cy="100" r="0.8"></circle>
+          <circle cx="90" cy="380" r="0.5"></circle>
+          <circle cx="900" cy="40" r="0.6"></circle>
+          <circle cx="1040" cy="120" r="0.7"></circle>
+          <circle cx="1140" cy="260" r="0.5"></circle>
+          <circle cx="260" cy="420" r="0.4"></circle>
+          <circle cx="700" cy="60" r="0.5"></circle>
+          <circle cx="1080" cy="380" r="0.4"></circle>
+        </g>
+
+        
+        <circle cx="820" cy="260" r="280" fill="url(#halo)"></circle>
+
+        
+        <circle cx="820" cy="260" r="130" fill="url(#moon)"></circle>
+
+        
+        <g opacity="0.35" fill="#4a0e0c">
+          <ellipse cx="790" cy="230" rx="18" ry="10"></ellipse>
+          <ellipse cx="855" cy="280" rx="22" ry="14"></ellipse>
+          <ellipse cx="810" cy="300" rx="10" ry="7"></ellipse>
+          <ellipse cx="845" cy="220" rx="8" ry="5"></ellipse>
+          <ellipse cx="785" cy="285" rx="7" ry="5"></ellipse>
+        </g>
+        
+        <circle cx="820" cy="260" r="130" fill="none" stroke="#2a0808" stroke-width="1.5" opacity="0.6"></circle>
+
+        
+        <g opacity="0.75">
+          <path d="M 600 240 Q 720 228 820 244 Q 920 256 1020 242 Q 1080 236 1140 252 L 1140 268 Q 1040 260 940 272 Q 820 282 700 270 Q 620 262 560 272 Z" fill="#0a0408"></path>
+          <path d="M 640 296 Q 760 286 860 300 Q 960 312 1080 300 L 1080 316 Q 980 318 880 324 Q 760 330 680 320 Q 640 314 620 318 Z" fill="#0a0408" opacity="0.85"></path>
+        </g>
+
+        
+        <path d="M 0 520 L 60 470 L 120 500 L 200 440 L 280 480 L 360 430 L 440 470 L 520 450 L 600 480 L 680 440 L 760 470 L 840 450 L 920 480 L 1000 460 L 1080 490 L 1200 470 L 1200 800 L 0 800 Z" fill="#1c0a12" opacity="0.9" filter="url(#softblur)"></path>
+
+        
+        <path d="M 0 580 L 80 540 L 160 570 L 240 520 L 320 560 L 420 510 L 520 560 L 620 530 L 720 570 L 820 540 L 920 580 L 1020 550 L 1120 580 L 1200 560 L 1200 800 L 0 800 Z" fill="#120610"></path>
+
+        
+        <rect x="0" y="440" width="1200" height="220" fill="url(#fog)"></rect>
+
+        
+        <g transform="translate(880, 420)">
+          
+          <path d="M -140 200 L -110 140 L -80 120 L -60 90 L -30 70 L 0 60 L 40 70 L 80 90 L 110 120 L 140 160 L 160 220 L 180 280 L 200 360 L -180 360 Z" fill="#0a040a"></path>
+          <path d="M -110 160 L -80 130 L -50 120 L -20 100 L 20 110 L 60 130 L 100 150 L 130 190 L 150 240 L -120 240 Z" fill="#140612" opacity="0.9"></path>
+
+          
+          <rect x="-70" y="-20" width="140" height="100" fill="url(#castle)"></rect>
+          
+          <g fill="#05020a">
+            <rect x="-70" y="-30" width="14" height="12"></rect>
+            <rect x="-48" y="-30" width="14" height="12"></rect>
+            <rect x="-26" y="-30" width="14" height="12"></rect>
+            <rect x="-4" y="-30" width="14" height="12"></rect>
+            <rect x="18" y="-30" width="14" height="12"></rect>
+            <rect x="40" y="-30" width="14" height="12"></rect>
+            <rect x="62" y="-30" width="14" height="12"></rect>
+          </g>
+
+          
+          <rect x="-110" y="-90" width="40" height="170" fill="url(#castle)"></rect>
+          <polygon points="-110,-90 -90,-140 -70,-90" fill="#05020a"></polygon>
+          <g fill="#05020a">
+            <rect x="-110" y="-98" width="8" height="10"></rect>
+            <rect x="-98" y="-98" width="8" height="10"></rect>
+            <rect x="-86" y="-98" width="8" height="10"></rect>
+            <rect x="-74" y="-98" width="8" height="10"></rect>
+          </g>
+
+          
+          <rect x="70" y="-120" width="44" height="200" fill="url(#castle)"></rect>
+          <polygon points="70,-120 92,-190 114,-120" fill="#05020a"></polygon>
+          
+          <line x1="92" y1="-190" x2="92" y2="-212" stroke="#1a0608" stroke-width="1.2"></line>
+          
+          <path d="M 92 -210 L 108 -206 L 104 -200 L 110 -194 L 102 -192 L 106 -186 L 92 -188 Z" fill="#6b1510" opacity="0.85"></path>
+
+          <g fill="#05020a">
+            <rect x="70" y="-128" width="9" height="10"></rect>
+            <rect x="82" y="-128" width="9" height="10"></rect>
+            <rect x="94" y="-128" width="9" height="10"></rect>
+            <rect x="106" y="-128" width="8" height="10"></rect>
+          </g>
+
+          
+          <rect x="-22" y="20" width="44" height="60" fill="#08030a"></rect>
+          <path d="M -22 40 Q 0 10 22 40 L 22 80 L -22 80 Z" fill="#03010a"></path>
+
+          
+          <g>
+            <rect x="-95" y="-50" width="6" height="10" fill="#ffb468"></rect>
+            <rect x="-95" y="-50" width="6" height="10" fill="url(#windowGlow)" opacity="0.9"></rect>
+            <circle cx="-92" cy="-45" r="14" fill="url(#windowGlow)" opacity="0.35"></circle>
+
+            <rect x="82" y="-70" width="6" height="12" fill="#ffb468"></rect>
+            <circle cx="85" cy="-64" r="16" fill="url(#windowGlow)" opacity="0.4"></circle>
+
+            <rect x="96" y="-40" width="6" height="10" fill="#ff9852"></rect>
+            <circle cx="99" cy="-35" r="12" fill="url(#windowGlow)" opacity="0.3"></circle>
+
+            <rect x="-40" y="10" width="5" height="9" fill="#ffa85c"></rect>
+            <rect x="30" y="10" width="5" height="9" fill="#ffa85c"></rect>
+            <rect x="-10" y="50" width="6" height="10" fill="#ffb468"></rect>
+            <circle cx="-7" cy="55" r="10" fill="url(#windowGlow)" opacity="0.35"></circle>
+          </g>
+
+          
+          <rect x="-70" y="40" width="140" height="4" fill="#05020a"></rect>
+
+          
+          <path d="M -90 -140 Q -95 -160 -85 -180 Q -80 -200 -95 -220 Q -100 -240 -88 -260" stroke="#2a1020" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.35" filter="url(#softblur)"></path>
+        </g>
+
+        
+        <g opacity="0.9">
+          <use href="#bat" x="720" y="180" width="24" height="10"></use>
+          <use href="#bat" x="760" y="220" width="18" height="7"></use>
+          <use href="#bat" x="880" y="200" width="20" height="8"></use>
+          <use href="#bat" x="920" y="160" width="16" height="6"></use>
+          <use href="#bat" x="650" y="260" width="14" height="5"></use>
+          <use href="#bat" x="980" y="280" width="22" height="9"></use>
+          <use href="#bat" x="560" y="200" width="16" height="6"></use>
+        </g>
+
+        
+        <g opacity="0.6" transform="translate(0,0)">
+          <use href="#crow" x="300" y="180" width="12" height="6"></use>
+          <use href="#crow" x="340" y="160" width="10" height="5"></use>
+          <use href="#crow" x="380" y="190" width="14" height="7"></use>
+          <use href="#crow" x="420" y="170" width="10" height="5"></use>
+          <use href="#crow" x="460" y="200" width="12" height="6"></use>
+        </g>
+
+        
+        <path d="M 0 640 L 80 620 L 180 635 L 280 615 L 380 625 L 460 610 L 540 620 L 620 605 L 720 615 L 820 608 L 920 620 L 1020 615 L 1120 625 L 1200 618 L 1200 800 L 0 800 Z" fill="url(#ground)"></path>
+
+        
+        <g transform="translate(180, 600)" stroke="#05020a" stroke-linecap="round" fill="none">
+          <path d="M 0 40 L -2 -20 L -4 -80 L -8 -130" stroke-width="6"></path>
+          <path d="M -4 -40 Q -30 -60 -50 -80 Q -60 -90 -70 -100" stroke-width="3"></path>
+          <path d="M -50 -80 Q -60 -95 -80 -100" stroke-width="1.5"></path>
+          <path d="M -60 -90 Q -70 -110 -80 -115" stroke-width="1.2"></path>
+          <path d="M -4 -70 Q 20 -90 40 -110 Q 55 -120 70 -125" stroke-width="3"></path>
+          <path d="M 40 -110 Q 55 -130 70 -135" stroke-width="1.5"></path>
+          <path d="M 70 -125 Q 85 -135 95 -130" stroke-width="1.2"></path>
+          <path d="M -6 -100 Q -20 -120 -30 -140 Q -35 -150 -40 -158" stroke-width="2"></path>
+          <path d="M -8 -120 Q 10 -140 25 -150" stroke-width="1.8"></path>
+          <path d="M -8 -130 Q 0 -150 8 -160" stroke-width="1.2"></path>
+          
+          <g transform="translate(-40, -158)" fill="#05020a" stroke="none">
+            <ellipse cx="0" cy="0" rx="6" ry="4"></ellipse>
+            <circle cx="5" cy="-2" r="2.5"></circle>
+            <path d="M 7 -3 L 11 -2 L 7 -1 Z"></path>
+          </g>
+        </g>
+
+        
+        <g fill="#0a040a">
+          <path d="M 80 650 L 80 625 Q 80 615 90 615 Q 100 615 100 625 L 100 650 Z"></path>
+          <rect x="110" y="635" width="10" height="18"></rect>
+          <path d="M 360 648 L 360 628 Q 360 620 368 620 Q 376 620 376 628 L 376 648 Z"></path>
+          <rect x="390" y="640" width="8" height="14"></rect>
+          
+          <rect x="500" y="615" width="4" height="30"></rect>
+          <rect x="494" y="625" width="16" height="4"></rect>
+        </g>
+
+        
+        <g transform="translate(430, 500)">
+          
+          <ellipse cx="0" cy="140" rx="50" ry="8" fill="#000" opacity="0.55"></ellipse>
+
+          
+          <path d="M -22 -40 Q -50 0 -58 60 Q -60 90 -50 130 L -46 136 L -42 126 L -38 138 L -34 124 L -30 140 L -26 126 L -20 138 L -16 124 L -12 136 L -6 130 L -2 140 L 2 130 Q 6 80 10 40 Q 12 10 0 -30 Z" fill="#3a0a0a" opacity="0.95"></path>
+          <path d="M -22 -40 Q -50 0 -58 60 Q -60 90 -50 130 L -46 136 L -42 126 L -38 138 L -34 124 L -30 140 L -26 126 L -20 138 L -16 124 L -12 136 L -6 130 L -2 140 L 2 130 Q 6 80 10 40 Q 12 10 0 -30 Z" fill="#120408" opacity="0.5"></path>
+
+          
+          <path d="M -16 60 L -22 140 L -8 140 L -4 70 Z" fill="url(#knightBody)"></path>
+          <path d="M 4 60 L 8 140 L 22 140 L 16 70 Z" fill="url(#knightBody)"></path>
+          
+          <path d="M -26 138 L -4 138 L -2 146 L -28 146 Z" fill="#05020a"></path>
+          <path d="M 6 138 L 26 138 L 26 146 L 4 146 Z" fill="#05020a"></path>
+
+          
+          <path d="M -28 -10 Q -30 -6 -30 10 L -28 40 Q -26 58 -20 64 L 20 64 Q 26 58 28 40 L 30 10 Q 30 -6 28 -10 L 22 -14 Q 0 -18 -22 -14 Z" fill="url(#knightBody)"></path>
+          
+          <path d="M 0 -12 L 0 62" stroke="#2a1a20" stroke-width="0.8" opacity="0.6"></path>
+          <path d="M -24 10 Q 0 14 24 10" stroke="#2a1a20" stroke-width="0.8" fill="none" opacity="0.6"></path>
+          <path d="M -22 30 Q 0 34 22 30" stroke="#2a1a20" stroke-width="0.8" fill="none" opacity="0.6"></path>
+
+          
+          <ellipse cx="-28" cy="-8" rx="12" ry="10" fill="#0a0608"></ellipse>
+          <ellipse cx="28" cy="-8" rx="12" ry="10" fill="#0a0608"></ellipse>
+          
+          <polygon points="28,-18 32,-28 36,-16" fill="#0a0608"></polygon>
+
+          
+          <path d="M 28 -10 L 30 10 L 28 40 L 20 64 L 24 64 Q 30 56 32 40 L 34 10 Q 34 -6 30 -12 Z" fill="url(#knightRim)" opacity="0.7"></path>
+          <ellipse cx="30" cy="-8" rx="6" ry="8" fill="url(#knightRim)" opacity="0.8"></ellipse>
+
+          
+          <rect x="-6" y="-22" width="12" height="10" fill="#08060a"></rect>
+
+          
+          <path d="M -18 -52 Q -18 -68 0 -70 Q 18 -68 18 -52 L 18 -28 Q 18 -22 12 -22 L -12 -22 Q -18 -22 -18 -28 Z" fill="url(#knightBody)"></path>
+          
+          <path d="M 18 -52 L 18 -28 Q 18 -22 12 -22 L 14 -22 Q 20 -22 20 -28 L 20 -52 Q 20 -66 6 -70 Q 16 -66 18 -52 Z" fill="url(#knightRim)" opacity="0.75"></path>
+          
+          <rect x="-12" y="-48" width="24" height="3" fill="#1a0608"></rect>
+          <rect x="-12" y="-48" width="24" height="3" fill="#d44a2e" opacity="0.5"></rect>
+          
+          <g stroke="#05020a" stroke-width="1">
+            <line x1="-6" y1="-44" x2="-6" y2="-28"></line>
+            <line x1="0" y1="-44" x2="0" y2="-28"></line>
+            <line x1="6" y1="-44" x2="6" y2="-28"></line>
+          </g>
+          
+          <path d="M -6 -70 Q -14 -84 -22 -88 Q -14 -80 -10 -70" fill="#08040a"></path>
+          <path d="M 6 -70 Q 14 -84 22 -88 Q 14 -80 10 -70" fill="#08040a"></path>
+          
+          <path d="M -2 -70 Q -4 -84 -6 -94 Q -2 -86 0 -80 Q 2 -90 4 -96 Q 6 -86 2 -70 Z" fill="#4a0a0a"></path>
+
+          
+          <path d="M 24 4 Q 34 14 38 30 Q 40 46 36 56 L 28 56 Q 26 44 24 30 Q 22 16 18 8 Z" fill="url(#knightBody)"></path>
+          
+          <path d="M 28 52 L 40 52 L 42 64 L 26 64 Z" fill="#0a0608"></path>
+
+          
+          <g transform="translate(34, 62)">
+            
+            <polygon points="-3,0 3,0 2,90 0,96 -2,90" fill="#2a2024"></polygon>
+            <polygon points="0,0 3,0 2,90 0,96" fill="#4a3a3a" opacity="0.6"></polygon>
+            <polygon points="-3,0 0,0 0,96 -2,90" fill="#120a0e" opacity="0.7"></polygon>
+            
+            <path d="M 2 6 L 2 60" stroke="#d44a2e" stroke-width="0.7" opacity="0.55"></path>
+            
+            <rect x="-16" y="-4" width="32" height="6" fill="#1a1216"></rect>
+            <rect x="-16" y="-4" width="32" height="2" fill="#3a2a2e"></rect>
+            
+            <circle cx="0" cy="-12" r="5" fill="#1a1216" stroke="#3a2a2e" stroke-width="0.8"></circle>
+            
+            <rect x="-2.5" y="-8" width="5" height="10" fill="#2a1010"></rect>
+          </g>
+
+          
+          <path d="M -24 4 Q -34 20 -34 44 L -26 50 Q -22 30 -20 12 Z" fill="url(#knightBody)"></path>
+          <ellipse cx="-30" cy="50" rx="7" ry="6" fill="#0a0608"></ellipse>
+
+          
+          <path d="M -14 10 L 14 10 L 12 66 L 0 74 L -12 66 Z" fill="#1a0a0c"></path>
+          
+          <g transform="translate(0, 38)" fill="#6b1510">
+            <path d="M 0 -14 L 4 -4 L 10 -6 L 6 2 L 12 8 L 2 8 L 0 16 L -2 8 L -12 8 L -6 2 L -10 -6 L -4 -4 Z"></path>
+          </g>
+        </g>
+
+        
+        <g fill="#03010a">
+          <path d="M 0 720 L 40 700 L 80 715 L 140 695 L 200 720 L 260 700 L 340 720 L 420 710 L 500 725 L 580 715 L 660 730 L 740 718 L 820 730 L 900 722 L 980 735 L 1080 728 L 1200 740 L 1200 800 L 0 800 Z"></path>
+        </g>
+        <g stroke="#05020a" stroke-linecap="round" fill="none" stroke-width="1">
+          <path d="M 40 720 L 42 710"></path>
+          <path d="M 48 722 L 48 712"></path>
+          <path d="M 56 720 L 58 708"></path>
+          <path d="M 280 718 L 282 706"></path>
+          <path d="M 290 720 L 288 708"></path>
+          <path d="M 600 726 L 602 716"></path>
+          <path d="M 610 728 L 608 714"></path>
+          <path d="M 880 730 L 882 718"></path>
+        </g>
+
+        
+        <rect x="0" y="640" width="1200" height="140" fill="url(#fog)" opacity="0.55"></rect>
+
+        
+        <rect x="0" y="0" width="1200" height="800" filter="url(#grain)" opacity="0.7"></rect>
+
+        
+        <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+          <stop offset="55%" stop-color="#000" stop-opacity="0"></stop>
+          <stop offset="100%" stop-color="#000" stop-opacity="0.85"></stop>
+        </radialGradient>
+        <rect x="0" y="0" width="1200" height="800" fill="url(#vignette)"></rect>
+      </g>
+    </svg>

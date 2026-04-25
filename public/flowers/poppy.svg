@@ -1,0 +1,22 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 65)">
+    <path d="M 0 0 Q -3 50 -2 130" stroke="#7cb342" stroke-width="4" fill="none" stroke-linecap="round" />
+    <path d="M -3 60 Q -28 48 -40 65" stroke="#7cb342" stroke-width="2" fill="none" stroke-linecap="round" />
+    <ellipse cx="-35" cy="62" rx="8" ry="3" fill="#9ccc65" transform="rotate(-15 -35 62)" />
+    <path d="M -1 95 Q 25 88 38 105" stroke="#7cb342" stroke-width="2" fill="none" stroke-linecap="round" />
+    <ellipse cx="33" cy="102" rx="8" ry="3" fill="#9ccc65" transform="rotate(15 33 102)" />
+    <path d="M -28 -5 Q -28 -30 -10 -32 Q 5 -28 2 -8 Z" fill="#e53935" />
+    <path d="M 8 -32 Q 28 -25 28 -5 Q 15 0 5 -8 Q 5 -22 8 -32 Z" fill="#e53935" />
+    <path d="M -25 0 Q -15 10 0 8 Q 15 10 25 0 Q 15 15 0 15 Q -15 15 -25 0 Z" fill="#c62828" />
+    <path d="M -18 -22 Q -8 -30 0 -22 Q 8 -30 18 -22 Q 10 -15 0 -18 Q -10 -15 -18 -22 Z" fill="#ef5350" />
+    <circle cx="0" cy="-5" r="8" fill="#2a2a2a" />
+    <circle cx="-3" cy="-7" r="1.5" fill="#1a1a1a" />
+    <circle cx="3" cy="-4" r="1.5" fill="#1a1a1a" />
+    <circle cx="0" cy="-2" r="1.5" fill="#1a1a1a" />
+    <line x1="0" y1="-5" x2="0" y2="-18" stroke="#1a1a1a" stroke-width="0.8" />
+    <line x1="0" y1="-5" x2="-10" y2="-10" stroke="#1a1a1a" stroke-width="0.8" />
+    <line x1="0" y1="-5" x2="10" y2="-10" stroke="#1a1a1a" stroke-width="0.8" />
+    <line x1="0" y1="-5" x2="-8" y2="3" stroke="#1a1a1a" stroke-width="0.8" />
+    <line x1="0" y1="-5" x2="8" y2="3" stroke="#1a1a1a" stroke-width="0.8" />
+  </g>
+</svg>

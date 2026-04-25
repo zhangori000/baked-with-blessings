@@ -1,0 +1,17 @@
+<svg width="220" height="36" viewBox="0 0 220 36" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M2 22C44 19 78 18 104 18C142 18 177 19 218 20"
+    fill="none"
+    stroke="#d8eaf7"
+    stroke-linecap="round"
+    stroke-width="3"
+  />
+  <path
+    d="M24 12C51 10 72 9 89 9C111 9 135 10 163 12"
+    fill="none"
+    stroke="#f2f8fe"
+    stroke-linecap="round"
+    stroke-width="2"
+    opacity="0.76"
+  />
+</svg>

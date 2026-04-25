@@ -3,6 +3,7 @@
 import { Media } from '@/components/Media'
 import { Message } from '@/components/Message'
 import { Price } from '@/components/Price'
+import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -424,6 +425,12 @@ export const CheckoutPage: React.FC = () => {
                             .join(', ')}
                         </p>
                       )}
+                      <TraySelectionSummary
+                        className="mt-2"
+                        compact
+                        selections={item.batchSelections}
+                        tone="muted"
+                      />
                       <div>
                         {'x'}
                         {quantity}

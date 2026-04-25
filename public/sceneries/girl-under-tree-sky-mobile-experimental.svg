@@ -1,0 +1,10 @@
+<svg width="100%" viewBox="0 0 430 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="girlTreeSkyMobile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a7fc4" />
+      <stop offset="78%" stop-color="#67a7db" />
+      <stop offset="100%" stop-color="#a8d0ea" />
+    </linearGradient>
+  </defs>
+  <rect width="430" height="760" fill="url(#girlTreeSkyMobile)" />
+</svg>

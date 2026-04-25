@@ -1,0 +1,37 @@
+<svg width="680" height="240" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="girlTreeMeadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f2cb54" />
+      <stop offset="62%" stop-color="#d8ad32" />
+      <stop offset="100%" stop-color="#b88918" />
+    </linearGradient>
+    <linearGradient id="girlTreeHill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7ba8cf" />
+      <stop offset="100%" stop-color="#527ba7" />
+    </linearGradient>
+  </defs>
+  <path
+    d="M0 18C56 6 113 0 172 0C235 0 290 8 348 16C403 24 463 28 524 24C581 20 632 9 680 -2V108H0V18Z"
+    fill="url(#girlTreeHill)"
+    opacity="0.92"
+  />
+  <path
+    d="M0 42C90 30 177 25 261 30C323 33 387 43 448 50C532 59 608 57 680 44V240H0V42Z"
+    fill="url(#girlTreeMeadow)"
+  />
+  <g fill="#e2bc3d" opacity="0.6">
+    <circle cx="44" cy="64" r="3" />
+    <circle cx="76" cy="77" r="2.5" />
+    <circle cx="118" cy="70" r="3" />
+    <circle cx="164" cy="82" r="2.5" />
+    <circle cx="210" cy="74" r="3" />
+    <circle cx="252" cy="78" r="2.5" />
+    <circle cx="310" cy="72" r="3" />
+    <circle cx="352" cy="81" r="2.5" />
+    <circle cx="406" cy="75" r="3" />
+    <circle cx="462" cy="82" r="2.5" />
+    <circle cx="518" cy="74" r="3" />
+    <circle cx="572" cy="81" r="2.5" />
+    <circle cx="624" cy="72" r="3" />
+  </g>
+</svg>

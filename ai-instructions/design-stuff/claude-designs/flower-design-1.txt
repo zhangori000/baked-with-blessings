@@ -1,0 +1,200 @@
+Here are all six flower SVGs as standalone files. Each one is self-contained — drop it anywhere SVG renders.
+
+## Daisy
+
+```svg
+<svg width="200" height="260" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 130)">
+    <!-- Stem -->
+    <line x1="0" y1="0" x2="0" y2="130" stroke="#689f38" stroke-width="4" stroke-linecap="round"/>
+    <!-- Leaves -->
+    <path d="M -2 80 Q -25 70 -35 85 Q -20 90 -2 85 Z" fill="#8bc34a"/>
+    <path d="M 2 100 Q 25 90 35 105 Q 20 110 2 105 Z" fill="#8bc34a"/>
+    <!-- 16 petals -->
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(22.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(45)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(67.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(90)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(112.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(135)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(157.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(180)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(202.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(225)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(247.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(270)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(292.5)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(315)"/>
+    <ellipse cx="0" cy="-26" rx="8" ry="18" fill="#ffffff" transform="rotate(337.5)"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="14" fill="#ffd966"/>
+    <circle cx="-3" cy="-3" r="2" fill="#f5b800"/>
+    <circle cx="4" cy="2" r="1.5" fill="#f5b800"/>
+    <circle cx="-1" cy="5" r="1.5" fill="#f5b800"/>
+  </g>
+</svg>
+```
+
+## Tulip
+
+```svg
+<svg width="200" height="260" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 130)">
+    <!-- Stem -->
+    <line x1="0" y1="0" x2="0" y2="130" stroke="#689f38" stroke-width="4" stroke-linecap="round"/>
+    <!-- Leaves -->
+    <path d="M -3 70 Q -32 55 -45 75 Q -25 85 -3 78 Z" fill="#8bc34a"/>
+    <path d="M 3 95 Q 30 80 42 100 Q 22 108 3 102 Z" fill="#8bc34a"/>
+    <!-- Bloom -->
+    <path d="M -25 -5 Q -25 -45 0 -50 Q 25 -45 25 -5 Q 18 0 10 -8 Q 5 0 0 -3 Q -5 0 -10 -8 Q -18 0 -25 -5 Z" fill="#e91e63"/>
+    <!-- Inner petal shadow -->
+    <path d="M -10 -8 Q -8 -30 0 -35 Q 8 -30 10 -8 Q 5 -2 0 -5 Q -5 -2 -10 -8 Z" fill="#ad1457"/>
+  </g>
+</svg>
+```
+
+## Sunflower
+
+```svg
+<svg width="200" height="260" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 130)">
+    <!-- Stem -->
+    <line x1="0" y1="0" x2="0" y2="130" stroke="#558b2f" stroke-width="5" stroke-linecap="round"/>
+    <!-- Leaves -->
+    <path d="M -2 70 Q -35 58 -48 78 Q -26 90 -2 80 Z" fill="#689f38"/>
+    <path d="M 2 95 Q 32 83 44 103 Q 24 112 2 104 Z" fill="#689f38"/>
+    <!-- Back layer: 9 darker amber petals -->
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(20)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(60)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(100)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(140)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(180)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(220)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(260)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(300)"/>
+    <ellipse cx="0" cy="-34" rx="9" ry="22" fill="#f9a825" transform="rotate(340)"/>
+    <!-- Front layer: 9 bright yellow petals (offset) -->
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(40)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(80)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(120)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(160)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(200)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(240)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(280)"/>
+    <ellipse cx="0" cy="-30" rx="8" ry="20" fill="#ffc107" transform="rotate(320)"/>
+    <!-- Seed center -->
+    <circle cx="0" cy="0" r="16" fill="#5d4037"/>
+    <circle cx="-4" cy="-4" r="1.5" fill="#3e2723"/>
+    <circle cx="4" cy="-2" r="1.5" fill="#3e2723"/>
+    <circle cx="0" cy="3" r="1.5" fill="#3e2723"/>
+    <circle cx="-5" cy="4" r="1.5" fill="#3e2723"/>
+    <circle cx="5" cy="5" r="1.5" fill="#3e2723"/>
+    <circle cx="-2" cy="-7" r="1.5" fill="#3e2723"/>
+    <circle cx="6" cy="1" r="1.5" fill="#3e2723"/>
+  </g>
+</svg>
+```
+
+## Rose
+
+```svg
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 65)">
+    <!-- Stem -->
+    <line x1="0" y1="0" x2="0" y2="130" stroke="#689f38" stroke-width="4" stroke-linecap="round"/>
+    <!-- Leaves -->
+    <path d="M -2 70 Q -30 60 -42 78 Q -22 88 -2 80 Z" fill="#8bc34a"/>
+    <path d="M 2 100 Q 28 90 40 108 Q 20 116 2 110 Z" fill="#8bc34a"/>
+    <!-- Sepals -->
+    <path d="M -8 -3 L -10 -8 L -2 -10 L 0 -2 Z" fill="#558b2f"/>
+    <path d="M 8 -3 L 10 -8 L 2 -10 L 0 -2 Z" fill="#558b2f"/>
+    <!-- Layered bloom -->
+    <circle cx="0" cy="-5" r="30" fill="#e91e63"/>
+    <path d="M -20 -10 Q -15 -25 0 -25 Q 15 -25 20 -10 Q 18 5 0 8 Q -18 5 -20 -10 Z" fill="#c2185b"/>
+    <path d="M -12 -8 Q -10 -18 0 -18 Q 10 -18 12 -8 Q 10 2 0 4 Q -10 2 -12 -8 Z" fill="#ad1457"/>
+    <path d="M -6 -6 Q -4 -12 0 -12 Q 4 -12 6 -6 Q 4 0 0 1 Q -4 0 -6 -6 Z" fill="#880e4f"/>
+    <circle cx="0" cy="-4" r="2" fill="#4a0028"/>
+  </g>
+</svg>
+```
+
+## Cherry blossom branch
+
+```svg
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 65)">
+    <!-- Branch -->
+    <path d="M 0 130 Q -5 90 -8 60 Q -10 30 -5 0" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- Side twigs -->
+    <path d="M -7 50 Q -18 42 -28 48" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M -8 75 Q 3 68 12 72" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- Main blossom -->
+    <g transform="translate(-5, 0)">
+      <ellipse cx="0" cy="-15" rx="9" ry="13" fill="#fce4ec"/>
+      <ellipse cx="14" cy="-4" rx="9" ry="13" fill="#fce4ec" transform="rotate(72 14 -4)"/>
+      <ellipse cx="9" cy="13" rx="9" ry="13" fill="#fce4ec" transform="rotate(144 9 13)"/>
+      <ellipse cx="-9" cy="13" rx="9" ry="13" fill="#fce4ec" transform="rotate(-144 -9 13)"/>
+      <ellipse cx="-14" cy="-4" rx="9" ry="13" fill="#fce4ec" transform="rotate(-72 -14 -4)"/>
+      <circle cx="0" cy="0" r="4" fill="#ffeb3b"/>
+      <line x1="0" y1="0" x2="4" y2="-5" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="-4" y2="-5" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="5" y2="2" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="-5" y2="2" stroke="#f9a825" stroke-width="0.8"/>
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#f9a825" stroke-width="0.8"/>
+    </g>
+    <!-- Smaller blossom left -->
+    <g transform="translate(-22, 35) scale(0.7)">
+      <ellipse cx="0" cy="-15" rx="9" ry="13" fill="#f8bbd0"/>
+      <ellipse cx="14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(72 14 -4)"/>
+      <ellipse cx="9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(144 9 13)"/>
+      <ellipse cx="-9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-144 -9 13)"/>
+      <ellipse cx="-14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-72 -14 -4)"/>
+      <circle cx="0" cy="0" r="4" fill="#ffeb3b"/>
+    </g>
+    <!-- Smaller blossom right -->
+    <g transform="translate(15, 50) scale(0.65)">
+      <ellipse cx="0" cy="-15" rx="9" ry="13" fill="#f8bbd0"/>
+      <ellipse cx="14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(72 14 -4)"/>
+      <ellipse cx="9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(144 9 13)"/>
+      <ellipse cx="-9" cy="13" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-144 -9 13)"/>
+      <ellipse cx="-14" cy="-4" rx="9" ry="13" fill="#f8bbd0" transform="rotate(-72 -14 -4)"/>
+      <circle cx="0" cy="0" r="4" fill="#ffeb3b"/>
+    </g>
+  </g>
+</svg>
+```
+
+## Poppy
+
+```svg
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 65)">
+    <!-- Curved stem -->
+    <path d="M 0 0 Q -3 50 -2 130" stroke="#7cb342" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Leaf stems and leaves -->
+    <path d="M -3 60 Q -28 48 -40 65" stroke="#7cb342" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-35" cy="62" rx="8" ry="3" fill="#9ccc65" transform="rotate(-15 -35 62)"/>
+    <path d="M -1 95 Q 25 88 38 105" stroke="#7cb342" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="33" cy="102" rx="8" ry="3" fill="#9ccc65" transform="rotate(15 33 102)"/>
+    <!-- Crumpled layered petals -->
+    <path d="M -28 -5 Q -28 -30 -10 -32 Q 5 -28 2 -8 Z" fill="#e53935"/>
+    <path d="M 8 -32 Q 28 -25 28 -5 Q 15 0 5 -8 Q 5 -22 8 -32 Z" fill="#e53935"/>
+    <path d="M -25 0 Q -15 10 0 8 Q 15 10 25 0 Q 15 15 0 15 Q -15 15 -25 0 Z" fill="#c62828"/>
+    <path d="M -18 -22 Q -8 -30 0 -22 Q 8 -30 18 -22 Q 10 -15 0 -18 Q -10 -15 -18 -22 Z" fill="#ef5350"/>
+    <!-- Dark center with stamens -->
+    <circle cx="0" cy="-5" r="8" fill="#2a2a2a"/>
+    <circle cx="-3" cy="-7" r="1.5" fill="#1a1a1a"/>
+    <circle cx="3" cy="-4" r="1.5" fill="#1a1a1a"/>
+    <circle cx="0" cy="-2" r="1.5" fill="#1a1a1a"/>
+    <line x1="0" y1="-5" x2="0" y2="-18" stroke="#1a1a1a" stroke-width="0.8"/>
+    <line x1="0" y1="-5" x2="-10" y2="-10" stroke="#1a1a1a" stroke-width="0.8"/>
+    <line x1="0" y1="-5" x2="10" y2="-10" stroke="#1a1a1a" stroke-width="0.8"/>
+    <line x1="0" y1="-5" x2="-8" y2="3" stroke="#1a1a1a" stroke-width="0.8"/>
+    <line x1="0" y1="-5" x2="8" y2="3" stroke="#1a1a1a" stroke-width="0.8"/>
+  </g>
+</svg>
+```
+
+Each flower is anchored so the center of the bloom sits at the `translate(...)` coordinates, with the stem extending downward. If you want to drop them into a scene at a specific location, just change that `translate` value. The cherry blossom, rose, and poppy use slightly different viewBox heights because their blooms sit more compactly on their stems than the tall daisy, tulip, and sunflower.

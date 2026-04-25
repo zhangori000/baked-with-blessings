@@ -14,6 +14,7 @@ What is still hardcoded is the poster-specific presentation layer, such as:
 - chips
 - label text
 - label color
+- carousel CTA / poster button color
 - fallback body SVG path
 
 This is currently design-owned metadata in code.
@@ -42,6 +43,8 @@ Good field labels and descriptions matter here. Example admin wording:
   Small highlighted label shown above the title on the poster page.
 - `Poster Label Color`
   Background color for the highlighted label.
+- `Poster CTA Color`
+  Optional color used for the homepage carousel button / poster call-to-action.
 - `Poster Summary`
   Short marketing description used on the poster page and sheep card.
 
@@ -65,6 +68,7 @@ Example concept:
 - `poster.chips`
 - `poster.label`
 - `poster.labelTone`
+- `poster.ctaColor`
 - `poster.summary`
 
 Potentially keep some things code-owned even after this:
@@ -87,4 +91,3 @@ When this is implemented, each field should explain where it appears:
 - menu section only
 
 That will reduce confusion for non-technical admins.
-

@@ -1,0 +1,61 @@
+<svg width="680" height="360" viewBox="0 0 680 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1540" />
+      <stop offset="40%" stop-color="#1a3060" />
+      <stop offset="70%" stop-color="#2a6878" />
+      <stop offset="100%" stop-color="#3a9880" />
+    </linearGradient>
+    <linearGradient id="auroraGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6ad4a0" stop-opacity="0" />
+      <stop offset="50%" stop-color="#6ad4a0" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#4ab8a8" stop-opacity="0.7" />
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="40%" stop-color="#e8f4d8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#a8e8c4" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="moon" cx="0.4" cy="0.4" r="0.6">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#f0f8e0" />
+      <stop offset="100%" stop-color="#c8e0b8" />
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="680" height="360" fill="url(#nightSky)" />
+  <rect x="0" y="128" width="680" height="112" fill="url(#auroraGlow)" />
+  <g fill="#ffffff">
+    <circle cx="80" cy="30" r="1" />
+    <circle cx="180" cy="20" r="0.8" />
+    <circle cx="260" cy="50" r="1.2" />
+    <circle cx="340" cy="35" r="0.8" />
+    <circle cx="420" cy="25" r="1" />
+    <circle cx="480" cy="45" r="0.8" />
+    <circle cx="560" cy="30" r="1.2" />
+    <circle cx="620" cy="55" r="1" />
+    <circle cx="50" cy="80" r="0.8" />
+    <circle cx="130" cy="90" r="1" />
+    <circle cx="220" cy="100" r="0.8" />
+    <circle cx="300" cy="85" r="1" />
+    <circle cx="380" cy="105" r="0.8" />
+    <circle cx="450" cy="90" r="1" />
+    <circle cx="540" cy="110" r="0.8" />
+    <circle cx="610" cy="95" r="1" />
+    <g opacity="0.9">
+      <rect x="279" y="83" width="0.8" height="5" />
+      <rect x="277" y="85" width="5" height="0.8" />
+      <rect x="419" y="23" width="0.8" height="5" />
+      <rect x="417" y="25" width="5" height="0.8" />
+      <rect x="559" y="28" width="0.8" height="5" />
+      <rect x="557" y="30" width="5" height="0.8" />
+    </g>
+  </g>
+  <circle cx="548" cy="88" r="70" fill="url(#moonGlow)" />
+  <circle cx="548" cy="88" r="32" fill="url(#moon)" />
+  <circle cx="538" cy="83" r="3" fill="#c8d8b8" opacity="0.5" />
+  <circle cx="556" cy="93" r="2" fill="#c8d8b8" opacity="0.5" />
+  <circle cx="546" cy="100" r="2.5" fill="#c8d8b8" opacity="0.5" />
+  <circle cx="560" cy="80" r="1.5" fill="#c8d8b8" opacity="0.5" />
+  <ellipse cx="548" cy="128" rx="50" ry="6" fill="#a8e8c4" opacity="0.3" />
+  <ellipse cx="548" cy="143" rx="35" ry="4" fill="#a8e8c4" opacity="0.2" />
+</svg>

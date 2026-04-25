@@ -1,0 +1,9 @@
+<svg width="100%" viewBox="0 0 84 92" xmlns="http://www.w3.org/2000/svg">
+  <!-- Spawnable village house:
+       Cream rectangular walls, steep red-orange roof, and a small
+       dark doorway. Sized for foreground spawning on the castle scene. -->
+  <rect x="18" y="34" width="48" height="42" rx="2" fill="#e8d8a8"/>
+  <polygon points="14,36 42,12 70,36" fill="#c43525"/>
+  <polygon points="20,36 42,18 64,36" fill="#e1643a" opacity="0.65"/>
+  <rect x="38" y="50" width="10" height="26" fill="#7b4c2c"/>
+</svg>

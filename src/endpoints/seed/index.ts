@@ -1,5 +1,7 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
+import { importCateringMedia } from './catering-media'
+import { seedCateringProducts } from './catering-products'
 import { importCookieMedia } from './cookie-media'
 import { seedCookieProducts } from './cookie-products'
 
@@ -46,18 +48,32 @@ export const seed = async ({
   payload.logger.info('- Importing cookie media...')
 
   const mediaImportResult = await importCookieMedia({ payload, req })
+  const cateringMediaImportResult = await importCateringMedia({ payload, req })
+  const mediaBySlug = {
+    ...mediaImportResult.mediaBySlug,
+    ...cateringMediaImportResult.mediaBySlug,
+  }
 
   payload.logger.info(
-    `- Cookie media import summary: created=${mediaImportResult.created}, updated=${mediaImportResult.updated}, skipped=${mediaImportResult.skipped}`,
+    `- Media import summary: cookies(created=${mediaImportResult.created}, updated=${mediaImportResult.updated}, skipped=${mediaImportResult.skipped}), catering(created=${cateringMediaImportResult.created}, updated=${cateringMediaImportResult.updated}, skipped=${cateringMediaImportResult.skipped})`,
   )
 
   payload.logger.info('- Seeding cookie products...')
 
-  await seedCookieProducts({
-    mediaBySlug: mediaImportResult.mediaBySlug,
+  const cookieSeedResult = await seedCookieProducts({
+    mediaBySlug,
     payload,
     req,
   })
 
-  payload.logger.info('Seeded cookie catalog successfully!')
+  payload.logger.info('- Seeding catering products...')
+
+  await seedCateringProducts({
+    cookieProductsBySlug: cookieSeedResult.productsBySlug,
+    mediaBySlug,
+    payload,
+    req,
+  })
+
+  payload.logger.info('Seeded cookie and catering catalog successfully!')
 }

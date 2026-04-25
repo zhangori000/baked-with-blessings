@@ -66,11 +66,7 @@ export function NavFlowerAccent({ tone = 'orange' }: Props) {
         strokeLinecap="round"
         strokeWidth="5"
       />
-      <path
-        d="M61 96 C74 93 84 98 88 111 C77 113 69 110 61 101 Z"
-        fill="#87963b"
-        opacity="0.94"
-      />
+      <path d="M61 96 C74 93 84 98 88 111 C77 113 69 110 61 101 Z" fill="#87963b" opacity="0.94" />
       <path
         d="M60 108 C49 103 40 105 32 117 C44 121 52 118 60 112 Z"
         fill="#798634"
@@ -101,7 +97,14 @@ export function NavFlowerAccent({ tone = 'orange' }: Props) {
           fill={`url(#${highlightId})`}
           opacity="0.5"
         />
-        <circle cx="0" cy="3" fill={`url(#${centerId})`} r="10" stroke={palette.centerOuter} strokeWidth="1.1" />
+        <circle
+          cx="0"
+          cy="3"
+          fill={`url(#${centerId})`}
+          r="10"
+          stroke={palette.centerOuter}
+          strokeWidth="1.1"
+        />
         <circle cx="-5" cy="-3" fill={palette.pollen} r="1.7" />
         <circle cx="3" cy="-6" fill={palette.pollen} r="1.5" />
         <circle cx="5" cy="2" fill={palette.pollen} r="1.6" />

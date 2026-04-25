@@ -1,0 +1,72 @@
+<svg width="100%" viewBox="0 0 430 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="moonlitSkyMobile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#08163f" />
+      <stop offset="42%" stop-color="#172d5d" />
+      <stop offset="76%" stop-color="#2f6d79" />
+      <stop offset="100%" stop-color="#52a497" />
+    </linearGradient>
+    <radialGradient id="moonGlowMobile" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96" />
+      <stop offset="38%" stop-color="#ebf6da" stop-opacity="0.38" />
+      <stop offset="100%" stop-color="#9ee8cb" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="moonFaceMobile" cx="38%" cy="34%" r="62%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#eef7df" />
+      <stop offset="100%" stop-color="#c8dfbe" />
+    </radialGradient>
+    <linearGradient id="moonlitMistMobile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7ad2bf" stop-opacity="0" />
+      <stop offset="18%" stop-color="#7ad2bf" stop-opacity="0.16" />
+      <stop offset="58%" stop-color="#6fc6b3" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#5bb19f" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="430" height="760" fill="url(#moonlitSkyMobile)" />
+  <path
+    d="M0 318Q86 304 172 316Q258 328 344 314Q388 308 430 314V596Q334 608 246 596Q158 584 86 592Q42 596 0 592V318Z"
+    fill="url(#moonlitMistMobile)"
+  />
+  <g fill="#ffffff" opacity="0.96">
+    <circle cx="54" cy="48" r="1.3" />
+    <circle cx="112" cy="74" r="1" />
+    <circle cx="188" cy="48" r="1.4" />
+    <circle cx="264" cy="70" r="1.1" />
+    <circle cx="336" cy="54" r="1.3" />
+    <circle cx="382" cy="84" r="1.1" />
+    <circle cx="76" cy="188" r="1" />
+    <circle cx="154" cy="210" r="1.2" />
+    <circle cx="224" cy="176" r="1" />
+    <circle cx="298" cy="204" r="1.3" />
+    <circle cx="362" cy="184" r="1.1" />
+    <g opacity="0.94">
+      <rect x="221" y="172" width="1.1" height="8" />
+      <rect x="218" y="175" width="7" height="1.1" />
+      <rect x="345" y="50" width="1.1" height="8" />
+      <rect x="342" y="53" width="7" height="1.1" />
+      <rect x="92" y="266" width="1.1" height="8" />
+      <rect x="89" y="269" width="7" height="1.1" />
+    </g>
+  </g>
+  <circle cx="316" cy="204" r="108" fill="url(#moonGlowMobile)" />
+  <circle cx="316" cy="204" r="48" fill="url(#moonFaceMobile)" />
+  <g fill="#c7d8bb" opacity="0.58">
+    <circle cx="299" cy="192" r="5" />
+    <circle cx="330" cy="211" r="3.5" />
+    <circle cx="313" cy="226" r="4.5" />
+    <circle cx="339" cy="186" r="2.8" />
+  </g>
+  <g fill="#7ba8b7" opacity="0.74">
+    <ellipse cx="208" cy="184" rx="84" ry="16" />
+    <ellipse cx="288" cy="248" rx="94" ry="18" />
+    <ellipse cx="188" cy="326" rx="72" ry="14" />
+    <ellipse cx="324" cy="384" rx="82" ry="15" />
+  </g>
+  <g fill="#2f375f" opacity="0.84">
+    <ellipse cx="214" cy="174" rx="98" ry="18" />
+    <ellipse cx="304" cy="236" rx="88" ry="16" />
+    <ellipse cx="178" cy="316" rx="86" ry="16" />
+    <ellipse cx="336" cy="376" rx="94" ry="17" />
+  </g>
+</svg>

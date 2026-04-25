@@ -292,6 +292,16 @@ export interface Order {
         product?: (number | null) | Product;
         variant?: (number | null) | Variant;
         quantity: number;
+        /**
+         * For tray-builder products, store which child products were picked for this tray and how many of each.
+         */
+        batchSelections?:
+          | {
+              product: number | Product;
+              quantity: number;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -352,6 +362,24 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
+   * Long-form copy shown inside expandable menu cards. Use this when you want a more persuasive, blog-like section without creating a dedicated product page.
+   */
+  menuExpandedPitch?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
    * Product image gallery. The first image is the main storefront image, so put the best primary photo first.
    */
   gallery?:
@@ -371,6 +399,58 @@ export interface Product {
    * Optional long-form sections below the main product details. Use these for ingredient notes, FAQs, extra selling copy, or supporting media.
    */
   layout?: (CallToActionBlock | ContentBlock | MediaBlock)[] | null;
+  /**
+   * Display details for the cookie cards and cookie detail art. This is where the business owner edits the short cookie tags, summary, and the handwritten-style ingredient note popup.
+   */
+  poster?: {
+    /**
+     * Short line used under the cookie title on poster-style storefront cards.
+     */
+    subtitle?: string | null;
+    /**
+     * Short all-caps tags shown as visual pills, such as BROWN BUTTER or CHEWY.
+     */
+    chips?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Highlighted label shown above the cookie title on the poster detail page.
+     */
+    label?: string | null;
+    /**
+     * Background color for the poster label, usually a hex value like #f6c58f.
+     */
+    labelTone?: string | null;
+    /**
+     * Short marketing summary used on the poster card and poster detail page.
+     */
+    summary?: string | null;
+    /**
+     * Small label for the translucent scene button that opens the baker-note ingredient popup.
+     */
+    infoButtonLabel?: string | null;
+    /**
+     * Notebook-style heading shown inside the ingredient popup, for example Baker Notes.
+     */
+    ingredientsNoteTitle?: string | null;
+    /**
+     * Optional handwritten-style intro sentence above the ingredients list in the popup.
+     */
+    ingredientsIntro?: string | null;
+    /**
+     * Ingredients or cookie components that should appear inside the popup note.
+     */
+    ingredients?:
+      | {
+          name: string;
+          detail?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   /**
    * Stock count for simple products. If you enable variants, manage stock on each variant instead of here.
    */
@@ -393,6 +473,22 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
+  /**
+   * Short quantity label for menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".
+   */
+  menuPortionLabel?: string | null;
+  /**
+   * Use configurable tray when this product is built from child product flavors instead of being added directly. The storefront currently supports single-flavor trays, and custom mix trays can be enabled later without changing the relationship model.
+   */
+  menuBehavior?: ('simple' | 'batchBuilder') | null;
+  /**
+   * How many cookies belong in the tray. For today's single-flavor trays, this becomes the quantity of the chosen flavor.
+   */
+  requiredSelectionCount?: number | null;
+  /**
+   * Choose which cookie flavors are allowed for this tray. The storefront currently lets the customer pick one of these flavors for the full tray.
+   */
+  selectableProducts?: (number | Product)[] | null;
   /**
    * Pick other products that should be suggested alongside this one on the storefront.
    */
@@ -1127,6 +1223,16 @@ export interface Transaction {
         product?: (number | null) | Product;
         variant?: (number | null) | Variant;
         quantity: number;
+        /**
+         * For tray-builder products, store which child products were picked for this tray and how many of each.
+         */
+        batchSelections?:
+          | {
+              product: number | Product;
+              quantity: number;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -1177,6 +1283,16 @@ export interface Cart {
         product?: (number | null) | Product;
         variant?: (number | null) | Variant;
         quantity: number;
+        /**
+         * For tray-builder products, store which child products were picked for this tray and how many of each.
+         */
+        batchSelections?:
+          | {
+              product: number | Product;
+              quantity: number;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -1912,6 +2028,7 @@ export interface VariantOptionsSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  menuExpandedPitch?: T;
   gallery?:
     | T
     | {
@@ -1926,12 +2043,40 @@ export interface ProductsSelect<T extends boolean = true> {
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
       };
+  poster?:
+    | T
+    | {
+        subtitle?: T;
+        chips?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        label?: T;
+        labelTone?: T;
+        summary?: T;
+        infoButtonLabel?: T;
+        ingredientsNoteTitle?: T;
+        ingredientsIntro?: T;
+        ingredients?:
+          | T
+          | {
+              name?: T;
+              detail?: T;
+              id?: T;
+            };
+      };
   inventory?: T;
   enableVariants?: T;
   variantTypes?: T;
   variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
+  menuPortionLabel?: T;
+  menuBehavior?: T;
+  requiredSelectionCount?: T;
+  selectableProducts?: T;
   relatedProducts?: T;
   meta?:
     | T
@@ -1959,6 +2104,13 @@ export interface CartsSelect<T extends boolean = true> {
         product?: T;
         variant?: T;
         quantity?: T;
+        batchSelections?:
+          | T
+          | {
+              product?: T;
+              quantity?: T;
+              id?: T;
+            };
         id?: T;
       };
   secret?: T;
@@ -1981,6 +2133,13 @@ export interface OrdersSelect<T extends boolean = true> {
         product?: T;
         variant?: T;
         quantity?: T;
+        batchSelections?:
+          | T
+          | {
+              product?: T;
+              quantity?: T;
+              id?: T;
+            };
         id?: T;
       };
   shippingAddress?:
@@ -2021,6 +2180,13 @@ export interface TransactionsSelect<T extends boolean = true> {
         product?: T;
         variant?: T;
         quantity?: T;
+        batchSelections?:
+          | T
+          | {
+              product?: T;
+              quantity?: T;
+              id?: T;
+            };
         id?: T;
       };
   paymentMethod?: T;

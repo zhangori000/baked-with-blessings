@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+     MEDIEVAL FANTASY CASTLE VALLEY - DESKTOP VERSION
+     Wider, greener, and more grand with broader castle flanks,
+     a larger central keep, and bigger foreground village homes.
+     ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="100%"
+     viewBox="0 0 1200 600"
+     role="img"
+     aria-label="Medieval fantasy castle valley scene">
+  <title>Medieval fantasy castle valley</title>
+  <desc>A grand medieval fantasy castle with broad side fortifications, larger foreground homes, rolling green hills, and soft puffy clouds.</desc>
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4d91d8"/>
+      <stop offset="100%" stop-color="#bfe3f3"/>
+    </linearGradient>
+    <linearGradient id="farHills" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6d9fc6"/>
+      <stop offset="100%" stop-color="#8fb8d4"/>
+    </linearGradient>
+    <linearGradient id="midGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#58b43e"/>
+      <stop offset="100%" stop-color="#72ca4d"/>
+    </linearGradient>
+    <linearGradient id="brightGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#86d94f"/>
+      <stop offset="100%" stop-color="#aee85d"/>
+    </linearGradient>
+    <linearGradient id="foreGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#62bd3b"/>
+      <stop offset="100%" stop-color="#428d2b"/>
+    </linearGradient>
+    <linearGradient id="lowerGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6ebf37"/>
+      <stop offset="100%" stop-color="#4f9228"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="252" fill="url(#sky)"/>
+
+  <!-- Puffy clouds: these silhouettes are the basis for spawnable cloud puffs. -->
+  <ellipse cx="82" cy="86" rx="48" ry="13" fill="#ffffff" opacity="0.92"/>
+  <ellipse cx="108" cy="80" rx="30" ry="14" fill="#ffffff" opacity="0.86"/>
+  <ellipse cx="242" cy="72" rx="56" ry="15" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="278" cy="60" rx="44" ry="18" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="256" cy="82" rx="48" ry="12" fill="#f0f4f8" opacity="0.84"/>
+  <ellipse cx="592" cy="60" rx="78" ry="20" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="646" cy="42" rx="62" ry="23" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="620" cy="74" rx="66" ry="15" fill="#e8eef4" opacity="0.84"/>
+  <ellipse cx="706" cy="62" rx="46" ry="16" fill="#ffffff" opacity="0.9"/>
+  <ellipse cx="918" cy="80" rx="60" ry="16" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="960" cy="66" rx="46" ry="19" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="932" cy="92" rx="54" ry="13" fill="#e8eef4" opacity="0.84"/>
+  <ellipse cx="1102" cy="106" rx="50" ry="13" fill="#ffffff" opacity="0.9"/>
+  <ellipse cx="1132" cy="99" rx="34" ry="15" fill="#ffffff" opacity="0.84"/>
+
+  <path d="M0,226 Q148,204 302,216 Q456,230 602,210 Q760,194 918,214 Q1066,232 1200,214 L1200,286 L0,286 Z"
+        fill="url(#farHills)" opacity="0.85"/>
+  <path d="M0,250 Q172,234 352,244 Q534,256 724,240 Q916,228 1200,240 L1200,300 L0,300 Z"
+        fill="#7eaaca" opacity="0.72"/>
+
+  <path d="M0,276 Q132,258 274,270 Q428,282 570,266 Q732,248 876,266 Q1018,282 1200,266 L1200,332 L0,332 Z"
+        fill="url(#midGreen)"/>
+
+  <ellipse cx="600" cy="322" rx="220" ry="52" fill="#4da73b"/>
+  <ellipse cx="600" cy="312" rx="194" ry="42" fill="#63be44"/>
+
+  <!-- Grand castle with wider flanks and a larger central keep. -->
+  <g>
+    <rect x="408" y="254" width="384" height="98" fill="#c6c6c6"/>
+    <rect x="424" y="240" width="352" height="16" fill="#8d8d8d"/>
+
+    <rect x="324" y="282" width="108" height="112" fill="#bbbbbb"/>
+    <rect x="768" y="282" width="108" height="112" fill="#bbbbbb"/>
+    <rect x="314" y="268" width="124" height="16" fill="#858585"/>
+    <rect x="762" y="268" width="124" height="16" fill="#858585"/>
+
+    <rect x="286" y="226" width="58" height="168" fill="#cecece"/>
+    <rect x="276" y="212" width="76" height="16" fill="#858585"/>
+    <polygon points="276,212 314,164 352,212" fill="#a12d20"/>
+
+    <rect x="856" y="226" width="58" height="168" fill="#cecece"/>
+    <rect x="848" y="212" width="76" height="16" fill="#858585"/>
+    <polygon points="848,212 886,164 924,212" fill="#a12d20"/>
+
+    <rect x="510" y="160" width="180" height="234" fill="#d4d4d4"/>
+    <rect x="496" y="144" width="208" height="18" fill="#878787"/>
+    <polygon points="496,144 600,26 704,144" fill="#942116"/>
+
+    <rect x="446" y="196" width="56" height="198" fill="#cbcbcb"/>
+    <rect x="438" y="182" width="72" height="16" fill="#8a8a8a"/>
+    <polygon points="438,182 474,134 510,182" fill="#ad3726"/>
+
+    <rect x="698" y="196" width="56" height="198" fill="#cbcbcb"/>
+    <rect x="690" y="182" width="72" height="16" fill="#8a8a8a"/>
+    <polygon points="690,182 726,134 762,182" fill="#ad3726"/>
+
+    <rect x="558" y="278" width="16" height="40" fill="#1d2531"/>
+    <rect x="626" y="278" width="16" height="40" fill="#1d2531"/>
+    <rect x="592" y="242" width="20" height="66" fill="#1d2531"/>
+    <rect x="480" y="248" width="14" height="34" fill="#1d2531"/>
+    <rect x="708" y="248" width="14" height="34" fill="#1d2531"/>
+    <rect x="308" y="294" width="12" height="40" fill="#1d2531"/>
+    <rect x="882" y="294" width="12" height="40" fill="#1d2531"/>
+
+    <rect x="313" y="132" width="4" height="42" fill="#5b5b5b"/>
+    <rect x="309" y="136" width="20" height="14" rx="2" fill="#f2d34f"/>
+    <rect x="317.5" y="138.5" width="3" height="9" fill="#ffffff"/>
+    <rect x="314.8" y="141.2" width="8.4" height="3" fill="#ffffff"/>
+
+    <rect x="883" y="132" width="4" height="42" fill="#5b5b5b"/>
+    <rect x="879" y="136" width="20" height="14" rx="2" fill="#f2d34f"/>
+    <rect x="887.5" y="138.5" width="3" height="9" fill="#ffffff"/>
+    <rect x="884.8" y="141.2" width="8.4" height="3" fill="#ffffff"/>
+
+    <path d="M544,394 Q600,336 656,394 Z" fill="#7d5d45"/>
+    <rect x="554" y="394" width="92" height="56" fill="#9a8268"/>
+  </g>
+
+  <!-- Houses: simple cream walls + red roofs so spawned houses match the painted village language. -->
+  <g>
+    <g><rect x="218" y="334" width="54" height="40" fill="#ead9a8"/><polygon points="214,334 245,304 276,334" fill="#c93a28"/></g>
+    <g><rect x="280" y="324" width="60" height="44" fill="#ead9a8"/><polygon points="276,324 310,292 344,324" fill="#b82f20"/></g>
+    <g><rect x="346" y="338" width="44" height="32" fill="#ead9a8"/><polygon points="342,338 368,314 394,338" fill="#c93a28"/></g>
+    <g><rect x="810" y="334" width="54" height="40" fill="#ead9a8"/><polygon points="806,334 837,304 868,334" fill="#c93a28"/></g>
+    <g><rect x="870" y="324" width="60" height="44" fill="#ead9a8"/><polygon points="866,324 900,292 934,324" fill="#b82f20"/></g>
+    <g><rect x="938" y="338" width="44" height="32" fill="#ead9a8"/><polygon points="934,338 960,314 986,338" fill="#c93a28"/></g>
+
+    <g><rect x="116" y="406" width="62" height="48" fill="#ead9a8"/><polygon points="110,406 147,372 184,406" fill="#c93a28"/></g>
+    <g><rect x="190" y="422" width="54" height="40" fill="#ead9a8"/><polygon points="186,422 217,392 248,422" fill="#b82f20"/></g>
+    <g><rect x="258" y="412" width="66" height="46" fill="#ead9a8"/><polygon points="254,412 291,378 328,412" fill="#c93a28"/></g>
+    <g><rect x="878" y="406" width="62" height="48" fill="#ead9a8"/><polygon points="872,406 909,372 946,406" fill="#c93a28"/></g>
+    <g><rect x="950" y="422" width="54" height="40" fill="#ead9a8"/><polygon points="946,422 977,392 1008,422" fill="#b82f20"/></g>
+    <g><rect x="1018" y="412" width="66" height="46" fill="#ead9a8"/><polygon points="1014,412 1051,378 1088,412" fill="#c93a28"/></g>
+  </g>
+
+  <path d="M0,348 Q302,328 604,350 Q906,372 1200,344 L1200,442 L0,442 Z"
+        fill="url(#brightGreen)"/>
+  <path d="M0,390 Q324,366 648,394 Q958,418 1200,386 L1200,476 L0,476 Z"
+        fill="#93dd51"/>
+  <ellipse cx="210" cy="416" rx="18" ry="8" fill="#5aa42e" opacity="0.46"/>
+  <ellipse cx="496" cy="432" rx="15" ry="7" fill="#5aa42e" opacity="0.42"/>
+  <ellipse cx="884" cy="424" rx="20" ry="9" fill="#5aa42e" opacity="0.44"/>
+  <ellipse cx="1046" cy="442" rx="18" ry="8" fill="#5aa42e" opacity="0.42"/>
+
+  <!-- Trees are more in view now, not hard-clipped to the screen edge. -->
+  <g>
+    <ellipse cx="118" cy="276" rx="58" ry="72" fill="#233d1d"/>
+    <ellipse cx="148" cy="250" rx="42" ry="54" fill="#315a27"/>
+    <rect x="104" y="320" width="16" height="52" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="1082" cy="274" rx="58" ry="74" fill="#233d1d"/>
+    <ellipse cx="1048" cy="246" rx="42" ry="54" fill="#315a27"/>
+    <rect x="1072" y="320" width="16" height="54" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="300" cy="438" rx="22" ry="28" fill="#26461f"/>
+    <ellipse cx="292" cy="426" rx="15" ry="18" fill="#3f752e"/>
+  </g>
+  <g>
+    <ellipse cx="922" cy="444" rx="22" ry="28" fill="#26461f"/>
+    <ellipse cx="914" cy="432" rx="15" ry="18" fill="#3f752e"/>
+  </g>
+  <g>
+    <ellipse cx="208" cy="346" rx="26" ry="34" fill="#26461f"/>
+    <ellipse cx="218" cy="334" rx="18" ry="22" fill="#3f752e"/>
+    <rect x="204" y="364" width="7" height="24" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="360" cy="326" rx="22" ry="28" fill="#26461f"/>
+    <ellipse cx="368" cy="316" rx="15" ry="18" fill="#3f752e"/>
+    <rect x="356" y="340" width="6" height="20" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="842" cy="338" rx="24" ry="30" fill="#26461f"/>
+    <ellipse cx="850" cy="328" rx="16" ry="20" fill="#3f752e"/>
+    <rect x="838" y="354" width="6" height="20" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="980" cy="364" rx="28" ry="36" fill="#26461f"/>
+    <ellipse cx="990" cy="350" rx="18" ry="22" fill="#3f752e"/>
+    <rect x="976" y="382" width="8" height="26" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="170" cy="486" rx="34" ry="42" fill="#26461f"/>
+    <ellipse cx="182" cy="470" rx="23" ry="28" fill="#3f752e"/>
+    <rect x="165" y="506" width="9" height="28" fill="#5a3f2a"/>
+  </g>
+  <g>
+    <ellipse cx="1036" cy="494" rx="38" ry="46" fill="#26461f"/>
+    <ellipse cx="1050" cy="476" rx="25" ry="30" fill="#3f752e"/>
+    <rect x="1030" y="516" width="10" height="30" fill="#5a3f2a"/>
+  </g>
+
+  <path d="M0,448 Q320,428 640,452 Q944,474 1200,448 L1200,542 L0,542 Z"
+        fill="url(#foreGreen)"/>
+  <path d="M0,500 Q288,478 590,506 Q896,530 1200,500 L1200,600 L0,600 Z"
+        fill="url(#lowerGreen)"/>
+  <g stroke="#5d9e32" stroke-width="2" opacity="0.42">
+    <line x1="24" y1="532" x2="24" y2="558"/>
+    <line x1="58" y1="536" x2="58" y2="560"/>
+    <line x1="112" y1="540" x2="112" y2="564"/>
+    <line x1="166" y1="534" x2="166" y2="560"/>
+    <line x1="224" y1="540" x2="224" y2="566"/>
+    <line x1="282" y1="534" x2="282" y2="560"/>
+    <line x1="336" y1="540" x2="336" y2="566"/>
+    <line x1="394" y1="534" x2="394" y2="560"/>
+    <line x1="454" y1="540" x2="454" y2="566"/>
+    <line x1="516" y1="534" x2="516" y2="560"/>
+    <line x1="578" y1="540" x2="578" y2="566"/>
+    <line x1="638" y1="534" x2="638" y2="560"/>
+    <line x1="700" y1="540" x2="700" y2="566"/>
+    <line x1="762" y1="534" x2="762" y2="560"/>
+    <line x1="824" y1="540" x2="824" y2="566"/>
+    <line x1="888" y1="534" x2="888" y2="560"/>
+    <line x1="952" y1="540" x2="952" y2="566"/>
+    <line x1="1014" y1="534" x2="1014" y2="560"/>
+    <line x1="1080" y1="540" x2="1080" y2="566"/>
+    <line x1="1146" y1="534" x2="1146" y2="560"/>
+  </g>
+  <path d="M0,578 Q602,594 1200,582 L1200,600 L0,600 Z" fill="#355f23" opacity="0.52"/>
+</svg>

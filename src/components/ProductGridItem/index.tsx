@@ -2,18 +2,15 @@
 
 import type { Product } from '@/payload-types'
 
-import Link from 'next/link'
 import React from 'react'
 import clsx from 'clsx'
 
-import { Button } from '@/components/ui/button'
 import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -148,11 +145,10 @@ export const ProductGridItem: React.FC<Props> = ({
   const description = resolveDescription(product)
   const price = resolvePrice(product)
   const title = product.title || 'Menu item'
-  const href = typeof product.slug === 'string' ? `/products/${product.slug}` : ''
   const isSquare = variant === 'square'
-  const usesQuickView = quickView || (isSquare && !hasNonSquareCategory(product))
+  const usesQuickView = quickView || isSquare || !hasNonSquareCategory(product)
 
-  if (!href) return null
+  if (typeof product.slug !== 'string') return null
 
   const card = (
     <ProductCardFrame
@@ -194,20 +190,11 @@ export const ProductGridItem: React.FC<Props> = ({
               </div>
             ) : null}
             {description ? <p className="text-sm text-[#6b5947]">{description}</p> : null}
-            <DialogFooter>
-              <Button asChild className="w-full" variant="default">
-                <Link href={href}>Open full product page</Link>
-              </Button>
-            </DialogFooter>
           </div>
         </DialogContent>
       </Dialog>
     )
   }
 
-  return (
-    <Link className="block h-full cursor-pointer" href={href}>
-      {card}
-    </Link>
-  )
+  return <div className="block h-full">{card}</div>
 }

@@ -1,0 +1,18 @@
+.root {
+  display: block;
+  overflow: visible;
+  position: relative;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.surface {
+  position: relative;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}

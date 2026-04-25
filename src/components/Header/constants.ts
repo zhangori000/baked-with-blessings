@@ -1,4 +1,5 @@
 import type { Header } from '@/payload-types'
+import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
 
 export type HeaderPanelLink = {
   href: string
@@ -28,66 +29,109 @@ export type HeaderNavigationItem = {
 
 const fallbackHeaderNavigation: HeaderNavigationItem[] = [
   {
-    href: '/shop',
-    id: 'menu',
-    label: 'Menu',
+    href: rotatingCookieFlavorsHref,
+    id: 'cookies-of-the-month',
+    label: 'Cookies of the Month',
     panel: {
-      eyebrow: 'Our story',
+      eyebrow: 'Rotating lineup',
       description:
-        'Baked with Blessings serves a wide variety of food! We have weekly cookie flavors, dips for pretzels, all kinds of bread, cake, and even savory food like pasta!',
+        'Start with the current cookie lineup. This is the page we can rotate weekly, monthly, or whenever the bakery decides to change the featured flavors.',
       cards: [
         {
           description:
-            'Browse breads, cakes, savory bites, pastries, pretzel dips, and rotating weekly specials from one menu.',
-          eyebrow: 'Menu focus',
-          href: '/shop',
-          title: 'Explore the menu',
+            'See the featured cookie lineup first, with the current flavors and direct add-to-cart actions in one place.',
+          eyebrow: 'Featured first',
+          href: rotatingCookieFlavorsHref,
+          title: 'View rotating cookie flavors',
           tone: 'dark',
         },
       ],
       links: [
         {
-          description: 'Browse the full collection.',
-          href: '/shop',
-          label: 'Explore the menu',
+          description: 'Open the current cookie lineup.',
+          href: rotatingCookieFlavorsHref,
+          label: 'View rotating cookie flavors',
         },
       ],
     },
   },
   {
-    href: '/market-research',
-    id: 'market-research',
-    label: 'Market Research',
+    href: menuHref,
+    id: 'menu',
+    label: 'Menu',
     panel: {
-      eyebrow: 'Coming soon',
-      description: 'Placeholder page for future market research notes, findings, and experiments.',
-      cards: [],
-      links: [],
+      eyebrow: 'Catering Menu',
+      description:
+        'The menu route is now the dedicated catering experience, with the customer-facing sheet image and expandable order rows.',
+      cards: [
+        {
+          description:
+            'Open the catering menu page with the tray builder, the honest product notes, and the full row-by-row ordering layout.',
+          eyebrow: 'Menu landing',
+          href: menuHref,
+          title: 'Open the catering menu',
+          tone: 'dark',
+        },
+      ],
+      links: [
+        {
+          description: 'Go to the dedicated catering menu page.',
+          href: menuHref,
+          label: 'Open the menu',
+        },
+      ],
     },
   },
   {
-    href: '/contact',
+    href: rotatingCookieFlavorsHref,
     id: 'words-of-affection',
     label: 'Words of Affection',
     panel: {
       eyebrow: 'Words of Affection',
       description:
-        "Once you buy one of our products, please leave a posted note (it can be anonymous) for the world to see! It can be anything; whether you had a bad day, a word of affirmation, or quotes that have stuck with you, or even a struggle, or even a deep philosophical question!",
+        'This will eventually become the public note wall. For now it still routes back to the rotating cookie page while the storefront sections are being staged in.',
       cards: [
         {
           description:
-            'A space for your honest notes, soft reminders, and honest questions to the community.',
-          eyebrow: 'Community wall',
-          href: '/contact',
-          title: 'View/Post words of affirmation',
+            'Keep this label in the nav now, but send visitors to the same current storefront landing page.',
+          eyebrow: 'Coming soon',
+          href: rotatingCookieFlavorsHref,
+          title: 'Open the current storefront page',
           tone: 'dark',
         },
       ],
       links: [
         {
-          description: 'Share a note for everyone to see.',
-          href: '/contact',
-          label: 'View/Post words of affirmation',
+          description: 'Return to the rotating cookie page.',
+          href: rotatingCookieFlavorsHref,
+          label: 'Open the storefront page',
+        },
+      ],
+    },
+  },
+  {
+    href: rotatingCookieFlavorsHref,
+    id: 'calling-for-help',
+    label: 'Calling for Help',
+    panel: {
+      eyebrow: 'Calling for Help',
+      description:
+        'This label is reserved in the nav now, but for the moment it also routes back to the rotating cookie page until the dedicated page is ready.',
+      cards: [
+        {
+          description:
+            'Keep the future support/help destination visible without splitting the live navigation yet.',
+          eyebrow: 'Reserved slot',
+          href: rotatingCookieFlavorsHref,
+          title: 'Open the storefront page',
+          tone: 'dark',
+        },
+      ],
+      links: [
+        {
+          description: 'Return to the rotating cookie page.',
+          href: rotatingCookieFlavorsHref,
+          label: 'Open the storefront page',
         },
       ],
     },
@@ -101,9 +145,10 @@ const labelToFallbackItem = new Map(
 const fallbackItemById = new Map(fallbackHeaderNavigation.map((item) => [item.id, item] as const))
 
 const navItemPriority: Array<HeaderNavigationItem['id']> = [
+  'cookies-of-the-month',
   'menu',
-  'market-research',
   'words-of-affection',
+  'calling-for-help',
 ]
 
 export const headerAnnouncement =
@@ -115,16 +160,12 @@ export const buildHeaderNavigation = (menu: Header['navItems']) => {
   const items = menu
     .map((item) => {
       const label = item.link.label?.trim()
-      const href = item.link.url?.trim()
-      if (!label || !href) return null
+      if (!label) return null
 
       const fallbackItem = labelToFallbackItem.get(label.toLowerCase())
       if (!fallbackItem) return null
 
-      return {
-        ...fallbackItem,
-        href,
-      }
+      return fallbackItem
     })
     .filter(Boolean) as HeaderNavigationItem[]
 
@@ -135,4 +176,19 @@ export const buildHeaderNavigation = (menu: Header['navItems']) => {
     .filter(Boolean) as HeaderNavigationItem[]
 
   return prioritizedItems.length ? prioritizedItems : fallbackHeaderNavigation
+}
+
+const isRouteActive = (pathname: string, href: string) => {
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+export const isHeaderNavigationItemActive = (
+  pathname: string,
+  item: Pick<HeaderNavigationItem, 'href' | 'id'>,
+) => {
+  if (isRouteActive(pathname, rotatingCookieFlavorsHref)) {
+    return item.id === 'cookies-of-the-month'
+  }
+
+  return isRouteActive(pathname, item.href)
 }

@@ -1,0 +1,63 @@
+.sprite {
+  display: inline-flex;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  transform-origin: center bottom;
+  z-index: 5;
+}
+
+.living {
+  animation: flowerLife var(--flower-duration, 4.6s) ease-in-out infinite;
+  animation-delay: var(--flower-delay, 0s);
+  transform:
+    translateX(-50%)
+    translateY(0)
+    rotate(calc(var(--flower-tilt, 2deg) * -1))
+    scale(var(--flower-scale, 1));
+  will-change: transform;
+}
+
+.image {
+  display: block;
+  height: auto;
+  transform: translateY(var(--flower-stem-trim, 0%));
+  transform-origin: center bottom;
+  width: 100%;
+}
+
+.growIn {
+  animation: spriteGrow 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--flower-grow-delay, 0ms);
+}
+
+@keyframes spriteGrow {
+  0% {
+    opacity: 0;
+    transform: translateY(calc(var(--flower-stem-trim, 0%) + 18%)) scaleY(0.4);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(var(--flower-stem-trim, 0%)) scaleY(1);
+  }
+}
+
+@keyframes flowerLife {
+  0%,
+  100% {
+    transform:
+      translateX(-50%)
+      translateY(0)
+      rotate(calc(var(--flower-tilt, 2deg) * -1))
+      scale(var(--flower-scale, 1));
+  }
+
+  50% {
+    transform:
+      translateX(-50%)
+      translateY(calc(var(--flower-bob, 0.18rem) * -1))
+      rotate(var(--flower-tilt, 2deg))
+      scale(var(--flower-scale, 1));
+  }
+}

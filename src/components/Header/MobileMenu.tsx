@@ -1,16 +1,18 @@
 'use client'
 
 import { cn } from '@/utilities/cn'
-import { MenuIcon, Search, X } from 'lucide-react'
+import { MenuIcon, ShoppingBag, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 type Props = {
   cartQuantity: number
+  onOpenCart: () => void
   items: Array<{
     id: string
     href: string
+    isActive?: boolean
     label: string
     panel: {
       eyebrow: string
@@ -19,15 +21,13 @@ type Props = {
   }>
 }
 
-const isRouteActive = (pathname: string, href: string) => {
-  if (href === '/') return pathname === '/'
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
-export function MobileMenu({ cartQuantity, items }: Props) {
+export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const closeMenu = useEffectEvent(() => {
+    setIsOpen(false)
+  })
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +41,7 @@ export function MobileMenu({ cartQuantity, items }: Props) {
   }, [])
 
   useEffect(() => {
-    setIsOpen(false)
+    closeMenu()
   }, [pathname])
 
   useEffect(() => {
@@ -65,10 +65,6 @@ export function MobileMenu({ cartQuantity, items }: Props) {
   return (
     <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
       <div className="siteHeaderMobileControls">
-        <Link aria-label="Search the menu" className="siteHeaderMobileIconButton" href="/shop">
-          <Search className="h-4 w-4" />
-        </Link>
-
         <button
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
@@ -81,9 +77,18 @@ export function MobileMenu({ cartQuantity, items }: Props) {
           {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
         </button>
 
-        <Link aria-label={`Cart with ${cartQuantity} items`} className="siteHeaderMobileBagCount" href="/checkout">
-          [{cartQuantity}]
-        </Link>
+        <button
+          aria-label={`Open cart with ${cartQuantity} items`}
+          className="siteHeaderMobileBagButton"
+          onClick={() => {
+            setIsOpen(false)
+            onOpenCart()
+          }}
+          type="button"
+        >
+          <ShoppingBag className="siteHeaderMobileBagIcon h-4 w-4" />
+          <span className="siteHeaderMobileBagCount">[{cartQuantity}]</span>
+        </button>
       </div>
 
       <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>
@@ -113,7 +118,7 @@ export function MobileMenu({ cartQuantity, items }: Props) {
         <div className="siteHeaderMobileTabs" role="tablist" aria-label="Mobile navigation tabs">
           {items.map((item) => (
             <Link
-              className={cn('siteHeaderMobileTab', isRouteActive(pathname, item.href) && 'is-active')}
+              className={cn('siteHeaderMobileTab', item.isActive && 'is-active')}
               href={item.href}
               key={`tab-${item.id}`}
               onClick={() => {

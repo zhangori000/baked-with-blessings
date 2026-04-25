@@ -1,0 +1,9 @@
+<svg width="200" height="260" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(100, 130)">
+    <line x1="0" y1="0" x2="0" y2="130" stroke="#689f38" stroke-width="4" stroke-linecap="round"/>
+    <path d="M -3 70 Q -32 55 -45 75 Q -25 85 -3 78 Z" fill="#8bc34a"/>
+    <path d="M 3 95 Q 30 80 42 100 Q 22 108 3 102 Z" fill="#8bc34a"/>
+    <path d="M -25 -5 Q -25 -45 0 -50 Q 25 -45 25 -5 Q 18 0 10 -8 Q 5 0 0 -3 Q -5 0 -10 -8 Q -18 0 -25 -5 Z" fill="#e91e63"/>
+    <path d="M -10 -8 Q -8 -30 0 -35 Q 8 -30 10 -8 Q 5 -2 0 -5 Q -5 -2 -10 -8 Z" fill="#ad1457"/>
+  </g>
+</svg>

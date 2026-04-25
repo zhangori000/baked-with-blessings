@@ -16,14 +16,24 @@
 }
 
 .siteHeader[data-open='true'] .siteHeaderViewport {
-  z-index: 12;
+  z-index: 61;
+}
+
+.siteHeaderPanelBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: default;
 }
 
 .siteHeaderViewport {
   position: relative;
   width: 100%;
   padding: 0.95rem 0 0.8rem;
-  background: var(--background);
+  background: transparent;
   z-index: 1;
 }
 
@@ -60,6 +70,9 @@
   max-height: 50px;
   object-fit: contain;
   object-position: left center;
+  filter:
+    drop-shadow(0 0 0.8px rgba(8, 10, 16, 0.9))
+    drop-shadow(0 2px 8px rgba(7, 9, 18, 0.2));
   transform: translateZ(0);
 }
 
@@ -186,6 +199,16 @@
     radial-gradient(circle at 18% 38%, #e6d1da 0 23%, transparent 25%);
 }
 
+.siteHeaderBannerItem:nth-child(4) .siteHeaderBannerLink::after {
+  background:
+    radial-gradient(circle at 50% 50%, #6e422f 0 17%, transparent 19%),
+    radial-gradient(circle at 50% 14%, #f5bfcb 0 23%, transparent 25%),
+    radial-gradient(circle at 82% 38%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 68% 80%, #d94d74 0 23%, transparent 25%),
+    radial-gradient(circle at 32% 80%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 18% 38%, #f5bfcb 0 23%, transparent 25%);
+}
+
 .siteHeaderBannerLink:hover,
 .siteHeaderBannerLink.is-active {
   color: #f7f5ef;
@@ -229,7 +252,7 @@
 }
 
 .siteHeaderBannerItem:hover .siteHeaderBannerReveal,
-.siteHeaderBannerItem:focus-within .siteHeaderBannerReveal {
+.siteHeaderBannerItem:has(.siteHeaderBannerLink:focus-visible) .siteHeaderBannerReveal {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
@@ -292,6 +315,7 @@
   border: 0;
   background: transparent;
   color: #17341f;
+  cursor: pointer;
   transition:
     opacity 180ms ease,
     color 180ms ease,
@@ -302,15 +326,33 @@
   opacity: 0.8;
 }
 
+.siteHeaderMobileBagButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.34rem;
+  min-width: 3.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #17341f;
+  cursor: pointer;
+}
+
+.siteHeaderMobileBagIcon {
+  flex-shrink: 0;
+}
+
 .siteHeaderMobileBagCount {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
   color: #17341f;
   font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .siteHeaderMobilePanel {
@@ -479,6 +521,16 @@
     radial-gradient(circle at 18% 38%, #e6d1da 0 23%, transparent 25%);
 }
 
+.siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(4) .siteHeaderMobileCardAction::after {
+  background:
+    radial-gradient(circle at 50% 50%, #6e422f 0 17%, transparent 19%),
+    radial-gradient(circle at 50% 14%, #f5bfcb 0 23%, transparent 25%),
+    radial-gradient(circle at 82% 38%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 68% 80%, #d94d74 0 23%, transparent 25%),
+    radial-gradient(circle at 32% 80%, #ec7e9b 0 23%, transparent 25%),
+    radial-gradient(circle at 18% 38%, #f5bfcb 0 23%, transparent 25%);
+}
+
 .siteHeaderMobileTabs {
   margin-top: 0.78rem;
   display: flex;
@@ -561,7 +613,7 @@
   right: 0;
   z-index: 10;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   pointer-events: none;
   opacity: 0;
   max-height: 0;
@@ -578,6 +630,7 @@
   pointer-events: auto;
   opacity: 1;
   max-height: var(--site-header-panel-depth);
+  overflow: visible;
   transform: translateY(0) scaleY(1);
 }
 
@@ -585,6 +638,7 @@
   position: relative;
   box-sizing: border-box;
   width: min(470px, calc(100vw - 1.8rem));
+  max-height: min(var(--site-header-panel-depth), calc(100dvh - 5.5rem));
   border: 1px solid rgb(0 0 0 / 8%);
   border-radius: 28px;
   background: #fffdf8;
@@ -607,8 +661,10 @@
 }
 
 .siteHeaderActionPanel.is-bag .siteHeaderActionPanelInner {
-  margin-left: auto;
+  margin-inline: auto;
   width: min(34rem, calc(100vw - 1.8rem));
+  display: flex;
+  flex-direction: column;
 }
 
 .siteHeaderActionPanelTitle {
@@ -696,12 +752,15 @@
 .siteHeaderCartQuickPanel {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-height: min(var(--site-header-panel-depth), calc(100dvh - 5.5rem));
 }
 
 .siteHeaderCartQuickHeader {
   display: grid;
-  gap: 0.9rem;
-  padding: 1.15rem 1.15rem 1rem;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 0.8rem;
   border-bottom: 1px solid rgb(0 0 0 / 7%);
 }
 
@@ -713,8 +772,8 @@
   border-radius: 999px;
   border: 1px solid rgb(0 0 0 / 10%);
   background: rgb(248 246 239 / 100%);
-  padding: 0.55rem 0.8rem;
-  font-size: 11px;
+  padding: 0.46rem 0.74rem;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -722,16 +781,16 @@
 }
 
 .siteHeaderCartQuickTitle {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.06em;
-  line-height: 0.95;
+  line-height: 0.98;
 }
 
 .siteHeaderCartQuickDescription {
   max-width: 32ch;
-  font-size: 0.92rem;
-  line-height: 1.6;
+  font-size: 0.8rem;
+  line-height: 1.45;
   color: rgb(0 0 0 / 58%);
 }
 
@@ -770,9 +829,32 @@
 }
 
 .siteHeaderCartQuickItems {
-  max-height: min(40vh, 420px);
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 0.85rem 1rem 0.7rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 18%) transparent;
+}
+
+.siteHeaderCartQuickItems::-webkit-scrollbar {
+  width: 0.72rem;
+}
+
+.siteHeaderCartQuickItems::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.siteHeaderCartQuickItems::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(24 36 13 / 18%), rgb(24 36 13 / 32%));
+  background-clip: padding-box;
+}
+
+.siteHeaderCartQuickItems::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(24 36 13 / 24%), rgb(24 36 13 / 42%));
+  background-clip: padding-box;
 }
 
 .siteHeaderCartQuickItemsList {
@@ -785,9 +867,9 @@
 
 .siteHeaderCartQuickItem {
   border: 1px solid rgb(0 0 0 / 8%);
-  border-radius: 24px;
+  border-radius: 22px;
   background: #faf8f2;
-  padding: 0.95rem;
+  padding: 0.8rem;
 }
 
 .siteHeaderCartQuickItemRow {
@@ -798,16 +880,50 @@
 .siteHeaderCartQuickThumb {
   position: relative;
   flex-shrink: 0;
-  width: 5.5rem;
-  height: 5.5rem;
+  width: 6rem;
+  height: 6rem;
   overflow: hidden;
-  border-radius: 20px;
-  background: #ece6d8;
+  border-radius: 18px;
+  background: transparent;
+}
+
+.siteHeaderCartQuickThumbImage {
+  object-fit: cover;
+  padding: 0;
+  filter: drop-shadow(0 12px 18px rgb(17 17 17 / 14%));
 }
 
 .siteHeaderCartQuickItemBody {
   min-width: 0;
   flex: 1;
+}
+
+.siteHeaderCartQuickTraySelections {
+  max-height: 6.75rem;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 18%) transparent;
+}
+
+.siteHeaderCartQuickTraySelections::-webkit-scrollbar {
+  width: 0.62rem;
+}
+
+.siteHeaderCartQuickTraySelections::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.siteHeaderCartQuickTraySelections::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(0 0 0 / 12%), rgb(0 0 0 / 26%));
+  background-clip: padding-box;
+}
+
+.siteHeaderCartQuickTraySelections::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(0 0 0 / 18%), rgb(0 0 0 / 34%));
+  background-clip: padding-box;
 }
 
 .siteHeaderCartQuickItemTop {
@@ -847,10 +963,10 @@
 
 .siteHeaderCartQuickItemBottom {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-top: 0.8rem;
+  margin-top: 0.55rem;
 }
 
 .siteHeaderCartQuickQuantity {
@@ -878,7 +994,8 @@
 .siteHeaderCartQuickFooter {
   border-top: 1px solid rgb(0 0 0 / 7%);
   background: #f6f1e7;
-  padding: 1rem 1.15rem 1.15rem;
+  padding: 0.72rem 1rem 0.85rem;
+  flex-shrink: 0;
 }
 
 .siteHeaderCartQuickSubtotal {
@@ -897,24 +1014,24 @@
 }
 
 .siteHeaderCartQuickSubtotalDescription {
-  margin-top: 0.3rem;
-  max-width: 28ch;
-  font-size: 0.9rem;
-  line-height: 1.55;
+  margin-top: 0.18rem;
+  max-width: 24ch;
+  font-size: 0.8rem;
+  line-height: 1.35;
   color: rgb(0 0 0 / 58%);
 }
 
 .siteHeaderCartQuickSubtotalPrice {
-  font-size: 1.8rem;
+  font-size: 1.2rem;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.05em;
 }
 
 .siteHeaderCartQuickFooterActions {
-  margin-top: 1rem;
+  margin-top: 0.62rem;
   display: grid;
-  gap: 0.65rem;
+  gap: 0.45rem;
 }
 
 .siteHeaderCartQuickCheckout {
@@ -924,12 +1041,13 @@
   justify-content: center;
   border-radius: 999px;
   background: #1c2e10;
-  padding: 0.92rem 1rem;
-  font-size: 11px;
+  padding: 0.72rem 0.9rem;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: #fff;
+  cursor: pointer;
   transition:
     transform 180ms ease,
     background 180ms ease;
@@ -944,7 +1062,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -1063,5 +1181,141 @@
 
   .siteHeaderActionPanelInner {
     width: min(470px, calc(100vw - 2.8rem));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1340px) {
+  .siteHeaderShellRow {
+    gap: clamp(0.6rem, 1.2vw, 1.1rem);
+  }
+
+  .siteHeaderBrand.has-logo {
+    width: 154px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 62px;
+  }
+
+  .siteHeaderBannerList {
+    gap: 0.16rem;
+    padding: 0.18rem;
+  }
+
+  .siteHeaderBannerLink {
+    font-size: 0.82rem;
+    padding: 0.68rem 1rem 1.08rem;
+  }
+
+  .siteHeaderActionArea {
+    gap: 0.85rem;
+  }
+
+  .siteHeaderActionButton {
+    font-size: 0.84rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .siteHeaderShellRow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+  }
+
+  .siteHeaderBrand.has-logo {
+    width: 138px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 56px;
+  }
+
+  .siteHeaderBanner {
+    min-width: 0;
+  }
+
+  .siteHeaderBannerFrame,
+  .siteHeaderBannerList {
+    width: 100%;
+  }
+
+  .siteHeaderBannerList {
+    gap: 0.12rem;
+  }
+
+  .siteHeaderBannerLink {
+    font-size: 0.76rem;
+    padding: 0.62rem 0.82rem 1rem;
+  }
+
+  .siteHeaderActionArea {
+    gap: 0.72rem;
+  }
+
+  .siteHeaderActionButton {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (min-width: 1041px) {
+  .siteHeaderActionPanel.is-bag {
+    justify-content: flex-end;
+  }
+
+  .siteHeaderActionPanel.is-bag .siteHeaderActionPanelInner {
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1040px) {
+  .siteHeaderViewport {
+    padding: 0.95rem 0 0.8rem;
+  }
+
+  .siteHeaderShellRow {
+    display: flex;
+    grid-template-columns: none;
+    gap: 1rem;
+    min-height: 72px;
+  }
+
+  .siteHeaderBrand.has-logo {
+    width: 122px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 50px;
+  }
+
+  .siteHeaderBanner,
+  .siteHeaderActionArea {
+    display: none;
+  }
+
+  .siteHeaderMobileMenu {
+    display: inline-flex;
+  }
+
+  .siteHeaderActionPanel.is-bag {
+    justify-content: stretch;
+    padding-inline: 1rem;
+  }
+
+  .siteHeaderActionPanel.is-bag .siteHeaderActionPanelInner {
+    width: 100%;
+    height: min(75dvh, calc(100dvh - 6rem));
+    max-height: min(75dvh, calc(100dvh - 6rem));
+    border-radius: 22px;
+  }
+
+  .siteHeaderActionPanel.is-bag .siteHeaderCartQuickHeader,
+  .siteHeaderActionPanel.is-bag .siteHeaderCartQuickFooter {
+    padding-inline: 1rem;
+  }
+
+  .siteHeaderMobilePanel {
+    width: min(46rem, calc(100vw - 2rem));
   }
 }

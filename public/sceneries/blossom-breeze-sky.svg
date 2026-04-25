@@ -1,0 +1,78 @@
+<svg width="100%" viewBox="0 0 680 440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blossomSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#aee1f0"/>
+      <stop offset="65%" stop-color="#d7eef6"/>
+      <stop offset="100%" stop-color="#eef8fb"/>
+    </linearGradient>
+    <linearGradient id="blossomHill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#93d253"/>
+      <stop offset="100%" stop-color="#69ad38"/>
+    </linearGradient>
+    <linearGradient id="treeBark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2a2345"/>
+      <stop offset="100%" stop-color="#18192e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="680" height="440" fill="url(#blossomSky)"/>
+
+  <g fill="#ffffff" opacity="0.9">
+    <ellipse cx="114" cy="264" rx="54" ry="22"/>
+    <ellipse cx="80" cy="270" rx="36" ry="16"/>
+    <ellipse cx="150" cy="272" rx="36" ry="15"/>
+  </g>
+
+  <path d="M0 370Q164 338 336 354Q514 372 680 346V440H0Z" fill="url(#blossomHill)"/>
+  <path d="M0 384Q180 356 350 370Q524 384 680 364V440H0Z" fill="#7ac347" opacity="0.82"/>
+
+  <g transform="translate(294 104)">
+    <!-- single trunk silhouette -->
+    <path
+      d="M188 308
+         Q186 210 190 170
+         Q194 124 204 88
+         Q212 58 216 36
+         Q220 20 228 12
+         Q236 6 244 10
+         Q252 14 252 28
+         Q252 44 246 60
+         Q238 86 236 130
+         Q234 184 238 308 Z"
+      fill="url(#treeBark)"
+    />
+
+    <!-- canopy -->
+    <g fill="#efb4d2">
+      <ellipse cx="62" cy="108" rx="96" ry="54"/>
+      <ellipse cx="146" cy="58" rx="108" ry="64"/>
+      <ellipse cx="236" cy="44" rx="126" ry="76"/>
+      <ellipse cx="340" cy="78" rx="100" ry="56"/>
+      <ellipse cx="262" cy="118" rx="128" ry="62"/>
+      <ellipse cx="138" cy="124" rx="118" ry="60"/>
+    </g>
+    <g fill="#f7d3e6" opacity="0.95">
+      <ellipse cx="86" cy="94" rx="44" ry="26"/>
+      <ellipse cx="158" cy="56" rx="48" ry="30"/>
+      <ellipse cx="236" cy="36" rx="60" ry="34"/>
+      <ellipse cx="314" cy="64" rx="46" ry="26"/>
+      <ellipse cx="254" cy="110" rx="52" ry="28"/>
+      <ellipse cx="166" cy="116" rx="48" ry="28"/>
+    </g>
+    <g fill="#fff0f7" opacity="0.88">
+      <ellipse cx="130" cy="80" rx="22" ry="14"/>
+      <ellipse cx="198" cy="46" rx="24" ry="15"/>
+      <ellipse cx="268" cy="58" rx="22" ry="14"/>
+      <ellipse cx="226" cy="98" rx="24" ry="15"/>
+    </g>
+  </g>
+
+  <g fill="#f3b7d2" opacity="0.88">
+    <ellipse cx="438" cy="78" rx="4.5" ry="2.7" transform="rotate(24 438 78)"/>
+    <ellipse cx="488" cy="118" rx="4.5" ry="2.7" transform="rotate(-28 488 118)"/>
+    <ellipse cx="534" cy="156" rx="4.5" ry="2.7" transform="rotate(36 534 156)"/>
+    <ellipse cx="576" cy="208" rx="4.5" ry="2.7" transform="rotate(-20 576 208)"/>
+    <ellipse cx="534" cy="272" rx="4.5" ry="2.7" transform="rotate(26 534 272)"/>
+    <ellipse cx="606" cy="326" rx="4.5" ry="2.7" transform="rotate(-22 606 326)"/>
+  </g>
+</svg>

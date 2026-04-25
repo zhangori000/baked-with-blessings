@@ -1,0 +1,12 @@
+<svg width="324" height="188" viewBox="0 0 324 188" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="cloudShadowClassic" x="4" y="10" width="316" height="168" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#A7C1DD" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <path
+    filter="url(#cloudShadowClassic)"
+    d="M42 119C28 113 22 103 27 92C32 81 46 75 63 73C76 55 102 45 133 46C149 31 180 25 208 35C231 43 247 58 253 74C270 76 288 84 296 97C306 113 292 128 267 135C246 141 220 139 199 134C176 141 141 142 116 136C91 142 61 136 42 119Z"
+    fill="#FFF8F4"
+  />
+</svg>

@@ -1,6 +1,6 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { seoPlugin } from '@payloadcms/plugin-seo'
-import { Plugin } from 'payload'
+import { CollectionSlug, Plugin } from 'payload'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
@@ -15,6 +15,12 @@ import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
 import { customerOnlyFieldAccess } from '@/access/customerOnlyFieldAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isDocumentOwner } from '@/access/isDocumentOwner'
+import {
+  createTrayAwareMergeCartEndpoint,
+  createTrayBuilderValidationHook,
+  extendCollectionItemsWithBatchSelections,
+  trayAwareCartItemMatcher,
+} from '@/plugins/ecommerce/trayBuilder'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
   if (!address || typeof address !== 'object' || !('phone' in address)) {
@@ -178,6 +184,32 @@ export const plugins: Plugin[] = [
       isAdmin,
       isDocumentOwner,
     },
+    carts: {
+      allowGuestCarts: true,
+      cartItemMatcher: trayAwareCartItemMatcher,
+      cartsCollectionOverride: ({ defaultCollection }) => ({
+        ...defaultCollection,
+        endpoints: Array.isArray(defaultCollection.endpoints)
+          ? defaultCollection.endpoints.map((endpoint) =>
+              endpoint.path === '/:id/merge'
+                ? createTrayAwareMergeCartEndpoint({
+                    cartsSlug: defaultCollection.slug as CollectionSlug,
+                  })
+                : endpoint,
+            )
+          : [],
+        fields: extendCollectionItemsWithBatchSelections({
+          fields: defaultCollection.fields,
+        }),
+        hooks: {
+          ...defaultCollection.hooks,
+          beforeValidate: [
+            ...(defaultCollection.hooks?.beforeValidate ?? []),
+            createTrayBuilderValidationHook(),
+          ],
+        },
+      }),
+    },
     customers: {
       slug: 'customers',
     },
@@ -185,7 +217,9 @@ export const plugins: Plugin[] = [
       ordersCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
         fields: [
-          ...defaultCollection.fields,
+          ...extendCollectionItemsWithBatchSelections({
+            fields: defaultCollection.fields,
+          }),
           ...createGuestContactFields(),
           {
             name: 'accessToken',
@@ -208,6 +242,13 @@ export const plugins: Plugin[] = [
             },
           },
         ],
+        hooks: {
+          ...defaultCollection.hooks,
+          beforeValidate: [
+            ...(defaultCollection.hooks?.beforeValidate ?? []),
+            createTrayBuilderValidationHook(),
+          ],
+        },
       }),
     },
     payments: {
@@ -225,7 +266,19 @@ export const plugins: Plugin[] = [
     transactions: {
       transactionsCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
-        fields: [...defaultCollection.fields, ...createGuestContactFields()],
+        fields: [
+          ...extendCollectionItemsWithBatchSelections({
+            fields: defaultCollection.fields,
+          }),
+          ...createGuestContactFields(),
+        ],
+        hooks: {
+          ...defaultCollection.hooks,
+          beforeValidate: [
+            ...(defaultCollection.hooks?.beforeValidate ?? []),
+            createTrayBuilderValidationHook(),
+          ],
+        },
       }),
     },
   }),

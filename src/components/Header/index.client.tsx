@@ -3,17 +3,20 @@
 import { DeleteItemButton } from '@/components/Cart/DeleteItemButton'
 import { EditItemQuantityButton } from '@/components/Cart/EditItemQuantityButton'
 import { Price } from '@/components/Price'
+import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import { ArrowRight, ChevronDown, ShoppingBag, UserRound } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { buildHeaderNavigation } from './constants'
+import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants'
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
@@ -27,13 +30,6 @@ type Props = {
   }
   header: Header
 }
-
-const FREE_SHIPPING_THRESHOLD = 100
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 const headerClassNames = {
   brand: 'siteHeaderBrand',
@@ -62,16 +58,11 @@ const headerClassNames = {
   viewport: 'siteHeaderViewport',
 } as const
 
-const isRouteActive = (pathname: string, href?: string | null) => {
-  if (!href) return false
-  if (href === '/') return pathname === '/'
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
+  const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
-  const panelRef = useRef<HTMLDivElement | null>(null)
+  const panelInnerRef = useRef<HTMLDivElement | null>(null)
   const { isScrolled } = useHeaderVisibility()
   const { cart } = useCart()
   const { user, logout } = useAuth()
@@ -81,7 +72,7 @@ export function HeaderClient({ brand, header }: Props) {
   const navigationItems = useMemo(() => {
     return buildHeaderNavigation(header.navItems || []).map((item) => ({
       ...item,
-      isActive: isRouteActive(pathname, item.href),
+      isActive: isHeaderNavigationItemActive(pathname, item),
     }))
   }, [header.navItems, pathname])
 
@@ -95,8 +86,6 @@ export function HeaderClient({ brand, header }: Props) {
     [cartItems],
   )
   const cartSubtotal = typeof cart?.subtotal === 'number' ? cart.subtotal : 0
-  const amountUntilFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - cartSubtotal)
-  const freeShippingProgress = Math.max(0, Math.min(1, cartSubtotal / FREE_SHIPPING_THRESHOLD))
 
   const accountLinks = useMemo(
     () => (user ? ['/account', '/orders', '/account/addresses'] : ['/login', '/create-account']),
@@ -120,10 +109,20 @@ export function HeaderClient({ brand, header }: Props) {
   }, [pathname])
 
   useEffect(() => {
+    router.prefetch(menuHref)
+    router.prefetch(rotatingCookieFlavorsHref)
+  }, [router])
+
+  useEffect(() => {
     const closePanel = () => setActivePanel(null)
-    const onOutsideClick = (event: MouseEvent) => {
-      if (!headerRef.current || !event.target || !activePanel) return
-      if (headerRef.current.contains(event.target as Node)) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!panelInnerRef.current || !event.target || !activePanel) return
+      if (panelInnerRef.current.contains(event.target as Node)) return
+
+      const target = event.target as HTMLElement
+      if (target.closest(`.${headerClassNames.actionButton}`)) return
+      if (target.closest('.siteHeaderMobileBagButton')) return
+
       closePanel()
     }
     const onEscape = (event: KeyboardEvent) => {
@@ -132,10 +131,10 @@ export function HeaderClient({ brand, header }: Props) {
       }
     }
 
-    window.addEventListener('mousedown', onOutsideClick)
+    window.addEventListener('pointerdown', onPointerDown, true)
     window.addEventListener('keydown', onEscape)
     return () => {
-      window.removeEventListener('mousedown', onOutsideClick)
+      window.removeEventListener('pointerdown', onPointerDown, true)
       window.removeEventListener('keydown', onEscape)
     }
   }, [activePanel])
@@ -162,6 +161,15 @@ export function HeaderClient({ brand, header }: Props) {
       data-scrolled={isScrolled}
       ref={headerRef}
     >
+      {activePanel ? (
+        <button
+          aria-label="Close open header panel"
+          className="siteHeaderPanelBackdrop"
+          onClick={() => setActivePanel(null)}
+          type="button"
+        />
+      ) : null}
+
       <div className={headerClassNames.viewport}>
         <div className={cn(headerClassNames.shell, 'container')}>
           <div className={headerClassNames.shellRow}>
@@ -170,7 +178,7 @@ export function HeaderClient({ brand, header }: Props) {
               className={cn(headerClassNames.brand, {
                 'has-logo': Boolean(brand.logoUrl),
               })}
-              href="/"
+              href={rotatingCookieFlavorsHref}
             >
               {brand.logoUrl ? (
                 <img
@@ -187,7 +195,13 @@ export function HeaderClient({ brand, header }: Props) {
               )}
             </Link>
 
-            <MobileMenu cartQuantity={cartQuantity} items={navigationItems} />
+            <MobileMenu
+              cartQuantity={cartQuantity}
+              items={navigationItems}
+              onOpenCart={() => {
+                setActivePanel((current) => (current === 'bag' ? null : 'bag'))
+              }}
+            />
 
             <nav className={headerClassNames.banner} aria-label="Main sections">
               <div className={headerClassNames.bannerFrame}>
@@ -259,9 +273,8 @@ export function HeaderClient({ brand, header }: Props) {
               activePanel ? 'is-open' : null,
               activePanel === 'account' ? 'is-account' : activePanel === 'bag' ? 'is-bag' : '',
             )}
-            ref={panelRef}
           >
-            <div className={headerClassNames.actionPanelInner}>
+            <div className={headerClassNames.actionPanelInner} ref={panelInnerRef}>
               {activePanel === 'account' ? (
                 <>
                   <p className={headerClassNames.actionPanelTitle}>
@@ -314,24 +327,6 @@ export function HeaderClient({ brand, header }: Props) {
 
                   {cartItems.length ? (
                     <>
-                      <div className="siteHeaderCartQuickProgress">
-                        <div className="siteHeaderCartQuickProgressTrack">
-                          <div
-                            className="siteHeaderCartQuickProgressFill"
-                            style={{ width: `${freeShippingProgress * 100}%` }}
-                          />
-                        </div>
-
-                        <div className="siteHeaderCartQuickProgressMeta">
-                          <span>
-                            {amountUntilFreeShipping > 0
-                              ? `${currencyFormatter.format(amountUntilFreeShipping)} away from free shipping`
-                              : 'Free shipping unlocked'}
-                          </span>
-                          <Price amount={cartSubtotal} as="span" className="text-sm text-black" />
-                        </div>
-                      </div>
-
                       <div className="siteHeaderCartQuickItems">
                         <ul className="siteHeaderCartQuickItemsList">
                           {cartItems.map((item, index) => {
@@ -383,7 +378,8 @@ export function HeaderClient({ brand, header }: Props) {
                               }
                             }
 
-                            const productHref = product.slug ? `/products/${product.slug}` : '/shop'
+                            const resolvedImageSrc = resolveMediaDisplayURL(image)
+
                             const variantSummary =
                               isVariant && variant
                                 ? variant.options
@@ -398,21 +394,18 @@ export function HeaderClient({ brand, header }: Props) {
                             return (
                               <li className="siteHeaderCartQuickItem" key={itemKey}>
                                 <div className="siteHeaderCartQuickItemRow">
-                                  <Link
-                                    className="siteHeaderCartQuickThumb"
-                                    href={productHref}
-                                    onClick={() => setActivePanel(null)}
-                                  >
-                                    {image?.url ? (
+                                  <div className="siteHeaderCartQuickThumb" aria-hidden="true">
+                                    {resolvedImageSrc ? (
                                       <Image
                                         alt={image.alt || product.title || ''}
-                                        className="h-full w-full object-cover"
+                                        className="siteHeaderCartQuickThumbImage"
                                         fill
-                                        sizes="88px"
-                                        src={image.url}
+                                        quality={95}
+                                        sizes="192px"
+                                        src={resolvedImageSrc}
                                       />
                                     ) : null}
-                                  </Link>
+                                  </div>
 
                                   <div className="siteHeaderCartQuickItemBody">
                                     <div className="siteHeaderCartQuickItemTop">
@@ -420,18 +413,22 @@ export function HeaderClient({ brand, header }: Props) {
                                         <p className="siteHeaderCartQuickItemEyebrow">
                                           {isVariant ? 'Configured item' : 'Bakery item'}
                                         </p>
-                                        <Link
-                                          className="siteHeaderCartQuickItemName"
-                                          href={productHref}
-                                          onClick={() => setActivePanel(null)}
-                                        >
+                                        <p className="siteHeaderCartQuickItemName">
                                           {product.title}
-                                        </Link>
+                                        </p>
                                         {variantSummary ? (
                                           <p className="siteHeaderCartQuickItemVariant">
                                             {variantSummary}
                                           </p>
                                         ) : null}
+                                        <TraySelectionSummary
+                                          className="mt-3"
+                                          compact
+                                          itemsClassName="siteHeaderCartQuickTraySelections"
+                                          label="Exact tray contents"
+                                          selections={item.batchSelections}
+                                          tone="muted"
+                                        />
                                       </div>
 
                                       <DeleteItemButton item={item} />
@@ -481,13 +478,6 @@ export function HeaderClient({ brand, header }: Props) {
                           >
                             Go to checkout
                           </Link>
-                          <Link
-                            className="siteHeaderCartQuickSecondaryLink"
-                            href="/shop"
-                            onClick={() => setActivePanel(null)}
-                          >
-                            Keep browsing
-                          </Link>
                         </div>
                       </div>
                     </>
@@ -504,7 +494,7 @@ export function HeaderClient({ brand, header }: Props) {
                       </div>
                       <Link
                         className="siteHeaderCartQuickCheckout"
-                        href="/shop"
+                        href={menuHref}
                         onClick={() => setActivePanel(null)}
                       >
                         Browse the menu
