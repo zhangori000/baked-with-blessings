@@ -8,7 +8,7 @@ import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
-import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import { discussionBoardHref, menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
 import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import { ArrowRight, ChevronDown, ShoppingBag, UserRound } from 'lucide-react'
 import Image from 'next/image'
@@ -111,6 +111,7 @@ export function HeaderClient({ brand, header }: Props) {
   useEffect(() => {
     router.prefetch(menuHref)
     router.prefetch(rotatingCookieFlavorsHref)
+    router.prefetch(discussionBoardHref)
   }, [router])
 
   useEffect(() => {

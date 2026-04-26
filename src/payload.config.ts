@@ -23,6 +23,11 @@ import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
+import {
+  AwarenessMarks,
+  DiscussionEdges,
+  DiscussionNodes,
+} from '@/features/discussion-graph/collections'
 import { Brand } from '@/globals/Brand'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
@@ -63,7 +68,16 @@ export default buildConfig({
     },
     user: Admins.slug,
   },
-  collections: [Admins, Customers, Pages, Categories, Media],
+  collections: [
+    Admins,
+    Customers,
+    DiscussionNodes,
+    DiscussionEdges,
+    AwarenessMarks,
+    Pages,
+    Categories,
+    Media,
+  ],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',

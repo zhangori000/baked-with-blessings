@@ -75,6 +75,9 @@ export interface Config {
   collections: {
     admins: Admin;
     customers: Customer;
+    'discussion-nodes': DiscussionNode;
+    'discussion-edges': DiscussionEdge;
+    'awareness-marks': AwarenessMark;
     pages: Page;
     categories: Category;
     media: Media;
@@ -109,6 +112,9 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
+    'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
+    'awareness-marks': AwarenessMarksSelect<false> | AwarenessMarksSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -1368,6 +1374,117 @@ export interface Address {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discussion-nodes".
+ */
+export interface DiscussionNode {
+  id: number;
+  tenantId: string;
+  isRoot?: boolean | null;
+  /**
+   * Blank for root topics. Child nodes point to the root topic for fast queries.
+   */
+  rootNode?: (number | null) | DiscussionNode;
+  /**
+   * Blank for anonymous testing posts.
+   */
+  author?:
+    | ({
+        relationTo: 'admins';
+        value: number | Admin;
+      } | null)
+    | ({
+        relationTo: 'customers';
+        value: number | Customer;
+      } | null);
+  /**
+   * Display name stored on the node. Anonymous test posts can still show a name.
+   */
+  authorDisplayName?: string | null;
+  type: 'question' | 'statement';
+  title: string;
+  content:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Derived from title, content blocks, and tags for simple search.
+   */
+  searchText?: string | null;
+  moderationStatus: 'visible' | 'hidden';
+  moderationReason?: string | null;
+  moderatedBy?: (number | null) | Admin;
+  moderatedAt?: string | null;
+  authorState: 'current' | 'reconsidered';
+  reconsideredDueToNode?: (number | null) | DiscussionNode;
+  supportCount?: number | null;
+  challengeCount?: number | null;
+  responseCount?: number | null;
+  questionCount?: number | null;
+  awarenessCount?: number | null;
+  cryCount?: number | null;
+  wiltedRoseCount?: number | null;
+  childCount?: number | null;
+  lastActivityAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discussion-edges".
+ */
+export interface DiscussionEdge {
+  id: number;
+  tenantId: string;
+  rootNode: number | DiscussionNode;
+  fromNode: number | DiscussionNode;
+  toNode: number | DiscussionNode;
+  toBlockIds?:
+    | {
+        blockId: string;
+        id?: string | null;
+      }[]
+    | null;
+  type: 'responds_to' | 'asks_about' | 'supports' | 'challenges' | 'related_to';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "awareness-marks".
+ */
+export interface AwarenessMark {
+  id: number;
+  tenantId: string;
+  node: number | DiscussionNode;
+  user?:
+    | ({
+        relationTo: 'admins';
+        value: number | Admin;
+      } | null)
+    | ({
+        relationTo: 'customers';
+        value: number | Customer;
+      } | null);
+  /**
+   * Anonymous browser key used for testing awareness marks.
+   */
+  visitorKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
@@ -1414,6 +1531,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: number | Customer;
+      } | null)
+    | ({
+        relationTo: 'discussion-nodes';
+        value: number | DiscussionNode;
+      } | null)
+    | ({
+        relationTo: 'discussion-edges';
+        value: number | DiscussionEdge;
+      } | null)
+    | ({
+        relationTo: 'awareness-marks';
+        value: number | AwarenessMark;
       } | null)
     | ({
         relationTo: 'pages';
@@ -1563,6 +1692,75 @@ export interface CustomersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discussion-nodes_select".
+ */
+export interface DiscussionNodesSelect<T extends boolean = true> {
+  tenantId?: T;
+  isRoot?: T;
+  rootNode?: T;
+  author?: T;
+  authorDisplayName?: T;
+  type?: T;
+  title?: T;
+  content?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  searchText?: T;
+  moderationStatus?: T;
+  moderationReason?: T;
+  moderatedBy?: T;
+  moderatedAt?: T;
+  authorState?: T;
+  reconsideredDueToNode?: T;
+  supportCount?: T;
+  challengeCount?: T;
+  responseCount?: T;
+  questionCount?: T;
+  awarenessCount?: T;
+  cryCount?: T;
+  wiltedRoseCount?: T;
+  childCount?: T;
+  lastActivityAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discussion-edges_select".
+ */
+export interface DiscussionEdgesSelect<T extends boolean = true> {
+  tenantId?: T;
+  rootNode?: T;
+  fromNode?: T;
+  toNode?: T;
+  toBlockIds?:
+    | T
+    | {
+        blockId?: T;
+        id?: T;
+      };
+  type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "awareness-marks_select".
+ */
+export interface AwarenessMarksSelect<T extends boolean = true> {
+  tenantId?: T;
+  node?: T;
+  user?: T;
+  visitorKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

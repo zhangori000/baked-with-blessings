@@ -4,6 +4,7 @@ import { importCateringMedia } from './catering-media'
 import { seedCateringProducts } from './catering-products'
 import { importCookieMedia } from './cookie-media'
 import { seedCookieProducts } from './cookie-products'
+import { clearLegacyMedia } from './legacy-media'
 
 const productCollectionsToReset: CollectionSlug[] = [
   'products',
@@ -44,6 +45,12 @@ export const seed = async ({
   payload.logger.info('- Resetting product-related collections...')
 
   await clearProductCollections({ payload, req })
+
+  payload.logger.info('- Removing legacy starter media...')
+
+  const removedLegacyMedia = await clearLegacyMedia({ payload, req })
+
+  payload.logger.info(`- Removed ${removedLegacyMedia} legacy media documents`)
 
   payload.logger.info('- Importing cookie media...')
 

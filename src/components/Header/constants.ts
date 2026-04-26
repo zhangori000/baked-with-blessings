@@ -1,5 +1,5 @@
 import type { Header } from '@/payload-types'
-import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import { discussionBoardHref, menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
 
 export type HeaderPanelLink = {
   href: string
@@ -83,55 +83,28 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     },
   },
   {
-    href: rotatingCookieFlavorsHref,
-    id: 'words-of-affection',
-    label: 'Words of Affection',
+    href: discussionBoardHref,
+    id: 'discussion-board',
+    label: 'Discussion Board',
     panel: {
-      eyebrow: 'Words of Affection',
+      eyebrow: 'Discussion Board',
       description:
-        'This will eventually become the public note wall. For now it still routes back to the rotating cookie page while the storefront sections are being staged in.',
+        'Open the structured question board with topic rows, reply trees, claims, evidence, and visible challenge/support paths.',
       cards: [
         {
           description:
-            'Keep this label in the nav now, but send visitors to the same current storefront landing page.',
-          eyebrow: 'Coming soon',
-          href: rotatingCookieFlavorsHref,
-          title: 'Open the current storefront page',
+            'Browse the current discussion prompts and open a tree view for replies, questions, support, and challenges.',
+          eyebrow: 'Public reasoning',
+          href: discussionBoardHref,
+          title: 'Open discussion board',
           tone: 'dark',
         },
       ],
       links: [
         {
-          description: 'Return to the rotating cookie page.',
-          href: rotatingCookieFlavorsHref,
-          label: 'Open the storefront page',
-        },
-      ],
-    },
-  },
-  {
-    href: rotatingCookieFlavorsHref,
-    id: 'calling-for-help',
-    label: 'Calling for Help',
-    panel: {
-      eyebrow: 'Calling for Help',
-      description:
-        'This label is reserved in the nav now, but for the moment it also routes back to the rotating cookie page until the dedicated page is ready.',
-      cards: [
-        {
-          description:
-            'Keep the future support/help destination visible without splitting the live navigation yet.',
-          eyebrow: 'Reserved slot',
-          href: rotatingCookieFlavorsHref,
-          title: 'Open the storefront page',
-          tone: 'dark',
-        },
-      ],
-      links: [
-        {
-          description: 'Return to the rotating cookie page.',
-          href: rotatingCookieFlavorsHref,
-          label: 'Open the storefront page',
+          description: 'Go to the discussion board.',
+          href: discussionBoardHref,
+          label: 'Open discussion board',
         },
       ],
     },
@@ -147,8 +120,7 @@ const fallbackItemById = new Map(fallbackHeaderNavigation.map((item) => [item.id
 const navItemPriority: Array<HeaderNavigationItem['id']> = [
   'cookies-of-the-month',
   'menu',
-  'words-of-affection',
-  'calling-for-help',
+  'discussion-board',
 ]
 
 export const headerAnnouncement =
