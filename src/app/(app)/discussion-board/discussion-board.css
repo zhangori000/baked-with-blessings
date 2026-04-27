@@ -1,0 +1,1187 @@
+.discussionBoardPage {
+  --discussion-cream: #fffdf6;
+  --discussion-ink: #10180d;
+  --discussion-forest: #244f2d;
+  --discussion-blue: #183a63;
+  --discussion-muted: #48563b;
+  --discussion-card: rgba(255, 253, 246, 0.94);
+  --foreground: var(--discussion-ink);
+  --primary-foreground: #fffdf6;
+  --sheep-grass-deep: var(--discussion-forest);
+  min-height: 100vh;
+  background: #fff8f2;
+  color: var(--discussion-ink);
+  overflow-x: clip;
+  padding: 0 0 4rem;
+}
+
+.discussionBoardPage *,
+.discussionBoardPage *::before,
+.discussionBoardPage *::after {
+  box-sizing: border-box;
+}
+
+.discussionBoardPage button,
+.discussionBoardPage summary,
+.discussionBoardPage a,
+.discussionBoardPage label,
+.discussionBoardPage [role='button'] {
+  cursor: pointer;
+}
+
+.discussionBoardPage button:disabled {
+  cursor: not-allowed;
+}
+
+.discussionBoardShell {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 100%;
+  min-width: 0;
+  padding-top: clamp(1.2rem, 3vw, 2rem);
+  position: relative;
+}
+
+.discussionBoardShell::before {
+  background: linear-gradient(180deg, #eef7e8 0%, #fff8f2 18rem);
+  bottom: 0;
+  content: '';
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: -1px;
+  transform: translateX(-50%);
+  width: 100vw;
+  z-index: -1;
+}
+
+.discussionPendingNotice {
+  align-items: center;
+  background: rgba(255, 253, 246, 0.94);
+  border: 1px solid rgba(67, 92, 37, 0.22);
+  border-radius: 999px;
+  box-shadow: 0 14px 34px rgba(15, 24, 12, 0.14);
+  color: #244f2d;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 850;
+  gap: 0.45rem;
+  justify-self: start;
+  margin: 0;
+  padding: 0.62rem 0.88rem;
+}
+
+.discussionPendingNotice::before {
+  animation: discussionPendingPulse 900ms ease-in-out infinite;
+  background: #70b95d;
+  border-radius: 999px;
+  content: '';
+  height: 0.48rem;
+  width: 0.48rem;
+}
+
+.discussionBoardShell > *,
+.discussionGraphHeader > *,
+.discussionNodeCard > *,
+.discussionContentBlock > *,
+.discussionReplyComposer > * {
+  min-width: 0;
+}
+
+.discussionBoardHeader,
+.discussionGraphHeader {
+  align-items: end;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  justify-self: stretch;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+.discussionBoardToolbar {
+  align-items: center;
+  background: rgba(255, 253, 246, 0.92);
+  border: 1px solid rgba(36, 79, 45, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(69, 43, 18, 0.08);
+  padding: 0.85rem;
+}
+
+.discussionBoardToolbarTitle {
+  color: var(--discussion-forest);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.discussionBoardEyebrow {
+  color: var(--discussion-forest);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+}
+
+.discussionBoardHeader h1,
+.discussionGraphTitle h1 {
+  color: var(--discussion-blue);
+  font-size: clamp(2.2rem, 7vw, 5rem);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.92;
+  margin: 0;
+  max-width: 14ch;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.discussionGraphTitle h1 {
+  font-size: clamp(1.45rem, 5vw, 2.35rem);
+  line-height: 1;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-wrap: balance;
+  width: 100%;
+  word-break: normal;
+}
+
+.discussionSortRail,
+.discussionDepthControl,
+.discussionGraphNav {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.discussionSortButton,
+.discussionDepthControl button,
+.discussionBackButton {
+  align-items: center;
+  background: rgba(255, 253, 246, 0.9);
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 8px;
+  color: var(--discussion-ink);
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 800;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.8rem;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.discussionSortButton:hover,
+.discussionDepthControl button:hover,
+.discussionBackButton:hover {
+  background: #fffdf6;
+  box-shadow: 3px 3px 0 rgba(8, 12, 26, 0.15);
+  transform: translate(-1px, -1px);
+}
+
+.discussionSortButton.is-active,
+.discussionDepthControl button.is-active {
+  background: var(--discussion-forest);
+  color: var(--discussion-cream);
+}
+
+.discussionTopicList {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.discussionTopicRow {
+  align-items: stretch;
+  background: var(--discussion-card);
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 18px 40px rgba(46, 65, 42, 0.08);
+  color: inherit;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 1rem;
+  text-align: left;
+  transform-origin: 50% 50%;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.discussionTopicRow:hover {
+  border-color: rgba(67, 92, 37, 0.4);
+  box-shadow:
+    0 20px 45px rgba(46, 65, 42, 0.12),
+    4px 4px 0 rgba(67, 92, 37, 0.18);
+  transform: translate(-1px, -1px);
+}
+
+.discussionTopicMain {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.discussionTopicKicker,
+.discussionNodeTopline {
+  align-items: center;
+  color: var(--discussion-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  font-weight: 800;
+  gap: 0.45rem;
+  text-transform: uppercase;
+}
+
+.discussionHerePill {
+  background: var(--discussion-forest);
+  border-radius: 999px;
+  color: var(--discussion-cream);
+  padding: 0.22rem 0.5rem;
+}
+
+.discussionTopicTitle {
+  color: var(--discussion-ink);
+  font-size: clamp(1.05rem, 2vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.discussionTopicPreview {
+  color: #2d3827;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.discussionTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.discussionTag {
+  background: rgba(223, 233, 214, 0.85);
+  border: 1px solid rgba(67, 92, 37, 0.18);
+  border-radius: 999px;
+  color: #36402d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.5rem;
+}
+
+.discussionTopicStats,
+.discussionNodeStats {
+  align-content: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.discussionTopicStats span,
+.discussionNodeStats span {
+  background: rgba(255, 253, 246, 0.82);
+  border: 1px solid rgba(8, 12, 26, 0.1);
+  border-radius: 999px;
+  color: #27301f;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0.3rem 0.45rem;
+  white-space: nowrap;
+}
+
+.discussionTopicRow.is-falling-away {
+  animation: discussionRowFall 520ms ease forwards;
+  pointer-events: none;
+}
+
+.discussionTopicRow.is-selected-transition {
+  animation: discussionSelectedRow 520ms ease forwards;
+  pointer-events: none;
+}
+
+@keyframes discussionRowFall {
+  0% {
+    filter: blur(0);
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  35% {
+    transform: translate(6px, -2px) rotate(0.8deg);
+  }
+
+  100% {
+    filter: blur(3px);
+    opacity: 0;
+    transform: translate(-18px, 50px) rotate(-2deg);
+  }
+}
+
+@keyframes discussionPendingPulse {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(0.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes discussionSelectedRow {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    box-shadow:
+      0 22px 48px rgba(46, 65, 42, 0.18),
+      6px 6px 0 rgba(8, 12, 26, 0.18);
+    transform: scale(1.015);
+  }
+}
+
+.discussionGraphHeader {
+  background: rgba(210, 232, 246, 0.96);
+  border: 1px solid rgba(8, 12, 26, 0.08);
+  border-radius: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0.75rem;
+  position: sticky;
+  top: 0.35rem;
+  z-index: 6;
+  box-shadow: 0 10px 24px rgba(8, 12, 26, 0.08);
+}
+
+.discussionBoardPage.is-graph-view .discussionGraphHeader {
+  align-items: start;
+  overflow: hidden;
+}
+
+.discussionGraphTitle {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.discussionTrail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.discussionTrail button {
+  background: rgba(247, 245, 238, 0.74);
+  border: 1px solid rgba(8, 12, 26, 0.14);
+  border-radius: 999px;
+  color: #303928;
+  font-size: 0.78rem;
+  font-weight: 800;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.35rem 0.6rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discussionNotice {
+  background: #fffdf6;
+  border: 1px solid rgba(67, 92, 37, 0.22);
+  border-radius: 8px;
+  color: #303928;
+  font-weight: 800;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+}
+
+.discussionGuide {
+  background: rgba(255, 253, 246, 0.88);
+  border: 1px solid rgba(8, 12, 26, 0.13);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 rgba(8, 12, 26, 0.06);
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.discussionGuideToggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--foreground);
+  display: flex;
+  font-size: 0.9rem;
+  font-weight: 900;
+  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+  width: 100%;
+}
+
+.discussionGuide[data-open='true'] .discussionGuideToggle svg:last-child {
+  transform: rotate(180deg);
+}
+
+.discussionGuideBody {
+  border-top: 1px solid rgba(8, 12, 26, 0.1);
+  color: #303928;
+  display: grid;
+  gap: 0.55rem;
+  line-height: 1.5;
+  padding: 0.85rem 0.95rem 1rem;
+}
+
+.discussionGuideBody p {
+  margin: 0;
+}
+
+.discussionTree {
+  display: grid;
+  gap: 1rem;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+.discussionTreeNode {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+.discussionTreeNode.level-1,
+.discussionTreeNode.level-2,
+.discussionTreeNode.level-3 {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.discussionNodeCard {
+  background: rgba(255, 253, 246, 0.93);
+  border: 2px solid rgba(8, 12, 26, 0.16);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(8, 12, 26, 0.08);
+  display: grid;
+  gap: 0.75rem;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 1rem;
+  width: 100%;
+}
+
+.discussionNodeCard.is-focused {
+  border-color: rgba(67, 92, 37, 0.58);
+  box-shadow:
+    0 0 0 4px rgba(67, 92, 37, 0.1),
+    6px 6px 0 rgba(67, 92, 37, 0.14);
+}
+
+.discussionNodeCard[data-node-type='question'] {
+  background: linear-gradient(180deg, rgba(255, 253, 246, 0.96), rgba(235, 244, 250, 0.94));
+}
+
+.discussionNodeCard h2 {
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.discussionNodeCard p {
+  color: #303928;
+  line-height: 1.48;
+  margin: 0;
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.discussionNodeCard p a {
+  color: #0b65b9;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.discussionInlineMark {
+  border-radius: 4px;
+  box-decoration-break: clone;
+  font-weight: 800;
+  padding: 0.05rem 0.22rem;
+}
+
+.discussionInlineMark-conclusion {
+  background: #e6f2d4;
+  color: #315226;
+}
+
+.discussionInlineMark-premise {
+  background: #dff0fb;
+  color: #204e72;
+}
+
+.discussionNodeContent {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.discussionContentBlock {
+  background: rgba(255, 253, 246, 0.62);
+  border: 1px solid rgba(8, 12, 26, 0.08);
+  border-radius: 7px;
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 0.55rem 0.65rem;
+}
+
+.discussionContentBlock > span {
+  color: #657050;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.discussionContentBlock[data-block-type='claim'] {
+  border-color: rgba(67, 92, 37, 0.18);
+}
+
+.discussionContentBlock[data-block-type='evidence'] {
+  border-color: rgba(42, 99, 143, 0.16);
+}
+
+.discussionContentBlock[data-block-type='uncertainty'] {
+  border-color: rgba(191, 71, 45, 0.18);
+}
+
+.discussionSourceList {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.discussionSourceList a {
+  color: #204e72;
+  font-size: 0.78rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+}
+
+.discussionNodeActionPanel,
+.discussionNodeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.discussionNodeActionPanel {
+  align-items: flex-start;
+}
+
+.discussionNodeActions button,
+.discussionActionsToggle,
+.discussionInlineAction,
+.discussionCollapsedBranch,
+.discussionReplyComposer button,
+.discussionReplyComposer select,
+.discussionReplyComposer input,
+.discussionReplyComposer textarea {
+  border-radius: 7px;
+  font: inherit;
+}
+
+.discussionNodeActions button,
+.discussionActionsToggle,
+.discussionInlineAction,
+.discussionCollapsedBranch,
+.discussionReplyComposer button {
+  align-items: center;
+  background: rgba(247, 245, 238, 0.86);
+  border: 1px solid rgba(8, 12, 26, 0.14);
+  color: var(--foreground);
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 850;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.52rem;
+}
+
+.discussionIconRotated {
+  transform: rotate(-90deg);
+}
+
+.discussionIconFlipped {
+  transform: rotate(180deg);
+}
+
+.discussionActionsToggle {
+  background: #fffdf6;
+  border-color: rgba(67, 92, 37, 0.22);
+}
+
+.discussionNodeUtilityRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.discussionBackgroundBlock summary {
+  align-items: baseline;
+  color: #657050;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.68rem;
+  gap: 0.25rem 0.45rem;
+  font-weight: 900;
+  list-style-position: inside;
+  text-transform: uppercase;
+}
+
+.discussionPreviewBlock summary {
+  color: #303928;
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+  list-style-position: inside;
+}
+
+.discussionPreviewText {
+  color: #303928;
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  text-transform: none;
+  white-space: pre-wrap;
+}
+
+.discussionBackgroundPreview {
+  color: #303928;
+  flex: 1 1 100%;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.discussionReadMoreText,
+.discussionReadLessText {
+  color: #204e72;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.discussionReadLessBottom {
+  align-self: start;
+  background: #fffdf6;
+  border: 1px solid rgba(42, 99, 143, 0.22);
+  border-radius: 7px;
+  color: #204e72;
+  font-size: 0.72rem;
+  font-weight: 900;
+  justify-self: start;
+  min-height: 1.8rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.discussionReadLessText {
+  display: none;
+}
+
+.discussionBackgroundBlock[open] .discussionBackgroundPreview,
+.discussionBackgroundBlock[open] .discussionReadMoreText,
+.discussionPreviewBlock[open] .discussionPreviewText,
+.discussionPreviewBlock[open] .discussionReadMoreText {
+  display: none;
+}
+
+.discussionBackgroundBlock[open] .discussionReadLessText,
+.discussionPreviewBlock[open] .discussionReadLessText {
+  display: inline;
+}
+
+.discussionBackgroundBlock p,
+.discussionPreviewBlock p {
+  margin-top: 0.35rem;
+}
+
+.discussionParentBanner {
+  align-items: center;
+  background: #fffdf6;
+  border: 2px solid rgba(67, 92, 37, 0.35);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(8, 12, 26, 0.12);
+  color: #27301f;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  font-weight: 900;
+  gap: 0.55rem;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  left: 50%;
+  max-width: min(398px, calc(100vw - 2rem));
+  position: fixed;
+  top: 0.75rem;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 70;
+}
+
+.discussionParentBanner span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discussionParentBanner button {
+  align-items: center;
+  background: rgba(247, 245, 238, 0.88);
+  border: 1px solid rgba(8, 12, 26, 0.14);
+  border-radius: 7px;
+  color: var(--foreground);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.76rem;
+  font-weight: 850;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.52rem;
+}
+
+.discussionNodeActions button[data-edge='challenges'] {
+  border-color: rgba(191, 71, 45, 0.38);
+  color: #812f1d;
+}
+
+.discussionNodeActions button[data-edge='supports'] {
+  border-color: rgba(67, 120, 54, 0.36);
+  color: #315226;
+}
+
+.discussionNodeActions button[data-edge='asks_about'] {
+  border-color: rgba(42, 99, 143, 0.32);
+  color: #204e72;
+}
+
+.discussionEdgeGroups {
+  display: grid;
+  gap: 0.9rem;
+  margin-left: 0.25rem;
+  max-width: 100%;
+  min-width: 0;
+  padding-left: 0;
+  position: relative;
+  width: 100%;
+}
+
+.discussionEdgeGroups::before {
+  content: none;
+}
+
+.discussionEdgeGroup {
+  display: grid;
+  gap: 0.55rem;
+  position: relative;
+}
+
+.discussionEdgeGroup::before {
+  content: none;
+}
+
+.discussionEdgeLabel {
+  align-items: center;
+  background: rgba(247, 245, 238, 0.82);
+  border: 1px solid rgba(8, 12, 26, 0.12);
+  border-radius: 999px;
+  color: #303928;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 900;
+  gap: 0.4rem;
+  justify-self: start;
+  margin-left: 1.15rem;
+  padding: 0.35rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.discussionEdgeCount {
+  background: rgba(255, 253, 246, 0.9);
+  border: 1px solid rgba(8, 12, 26, 0.1);
+  border-radius: 999px;
+  color: #303928;
+  min-width: 1.2rem;
+  padding: 0.12rem 0.35rem;
+  text-align: center;
+}
+
+.discussionEdgeGroup[data-edge='challenges'] .discussionEdgeLabel {
+  background: #f8ddd6;
+  color: #812f1d;
+}
+
+.discussionEdgeGroup[data-edge='supports'] .discussionEdgeLabel {
+  background: #e3efd9;
+  color: #315226;
+}
+
+.discussionEdgeGroup[data-edge='asks_about'] .discussionEdgeLabel {
+  background: #e2f0f8;
+  color: #204e72;
+}
+
+.discussionChildren {
+  display: grid;
+  gap: 1rem;
+  margin-left: 0;
+  min-width: 0;
+  padding-left: 2.25rem;
+  position: relative;
+}
+
+.discussionChildren::before {
+  background: #6e855d;
+  border-radius: 999px;
+  bottom: 1.45rem;
+  content: '';
+  left: 0.7rem;
+  position: absolute;
+  top: -0.95rem;
+  width: 2px;
+}
+
+.discussionChildren > .discussionTreeNode::before {
+  background:
+    linear-gradient(90deg, #6e855d 0 100%) 0 0 / 2px 100% no-repeat,
+    linear-gradient(90deg, #6e855d 0 100%) 0 50% / 100% 2px no-repeat;
+  content: '';
+  height: 1.45rem;
+  left: -1.55rem;
+  position: absolute;
+  top: 0;
+  width: 1.55rem;
+}
+
+.discussionChildren > .discussionTreeNode::after {
+  background: #fffdf6;
+  border: 1px solid rgba(67, 92, 37, 0.42);
+  border-radius: 999px;
+  color: #435c25;
+  content: attr(data-child-label);
+  font-size: 0.6rem;
+  font-weight: 900;
+  left: -2.12rem;
+  line-height: 1;
+  padding: 0.16rem 0.28rem;
+  position: absolute;
+  text-transform: uppercase;
+  top: 0.7rem;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.discussionCollapsedBranch {
+  justify-self: start;
+}
+
+.discussionReplyComposer {
+  background: rgba(247, 245, 238, 0.95);
+  border: 1px solid rgba(8, 12, 26, 0.13);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(8, 12, 26, 0.08);
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.discussionTextTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.discussionReplyComposer .discussionTextTools button {
+  background: #fffdf6;
+  border-color: rgba(42, 99, 143, 0.2);
+  color: #204e72;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.45rem;
+}
+
+.discussionReplyHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.discussionReplyHeader span {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  gap: 0.35rem;
+  text-transform: uppercase;
+}
+
+.discussionReplyComposer label {
+  color: #303928;
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 850;
+  gap: 0.35rem;
+  text-transform: uppercase;
+}
+
+.discussionFieldset {
+  color: #303928;
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 850;
+  gap: 0.35rem;
+  text-transform: uppercase;
+}
+
+.discussionFieldsetLabel {
+  margin: 0;
+}
+
+.discussionReplyComposer input,
+.discussionReplyComposer select,
+.discussionReplyComposer textarea {
+  background: #fffdf6;
+  border: 1px solid rgba(8, 12, 26, 0.18);
+  color: var(--foreground);
+  font-size: 0.95rem;
+  font-weight: 500;
+  min-height: 2.6rem;
+  padding: 0.65rem 0.75rem;
+  text-transform: none;
+}
+
+.discussionChoiceGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.discussionChoiceGroup label {
+  align-items: center;
+  background: #fffdf6;
+  border: 1px solid rgba(8, 12, 26, 0.16);
+  border-radius: 7px;
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 850;
+  gap: 0.35rem;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.65rem;
+  text-transform: none;
+}
+
+.discussionChoiceGroup input {
+  accent-color: var(--sheep-grass-deep);
+  min-height: auto;
+  padding: 0;
+}
+
+.discussionReplyComposer textarea {
+  resize: vertical;
+}
+
+.discussionClaimEditor {
+  background: rgba(255, 253, 246, 0.68);
+  border: 1px solid rgba(8, 12, 26, 0.12);
+  border-radius: 8px;
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.75rem;
+}
+
+.discussionClaimEditorTitle {
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.discussionReplyGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.discussionSubmitButton {
+  background: var(--sheep-grass-deep) !important;
+  color: var(--primary-foreground) !important;
+  justify-self: start;
+}
+
+.discussionSecondaryButton {
+  justify-self: start;
+}
+
+.discussionSubmitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.discussionLoginNote {
+  background: #e2f0f8;
+  border: 1px solid rgba(42, 99, 143, 0.22);
+  border-radius: 7px;
+  color: #204e72;
+  font-size: 0.88rem;
+  font-weight: 800;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+}
+
+.discussionFieldHelp {
+  background: #e2f0f8;
+  border: 1px solid rgba(42, 99, 143, 0.22);
+  border-radius: 7px;
+  color: #204e72;
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.45;
+  padding: 0.65rem 0.75rem;
+}
+
+.discussionReplyComposer label > span {
+  color: #657050;
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-transform: none;
+}
+
+.discussionHelpText {
+  display: inline-grid;
+  margin-left: 0.25rem;
+  position: relative;
+  text-transform: none;
+}
+
+.discussionHelpText button {
+  align-items: center;
+  background: #e2f0f8;
+  border: 1px solid rgba(42, 99, 143, 0.28);
+  border-radius: 999px;
+  color: #204e72;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 950;
+  height: 1.25rem;
+  justify-content: center;
+  list-style: none;
+  width: 1.25rem;
+}
+
+.discussionHelpText p {
+  background: #fffdf6;
+  border: 1px solid rgba(8, 12, 26, 0.16);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(8, 12, 26, 0.1);
+  bottom: auto;
+  color: #303928;
+  font-size: 0.84rem;
+  font-weight: 650;
+  left: 1rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: none;
+  padding: 0.7rem;
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+  width: auto;
+  z-index: 50;
+}
+
+@media (min-width: 760px) {
+  .discussionBoardPage {
+    padding: 0 0 5rem;
+  }
+
+  .discussionBoardPage.is-graph-view {
+    padding-top: 0;
+  }
+
+  .discussionBoardHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .discussionGraphHeader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .discussionGraphTitle h1 {
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+    max-width: none;
+  }
+
+  .discussionDepthControl {
+    align-self: start;
+    flex-wrap: nowrap;
+  }
+
+  .discussionTopicRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 1.1rem 1.25rem;
+  }
+
+  .discussionTopicStats {
+    grid-template-columns: repeat(2, minmax(7.5rem, auto));
+  }
+
+  .discussionNodeStats {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .discussionReplyGrid {
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  }
+
+  .discussionHelpText p {
+    bottom: auto;
+    left: 0;
+    max-width: 19rem;
+    position: absolute;
+    right: auto;
+    top: 1.55rem;
+    width: max-content;
+    z-index: 5;
+  }
+}

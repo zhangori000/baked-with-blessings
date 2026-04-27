@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 
 import { AdminBar } from '@/components/AdminBar'
 import { Footer } from '@/components/Footer'
@@ -7,35 +8,55 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { ViewportFlowers } from '@/components/ViewportFlowers'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
+import { getServerSideURL } from '@/utilities/getURL'
 import { Rubik } from 'next/font/google'
 import './globals.css'
 
-/* const { SITE_NAME, TWITTER_CREATOR, TWITTER_SITE } = process.env
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-  : 'http://localhost:3000'
-const twitterCreator = TWITTER_CREATOR ? ensureStartsWith(TWITTER_CREATOR, '@') : undefined
-const twitterSite = TWITTER_SITE ? ensureStartsWith(TWITTER_SITE, 'https://') : undefined
- */
-/* export const metadata = {
-  metadataBase: new URL(baseUrl),
+const siteName = 'Baked with Blessings'
+const siteDescription = 'A bakery and cafe sharing cookies, catering, and notes from the business.'
+
+export const metadata: Metadata = {
+  description: siteDescription,
+  icons: {
+    icon: [
+      {
+        type: 'image/svg+xml',
+        url: '/favicon.svg',
+      },
+      {
+        sizes: '32x32',
+        url: '/favicon.ico',
+      },
+    ],
+    shortcut: '/favicon.ico',
+  },
+  metadataBase: new URL(getServerSideURL()),
+  openGraph: {
+    description: siteDescription,
+    images: [
+      {
+        url: '/baked-with-blessings-logo-pasture-restored.svg',
+      },
+    ],
+    siteName,
+    title: siteName,
+    type: 'website',
+  },
   robots: {
     follow: true,
     index: true,
   },
   title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
+    default: siteName,
+    template: `%s | ${siteName}`,
   },
-  ...(twitterCreator &&
-    twitterSite && {
-      twitter: {
-        card: 'summary_large_image',
-        creator: twitterCreator,
-        site: twitterSite,
-      },
-    }),
-} */
+  twitter: {
+    card: 'summary_large_image',
+    description: siteDescription,
+    images: ['/baked-with-blessings-logo-pasture-restored.svg'],
+    title: siteName,
+  },
+}
 
 const rubik = Rubik({
   subsets: ['latin'],
@@ -49,8 +70,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html className={rubik.variable} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
-        <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        <link href="/favicon.ico" rel="alternate icon" sizes="32x32" />
       </head>
       <body>
         <Providers>

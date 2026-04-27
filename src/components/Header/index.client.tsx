@@ -8,9 +8,24 @@ import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
-import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import {
+  blogHref,
+  discussionBoardHref,
+  menuHref,
+  reviewsHref,
+  rotatingCookieFlavorsHref,
+} from '@/utilities/routes'
 import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
-import { ArrowRight, ChevronDown, ShoppingBag, UserRound } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpenText,
+  ChevronDown,
+  ClipboardCheck,
+  MessageSquareText,
+  PanelsTopLeft,
+  ShoppingBag,
+  UserRound,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -20,7 +35,7 @@ import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
-type ActivePanel = 'account' | 'bag' | null
+type ActivePanel = 'account' | 'bag' | 'more' | null
 
 type Props = {
   brand: {
@@ -58,6 +73,18 @@ const headerClassNames = {
   viewport: 'siteHeaderViewport',
 } as const
 
+const getActiveAppLabel = (pathname: string) => {
+  if (pathname === blogHref || pathname.startsWith(`${blogHref}/`)) return 'Blog'
+  if (pathname === reviewsHref || pathname.startsWith(`${reviewsHref}/`)) return 'Reviews'
+  if (pathname === discussionBoardHref || pathname.startsWith(`${discussionBoardHref}/`)) {
+    return 'Discussion Board'
+  }
+
+  return null
+}
+
+const appsNavigationLabel = 'Other pages'
+
 export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
   const router = useRouter()
@@ -91,6 +118,7 @@ export function HeaderClient({ brand, header }: Props) {
     () => (user ? ['/account', '/orders', '/account/addresses'] : ['/login', '/create-account']),
     [user],
   )
+  const activeAppLabel = getActiveAppLabel(pathname)
 
   const accountLabels = {
     '/account': user ? 'Account settings' : 'Log in',
@@ -111,6 +139,9 @@ export function HeaderClient({ brand, header }: Props) {
   useEffect(() => {
     router.prefetch(menuHref)
     router.prefetch(rotatingCookieFlavorsHref)
+    router.prefetch(blogHref)
+    router.prefetch(discussionBoardHref)
+    router.prefetch(reviewsHref)
   }, [router])
 
   useEffect(() => {
@@ -121,6 +152,7 @@ export function HeaderClient({ brand, header }: Props) {
 
       const target = event.target as HTMLElement
       if (target.closest(`.${headerClassNames.actionButton}`)) return
+      if (target.closest(`.${headerClassNames.bannerLink}`)) return
       if (target.closest('.siteHeaderMobileBagButton')) return
 
       closePanel()
@@ -208,22 +240,52 @@ export function HeaderClient({ brand, header }: Props) {
                 <ul className={headerClassNames.bannerList}>
                   {navigationItems.map((item) => (
                     <li className={headerClassNames.bannerItem} key={item.id}>
-                      <Link
-                        className={cn(headerClassNames.bannerLink, {
-                          'is-active': item.isActive,
-                        })}
-                        href={item.href}
-                      >
-                        {item.label}
-                      </Link>
+                      {item.kind === 'apps' ? (
+                        <button
+                          aria-label={
+                            activeAppLabel
+                              ? `${appsNavigationLabel}: ${activeAppLabel}. Click for more`
+                              : `${appsNavigationLabel}. Click for more`
+                          }
+                          aria-expanded={activePanel === 'more'}
+                          className={cn(headerClassNames.bannerLink, 'siteHeaderBannerButton', {
+                            'is-active': item.isActive || activePanel === 'more',
+                          })}
+                          onClick={() => {
+                            handleToggle('more')
+                          }}
+                          type="button"
+                        >
+                          <span className="siteHeaderBannerLabel">{appsNavigationLabel}</span>
+                          {activeAppLabel ? (
+                            <span className="siteHeaderBannerAppName">
+                              <span aria-hidden="true">:</span> {activeAppLabel}
+                            </span>
+                          ) : null}
+                          <span className="siteHeaderBannerMoreCue">Click for more</span>
+                        </button>
+                      ) : (
+                        <Link
+                          className={cn(headerClassNames.bannerLink, {
+                            'is-active': item.isActive,
+                          })}
+                          href={item.href}
+                        >
+                          {item.label}
+                        </Link>
+                      )}
 
-                      <div className={headerClassNames.bannerReveal}>
-                        <p className={headerClassNames.bannerRevealEyebrow}>{item.panel.eyebrow}</p>
-                        <p className={headerClassNames.bannerRevealTitle}>{item.label}</p>
-                        <p className={headerClassNames.bannerRevealDescription}>
-                          {item.panel.description}
-                        </p>
-                      </div>
+                      {item.kind === 'apps' ? null : (
+                        <div className={headerClassNames.bannerReveal}>
+                          <p className={headerClassNames.bannerRevealEyebrow}>
+                            {item.panel.eyebrow}
+                          </p>
+                          <p className={headerClassNames.bannerRevealTitle}>{item.label}</p>
+                          <p className={headerClassNames.bannerRevealDescription}>
+                            {item.panel.description}
+                          </p>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -271,10 +333,89 @@ export function HeaderClient({ brand, header }: Props) {
             className={cn(
               headerClassNames.actionPanel,
               activePanel ? 'is-open' : null,
-              activePanel === 'account' ? 'is-account' : activePanel === 'bag' ? 'is-bag' : '',
+              activePanel === 'account'
+                ? 'is-account'
+                : activePanel === 'bag'
+                  ? 'is-bag'
+                  : activePanel === 'more'
+                    ? 'is-more'
+                    : '',
             )}
           >
             <div className={headerClassNames.actionPanelInner} ref={panelInnerRef}>
+              {activePanel === 'more' ? (
+                <div className="siteHeaderAppsPanel">
+                  <div className="siteHeaderAppsHeader">
+                    <div className="siteHeaderAppsBadge">
+                      <PanelsTopLeft className="h-4 w-4" />
+                      <span>{appsNavigationLabel}</span>
+                    </div>
+                    <div>
+                      <p className="siteHeaderAppsTitle">Other Pages</p>
+                      <p className="siteHeaderAppsDescription">
+                        Open reusable public tools connected to the bakery.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    className="siteHeaderAppCard"
+                    href={blogHref}
+                    onClick={() => setActivePanel(null)}
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <BookOpenText className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Writing</span>
+                      <span className="siteHeaderAppTitle">Blog</span>
+                      <span className="siteHeaderAppDescription">
+                        Notes and essays about school, business, community, and building the bakery.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </Link>
+
+                  <Link
+                    className="siteHeaderAppCard"
+                    href={discussionBoardHref}
+                    onClick={() => setActivePanel(null)}
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <MessageSquareText className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Community</span>
+                      <span className="siteHeaderAppTitle">Discussion Board</span>
+                      <span className="siteHeaderAppDescription">
+                        Open questions, replies, support paths, and challenges in one structured
+                        board.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </Link>
+
+                  <Link
+                    className="siteHeaderAppCard"
+                    href={reviewsHref}
+                    onClick={() => setActivePanel(null)}
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <ClipboardCheck className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Transparency</span>
+                      <span className="siteHeaderAppTitle">Reviews</span>
+                      <span className="siteHeaderAppDescription">
+                        Reviews with photos, public responses, action logs, and boundaries around
+                        unfair claims.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </Link>
+                </div>
+              ) : null}
+
               {activePanel === 'account' ? (
                 <>
                   <p className={headerClassNames.actionPanelTitle}>
@@ -366,7 +507,8 @@ export function HeaderClient({ brand, header }: Props) {
 
                                   return (
                                     variant.options?.some((option: Variant['options'][number]) => {
-                                      if (typeof option === 'object') return option.id === variantOptionID
+                                      if (typeof option === 'object')
+                                        return option.id === variantOptionID
                                       return option === variantOptionID
                                     }) || false
                                   )
@@ -467,7 +609,10 @@ export function HeaderClient({ brand, header }: Props) {
                               Shipping and taxes are calculated during checkout.
                             </p>
                           </div>
-                          <Price amount={cartSubtotal} className="siteHeaderCartQuickSubtotalPrice" />
+                          <Price
+                            amount={cartSubtotal}
+                            className="siteHeaderCartQuickSubtotalPrice"
+                          />
                         </div>
 
                         <div className="siteHeaderCartQuickFooterActions">

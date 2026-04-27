@@ -1,5 +1,7 @@
 'use client'
 
+import type { SceneTone } from '@/components/scenery/menuHeroScenery'
+import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { menuHref } from '@/utilities/routes'
 import Link from 'next/link'
 import React, { useState } from 'react'
@@ -16,7 +18,7 @@ type PosterCloud = {
   style: React.CSSProperties
 }
 
-type PosterSceneTone = 'dawn' | 'under-tree' | 'moonlit' | 'classic' | 'blossom'
+type PosterSceneTone = SceneTone
 
 type SpawnedPosterCloud = {
   delay: string
@@ -74,13 +76,21 @@ const posterClouds: PosterCloud[] = [
   },
 ]
 
-const posterSceneryTones: PosterSceneTone[] = ['classic', 'dawn', 'under-tree', 'moonlit', 'blossom']
+const posterSceneryTones: PosterSceneTone[] = [
+  'dawn',
+  'under-tree',
+  'moonlit',
+  'classic',
+  'blossom',
+  'fairy-castle',
+]
 const posterSkyByScenery: Record<PosterSceneTone, string> = {
   dawn: '/sceneries/brown-anime-gradient-sky.svg',
   'under-tree': '/sceneries/girl-under-tree-sky.svg',
   moonlit: '/sceneries/moonlit-purple-sky.svg',
   classic: '/sceneries/classic-sky.svg',
   blossom: '/sceneries/blossom-breeze-sky.svg',
+  'fairy-castle': '/sceneries/fairy-castle.svg',
 }
 const posterMeadowByScenery: Record<PosterSceneTone, string> = {
   dawn: '/sceneries/brown-anime-rolling-meadow.svg',
@@ -88,6 +98,7 @@ const posterMeadowByScenery: Record<PosterSceneTone, string> = {
   moonlit: '/sceneries/moonlit-purple-meadow.svg',
   classic: '/sceneries/classic-meadow.svg',
   blossom: '/sceneries/blossom-grass-mound.svg',
+  'fairy-castle': '/sceneries/transparent-meadow.svg',
 }
 const posterButtonAuraByScenery: Record<PosterSceneTone, string> = {
   dawn: 'rgba(255, 214, 101, 0.86)',
@@ -95,6 +106,7 @@ const posterButtonAuraByScenery: Record<PosterSceneTone, string> = {
   moonlit: 'rgba(153, 115, 255, 0.9)',
   classic: 'rgba(255, 215, 79, 0.85)',
   blossom: 'rgba(255, 176, 208, 0.92)',
+  'fairy-castle': 'rgba(154, 172, 138, 0.9)',
 }
 const posterCloudAssetsByScenery: Record<PosterSceneTone, readonly string[]> = {
   dawn: ['/clouds/brown-anime-cloud-fluffy.svg', '/clouds/brown-anime-cloud-layered.svg'],
@@ -102,6 +114,7 @@ const posterCloudAssetsByScenery: Record<PosterSceneTone, readonly string[]> = {
   moonlit: ['/clouds/moonlit-purple-swoop-cloud.svg', '/clouds/moonlit-purple-upper-cloud.svg'],
   classic: ['/clouds/three-ball-cloud-compact.svg', '/clouds/three-ball-cloud.svg'],
   blossom: ['/clouds/sakura-soft-cloud.svg'],
+  'fairy-castle': ['/sceneries/fairy-castle-cloud-puff.svg'],
 }
 
 let spawnedPosterCloudID = 0
@@ -158,9 +171,7 @@ const createSpawnedPosterFlower = (): SpawnedPosterFlower => ({
 })
 
 function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster: CookiePosterAsset }) {
-  const [sceneryTone, setSceneryTone] = useState<PosterSceneTone>(
-    posterSceneryTones[cardIndex % posterSceneryTones.length] ?? 'classic',
-  )
+  const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone('classic')
   const [isIngredientNoteOpen, setIsIngredientNoteOpen] = useState(false)
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedPosterCloud[]>([])
   const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedPosterFlower[]>(

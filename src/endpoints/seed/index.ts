@@ -1,9 +1,11 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
+import { seedBlogPosts } from './blog-posts'
 import { importCateringMedia } from './catering-media'
 import { seedCateringProducts } from './catering-products'
 import { importCookieMedia } from './cookie-media'
 import { seedCookieProducts } from './cookie-products'
+import { clearLegacyMedia } from './legacy-media'
 
 const productCollectionsToReset: CollectionSlug[] = [
   'products',
@@ -45,6 +47,12 @@ export const seed = async ({
 
   await clearProductCollections({ payload, req })
 
+  payload.logger.info('- Removing legacy starter media...')
+
+  const removedLegacyMedia = await clearLegacyMedia({ payload, req })
+
+  payload.logger.info(`- Removed ${removedLegacyMedia} legacy media documents`)
+
   payload.logger.info('- Importing cookie media...')
 
   const mediaImportResult = await importCookieMedia({ payload, req })
@@ -75,5 +83,9 @@ export const seed = async ({
     req,
   })
 
-  payload.logger.info('Seeded cookie and catering catalog successfully!')
+  payload.logger.info('- Seeding blog posts...')
+
+  await seedBlogPosts({ payload, req })
+
+  payload.logger.info('Seeded cookie, catering, and blog content successfully!')
 }

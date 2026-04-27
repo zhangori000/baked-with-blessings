@@ -68,11 +68,14 @@ export type DecorativeSceneImageProps = {
 }
 
 type MenuHeroProps = {
+  eyebrow?: string
   isSceneryPickerOpen: boolean
   isSceneChanging: boolean
   onSelectScenery: (tone: MenuSceneryTone) => void
   onToggleSceneryPicker: () => void
   sceneryTone: MenuSceneryTone
+  summary?: string
+  title?: string
 }
 
 type PersuasionGardenPanelProps = {
@@ -793,10 +796,19 @@ const createSpawnedCloud = (
   }
 }
 
-const createSpawnedFlower = (
-  sceneryTone: MenuSceneryTone,
-  kind: 'hero' | 'panel' = 'panel',
-): SpawnedFlower => {
+const createSpawnedFlower = ({
+  assetOverride,
+  kind = 'panel',
+  leftOverride,
+  scaleOverride,
+  sceneryTone,
+}: {
+  assetOverride?: string
+  kind?: 'hero' | 'panel'
+  leftOverride?: number
+  scaleOverride?: number
+  sceneryTone: MenuSceneryTone
+}): SpawnedFlower => {
   const heroScaleRange =
     sceneryTone === 'under-tree'
       ? [0.66, 0.86]
@@ -823,16 +835,38 @@ const createSpawnedFlower = (
             : [0.86, 1.08]
   const [minLeft, maxLeft] = kind === 'hero' ? [8, 92] : [8, 92]
   const [minScale, maxScale] = kind === 'hero' ? heroScaleRange : panelScaleRange
+  const assets = spawnedFlowerAssetsByScenery[sceneryTone]
 
   return {
-    asset:
-      spawnedFlowerAssetsByScenery[sceneryTone][
-        Math.floor(Math.random() * spawnedFlowerAssetsByScenery[sceneryTone].length)
-      ] ?? '/flowers/daisy.svg',
+    asset: assetOverride ?? assets[Math.floor(Math.random() * assets.length)] ?? '/flowers/daisy.svg',
     id: Date.now() + Math.random(),
-    left: `${randomBetween(minLeft, maxLeft).toFixed(2)}%`,
-    scale: Number(randomBetween(minScale, maxScale).toFixed(2)),
+    left: `${(leftOverride ?? randomBetween(minLeft, maxLeft)).toFixed(2)}%`,
+    scale: Number((scaleOverride ?? randomBetween(minScale, maxScale)).toFixed(2)),
   }
+}
+
+const createSymmetricSpawnedFlowers = (
+  sceneryTone: MenuSceneryTone,
+  kind: 'hero' | 'panel',
+  currentCount: number,
+): SpawnedFlower[] => {
+  const assets = spawnedFlowerAssetsByScenery[sceneryTone]
+  const pairIndex = Math.floor(currentCount / 2)
+  const offsetPattern = [12, 22, 32, 40, 16, 28, 36]
+  const offset = offsetPattern[pairIndex % offsetPattern.length] + randomBetween(-1.75, 1.75)
+  const left = Math.max(8, Math.min(42, 50 - offset))
+  const right = 100 - left
+  const asset = assets[Math.floor(Math.random() * assets.length)] ?? '/flowers/daisy.svg'
+  const baseFlower = createSpawnedFlower({ assetOverride: asset, kind, leftOverride: left, sceneryTone })
+  const mirroredFlower = createSpawnedFlower({
+    assetOverride: asset,
+    kind,
+    leftOverride: right,
+    scaleOverride: baseFlower.scale,
+    sceneryTone,
+  })
+
+  return [baseFlower, mirroredFlower]
 }
 
 const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'panel') => {
@@ -888,10 +922,24 @@ const buildSeededFlowers = (
   const random = createSeededRandom(`${sceneryTone}-${kind}-${count}`)
   const pickBetween = (min: number, max: number) => random() * (max - min) + min
 
-  return Array.from({ length: count }, (_, index) => {
+  const center = (minLeft + maxLeft) / 2
+  const pairCount = Math.floor(count / 2)
+  const maxOffset = (maxLeft - minLeft) / 2
+  const positions: number[] = []
+
+  if (count % 2 === 1) {
+    positions.push(center + pickBetween(-0.75, 0.75))
+  }
+
+  for (let pairIndex = 0; pairIndex < pairCount; pairIndex += 1) {
+    const offset = (maxOffset * (pairIndex + 1)) / (pairCount + 1)
+    const jitter = pickBetween(-0.9, 0.9)
+    positions.push(center - offset - jitter, center + offset + jitter)
+  }
+
+  return positions.slice(0, count).map((left, index) => {
     const assetIndex = Math.floor(pickBetween(0, Math.max(assets.length, 1)))
     const asset = assets[assetIndex] ?? '/flowers/daisy.svg'
-    const left = pickBetween(minLeft, maxLeft)
     const scale = pickBetween(minScale, maxScale)
 
     return {
@@ -1062,11 +1110,14 @@ function SceneryChooserPopover({
 }
 
 export function MenuHero({
+  eyebrow = 'Baked with Blessings',
   isSceneryPickerOpen,
   isSceneChanging,
   onSelectScenery,
   onToggleSceneryPicker,
   sceneryTone,
+  summary = 'Clear portions, honest descriptions, and expandable ordering details for each item so the customer understands exactly what the group is buying.',
+  title = 'Catering Menu',
 }: MenuHeroProps) {
   const flowerSeedCount = useResponsiveFlowerSeedCount()
   const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
@@ -1151,7 +1202,12 @@ export function MenuHero({
   }
 
   const spawnFlower = () => {
-    setSpawnedFlowers((current) => [...current, createSpawnedFlower(sceneryTone, 'hero')])
+    setSpawnedFlowers((current) => [
+      ...current,
+      ...(spawnedAccentLabelByScenery[sceneryTone] === 'Spawn a flower'
+        ? createSymmetricSpawnedFlowers(sceneryTone, 'hero', current.length)
+        : [createSpawnedFlower({ kind: 'hero', sceneryTone })]),
+    ])
   }
 
   return (
@@ -1249,15 +1305,14 @@ export function MenuHero({
         />
       ))}
       <div className="cateringHeroContent container relative z-[3]">
-        <div className="max-w-[42rem] space-y-4">
+        <div className="cateringHeroCopy max-w-[42rem] space-y-4">
           <div className="space-y-4">
-            <p className="cateringMenuEyebrow cateringHeroEyebrow">Baked with Blessings</p>
+            <p className="cateringMenuEyebrow cateringHeroEyebrow">{eyebrow}</p>
             <h1 className="cateringMenuHeroDisplay max-w-[10ch] text-[clamp(3.5rem,8.6vw,6rem)] leading-[0.88] tracking-[-0.045em] text-[#19395f]">
-              Catering Menu
+              {title}
             </h1>
             <p className="cateringHeroSummary max-w-[35rem] text-[1.02rem] leading-8 md:text-[1.14rem]">
-              Clear portions, honest descriptions, and expandable ordering details for each item so
-              the customer understands exactly what the group is buying.
+              {summary}
             </p>
             <div className="relative pt-2" ref={chooserAnchorRef}>
               <div className="flex flex-wrap gap-2">
@@ -1403,7 +1458,12 @@ export function PersuasionGardenPanel({
   }
 
   const spawnFlower = () => {
-    setSpawnedFlowers((current) => [...current, createSpawnedFlower(sceneryTone, 'panel')])
+    setSpawnedFlowers((current) => [
+      ...current,
+      ...(spawnedAccentLabelByScenery[sceneryTone] === 'Spawn a flower'
+        ? createSymmetricSpawnedFlowers(sceneryTone, 'panel', current.length)
+        : [createSpawnedFlower({ kind: 'panel', sceneryTone })]),
+    ])
   }
 
   const runPanelTransition = (nextFace: 'details' | 'gallery') => {

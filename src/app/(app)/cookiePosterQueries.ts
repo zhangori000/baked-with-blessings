@@ -6,7 +6,7 @@ import {
   buildCookiePosterAssets,
   cookiePosterMetas,
   type CookiePosterAsset,
-} from './shop/cookiePosterData'
+} from './menu/_components/cookiePosterData'
 
 export const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
   cookiePosterMetas.map((meta) => ({

@@ -1,0 +1,18 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="favicon-stem" x1="0" y1="22" x2="0" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#98a44a"/>
+      <stop offset="1" stop-color="#536520"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#fff8f2"/>
+  <rect x="29.5" y="33" width="5" height="24" rx="2.5" fill="url(#favicon-stem)"/>
+  <g transform="translate(32 30)">
+    <circle cx="0" cy="-10.2" r="9.4" fill="#f2e7b2"/>
+    <circle cx="10.7" cy="-5.1" r="9.4" fill="#c5c989"/>
+    <circle cx="7.2" cy="7.9" r="9.4" fill="#9aa25b"/>
+    <circle cx="-7.2" cy="7.9" r="9.4" fill="#c5c989"/>
+    <circle cx="-10.7" cy="-5.1" r="9.4" fill="#f2e7b2"/>
+    <circle cx="0" cy="0" r="7.3" fill="#545228"/>
+  </g>
+</svg>

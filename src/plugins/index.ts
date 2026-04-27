@@ -7,7 +7,7 @@ import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 
 import { stripeAdapter } from '@payloadcms/plugin-ecommerce/payments/stripe'
 
-import { Page, Product } from '@/payload-types'
+import type { Page, Post, Product } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { ProductsCollection } from '@/collections/Products'
 import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
@@ -116,14 +116,24 @@ const createGuestContactFields = () => [
   },
 ]
 
-const generateTitle: GenerateTitle<Product | Page> = ({ doc }) => {
+const generateTitle: GenerateTitle<Product | Page | Post> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Baked with Blessings` : 'Baked with Blessings'
 }
 
-const generateURL: GenerateURL<Product | Page> = ({ doc }) => {
+const generateURL: GenerateURL<Product | Page | Post> = ({ collectionConfig, doc }) => {
   const url = getServerSideURL()
 
-  return doc?.slug ? `${url}/${doc.slug}` : url
+  if (!doc?.slug) return url
+
+  if (collectionConfig?.slug === 'posts') {
+    return `${url}/blog/${doc.slug}`
+  }
+
+  if (collectionConfig?.slug === 'products') {
+    return `${url}/menu`
+  }
+
+  return doc.slug === 'home' ? url : `${url}/${doc.slug}`
 }
 
 export const plugins: Plugin[] = [

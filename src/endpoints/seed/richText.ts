@@ -42,6 +42,17 @@ export const createParagraphRichText = (text: string) => ({
   },
 })
 
+export const createParagraphsRichText = (paragraphs: string[]) => ({
+  root: {
+    children: paragraphs.map(createParagraphNode),
+    direction: 'ltr' as const,
+    format: '' as const,
+    indent: 0,
+    type: 'root' as const,
+    version: 1,
+  },
+})
+
 export const createHeadingAndParagraphsRichText = ({
   heading,
   headingTag = 'h2',

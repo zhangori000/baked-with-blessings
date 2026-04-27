@@ -47,6 +47,10 @@ Also read these files in this folder when relevant:
 
 The navbar flower system is a core motif in this project. When designing menu selection states, celebratory feedback, hover accents, or supporting illustrations, reuse that same flower language instead of introducing a different floral style or unrelated decorative system.
 
+### Route Source of Truth
+
+There is no `/shop` route in this app. The customer-facing menu is `/menu`; do not recreate `src/app/(app)/shop`. Shared menu UI belongs in `src/app/(app)/menu/_components`, and old notes that mention the former storefront route should be treated as legacy context, not current architecture.
+
 ### PR Notes Convention
 
 When writing PR descriptions, review guides, or merge summaries for this project, store them under `ai-instructions/learnings/pr/<YYYY-MM-DD>/`.

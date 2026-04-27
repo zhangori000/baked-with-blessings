@@ -1,8 +1,12 @@
 'use client'
 
-import type { SceneTone } from '@/components/scenery/menuHeroScenery'
-
 import { CMSLink } from '@/components/Link'
+import {
+  menuHeroCloudsByScene,
+  menuHeroMeadowByScene,
+  menuHeroMobileMeadowByScene,
+  menuHeroSkyByScene,
+} from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { Instagram, Linkedin } from 'lucide-react'
 import Image from 'next/image'
@@ -27,81 +31,6 @@ type FooterClientProps = {
   navItems: FooterLinkItem[]
 }
 
-const footerPaletteByScene: Record<
-  SceneTone,
-  {
-    shell: string
-    panel: string
-    text: string
-    muted: string
-    border: string
-    accent: string
-    icon: string
-    iconBg: string
-  }
-> = {
-  dawn: {
-    shell: 'linear-gradient(180deg, #7cc3e8 0%, #c5dff0 50%, #f5d5d8 80%, #f8e4c8 100%)',
-    panel: 'rgba(255, 251, 239, 0.84)',
-    text: '#5b4716',
-    muted: 'rgba(91, 71, 22, 0.72)',
-    border: 'rgba(143, 115, 39, 0.18)',
-    accent: '#ffe8a3',
-    icon: '#7a5812',
-    iconBg: 'rgba(255, 239, 183, 0.88)',
-  },
-  'under-tree': {
-    shell: 'linear-gradient(180deg, #2a7fc4 0%, #67a7db 62%, #a8d0ea 100%)',
-    panel: 'rgba(255, 249, 237, 0.82)',
-    text: '#324520',
-    muted: 'rgba(50, 69, 32, 0.7)',
-    border: 'rgba(62, 87, 51, 0.16)',
-    accent: '#d9f0b5',
-    icon: '#3c5325',
-    iconBg: 'rgba(245, 235, 205, 0.88)',
-  },
-  moonlit: {
-    shell: 'linear-gradient(180deg, #0a1540 0%, #1a3060 40%, #2a6878 70%, #3a9880 100%)',
-    panel: 'rgba(20, 31, 70, 0.78)',
-    text: '#f6f1ff',
-    muted: 'rgba(246, 241, 255, 0.72)',
-    border: 'rgba(214, 206, 255, 0.14)',
-    accent: '#8976ff',
-    icon: '#faf7ff',
-    iconBg: 'rgba(119, 102, 210, 0.3)',
-  },
-  classic: {
-    shell: 'linear-gradient(180deg, #8ec9f0 0%, #cfeafd 62%, #f8f8eb 100%)',
-    panel: 'rgba(248, 252, 255, 0.8)',
-    text: '#1c3d29',
-    muted: 'rgba(28, 61, 41, 0.62)',
-    border: 'rgba(44, 88, 62, 0.12)',
-    accent: '#d6f1c5',
-    icon: '#21492d',
-    iconBg: 'rgba(228, 245, 235, 0.92)',
-  },
-  blossom: {
-    shell: 'linear-gradient(180deg, #aee1f0 0%, #d7eef6 65%, #eef8fb 100%)',
-    panel: 'rgba(255, 247, 251, 0.82)',
-    text: '#63385b',
-    muted: 'rgba(99, 56, 91, 0.68)',
-    border: 'rgba(121, 74, 113, 0.12)',
-    accent: '#ffd6ea',
-    icon: '#834679',
-    iconBg: 'rgba(255, 226, 237, 0.9)',
-  },
-  'fairy-castle': {
-    shell: 'linear-gradient(180deg, #4d91d8 0%, #bfe3f3 100%)',
-    panel: 'rgba(250, 246, 232, 0.84)',
-    text: '#4c5630',
-    muted: 'rgba(76, 86, 48, 0.7)',
-    border: 'rgba(93, 104, 60, 0.15)',
-    accent: '#e7e0b3',
-    icon: '#5e6940',
-    iconBg: 'rgba(238, 231, 206, 0.92)',
-  },
-}
-
 function TikTokIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
@@ -113,14 +42,15 @@ function TikTokIcon(props: React.ComponentProps<'svg'>) {
   )
 }
 
-export function FooterClient({
-  brand,
-  copyrightName,
-  currentYear,
-  navItems,
-}: FooterClientProps) {
+export function FooterClient({ brand, copyrightName, currentYear, navItems }: FooterClientProps) {
   const [sceneTone] = usePersistentMenuSceneTone()
-  const palette = footerPaletteByScene[sceneTone]
+  const skySrc = menuHeroSkyByScene[sceneTone] ?? menuHeroSkyByScene.classic
+  const meadowSrc = menuHeroMeadowByScene[sceneTone] ?? menuHeroMeadowByScene.classic
+  const mobileMeadowSrc = menuHeroMobileMeadowByScene[sceneTone]
+  const sceneClouds = menuHeroCloudsByScene[sceneTone] ?? menuHeroCloudsByScene.classic
+  const footerText = '#1f2f20'
+  const footerMuted = 'rgba(31, 47, 32, 0.72)'
+  const footerBorder = 'rgba(31, 47, 32, 0.16)'
 
   const socialLinks = [
     {
@@ -142,20 +72,59 @@ export function FooterClient({
 
   return (
     <footer
-      className="px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5 md:px-6 md:pb-5 md:pt-5"
-      style={{ background: palette.shell }}
+      className="relative overflow-hidden px-3 pb-4 pt-10 sm:px-4 sm:pb-5 sm:pt-12 md:px-6 md:pb-6 md:pt-14"
+      style={{ background: '#d8ecfb' }}
     >
-      <div
-        className="mx-auto max-w-[1320px] rounded-[1.7rem] border px-4 py-4 shadow-[0_16px_32px_rgba(22,18,10,0.08)] sm:px-5 sm:py-5 md:px-6 md:py-5"
-        style={{
-          backgroundColor: palette.panel,
-          borderColor: palette.border,
-          color: palette.text,
-        }}
-      >
-        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <section className="max-w-[34rem]">
-            <Link aria-label={brand.brandName} className="block shrink-0" href="/">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="object-cover"
+          fill
+          sizes="100vw"
+          src={skySrc}
+          unoptimized
+        />
+
+        {sceneClouds.slice(0, 2).map((cloud) => (
+          <span
+            className={`absolute opacity-80 ${cloud.className}`}
+            key={`${sceneTone}-${cloud.className}-${cloud.src}`}
+            style={cloud.style}
+          >
+            <Image alt="" aria-hidden="true" className="h-auto w-full" height={240} src={cloud.src} unoptimized width={360} />
+          </span>
+        ))}
+
+        <picture className="absolute inset-x-0 bottom-0 h-24 md:h-32">
+          {mobileMeadowSrc ? <source media="(max-width: 767px)" srcSet={mobileMeadowSrc} /> : null}
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full object-cover object-bottom"
+            draggable="false"
+            src={meadowSrc}
+          />
+        </picture>
+      </div>
+
+      <div className="relative z-[1] mx-auto grid min-h-[24rem] max-w-[1320px] content-stretch">
+        <div
+          className="grid rounded-[1.35rem] border px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6"
+          style={{
+            backgroundColor: 'rgba(255, 252, 244, 0.2)',
+            borderColor: 'rgba(255, 252, 244, 0.22)',
+            color: footerText,
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+          }}
+        >
+        <div className="flex min-h-[17rem] flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <section className="max-w-[34rem] md:pt-1">
+            <Link
+              aria-label={brand.brandName}
+              className="inline-flex shrink-0 rounded-2xl bg-[#fff8e6]/90 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_24px_rgba(5,12,5,0.12)]"
+              href="/"
+            >
               <Image
                 alt={brand.logoAlt}
                 className="h-auto w-[8.75rem] object-contain sm:w-[10rem]"
@@ -166,13 +135,9 @@ export function FooterClient({
                 width={176}
               />
             </Link>
-
-            <p className="mt-3 max-w-[28rem] text-[1rem] leading-7" style={{ color: palette.muted }}>
-              Fresh cookie trays, honest portions, and a menu that stays easy to scan on the first pass.
-            </p>
           </section>
 
-          <section className="flex max-w-[34rem] flex-col gap-4 md:items-end">
+          <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
             <nav aria-label="Footer links">
               <ul className="flex flex-wrap gap-2 md:justify-end">
                 {navItems.map((item, index) => {
@@ -181,18 +146,17 @@ export function FooterClient({
                       ? (item.link as Record<string, unknown>)
                       : {}
                   const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
+                  const footerLinkStyle = {
+                    '--footer-link-bg': 'rgba(255,252,244,0.56)',
+                    '--footer-link-border': footerBorder,
+                    '--footer-link-color': footerText,
+                  } as React.CSSProperties
 
                   return (
-                    <li key={item.id ?? `footer-link-${index}`}>
+                    <li key={item.id ?? `footer-link-${index}`} style={footerLinkStyle}>
                       <CMSLink
                         appearance="link"
-                        className="inline-flex rounded-full border px-3 py-2 text-[0.86rem] font-semibold tracking-[-0.02em] transition hover:-translate-y-0.5"
-                        style={{
-                          borderColor: palette.border,
-                          backgroundColor:
-                            sceneTone === 'moonlit' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.74)',
-                          color: palette.text,
-                        }}
+                        className="inline-flex rounded-full border border-[var(--footer-link-border)] bg-[var(--footer-link-bg)] px-3.5 py-2.5 text-[0.92rem] font-extrabold tracking-[0.01em] text-[var(--footer-link-color)] transition hover:-translate-y-0.5"
                         {...footerLinkProps}
                       />
                     </li>
@@ -205,11 +169,11 @@ export function FooterClient({
               {socialLinks.map(({ href, icon: Icon, label }) => (
                 <a
                   aria-label={label}
-                  className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[0.82rem] font-semibold transition hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[0.9rem] font-extrabold tracking-[0.01em] transition hover:-translate-y-0.5"
                   href={href}
                   key={label}
                   rel="noreferrer"
-                  style={{ backgroundColor: palette.iconBg, color: palette.icon }}
+                  style={{ backgroundColor: 'rgba(255,252,244,0.56)', color: footerText }}
                   target="_blank"
                 >
                   <Icon className="h-4 w-4" />
@@ -221,15 +185,15 @@ export function FooterClient({
         </div>
 
         <div
-          className="mt-4 flex flex-col gap-3 border-t pt-4 text-[0.82rem] sm:text-[0.86rem] md:flex-row md:items-center md:justify-between"
-          style={{ borderColor: palette.border, color: palette.muted }}
+          className="mt-auto flex flex-col gap-3 rounded-2xl px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem] md:flex-row md:items-center md:justify-between"
+          style={{ backgroundColor: 'rgba(255,252,244,0.48)', color: footerMuted }}
         >
           <p>
             &copy; {currentYear} {copyrightName}
             {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
           </p>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 font-extrabold">
             <Link className="transition hover:opacity-70" href="/account">
               Account
             </Link>
@@ -239,15 +203,8 @@ export function FooterClient({
             <Link className="transition hover:opacity-70" href="/contact">
               Contact
             </Link>
-            <a
-              className="transition hover:opacity-70"
-              href="https://payloadcms.com"
-              rel="noreferrer"
-              target="_blank"
-            >
-              Credits
-            </a>
           </div>
+        </div>
         </div>
       </div>
     </footer>

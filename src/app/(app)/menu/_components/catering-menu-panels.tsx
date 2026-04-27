@@ -17,7 +17,7 @@ type StaticSceneCloud = {
 }
 
 type DecorativeSceneImageProps = {
-  className?: string
+  className: string
   fit?: 'contain' | 'cover'
   mobileSrc?: string
   sizes?: string

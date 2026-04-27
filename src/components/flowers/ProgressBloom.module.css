@@ -8,6 +8,7 @@
   transform: translateX(-50%);
   transform-origin: center bottom;
   width: 1.8rem;
+  z-index: 1;
 }
 
 .image {

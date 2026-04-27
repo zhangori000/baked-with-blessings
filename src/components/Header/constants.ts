@@ -1,5 +1,11 @@
 import type { Header } from '@/payload-types'
-import { menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import {
+  blogHref,
+  discussionBoardHref,
+  menuHref,
+  reviewsHref,
+  rotatingCookieFlavorsHref,
+} from '@/utilities/routes'
 
 export type HeaderPanelLink = {
   href: string
@@ -19,6 +25,7 @@ export type HeaderNavigationItem = {
   id: string
   href: string
   label: string
+  kind?: 'link' | 'apps'
   panel: {
     eyebrow: string
     description: string
@@ -83,55 +90,55 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     },
   },
   {
-    href: rotatingCookieFlavorsHref,
-    id: 'words-of-affection',
-    label: 'Words of Affection',
+    href: blogHref,
+    id: 'more',
+    kind: 'apps',
+    label: 'Apps',
     panel: {
-      eyebrow: 'Words of Affection',
+      eyebrow: 'Bakery apps',
       description:
-        'This will eventually become the public note wall. For now it still routes back to the rotating cookie page while the storefront sections are being staged in.',
+        'Open public tools connected to the bakery: writing, structured discussions, review transparency, and reusable customer-facing systems.',
       cards: [
         {
           description:
-            'Keep this label in the nav now, but send visitors to the same current storefront landing page.',
-          eyebrow: 'Coming soon',
-          href: rotatingCookieFlavorsHref,
-          title: 'Open the current storefront page',
+            'Read compact notes and essays from the bakery about school, business, community, and what is being learned along the way.',
+          eyebrow: 'Writing',
+          href: blogHref,
+          title: 'Read the blog',
+          tone: 'light',
+        },
+        {
+          description:
+            'Browse the current discussion prompts and open a tree view for replies, questions, support, and challenges.',
+          eyebrow: 'Public reasoning',
+          href: discussionBoardHref,
+          title: 'Open discussion board',
           tone: 'dark',
+        },
+        {
+          description:
+            'Read public reviews, see what changed in response, and submit a text review.',
+          eyebrow: 'Review transparency',
+          href: reviewsHref,
+          title: 'Open reviews',
+          tone: 'light',
         },
       ],
       links: [
         {
-          description: 'Return to the rotating cookie page.',
-          href: rotatingCookieFlavorsHref,
-          label: 'Open the storefront page',
+          description: 'Go to the blog.',
+          href: blogHref,
+          label: 'Read the blog',
         },
-      ],
-    },
-  },
-  {
-    href: rotatingCookieFlavorsHref,
-    id: 'calling-for-help',
-    label: 'Calling for Help',
-    panel: {
-      eyebrow: 'Calling for Help',
-      description:
-        'This label is reserved in the nav now, but for the moment it also routes back to the rotating cookie page until the dedicated page is ready.',
-      cards: [
         {
-          description:
-            'Keep the future support/help destination visible without splitting the live navigation yet.',
-          eyebrow: 'Reserved slot',
-          href: rotatingCookieFlavorsHref,
-          title: 'Open the storefront page',
-          tone: 'dark',
+          description: 'Go to the discussion board.',
+          href: discussionBoardHref,
+          label: 'Open discussion board',
         },
-      ],
-      links: [
         {
-          description: 'Return to the rotating cookie page.',
-          href: rotatingCookieFlavorsHref,
-          label: 'Open the storefront page',
+          description: 'Go to public reviews.',
+          href: reviewsHref,
+          label: 'Open reviews',
         },
       ],
     },
@@ -144,12 +151,7 @@ const labelToFallbackItem = new Map(
 
 const fallbackItemById = new Map(fallbackHeaderNavigation.map((item) => [item.id, item] as const))
 
-const navItemPriority: Array<HeaderNavigationItem['id']> = [
-  'cookies-of-the-month',
-  'menu',
-  'words-of-affection',
-  'calling-for-help',
-]
+const navItemPriority: Array<HeaderNavigationItem['id']> = ['cookies-of-the-month', 'menu', 'more']
 
 export const headerAnnouncement =
   'Fresh bakes daily. Custom cake orders and pickup help are one click away.'
@@ -188,6 +190,18 @@ export const isHeaderNavigationItemActive = (
 ) => {
   if (isRouteActive(pathname, rotatingCookieFlavorsHref)) {
     return item.id === 'cookies-of-the-month'
+  }
+
+  if (isRouteActive(pathname, blogHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, discussionBoardHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, reviewsHref)) {
+    return item.id === 'more'
   }
 
   return isRouteActive(pathname, item.href)

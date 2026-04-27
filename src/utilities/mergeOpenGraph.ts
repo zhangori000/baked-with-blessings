@@ -2,14 +2,15 @@ import type { Metadata } from 'next'
 
 const defaultOpenGraph: Metadata['openGraph'] = {
   type: 'website',
-  description: 'An open-source website built with Payload and Next.js.',
+  description:
+    'Baked with Blessings is a bakery and cafe sharing cookies, catering, and notes from the business.',
   images: [
     {
-      url: 'https://payloadcms.com/images/og-image.jpg',
+      url: '/baked-with-blessings-logo-pasture-restored.svg',
     },
   ],
-  siteName: 'Payload Website Template',
-  title: 'Payload Website Template',
+  siteName: 'Baked with Blessings',
+  title: 'Baked with Blessings',
 }
 
 export const mergeOpenGraph = (og?: Partial<Metadata['openGraph']>): Metadata['openGraph'] => {

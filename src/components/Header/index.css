@@ -70,9 +70,7 @@
   max-height: 50px;
   object-fit: contain;
   object-position: left center;
-  filter:
-    drop-shadow(0 0 0.8px rgba(8, 10, 16, 0.9))
-    drop-shadow(0 2px 8px rgba(7, 9, 18, 0.2));
+  filter: drop-shadow(0 0 0.8px rgba(8, 10, 16, 0.9)) drop-shadow(0 2px 8px rgba(7, 9, 18, 0.2));
   transform: translateZ(0);
 }
 
@@ -104,11 +102,11 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 0.22rem;
-  border-radius: 20px;
+  gap: 0.16rem;
+  border-radius: 999px;
   border: 0;
   background: #fff;
-  padding: 0.22rem;
+  padding: 0.16rem;
   box-shadow:
     0 10px 28px rgb(12 24 12 / 10%),
     inset 0 1px 0 rgb(255 255 255 / 40%);
@@ -120,14 +118,19 @@
 
 .siteHeaderBannerLink {
   position: relative;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  border-radius: 14px;
+  justify-content: center;
+  gap: 0.36rem;
+  min-height: 2.64rem;
+  border-radius: 999px;
   border: 0;
-  padding: 0.74rem 1.5rem 1.2rem;
+  padding: 0.48rem 1.1rem 0.82rem;
   color: rgb(17 25 8 / 84%);
-  font-size: 0.94rem;
+  font-size: 0.86rem;
   font-weight: 600;
+  line-height: 1;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -136,6 +139,64 @@
     color 180ms ease,
     color 240ms ease,
     background 240ms ease;
+}
+
+.siteHeaderBannerButton {
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.siteHeaderBannerLabel {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  line-height: 1;
+  padding-bottom: 0;
+}
+
+.siteHeaderBannerLabel::before,
+.siteHeaderBannerLabel::after {
+  content: none;
+}
+
+.siteHeaderBannerAppName {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.26rem;
+  max-width: clamp(9.5rem, 13vw, 13rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.siteHeaderBannerMoreCue {
+  align-items: center;
+  background: rgba(36, 79, 45, 0.12);
+  border: 1px solid rgba(36, 79, 45, 0.16);
+  border-radius: 999px;
+  color: #244f2d;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-left: 0.1rem;
+  min-height: 1.32rem;
+  padding: 0.28rem 0.48rem 0.24rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.siteHeaderBannerLink.is-active .siteHeaderBannerMoreCue,
+.siteHeaderBannerButton[aria-expanded='true'] .siteHeaderBannerMoreCue {
+  background: rgba(255, 253, 246, 0.94);
+  border-color: rgba(255, 253, 246, 0.38);
+  color: #244f2d;
 }
 
 .siteHeaderBannerLink::before,
@@ -151,9 +212,9 @@
 }
 
 .siteHeaderBannerLink::before {
-  bottom: 0.2rem;
+  bottom: 0.18rem;
   width: 2px;
-  height: 0.4rem;
+  height: 0.32rem;
   border-radius: 999px;
   background: linear-gradient(180deg, #98a44a 0%, #536520 100%);
   opacity: 0.95;
@@ -161,9 +222,9 @@
 }
 
 .siteHeaderBannerLink::after {
-  bottom: 0.32rem;
-  width: 0.86rem;
-  height: 0.86rem;
+  bottom: 0.34rem;
+  width: 0.64rem;
+  height: 0.64rem;
   border-radius: 999px;
   opacity: 0.95;
   transform: translateX(-50%);
@@ -403,6 +464,31 @@
   overflow: visible;
 }
 
+.siteHeaderMobileSectionDivider {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.24rem 0.3rem 0.08rem;
+  color: rgb(23 52 31 / 72%);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.siteHeaderMobileSectionDivider::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(23 52 31 / 10%), rgb(23 52 31 / 42%));
+}
+
+.siteHeaderMobileSectionDivider span {
+  flex: 0 0 auto;
+  color: #17341f;
+}
+
 .siteHeaderMobileCard::before,
 .siteHeaderMobileCard::after {
   display: none;
@@ -482,13 +568,14 @@
   justify-content: center;
   min-width: 2.95rem;
   height: 1.92rem;
+  border-radius: 0.45rem 0.45rem 0.62rem 0.62rem;
   background: #17341f;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%);
   color: #fff;
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  clip-path: polygon(8% 0, 92% 0, 78% 100%, 22% 100%);
 }
 
 .siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(1) .siteHeaderMobileCardAction::after {
@@ -547,18 +634,31 @@
 
 .siteHeaderMobileTab {
   position: relative;
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
   border-radius: 10px;
-  padding: 0.62rem 0.82rem;
+  padding: 0.62rem 0.46rem;
   color: #17341f;
-  font-size: 0.66rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-align: center;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: normal;
   transition:
     background 180ms ease,
     color 180ms ease;
+}
+
+.siteHeaderMobileTabDivider {
+  flex: 0 0 1px;
+  align-self: stretch;
+  width: 1px;
+  min-height: 1.6rem;
+  margin-inline: 0.18rem;
+  border-radius: 999px;
+  background: rgb(23 52 31 / 24%);
 }
 
 .siteHeaderMobileTab:hover,
@@ -665,6 +765,166 @@
   width: min(34rem, calc(100vw - 1.8rem));
   display: flex;
   flex-direction: column;
+}
+
+.siteHeaderActionPanel.is-more .siteHeaderActionPanelInner {
+  margin-inline: auto;
+  width: min(46rem, calc(100vw - 1.8rem));
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgb(23 52 31) 0%, rgb(36 68 44) 48%, rgb(88 74 37) 100%);
+  color: #fffaf0;
+  box-shadow:
+    0 30px 80px rgb(14 28 12 / 30%),
+    0 10px 28px rgb(14 28 12 / 18%),
+    inset 0 1px 0 rgb(255 255 255 / 16%);
+}
+
+.siteHeaderAppsPanel {
+  position: relative;
+  display: grid;
+  gap: 0.95rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.siteHeaderAppsPanel::before,
+.siteHeaderAppsPanel::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.42;
+}
+
+.siteHeaderAppsPanel::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgb(255 232 163 / 34%) 0 6%, transparent 7%),
+    radial-gradient(circle at 84% 0%, rgb(214 241 197 / 28%) 0 12%, transparent 13%);
+}
+
+.siteHeaderAppsPanel::after {
+  right: 1.1rem;
+  bottom: -0.45rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  background-image: url('/flowers/menu-nav-flower.svg');
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: rotate(14deg);
+}
+
+.siteHeaderAppsHeader,
+.siteHeaderAppCard {
+  position: relative;
+  z-index: 1;
+}
+
+.siteHeaderAppsHeader {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.siteHeaderAppsBadge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.48rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 250 236 / 20%);
+  background: rgb(255 250 236 / 10%);
+  padding: 0.44rem 0.68rem;
+  color: rgb(255 250 236 / 86%);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.siteHeaderAppsTitle {
+  max-width: 18ch;
+  font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.siteHeaderAppsDescription {
+  margin-top: 0.48rem;
+  max-width: 38ch;
+  color: rgb(255 250 236 / 72%);
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.siteHeaderAppCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgb(255 250 236 / 18%);
+  background: #fffaf0;
+  padding: 0.92rem;
+  color: #17341f;
+  box-shadow:
+    0 20px 42px rgb(7 14 6 / 18%),
+    inset 0 1px 0 rgb(255 255 255 / 70%);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.siteHeaderAppCard:hover {
+  transform: translateY(-2px);
+  background: #fffdf7;
+  box-shadow:
+    0 24px 52px rgb(7 14 6 / 22%),
+    inset 0 1px 0 rgb(255 255 255 / 82%);
+}
+
+.siteHeaderAppIcon {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #17341f;
+  color: #fffaf0;
+}
+
+.siteHeaderAppCopy {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.siteHeaderAppEyebrow {
+  color: rgb(23 52 31 / 66%);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.siteHeaderAppTitle {
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+.siteHeaderAppDescription {
+  color: rgb(23 52 31 / 70%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.siteHeaderAppArrow {
+  color: rgb(23 52 31 / 54%);
 }
 
 .siteHeaderActionPanelTitle {
@@ -1100,6 +1360,82 @@
   color: rgb(0 0 0 / 58%);
 }
 
+body:has(.homeCookieScene-moonlit) .siteHeaderBannerList,
+body:has(.cateringScene-moonlit) .siteHeaderBannerList {
+  background: rgba(255, 255, 255, 0.94);
+}
+
+body:has(.homeCookieScene-moonlit) .siteHeaderBannerLink,
+body:has(.homeCookieScene-moonlit) .siteHeaderBannerButton,
+body:has(.cateringScene-moonlit) .siteHeaderBannerLink,
+body:has(.cateringScene-moonlit) .siteHeaderBannerButton {
+  color: rgb(17 25 8 / 84%) !important;
+  text-shadow: none;
+}
+
+body:has(.homeCookieScene-moonlit) .siteHeaderBannerLink:hover,
+body:has(.homeCookieScene-moonlit) .siteHeaderBannerLink.is-active,
+body:has(.cateringScene-moonlit) .siteHeaderBannerLink:hover,
+body:has(.cateringScene-moonlit) .siteHeaderBannerLink.is-active {
+  color: #f7f5ef !important;
+}
+
+body:has(.homeCookieScene-moonlit) .siteHeaderBrand.has-logo,
+body:has(.cateringScene-moonlit) .siteHeaderBrand.has-logo {
+  align-items: center;
+  border: 1px solid rgb(255 250 236 / 44%);
+  border-radius: 18px;
+  background: rgb(255 250 236 / 72%);
+  box-shadow:
+    0 12px 24px rgb(15 27 16 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 46%);
+  display: inline-flex;
+  height: auto;
+  justify-content: center;
+  justify-self: start;
+  padding: 0.22rem 0.42rem;
+  width: max-content;
+  backdrop-filter: blur(6px);
+}
+
+body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
+body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
+  height: clamp(3rem, 4.2vw, 4.15rem);
+  max-height: none;
+  max-width: clamp(7.15rem, 10.6vw, 8.45rem);
+  width: auto;
+}
+
+body:has(.routeLoadingSurface) .siteHeader {
+  --site-header-text: #10180d !important;
+  background: #eef8ef !important;
+}
+
+body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #eef8ef !important;
+}
+
+body:has(.routeLoadingSurface) .siteHeaderBrand,
+body:has(.routeLoadingSurface) .siteHeaderActionButton,
+body:has(.routeLoadingSurface) .siteHeaderMobileIconButton,
+body:has(.routeLoadingSurface) .siteHeaderMobileBagButton,
+body:has(.routeLoadingSurface) .siteHeaderMobileBagCount {
+  color: #10180d !important;
+  text-shadow: none !important;
+}
+
+body:has(.routeLoadingSurface) .siteHeaderBrand.has-logo {
+  background: rgb(255 250 236 / 72%) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 12px 24px rgb(15 27 16 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 46%) !important;
+}
+
+body:has(.routeLoadingSurface) .siteHeaderBannerList {
+  background: rgb(255 255 255 / 96%) !important;
+}
+
 @media (min-width: 768px) {
   .siteHeaderViewport {
     padding: 1.15rem 0 0.9rem;
@@ -1109,7 +1445,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: clamp(1rem, 1.8vw, 2rem);
-    min-height: 88px;
+    min-height: 76px;
   }
 
   .siteHeaderBrand.has-logo {
@@ -1204,7 +1540,11 @@
 
   .siteHeaderBannerLink {
     font-size: 0.82rem;
-    padding: 0.68rem 1rem 1.08rem;
+    padding: 0.52rem 0.92rem 0.9rem;
+  }
+
+  .siteHeaderBannerButton {
+    font-size: 0.82rem;
   }
 
   .siteHeaderActionArea {
@@ -1245,7 +1585,19 @@
 
   .siteHeaderBannerLink {
     font-size: 0.76rem;
-    padding: 0.62rem 0.82rem 1rem;
+    padding: 0.48rem 0.74rem 0.82rem;
+  }
+
+  .siteHeaderBannerButton {
+    font-size: 0.76rem;
+  }
+
+  .siteHeaderBannerAppName {
+    max-width: clamp(8.8rem, 15vw, 11rem);
+  }
+
+  .siteHeaderBannerMoreCue {
+    display: none;
   }
 
   .siteHeaderActionArea {
@@ -1318,4 +1670,10 @@
   .siteHeaderMobilePanel {
     width: min(46rem, calc(100vw - 2rem));
   }
+}
+
+body:has(.routeLoadingSurface) .siteHeader,
+body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #eef8ef !important;
+  background-image: none !important;
 }

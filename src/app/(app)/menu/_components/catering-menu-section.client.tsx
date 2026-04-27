@@ -174,7 +174,10 @@ function CateringMenuRow({
   const [selectedFlavorID, setSelectedFlavorID] = useState<number | null>(null)
   const [isSubmittingToCart, setIsSubmittingToCart] = useState(false)
   const [showOpeningIndicator, setShowOpeningIndicator] = useState(false)
+  const [shouldPulseTraySummary, setShouldPulseTraySummary] = useState(false)
   const openingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const traySummaryPulseFrameRef = useRef<number | null>(null)
+  const traySummaryPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
   const requiredSelectionCount =
@@ -227,6 +230,23 @@ function CateringMenuRow({
     }
 
     setSelectedFlavorID(flavorID)
+    setShouldPulseTraySummary(false)
+
+    if (traySummaryPulseFrameRef.current !== null) {
+      cancelAnimationFrame(traySummaryPulseFrameRef.current)
+    }
+    if (traySummaryPulseTimeoutRef.current) {
+      clearTimeout(traySummaryPulseTimeoutRef.current)
+    }
+
+    traySummaryPulseFrameRef.current = requestAnimationFrame(() => {
+      traySummaryPulseFrameRef.current = null
+      setShouldPulseTraySummary(true)
+      traySummaryPulseTimeoutRef.current = setTimeout(() => {
+        setShouldPulseTraySummary(false)
+        traySummaryPulseTimeoutRef.current = null
+      }, 260)
+    })
   }
 
   const isCartPending = isLoading || isSubmittingToCart
@@ -235,6 +255,12 @@ function CateringMenuRow({
     return () => {
       if (openingIndicatorTimeoutRef.current) {
         clearTimeout(openingIndicatorTimeoutRef.current)
+      }
+      if (traySummaryPulseFrameRef.current !== null) {
+        cancelAnimationFrame(traySummaryPulseFrameRef.current)
+      }
+      if (traySummaryPulseTimeoutRef.current) {
+        clearTimeout(traySummaryPulseTimeoutRef.current)
       }
     }
   }, [])
@@ -367,6 +393,7 @@ function CateringMenuRow({
             sceneryTone={sceneryTone}
             selectedFlavor={selectedFlavor}
             selectableFlavors={selectableFlavors}
+            shouldPulseTraySummary={shouldPulseTraySummary}
           />
         ) : (
           <SimpleItemPanel
@@ -525,37 +552,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           font-weight: 650;
         }
 
-        .cateringMenuExperience {
-          --catering-header-underlap: 7.6rem;
-          position: relative;
-          isolation: isolate;
-          margin-top: calc(var(--catering-header-underlap) * -1);
-        }
-
-        .cateringHeroBand {
-          --catering-hero-meadow-height: clamp(6.75rem, 12vh, 8.75rem);
-          background: transparent;
-          box-sizing: border-box;
-          min-height: 100svh;
-          overflow: hidden;
-          position: relative;
-        }
-
-        .cateringHeroBackdrop {
-          inset: 0;
-          position: absolute;
-          z-index: 0;
-        }
-
-        .cateringHeroContent {
-          align-items: flex-start;
-          box-sizing: border-box;
-          display: flex;
-          min-height: 100svh;
-          padding-bottom: calc(var(--catering-hero-meadow-height) + clamp(1rem, 2.6vw, 1.8rem));
-          padding-top: calc(var(--catering-header-underlap) + clamp(1rem, 2.7vw, 1.8rem));
-        }
-
         .cateringMenuBand {
           background: #fff8f2;
           margin-top: -1px;
@@ -565,70 +561,9 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           padding: 0;
         }
 
-        .cateringSceneSky,
-        .cateringSceneMeadow,
-        .cateringHeroSceneryPiece,
         .cateringPersuasionSceneryPiece {
           pointer-events: none;
           position: absolute;
-        }
-
-        .cateringDecorativeImage {
-          display: block;
-          overflow: visible;
-          position: absolute;
-        }
-
-        .cateringSceneSky {
-          height: 100%;
-          inset: 0;
-          object-fit: cover;
-          width: 100%;
-        }
-
-        .cateringSceneMeadow {
-          left: 0;
-          object-fit: cover;
-          object-position: center bottom;
-          width: 100%;
-        }
-
-        .cateringHeroSky {
-          top: 0;
-        }
-
-        .cateringHeroMeadow {
-          bottom: -0.2rem;
-          height: var(--catering-hero-meadow-height);
-        }
-
-        .cateringHeroSceneryPiece {
-          transform-origin: center bottom;
-          z-index: 1;
-        }
-
-        .cateringHeroFlowerRail {
-          bottom: var(--catering-hero-flower-seam, 0.5rem);
-          height: 0;
-          inset-inline: 0;
-          overflow: visible;
-          pointer-events: none;
-          position: absolute;
-          z-index: 2;
-        }
-
-        .cateringHeroLineFlower {
-          --flower-stem-trim: 10%;
-          bottom: 0;
-          width: 2.18rem;
-          z-index: 2;
-        }
-
-        .cateringHeroLineWildflower {
-          --flower-stem-trim: 6%;
-          bottom: 0;
-          width: 1.34rem;
-          z-index: 1;
         }
 
         .cateringPersuasionPanel {
@@ -698,78 +633,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           z-index: 1;
         }
 
-        .cateringHeroCloud {
-          animation: cateringCloudBob 9.6s ease-in-out infinite;
-          opacity: 0.95;
-          position: absolute;
-          z-index: 1;
-        }
-
-        .cateringSpawnButton {
-          align-items: center;
-          background:
-            linear-gradient(
-              90deg,
-              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 68%, white 32%) 0%,
-              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 82%, white 18%) 100%
-            )
-            no-repeat,
-            rgba(255, 248, 242, 0.84);
-          background-size:
-            0% 100%,
-            100% 100%;
-          border: 1px solid rgba(25, 57, 95, 0.16);
-          border-radius: 999px;
-          color: #173a63;
-          cursor: pointer;
-          display: inline-flex;
-          font-family: var(--font-rounded-display);
-          font-size: 0.86rem;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-          min-height: 2.25rem;
-          overflow: hidden;
-          padding: 0.45rem 0.95rem;
-          position: relative;
-          transition:
-            background-size 220ms ease,
-            background-color 180ms ease,
-            border-color 180ms ease,
-            box-shadow 180ms ease,
-            transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
-          z-index: 2;
-        }
-
-        .cateringSpawnButton::before {
-          content: '';
-          inset: 0;
-          opacity: 0;
-          pointer-events: none;
-          position: absolute;
-          background:
-            linear-gradient(
-              90deg,
-              transparent 0%,
-              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 28%, white 72%) 52%,
-              transparent 100%
-            );
-          border-radius: inherit;
-          transition: opacity 140ms ease;
-          z-index: 0;
-        }
-
-        .cateringSpawnButton:hover,
-        .cateringSpawnButton:focus-visible {
-          background: #fff8f2;
-          border-color: rgba(25, 57, 95, 0.26);
-          transform: translateY(-1px);
-        }
-
-        .cateringSpawnButtonCharging {
-          border-color: rgba(25, 57, 95, 0.24);
-          box-shadow: 0 10px 22px color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 38%, transparent);
-        }
-
         .cateringPhotosButton {
           background: #fff8e4;
           border-color: rgba(84, 82, 40, 0.28);
@@ -794,114 +657,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           height: 1.45rem;
           object-fit: contain;
           width: 1.78rem;
-        }
-
-        .cateringActionButtonWrap {
-          position: relative;
-          display: inline-flex;
-          overflow: visible;
-        }
-
-        .cateringSceneryChooser {
-          width: min(calc(100vw - 0.9rem), 64rem);
-          max-width: none;
-          margin-top: 2rem;
-        }
-
-        .cateringSceneryChooserBubble {
-          position: relative;
-          overflow: visible;
-          border-radius: 1.45rem;
-          background: #ffffff;
-          box-shadow: 0 18px 38px rgba(23, 21, 16, 0.12);
-          padding: 0.72rem 0.48rem 0.54rem;
-        }
-
-        .cateringSceneryChooserTail {
-          position: absolute;
-          left: 8rem;
-          top: -1.28rem;
-          width: 0;
-          height: 0;
-          border-left: 1.35rem solid transparent;
-          border-right: 1.35rem solid transparent;
-          border-bottom: 1.34rem solid #ffffff;
-          filter: none;
-        }
-
-        .cateringSceneryChooserRail {
-          display: flex;
-          gap: 0.7rem;
-          overflow-x: auto;
-          overflow-y: hidden;
-          padding: 0.08rem 0.08rem 0.02rem;
-          scrollbar-gutter: auto;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-          border-radius: 1.08rem;
-        }
-
-        .cateringSceneryChooserRail::-webkit-scrollbar {
-          display: none;
-          height: 0;
-        }
-
-        .cateringSceneryChoice {
-          display: flex;
-          flex: 0 0 13.2rem;
-          min-height: 4.3rem;
-          flex-direction: column;
-          justify-content: center;
-          gap: 0.12rem;
-          border-radius: 1.1rem;
-          border: 2px solid rgba(18, 18, 18, 0.12);
-          background: #ffffff;
-          padding: 0.85rem 1rem;
-          text-align: left;
-          margin: 0.06rem 0;
-          transition:
-            transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
-            border-color 180ms ease,
-            box-shadow 180ms ease,
-            background-color 180ms ease;
-        }
-
-        .cateringSceneryChoice:hover,
-        .cateringSceneryChoice:focus-visible {
-          transform: translateY(-1px);
-          border-color: rgba(18, 18, 18, 0.32);
-          box-shadow: 0 10px 24px rgba(23, 21, 16, 0.08);
-        }
-
-        .cateringSceneryChoice:disabled {
-          cursor: default;
-        }
-
-        .cateringSceneryChoiceActive {
-          background:
-            linear-gradient(
-              135deg,
-              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 22%, white 78%) 0%,
-              #ffffff 100%
-            );
-          border-color: rgba(18, 18, 18, 0.35);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-        }
-
-        .cateringSceneryChoiceLabel {
-          color: #173a63;
-          font-family: var(--font-rounded-display);
-          font-size: 0.98rem;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-        }
-
-        .cateringSceneryChoiceMeta {
-          color: rgba(23, 58, 99, 0.62);
-          font-size: 0.74rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
         }
 
         .cateringPersuasionMeadow {
@@ -971,11 +726,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
             cubic-bezier(0.7, 0, 0.2, 1) forwards;
         }
 
-        .cateringScene-blossom .cateringHeroLineFlowerSpawned {
-          bottom: 0.86rem;
-          width: 3.27rem;
-        }
-
         .cateringScene-blossom .cateringPersuasionFlowerSpawned {
           bottom: 0.9rem;
           width: 4.05rem;
@@ -1042,34 +792,10 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           text-wrap: balance;
         }
 
-        .cateringScene-moonlit .cateringMenuHeroDisplay,
-        .cateringScene-moonlit .cateringHeroSummary,
-        .cateringScene-moonlit .cateringHeroEyebrow {
-          color: #eef6ff;
-          text-shadow: 0 12px 22px rgba(5, 10, 28, 0.24);
-        }
-
-        .cateringScene-under-tree .cateringHeroLineFlower,
-        .cateringScene-under-tree .cateringHeroLineWildflower,
         .cateringScene-under-tree .cateringPersuasionFlower,
         .cateringScene-under-tree .cateringPersuasionWildflower,
         .cateringScene-under-tree .cateringPersuasionFlowerSpawned {
           --flower-stem-trim: 0%;
-        }
-
-        .cateringScene-under-tree .cateringHeroLineFlower,
-        .cateringScene-under-tree .cateringHeroLineWildflower,
-        .cateringScene-under-tree .cateringHeroLineFlowerSpawned {
-          bottom: 0.08rem;
-          overflow: visible;
-        }
-
-        .cateringScene-under-tree .cateringHeroLineFlower {
-          width: 2rem;
-        }
-
-        .cateringScene-under-tree .cateringHeroLineWildflower {
-          width: 1.24rem;
         }
 
         .cateringScene-under-tree .cateringPersuasionFlower,
@@ -1571,20 +1297,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
-        @keyframes cateringCloudBob {
-          0% {
-            transform: translate3d(0, 0, 0);
-          }
-
-          50% {
-            transform: translate3d(0, -0.38rem, 0);
-          }
-
-          100% {
-            transform: translate3d(0, 0, 0);
-          }
-        }
-
         @keyframes cateringWipeToPhotos {
           0% {
             --catering-wipe-edge: 0%;
@@ -1647,82 +1359,26 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         @media (max-width: 767px) {
-          .cateringSceneryChooser {
-            width: min(calc(100vw - 1rem), 36rem);
-          }
-
-          .cateringSceneryChooserBubble {
-            padding: 0.56rem 0.38rem 0.44rem;
-          }
-
-          .cateringSceneryChooserRail {
-            gap: 0.6rem;
-            padding: 0.06rem 0.04rem 0.02rem;
-          }
-
-          .cateringSceneryChoice {
-            margin: 0;
-          }
-
-          .cateringSceneryChooserTail {
-            top: -0.98rem;
-            border-left-width: 1.1rem;
-            border-right-width: 1.1rem;
-            border-bottom-width: 1.08rem;
-          }
-
-          .cateringSceneryChooserRail::-webkit-scrollbar {
-            height: 0;
-          }
-
-          .cateringSceneryChooserRail::-webkit-scrollbar-track {
-            margin-inline: 0;
-          }
-
-          .cateringMenuExperience {
-            --catering-header-underlap: 7.2rem;
-          }
-
           .cateringPriceBlock {
             min-width: 0;
           }
 
-          .cateringHeroBand {
-            --catering-hero-meadow-height: 6.4rem;
-          }
-
-          .cateringHeroMeadow {
-            height: var(--catering-hero-meadow-height);
-          }
-
-          .cateringScene-blossom .cateringHeroSky img,
           .cateringScene-blossom .cateringPersuasionSky img {
             object-position: 16% center;
           }
 
-          .cateringScene-fairy-castle .cateringHeroSky,
           .cateringScene-fairy-castle .cateringPersuasionSky {
             left: -8%;
             right: auto;
             width: 116%;
           }
 
-          .cateringScene-fairy-castle .cateringHeroSky img,
           .cateringScene-fairy-castle .cateringPersuasionSky img {
             object-position: center top;
           }
 
-          .cateringScene-moonlit .cateringHeroSky img,
           .cateringScene-moonlit .cateringPersuasionSky img {
             object-position: 28% top;
-          }
-
-          .cateringHeroLineFlower {
-            width: 1.74rem;
-          }
-
-          .cateringHeroLineWildflower {
-            width: 1.12rem;
           }
 
           .cateringPersuasionPanel {
@@ -1733,11 +1389,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
             width: 2.05rem;
           }
 
-          .cateringScene-blossom .cateringHeroLineFlowerSpawned {
-            bottom: 0.72rem;
-            width: 3.08rem;
-          }
-
           .cateringScene-blossom .cateringPersuasionFlowerSpawned {
             bottom: 0.74rem;
             width: 3.5rem;
@@ -1745,14 +1396,6 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           .cateringPersuasionWildflower {
             width: 1.28rem;
-          }
-
-          .cateringScene-moonlit .cateringHeroLineFlower {
-            width: 2.08rem;
-          }
-
-          .cateringScene-moonlit .cateringHeroLineWildflower {
-            width: 1.32rem;
           }
 
           .cateringScene-moonlit .cateringPersuasionFlower {
