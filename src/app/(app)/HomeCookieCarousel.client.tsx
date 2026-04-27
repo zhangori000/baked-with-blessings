@@ -182,7 +182,12 @@ const buildShowcaseFlowerStyle = ({
     left,
   }) as CSSProperties
 
-const buildShowcaseFlowerStyleFromSeed = (key: string, left: string, scale: number): CSSProperties => {
+const buildShowcaseFlowerStyleFromSeed = (
+  key: string,
+  left: string,
+  scale: number,
+  bottom = '0%',
+): CSSProperties => {
   const seed = Array.from(key).reduce(
     (total, character, index) => total + character.charCodeAt(0) * (index + 1),
     0,
@@ -194,7 +199,7 @@ const buildShowcaseFlowerStyleFromSeed = (key: string, left: string, scale: numb
 
   return buildShowcaseFlowerStyle({
     bob: `${bob.toFixed(2)}rem`,
-    bottom: '0%',
+    bottom,
     delay: `${delay.toFixed(2)}s`,
     duration: `${duration.toFixed(2)}s`,
     left,
@@ -207,7 +212,12 @@ const buildSeededShowcaseFlowers = (sceneTone: SceneTone = 'classic'): ShowcaseS
   return buildSeededMenuSceneAccents(sceneTone).map((accent) => ({
     id: `seed-${sceneTone}-${accent.id}`,
     src: accent.asset,
-    style: buildShowcaseFlowerStyleFromSeed(`hero-spawn-${accent.id}`, accent.left, accent.scale),
+    style: buildShowcaseFlowerStyleFromSeed(
+      `hero-spawn-${accent.id}`,
+      accent.left,
+      accent.scale,
+      accent.bottom,
+    ),
   }))
 }
 
@@ -236,7 +246,8 @@ const buildStaticShowcaseClouds = (sceneTone: SceneTone): ShowcaseSceneCloud[] =
 }
 
 const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
-  const spawnDesigns = menuCloudSpawnDesignsByScene[sceneTone] ?? menuCloudSpawnDesignsByScene.classic
+  const spawnDesigns =
+    menuCloudSpawnDesignsByScene[sceneTone] ?? menuCloudSpawnDesignsByScene.classic
   const cloud =
     spawnDesigns[Math.floor(Math.random() * spawnDesigns.length)] ?? spawnDesigns[0] ?? null
   const left = Math.random() * 84
@@ -268,6 +279,7 @@ const createShowcaseFlowerForScene = (sceneTone: SceneTone): ShowcaseSceneFlower
       `hero-spawn-${accent.id}`,
       accent.left,
       accent.scale,
+      accent.bottom,
     ),
   }
 }
@@ -689,7 +701,13 @@ export function HomeCookieCarousel({
       if (sceneVariant === 'scenery') {
         setGrassDropPx(0)
         const centerRatio =
-          viewportWidth < 640 ? 0.52 : viewportWidth < 900 ? 0.58 : viewportWidth < 1280 ? 0.595 : 0.605
+          viewportWidth < 640
+            ? 0.52
+            : viewportWidth < 900
+              ? 0.58
+              : viewportWidth < 1280
+                ? 0.595
+                : 0.605
         setCookieCenterPx(sceneHeight * centerRatio)
         return
       }
@@ -740,7 +758,9 @@ export function HomeCookieCarousel({
   const hasMultiplePosters = posters.length > 1
   const staticSceneClouds = sceneVariant === 'scenery' ? buildStaticShowcaseClouds(sceneTone) : []
   const staticScenePieces =
-    sceneVariant === 'scenery' ? (menuHeroPiecesByScene[sceneTone] ?? menuHeroPiecesByScene.classic) : []
+    sceneVariant === 'scenery'
+      ? (menuHeroPiecesByScene[sceneTone] ?? menuHeroPiecesByScene.classic)
+      : []
   const staticSceneCritters =
     sceneVariant === 'scenery'
       ? (menuHeroCrittersByScene[sceneTone] ?? menuHeroCrittersByScene.classic)
@@ -770,9 +790,7 @@ export function HomeCookieCarousel({
     infoPhase === 'open' ||
     infoPhase === 'closing' ||
     infoPhase === 'withering'
-  const shouldShowInlineInfoControl =
-    sceneVariant === 'scenery' &&
-    infoPhase !== 'hidden'
+  const shouldShowInlineInfoControl = sceneVariant === 'scenery' && infoPhase !== 'hidden'
   const isCartPromptOpen =
     activePosterPromptPhase === 'open' ||
     activePosterPromptPhase === 'loading' ||
@@ -984,7 +1002,10 @@ export function HomeCookieCarousel({
               <>
                 <picture className="homeCookieSceneSky">
                   {menuHeroMobileSkyByScene[sceneTone] ? (
-                    <source media="(max-width: 767px)" srcSet={menuHeroMobileSkyByScene[sceneTone]} />
+                    <source
+                      media="(max-width: 767px)"
+                      srcSet={menuHeroMobileSkyByScene[sceneTone]}
+                    />
                   ) : null}
                   <img
                     alt=""
@@ -1074,7 +1095,10 @@ export function HomeCookieCarousel({
                   <button
                     className="homeCookieSceneButton"
                     onClick={() =>
-                      setSpawnedSceneClouds((current) => [...current, createShowcaseCloud(sceneTone)])
+                      setSpawnedSceneClouds((current) => [
+                        ...current,
+                        createShowcaseCloud(sceneTone),
+                      ])
                     }
                     type="button"
                   >
@@ -1130,9 +1154,9 @@ export function HomeCookieCarousel({
                     ? ' homeCookieRigShell--info-open'
                     : infoPhase === 'closing' || infoPhase === 'withering'
                       ? ' homeCookieRigShell--info-open'
-                    : infoPhase === 'returning'
-                      ? ' homeCookieRigShell--info-closing'
-                      : ''
+                      : infoPhase === 'returning'
+                        ? ' homeCookieRigShell--info-closing'
+                        : ''
                 }`}
                 ref={rigShellRef}
                 style={{ top: rigTop }}
@@ -1170,7 +1194,10 @@ export function HomeCookieCarousel({
               <>
                 <picture className="homeCookieSceneMeadow">
                   {menuHeroMobileMeadowByScene[sceneTone] ? (
-                    <source media="(max-width: 639px)" srcSet={menuHeroMobileMeadowByScene[sceneTone]} />
+                    <source
+                      media="(max-width: 639px)"
+                      srcSet={menuHeroMobileMeadowByScene[sceneTone]}
+                    />
                   ) : null}
                   <img
                     alt=""
@@ -1195,19 +1222,20 @@ export function HomeCookieCarousel({
                     />
                   ))}
                 </div>
-                {spawnedSceneFlowers.map((flower) => (
-                  <img
-                    alt=""
-                    aria-hidden="true"
-                    className="homeCookieSceneFlower"
-                    draggable="false"
-                    key={flower.id}
-                    loading="eager"
-                    src={flower.src}
-                    style={flower.style}
-                  />
-                ))}
-
+                <div aria-hidden="true" className="homeCookieSceneSpawnField">
+                  {spawnedSceneFlowers.map((flower) => (
+                    <img
+                      alt=""
+                      aria-hidden="true"
+                      className="homeCookieSceneFlower"
+                      draggable="false"
+                      key={flower.id}
+                      loading="eager"
+                      src={flower.src}
+                      style={flower.style}
+                    />
+                  ))}
+                </div>
               </>
             ) : (
               <div aria-hidden="true" className="homeCookieMeadowClip">
@@ -1254,8 +1282,7 @@ export function HomeCookieCarousel({
               }`}
               id={`home-cookie-receipt-${activePoster.slug}`}
               style={{
-                left:
-                  'var(--home-receipt-left, calc(50% + var(--home-receipt-left-nudge, 0rem)))',
+                left: 'var(--home-receipt-left, calc(50% + var(--home-receipt-left-nudge, 0rem)))',
                 top: `var(--home-receipt-top, calc(${rigTop} + (var(--cookie-size) * 0.5) - var(--home-info-lift, calc(var(--cookie-size) * 0.58)) + var(--home-receipt-top-nudge, 0.18rem)))`,
               }}
             >
@@ -1290,7 +1317,10 @@ export function HomeCookieCarousel({
 
                 <ul className="homeCookieReceiptList">
                   {activePoster.ingredients.map((ingredient) => (
-                    <li className="homeCookieReceiptRow" key={`${ingredient.name}-${ingredient.detail ?? ''}`}>
+                    <li
+                      className="homeCookieReceiptRow"
+                      key={`${ingredient.name}-${ingredient.detail ?? ''}`}
+                    >
                       <span className="homeCookieReceiptName">{ingredient.name}</span>
                       <span className="homeCookieReceiptDetail">
                         {ingredient.detail ?? 'ingredient note'}
@@ -1306,11 +1336,7 @@ export function HomeCookieCarousel({
             </div>
           ) : null}
 
-          <div
-            aria-hidden="true"
-            className="homeCookieNameMeasure"
-            ref={measureRef}
-          >
+          <div aria-hidden="true" className="homeCookieNameMeasure" ref={measureRef}>
             {posters.map((p) => (
               <span className="homeCookieNameButton" key={p.slug}>
                 {p.title}
@@ -1466,6 +1492,16 @@ export function HomeCookieCarousel({
           object-fit: cover;
           object-position: center;
           width: 100%;
+        }
+
+        .homeCookieSceneSpawnField {
+          bottom: var(--home-meadow-bottom, -0.15rem);
+          height: calc(var(--home-meadow-height) + var(--home-flower-rail-lift, 0rem));
+          inset-inline: 0;
+          overflow: visible;
+          pointer-events: none;
+          position: absolute;
+          z-index: 16;
         }
 
         .homeCookieFlowerRail {
@@ -2482,17 +2518,9 @@ export function HomeCookieCarousel({
             --home-flower-rail-lift: 9rem;
           }
 
-          .homeCookieScene-blossom .homeCookieSceneFlower {
-            bottom: 9rem !important;
-          }
-
           .homeCookieScene-classic {
             --home-flower-rail-lift: 7.2rem;
             --home-meadow-height: 15.6rem;
-          }
-
-          .homeCookieScene-classic .homeCookieSceneFlower {
-            bottom: 7.2rem !important;
           }
 
           .homeCookieScene-dawn {
@@ -2500,17 +2528,9 @@ export function HomeCookieCarousel({
             --home-meadow-height: 16.05rem;
           }
 
-          .homeCookieScene-dawn .homeCookieSceneFlower {
-            bottom: 7.35rem !important;
-          }
-
           .homeCookieScene-under-tree {
             --home-flower-rail-lift: 6.24rem;
             --home-meadow-height: 15.24rem;
-          }
-
-          .homeCookieScene-under-tree .homeCookieSceneFlower {
-            bottom: 6.24rem !important;
           }
 
           .homeCookieScene-fairy-castle .homeCookieSceneSky {
@@ -2534,7 +2554,6 @@ export function HomeCookieCarousel({
           }
 
           .homeCookieScene-moonlit .homeCookieSceneFlower {
-            bottom: 7.35rem !important;
             width: clamp(2.2rem, 5vw, 3.4rem);
           }
 

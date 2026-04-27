@@ -26,6 +26,13 @@ type FlowerClusterProps = {
   variant?: 'sprout' | 'sprite'
 }
 
+type FlowerClusterStyle = React.CSSProperties & {
+  '--flower-bob'?: string
+  '--flower-delay'?: string
+  '--flower-scale'?: string
+  '--flower-tilt'?: string
+}
+
 const defaultAsset = '/flowers/menu-nav-flower.svg'
 
 const toCssLength = (value: number | string) => (typeof value === 'number' ? `${value}px` : value)
@@ -65,7 +72,7 @@ export function FlowerCluster({
     >
       {placement.map((left, index) => {
         const flowerAsset = assets?.[index % assets.length] ?? asset
-        const baseStyle: React.CSSProperties = {
+        const baseStyle: FlowerClusterStyle = {
           left: `${left}%`,
           width: normalizedSize,
           ...(edge === 'top'
@@ -74,43 +81,44 @@ export function FlowerCluster({
         }
 
         if (animation === 'living') {
-          baseStyle['--flower-bob' as keyof React.CSSProperties] = `${0.12 + (index % 3) * 0.03}rem`
-          baseStyle['--flower-delay' as keyof React.CSSProperties] = `${index * 0.08}s`
-          baseStyle['--flower-scale' as keyof React.CSSProperties] = `${0.92 + (index % 4) * 0.08}`
-          baseStyle['--flower-tilt' as keyof React.CSSProperties] = `${index % 2 === 0 ? 2 : 3}deg`
+          baseStyle['--flower-bob'] = `${0.12 + (index % 3) * 0.03}rem`
+          baseStyle['--flower-delay'] = `${index * 0.08}s`
+          baseStyle['--flower-scale'] = `${0.92 + (index % 4) * 0.08}`
+          baseStyle['--flower-tilt'] = `${index % 2 === 0 ? 2 : 3}deg`
         }
 
-        return (
-          variant === 'sprout' ? (
-            <FlowerSprout
-              animation={animation}
-              className={flowerClassName}
-              edge={edge}
-              key={`${tone}-${edge}-${index}`}
-              size={normalizedSize}
-              stemLength={stemLength}
-              style={{
+        return variant === 'sprout' ? (
+          <FlowerSprout
+            animation={animation}
+            className={flowerClassName}
+            edge={edge}
+            key={`${tone}-${edge}-${index}`}
+            size={normalizedSize}
+            stemLength={stemLength}
+            style={
+              {
                 ...baseStyle,
                 '--sprout-bob': `${0.05 + (index % 2) * 0.02}rem`,
                 '--sprout-delay': `${index * 0.08}s`,
                 '--sprout-tilt': `${index % 2 === 0 ? 2 : 3}deg`,
-                '--sprout-anchor-offset': edge === 'top'
-                  ? `calc(100% - ${normalizedBleed})`
-                  : `calc(100% - ${normalizedBleed})`,
-              } as React.CSSProperties}
-              tone={tone}
-            />
-          ) : (
-            <FlowerSprite
-              animateIn={animation === 'grow'}
-              asset={flowerAsset}
-              className={flowerClassName}
-              key={`${flowerAsset}-${edge}-${index}`}
-              living={animation === 'living'}
-              sizes={sizes}
-              style={baseStyle}
-            />
-          )
+                '--sprout-anchor-offset':
+                  edge === 'top'
+                    ? `calc(100% - ${normalizedBleed})`
+                    : `calc(100% - ${normalizedBleed})`,
+              } as React.CSSProperties
+            }
+            tone={tone}
+          />
+        ) : (
+          <FlowerSprite
+            animateIn={animation === 'grow'}
+            asset={flowerAsset}
+            className={flowerClassName}
+            key={`${flowerAsset}-${edge}-${index}`}
+            living={animation === 'living'}
+            sizes={sizes}
+            style={baseStyle}
+          />
         )
       })}
     </span>

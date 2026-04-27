@@ -99,6 +99,7 @@
 .cateringHeroMeadow {
   bottom: -0.2rem;
   height: var(--catering-hero-meadow-height);
+  overflow: hidden;
 }
 
 .cateringHeroSceneryPiece {
@@ -116,6 +117,16 @@
 .cateringHeroFlowerRail {
   bottom: var(--catering-hero-flower-seam, 0.5rem);
   height: 0;
+  inset-inline: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.cateringHeroSpawnField {
+  bottom: 0;
+  height: var(--catering-hero-meadow-height);
   inset-inline: 0;
   overflow: visible;
   pointer-events: none;
@@ -328,6 +339,28 @@
   width: 1.24rem;
 }
 
+.cateringHeroBand.cateringScene-under-tree {
+  --catering-hero-meadow-height: clamp(9rem, 18vh, 12rem);
+}
+
+.cateringHeroBand.cateringScene-moonlit {
+  --catering-hero-meadow-height: clamp(10rem, 20vh, 13.5rem);
+}
+
+.cateringScene-moonlit .cateringHeroMeadow {
+  bottom: -0.1rem;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 8%, #000 24%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 8%, #000 24%);
+}
+
+.cateringScene-moonlit .cateringHeroMeadow img {
+  object-position: center top;
+}
+
+.cateringScene-under-tree .cateringHeroMeadow img {
+  object-position: center top;
+}
+
 .cateringScene-fairy-castle .cateringMenuHeroDisplay {
   text-shadow:
     0 2px 0 rgba(236, 247, 255, 0.78),
@@ -392,6 +425,14 @@
 
   .cateringHeroBand {
     --catering-hero-meadow-height: 6.4rem;
+  }
+
+  .cateringHeroBand.cateringScene-under-tree {
+    --catering-hero-meadow-height: clamp(8.6rem, 24svh, 10.2rem);
+  }
+
+  .cateringHeroBand.cateringScene-moonlit {
+    --catering-hero-meadow-height: clamp(9.4rem, 26svh, 11.6rem);
   }
 
   .cateringHeroMeadow {

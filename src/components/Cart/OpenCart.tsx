@@ -1,15 +1,13 @@
 import { cn } from '@/utilities/cn'
 import { ShoppingBag } from 'lucide-react'
-import React from 'react'
+import type { ButtonHTMLAttributes } from 'react'
 
-export function OpenCartButton({
-  className,
-  quantity,
-  ...rest
-}: {
+type OpenCartButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   className?: string
   quantity?: number
-}) {
+}
+
+export function OpenCartButton({ className, quantity, ...rest }: OpenCartButtonProps) {
   const safeQuantity = quantity ?? 0
 
   return (

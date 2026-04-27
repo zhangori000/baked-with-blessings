@@ -15,10 +15,7 @@ import Image from 'next/image'
 import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import {
-  BatchBuilderPanel,
-  SimpleItemPanel,
-} from './catering-menu-panels'
+import { BatchBuilderPanel, SimpleItemPanel } from './catering-menu-panels'
 import {
   DecorativeSceneImage,
   MenuHero,
@@ -473,10 +470,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
       >
         <div className="container pt-0 pb-6 md:pt-0 md:pb-10">
           <div className="cateringMenuPanel">
-            <Accordion
-              collapsible
-              type="single"
-            >
+            <Accordion collapsible type="single">
               {orderedProducts.map((product, index) => (
                 <CateringMenuRow
                   isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
@@ -634,6 +628,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringPhotosButton {
+          align-items: center;
           background: #fff8e4;
           border-color: rgba(84, 82, 40, 0.28);
           box-shadow: none;
@@ -653,10 +648,17 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringPhotosButtonIcon {
+          align-self: center;
           display: block;
+          flex: 0 0 auto;
           height: 1.45rem;
           object-fit: contain;
+          transform: translateY(-0.28rem);
           width: 1.78rem;
+        }
+
+        .cateringPhotosButton > span {
+          line-height: 1;
         }
 
         .cateringPersuasionMeadow {
@@ -737,6 +739,47 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           scrollbar-color: rgba(146, 146, 146, 0.42) rgba(255, 255, 255, 0.92);
         }
 
+        .cateringPhotoCard {
+          background: #f5efe7;
+          isolation: isolate;
+          position: relative;
+        }
+
+        .cateringPhotoCardLoading {
+          box-shadow: inset 0 0 0 1px rgba(91, 70, 37, 0.08);
+        }
+
+        .cateringPhotoImage {
+          opacity: 1;
+          transition: opacity 220ms ease;
+        }
+
+        .cateringPhotoImageLoading {
+          opacity: 0;
+        }
+
+        .cateringPhotoSkeleton {
+          animation: cateringPhotoSkeletonSweep 1.15s ease-in-out infinite;
+          background:
+            linear-gradient(
+              100deg,
+              rgba(246, 239, 229, 0.95) 0%,
+              rgba(246, 239, 229, 0.95) 34%,
+              rgba(255, 250, 244, 0.98) 48%,
+              rgba(235, 226, 215, 0.95) 64%,
+              rgba(235, 226, 215, 0.95) 100%
+            ),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.12));
+          background-size:
+            220% 100%,
+            100% 100%;
+          border-radius: inherit;
+          inset: 0;
+          pointer-events: none;
+          position: absolute;
+          z-index: 2;
+        }
+
         .cateringPhotoBoard::-webkit-scrollbar {
           width: 0.78rem;
         }
@@ -758,20 +801,51 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
             linear-gradient(180deg, rgba(170, 170, 170, 0.94) 0%, rgba(126, 126, 126, 0.98) 100%);
         }
 
-        .cateringPhotoEndMarker {
+        .cateringPhotoStartMarker {
           column-span: all;
           display: block;
           width: 100%;
+        }
+
+        .cateringPhotoStartBorder {
+          max-width: min(14rem, 82%);
+        }
+
+        .cateringPhotoTopBorder {
+          --grass-border-visual-height: 1.9rem;
+          z-index: 3;
+        }
+
+        .cateringPhotoEndMarker {
+          background:
+            radial-gradient(circle at 50% 42%, rgba(248, 236, 201, 0.62), transparent 54%),
+            linear-gradient(180deg, rgba(255, 251, 241, 0.98), rgba(250, 246, 233, 0.96));
+          border: 1px solid rgba(91, 70, 37, 0.1);
+          border-radius: 1.15rem;
+          column-span: all;
+          display: block;
+          margin-top: 1rem;
+          padding: clamp(2.8rem, 8vw, 4.5rem) clamp(1.1rem, 4vw, 1.8rem)
+            clamp(2.35rem, 7vw, 3.75rem);
+          width: 100%;
+        }
+
+        .cateringPhotoEndLabel {
+          color: rgba(23, 58, 99, 0.64);
+          font-size: clamp(0.98rem, 3.6vw, 1.36rem);
+          letter-spacing: 0.24em;
+          line-height: 1.1;
         }
 
         .cateringPhotoScrollableBorder {
           column-span: all;
           display: block;
+          max-width: min(19rem, 88%);
           width: 100%;
         }
 
         .cateringPhotoBottomBorder {
-          --grass-border-visual-height: 2.35rem;
+          --grass-border-visual-height: 3.05rem;
           z-index: 3;
         }
 
@@ -1294,6 +1368,20 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           100% {
             transform: scale(1);
+          }
+        }
+
+        @keyframes cateringPhotoSkeletonSweep {
+          0% {
+            background-position:
+              120% 0,
+              0 0;
+          }
+
+          100% {
+            background-position:
+              -120% 0,
+              0 0;
           }
         }
 
