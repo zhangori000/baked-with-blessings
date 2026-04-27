@@ -8,15 +8,15 @@ import { seedCookieProducts } from './cookie-products'
 import { clearLegacyMedia } from './legacy-media'
 
 const productCollectionsToReset: CollectionSlug[] = [
+  'transactions',
+  'orders',
+  'carts',
+  'addresses',
+  'variants',
   'products',
   'categories',
-  'variants',
   'variantOptions',
   'variantTypes',
-  'carts',
-  'transactions',
-  'addresses',
-  'orders',
 ]
 
 const clearProductCollections = async ({
