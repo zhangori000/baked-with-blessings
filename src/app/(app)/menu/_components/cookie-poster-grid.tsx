@@ -4,6 +4,7 @@ import type { SceneTone } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { menuHref } from '@/utilities/routes'
 import Link from 'next/link'
+import Image from 'next/image'
 import React, { useState } from 'react'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
@@ -253,19 +254,25 @@ function CookiePosterRailCard({
             />
           </div>
 
-          <img
+          <Image
             alt=""
             aria-hidden="true"
             className="cookiePosterSky absolute inset-0 h-full w-full object-cover"
+            fill
+            priority
+            sizes="21rem"
             src={posterSkyByScenery[sceneryTone]}
+            unoptimized
           />
 
           {posterClouds.map((cloud, index) => (
-            <img
+            <Image
               alt=""
               aria-hidden="true"
               className="cookiePosterSceneCloud"
+              height={280}
               key={`${poster.slug}-cloud-${sceneryTone}-${index}`}
+              priority
               src={staticCloudAssets[index % staticCloudAssets.length] ?? staticCloudAssets[0]}
               style={
                 {
@@ -274,15 +281,19 @@ function CookiePosterRailCard({
                   ['--cloud-duration' as string]: cloud.duration,
                 } as React.CSSProperties
               }
+              unoptimized
+              width={520}
             />
           ))}
 
           {spawnedClouds.map((cloud) => (
-            <img
+            <Image
               alt=""
               aria-hidden="true"
               className="cookiePosterSceneCloud"
+              height={280}
               key={cloud.id}
+              priority
               src={cloud.src}
               style={
                 {
@@ -293,6 +304,8 @@ function CookiePosterRailCard({
                   width: cloud.width,
                 } as React.CSSProperties
               }
+              unoptimized
+              width={520}
             />
           ))}
 
@@ -300,19 +313,25 @@ function CookiePosterRailCard({
 
           {sceneryTone === 'moonlit' ? <CookiePosterMoonlitLinework /> : null}
 
-          <img
+          <Image
             alt=""
             aria-hidden="true"
             className="cookiePosterMeadow absolute inset-x-0 bottom-0 z-[2] h-full w-full object-cover object-bottom"
+            fill
+            priority
+            sizes="21rem"
             src={posterMeadowByScenery[sceneryTone]}
+            unoptimized
           />
 
           {spawnedFlowers.map((flower) => (
-            <img
+            <Image
               alt=""
               aria-hidden="true"
               className="cookiePosterSceneFlower"
+              height={120}
               key={flower.id}
+              priority
               src="/flowers/menu-nav-flower.svg"
               style={
                 {
@@ -325,6 +344,8 @@ function CookiePosterRailCard({
                   left: flower.left,
                 } as React.CSSProperties
               }
+              unoptimized
+              width={120}
             />
           ))}
 
@@ -393,10 +414,13 @@ function CookiePosterIngredientNote({
           type="button"
         >
           <span className="cookiePosterInfoButtonIcon" aria-hidden="true">
-            <img
+            <Image
               alt=""
               className="cookiePosterInfoButtonFlower"
+              height={52}
               src="/flowers/menu-nav-flower.svg"
+              unoptimized
+              width={64}
             />
           </span>
           <span>{poster.infoButtonLabel}</span>

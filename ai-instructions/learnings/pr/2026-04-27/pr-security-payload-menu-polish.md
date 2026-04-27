@@ -20,6 +20,7 @@ This PR updates the Baked with Blessings app to Payload `3.84.1`, adds a local g
 - Expanded moonlit and under-tree meadow space so flowers have more room to spawn, including a moonlit meadow fade to remove the hard horizontal sky/ground cut.
 - Moved moonlit river/ground artwork upward so the scene has usable foreground space for flowers.
 - Extended the same random vertical/horizontal spawn behavior to the rotating cookie flavors carousel and cookie poster card scenery.
+- Replaced raw customer-facing decorative `<img>` usage in scenery/header/footer/cart/cookie sheep surfaces with `next/image` while keeping intentional admin/external-logo exceptions scoped.
 
 ## Payload / Database Impact
 
@@ -52,20 +53,25 @@ This PR adds a local safety check for environment variable handling after the Ve
 - `public/sceneries/moonlit-purple-meadow.svg`
 - `src/components/Header/MobileMenu.tsx`
 - `src/components/Header/index.css`
+- `src/components/Header/index.client.tsx`
+- `src/components/Footer/FooterClient.tsx`
+- `src/components/scenery/CartSceneShell.tsx`
+- `src/app/(app)/menu/_components/cookie-sheep-rig.tsx`
 
 ## Verification
 
 - Passed: `pnpm.cmd view payload version` returned `3.84.1`.
+- Passed: `pnpm.cmd run lint` with warnings only.
 - Passed: `pnpm.cmd exec tsc --noEmit --pretty false`.
 - Passed: focused Prettier checks for touched menu/scenery files.
-- Passed: focused ESLint checks for touched menu/scenery files. Remaining warnings are existing raw `<img>` warnings in scenery-heavy client components.
+- Passed: focused ESLint checks for touched menu/scenery/header/footer/cart files.
 - Passed: `git diff --check` for touched menu/scenery files.
 - Browser checked: `/menu` gallery "See photos" flow, skeleton behavior, enlarged "No more photos" marker, moonlit scenery, and under-tree scenery.
 - Browser checked: `/rotating-cookie-flavors` mobile and desktop scenery spawning.
 
 ## Known Issues / Follow-Up
 
-- Full repo lint still has unrelated React Compiler/Tailwind configuration noise outside this follow-up.
+- Full repo lint still reports warnings in older template/form/media utilities, but no lint errors remain.
 - End-to-end Playwright suite was not run as a full suite during this pass.
 - The Vercel incident work does not rotate secrets by itself. Real Vercel project variables still need to be reviewed and rotated in the Vercel dashboard or CLI.
-- The scenery-heavy components still use several raw `<img>` tags for decorative layers. They are currently tolerated, but can be revisited if image optimization warnings become noisy in CI.
+- Two intentional raw `<img>` exceptions remain outside the customer-facing scenery work: a Payload admin thumbnail picker that renders already-generated admin thumbnails, and the stock Payload logo component that points at an external GitHub-hosted SVG.

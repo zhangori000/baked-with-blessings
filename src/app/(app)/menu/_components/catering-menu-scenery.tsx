@@ -1010,16 +1010,18 @@ export function DecorativeSceneImage({
       <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
         <picture className="block h-full w-full">
           <source media="(max-width: 767px)" srcSet={mobileSrc} />
-          <img
+          <Image
             alt=""
             aria-hidden="true"
-            className={
-              fit === 'cover' ? 'h-full w-full object-cover' : 'h-auto w-full object-contain'
-            }
+            className={fit === 'cover' ? 'object-cover' : 'h-auto w-full object-contain'}
             draggable="false"
-            loading={priority ? 'eager' : 'lazy'}
+            fill={fit === 'cover'}
+            height={fit === 'cover' ? undefined : 1200}
+            priority={priority}
             sizes={sizes}
             src={src}
+            unoptimized
+            width={fit === 'cover' ? undefined : 1200}
           />
         </picture>
       </span>

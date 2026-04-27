@@ -2,6 +2,7 @@
 
 import { CookieSheepRig } from '@/app/(app)/menu/_components/cookie-sheep-rig'
 import { cn } from '@/utilities/cn'
+import Image from 'next/image'
 import { type ReactNode } from 'react'
 
 import {
@@ -37,45 +38,76 @@ export function CartSceneShell({
 
   return (
     <div className={cn('cartSceneShell', className)}>
-      <picture aria-hidden="true" className="cartSceneSky">
+      <picture className="cartSceneSky">
         {mobileSkySrc ? <source media="(max-width: 767px)" srcSet={mobileSkySrc} /> : null}
-        <img alt="" aria-hidden="true" className="h-full w-full object-cover" src={skySrc} />
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="object-cover"
+          fill
+          priority
+          sizes="min(100vw, 32rem)"
+          src={skySrc}
+          unoptimized
+        />
       </picture>
 
       {clouds.map((cloud, index) => (
-        <img
+        <Image
           alt=""
           aria-hidden="true"
           className={cn('cartSceneCloud', cloud.className)}
+          height={320}
           key={`cart-scene-cloud-${sceneTone}-${index}-${cloud.src}`}
+          priority
           src={cloud.src}
           style={cloud.style}
+          unoptimized
+          width={640}
         />
       ))}
 
       {pieces.map((piece, index) => (
-        <img
+        <Image
           alt=""
           aria-hidden="true"
           className={cn('cartScenePiece', piece.className)}
+          height={900}
           key={`cart-scene-piece-${sceneTone}-${index}-${piece.src}`}
+          priority
           src={piece.src}
           style={piece.style}
+          unoptimized
+          width={900}
         />
       ))}
 
       {critters.map((critter, index) => (
-        <img
+        <Image
           alt=""
           aria-hidden="true"
           className={cn('cartScenePiece', critter.className)}
+          height={240}
           key={`cart-scene-critter-${sceneTone}-${index}-${critter.src}`}
+          priority
           src={critter.src}
           style={critter.style}
+          unoptimized
+          width={240}
         />
       ))}
 
-      <img alt="" aria-hidden="true" className="cartSceneMeadow" src={meadowSrc} />
+      <Image
+        alt=""
+        aria-hidden="true"
+        className="cartSceneMeadow"
+        height={420}
+        priority
+        sizes="min(100vw, 32rem)"
+        src={meadowSrc}
+        unoptimized
+        width={1200}
+      />
 
       {!hideSheep ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2]">

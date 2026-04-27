@@ -1,25 +1,58 @@
 'use client'
 
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-
 import {
-  menuSceneTones,
-  persistentMenuSceneStorageKey,
-  type SceneTone,
-} from './menuHeroScenery'
+  useCallback,
+  useEffect,
+  useSyncExternalStore,
+  type Dispatch,
+  type SetStateAction,
+} from 'react'
+
+import { menuSceneTones, persistentMenuSceneStorageKey, type SceneTone } from './menuHeroScenery'
 
 const isSceneTone = (value: string): value is SceneTone =>
   menuSceneTones.includes(value as SceneTone)
 
 const persistentMenuSceneChangeEvent = 'baked-with-blessings-menu-scene-change'
 
+const readStoredSceneTone = (fallback: SceneTone): SceneTone => {
+  if (typeof window === 'undefined') {
+    return fallback
+  }
+
+  const storedTone = window.localStorage.getItem(persistentMenuSceneStorageKey)
+
+  return storedTone && isSceneTone(storedTone) ? storedTone : fallback
+}
+
+const subscribeToSceneTone = (onStoreChange: () => void) => {
+  if (typeof window === 'undefined') {
+    return () => undefined
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === persistentMenuSceneStorageKey) {
+      onStoreChange()
+    }
+  }
+
+  window.addEventListener('storage', handleStorage)
+  window.addEventListener(persistentMenuSceneChangeEvent, onStoreChange)
+
+  return () => {
+    window.removeEventListener('storage', handleStorage)
+    window.removeEventListener(persistentMenuSceneChangeEvent, onStoreChange)
+  }
+}
+
 export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
-  const [sceneTone, setSceneTone] = useState<SceneTone>(fallback)
-  const [hasHydratedStorage, setHasHydratedStorage] = useState(false)
+  const sceneTone = useSyncExternalStore(
+    subscribeToSceneTone,
+    () => readStoredSceneTone(fallback),
+    () => fallback,
+  )
 
   const syncSceneTone = useCallback((nextTone: SceneTone) => {
-    setSceneTone(nextTone)
-
     if (typeof window === 'undefined') {
       return
     }
@@ -37,57 +70,15 @@ export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
       return
     }
 
-    const storedTone = window.localStorage.getItem(persistentMenuSceneStorageKey)
-
-    if (storedTone && isSceneTone(storedTone)) {
-      setSceneTone(storedTone)
-    } else {
+    if (!isSceneTone(window.localStorage.getItem(persistentMenuSceneStorageKey) ?? '')) {
       window.localStorage.setItem(persistentMenuSceneStorageKey, fallback)
+      window.dispatchEvent(
+        new CustomEvent(persistentMenuSceneChangeEvent, {
+          detail: { sceneTone: fallback },
+        }),
+      )
     }
-
-    setHasHydratedStorage(true)
   }, [fallback])
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !hasHydratedStorage) {
-      return
-    }
-
-    window.localStorage.setItem(persistentMenuSceneStorageKey, sceneTone)
-  }, [hasHydratedStorage, sceneTone])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key !== persistentMenuSceneStorageKey || !event.newValue || !isSceneTone(event.newValue)) {
-        return
-      }
-
-      setSceneTone(event.newValue)
-    }
-
-    const handleSceneToneChange = (event: Event) => {
-      const customEvent = event as CustomEvent<{ sceneTone?: string }>
-      const nextTone = customEvent.detail?.sceneTone
-
-      if (!nextTone || !isSceneTone(nextTone)) {
-        return
-      }
-
-      setSceneTone(nextTone)
-    }
-
-    window.addEventListener('storage', handleStorage)
-    window.addEventListener(persistentMenuSceneChangeEvent, handleSceneToneChange as EventListener)
-
-    return () => {
-      window.removeEventListener('storage', handleStorage)
-      window.removeEventListener(persistentMenuSceneChangeEvent, handleSceneToneChange as EventListener)
-    }
-  }, [])
 
   const updateSceneTone = useCallback<Dispatch<SetStateAction<SceneTone>>>(
     (value) => {

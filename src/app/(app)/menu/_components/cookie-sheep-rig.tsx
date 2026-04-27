@@ -4,6 +4,7 @@ import { Media } from '@/components/Media'
 import type { Media as MediaType } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { CSSProperties } from 'react'
 
 import {
@@ -94,13 +95,16 @@ function AssetPartImage({
   style?: CSSProperties
 }) {
   return (
-    <img
+    <Image
       alt={alt}
       className={className}
       draggable="false"
-      loading="eager"
+      height={256}
+      priority
       src={src}
       style={style}
+      unoptimized
+      width={256}
     />
   )
 }
@@ -192,19 +196,18 @@ export function CookieSheepRig({
               resource={image}
             />
           ) : (
-            <img
+            <Image
               alt={`${title} cookie`}
               className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
-              loading="lazy"
+              fill
+              sizes="var(--cookie-size)"
               src={bodyFallbackSrc}
+              unoptimized
             />
           )}
         </Link>
       ) : (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 z-20 flex items-center justify-center"
-        >
+        <div aria-hidden="true" className="absolute inset-0 z-20 flex items-center justify-center">
           {image ? (
             <Media
               fill
@@ -213,11 +216,13 @@ export function CookieSheepRig({
               resource={image}
             />
           ) : (
-            <img
+            <Image
               alt=""
               className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
-              loading="lazy"
+              fill
+              sizes="var(--cookie-size)"
               src={bodyFallbackSrc}
+              unoptimized
             />
           )}
         </div>

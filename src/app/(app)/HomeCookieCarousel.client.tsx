@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
+import Image from 'next/image'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -1007,65 +1008,80 @@ export function HomeCookieCarousel({
                       srcSet={menuHeroMobileSkyByScene[sceneTone]}
                     />
                   ) : null}
-                  <img
+                  <Image
                     alt=""
                     aria-hidden="true"
-                    className="h-full w-full object-cover"
+                    className="object-cover"
                     draggable="false"
-                    loading="eager"
+                    fill
+                    priority
+                    sizes="100vw"
                     src={menuHeroSkyByScene[sceneTone]}
+                    unoptimized
                   />
                 </picture>
 
                 {staticSceneClouds.map((cloud) => (
-                  <img
+                  <Image
                     alt=""
                     aria-hidden="true"
                     className={`homeCookieSceneCloud ${cloud.className ?? ''}`}
                     draggable="false"
                     key={cloud.id}
-                    loading="eager"
+                    height={400}
+                    priority
                     src={cloud.src}
                     style={cloud.style}
+                    unoptimized
+                    width={800}
                   />
                 ))}
 
                 {spawnedSceneClouds.map((cloud) => (
-                  <img
+                  <Image
                     alt=""
                     aria-hidden="true"
                     className={`homeCookieSceneCloud ${cloud.className ?? ''}`}
                     draggable="false"
                     key={cloud.id}
-                    loading="eager"
+                    height={400}
+                    priority
                     src={cloud.src}
                     style={cloud.style}
+                    unoptimized
+                    width={800}
                   />
                 ))}
 
                 {staticScenePieces.map((piece, index) => (
-                  <img
+                  <Image
                     alt=""
                     aria-hidden="true"
                     className={`homeCookieScenePiece ${piece.className}`}
                     draggable="false"
+                    height={1200}
                     key={`piece-${sceneTone}-${index}-${piece.src}`}
-                    loading="eager"
+                    priority
                     src={piece.src}
                     style={piece.style}
+                    unoptimized
+                    width={1200}
                   />
                 ))}
 
                 {staticSceneCritters.map((critter, index) => (
-                  <img
+                  <Image
                     alt=""
                     aria-hidden="true"
                     className={`homeCookieScenePiece ${critter.className}`}
                     draggable="false"
+                    height={320}
                     key={`critter-${sceneTone}-${index}-${critter.src}`}
-                    loading="eager"
+                    priority
                     src={critter.src}
                     style={critter.style}
+                    unoptimized
+                    width={320}
                   />
                 ))}
 
@@ -1199,40 +1215,49 @@ export function HomeCookieCarousel({
                       srcSet={menuHeroMobileMeadowByScene[sceneTone]}
                     />
                   ) : null}
-                  <img
+                  <Image
                     alt=""
                     aria-hidden="true"
-                    className="h-full w-full object-cover"
+                    className="object-cover"
                     draggable="false"
-                    loading="eager"
+                    fill
+                    priority
+                    sizes="100vw"
                     src={menuHeroMeadowByScene[sceneTone]}
+                    unoptimized
                   />
                 </picture>
                 <div aria-hidden="true" className="homeCookieFlowerRail">
                   {buildShowcaseFlowerRail(sceneTone).map((flower) => (
-                    <img
+                    <Image
                       alt=""
                       aria-hidden="true"
                       className="homeCookieFlowerRailBloom"
                       draggable="false"
+                      height={180}
                       key={flower.id}
-                      loading="eager"
+                      priority
                       src={flower.src}
                       style={flower.style}
+                      unoptimized
+                      width={180}
                     />
                   ))}
                 </div>
                 <div aria-hidden="true" className="homeCookieSceneSpawnField">
                   {spawnedSceneFlowers.map((flower) => (
-                    <img
+                    <Image
                       alt=""
                       aria-hidden="true"
                       className="homeCookieSceneFlower"
                       draggable="false"
+                      height={180}
                       key={flower.id}
-                      loading="eager"
+                      priority
                       src={flower.src}
                       style={flower.style}
+                      unoptimized
+                      width={180}
                     />
                   ))}
                 </div>
@@ -1241,13 +1266,16 @@ export function HomeCookieCarousel({
               <div aria-hidden="true" className="homeCookieMeadowClip">
                 <picture>
                   <source media="(max-width: 639px)" srcSet="/grassland-bigger.png" />
-                  <img
+                  <Image
                     alt=""
                     className="homeCookieGrass"
                     draggable="false"
-                    loading="eager"
+                    height={600}
+                    priority
                     src="/grassland.svg"
                     style={{ bottom: `${-grassDropPx}px` }}
+                    unoptimized
+                    width={1600}
                   />
                 </picture>
 
