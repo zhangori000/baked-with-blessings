@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "bootstrap:admin": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-first-admin.ts",
+    "bootstrap:test-customer": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-test-customer.ts",
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
     "check:env-security": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/check-env-security.ts",
     "check:no-shop-route": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/check-no-shop-route.ts",

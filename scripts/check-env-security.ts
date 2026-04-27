@@ -96,6 +96,13 @@ const optionalSensitiveRules: EnvRule[] = [
     sensitiveOnVercel: true,
   },
   {
+    key: 'BOOTSTRAP_TEST_CUSTOMER_PASSWORD',
+    minLength: 16,
+    note: 'Temporary dummy customer bootstrap password. Keep out of production unless intentionally testing.',
+    placeholders: commonPlaceholders,
+    sensitiveOnVercel: true,
+  },
+  {
     key: 'TWILIO_ACCOUNT_SID',
     note: 'Twilio account identifier.',
     placeholders: commonPlaceholders,
