@@ -63,11 +63,21 @@ pnpm exec vercel env run -e preview -- pnpm seed
 
 The scripts intentionally load local `.env` files for normal development, but when they run under Vercel env injection they preserve hosted Preview values. If `DATABASE_URL` still points at local Postgres while `NEON_POSTGRES_URL` is present, the scripts use the hosted Neon URL so setup commands do not accidentally seed Docker.
 
-For the dummy customer account, Vercel Sensitive variables may not be downloadable through the CLI. Pass the password locally while keeping the Preview database/blob vars from Vercel:
+For the dummy customer account, Vercel Sensitive variables may not be downloadable through the CLI. The variable can still exist in Vercel for deployments, but `vercel env run` may not reveal the value to local one-off scripts. Pass the password locally while keeping the Preview database/blob vars from Vercel:
 
 ```bash
 BOOTSTRAP_TEST_CUSTOMER_PASSWORD='your-preview-password' pnpm exec vercel env run -e preview -- pnpm bootstrap:test-customer
 ```
+
+On PowerShell, use:
+
+```powershell
+$env:BOOTSTRAP_TEST_CUSTOMER_PASSWORD = 'your-preview-password'
+pnpm exec vercel env run -e preview -- pnpm bootstrap:test-customer
+Remove-Item Env:\BOOTSTRAP_TEST_CUSTOMER_PASSWORD
+```
+
+The test customer login identifier defaults to `test.customer@baked-with-blessings.invalid`. If you type the wrong password, the script will create or update the Preview customer with that wrong password. Nothing is permanently broken: update the Vercel env var to the intended password if needed, then rerun the command with the same intended password to reset the customer.
 
 ## How it works
 

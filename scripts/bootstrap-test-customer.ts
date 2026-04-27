@@ -109,6 +109,9 @@ const bootstrap = async () => {
 
       console.log(`Updated test customer: ${customer.email}`)
       console.log(`Login identifier: ${email}`)
+      console.log(
+        'Password was reset to the BOOTSTRAP_TEST_CUSTOMER_PASSWORD value supplied for this run.',
+      )
       return
     }
 
@@ -127,6 +130,9 @@ const bootstrap = async () => {
 
     console.log(`Created test customer: ${customer.email}`)
     console.log(`Login identifier: ${email}`)
+    console.log(
+      'Password was set to the BOOTSTRAP_TEST_CUSTOMER_PASSWORD value supplied for this run.',
+    )
   } finally {
     await destroyWithTimeout(() => payload.destroy())
   }
