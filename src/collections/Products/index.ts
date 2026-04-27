@@ -496,7 +496,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       type: 'relationship',
       admin: {
         description:
-          'Categories group products on the /shop page and help organize the menu for customers and admins.',
+          'Categories group products on the /menu page and help organize the menu for customers and admins.',
         position: 'sidebar',
         sortOptions: 'title',
       },

@@ -1,5 +1,11 @@
 import type { Header } from '@/payload-types'
-import { discussionBoardHref, menuHref, rotatingCookieFlavorsHref } from '@/utilities/routes'
+import {
+  blogHref,
+  discussionBoardHref,
+  menuHref,
+  reviewsHref,
+  rotatingCookieFlavorsHref,
+} from '@/utilities/routes'
 
 export type HeaderPanelLink = {
   href: string
@@ -19,6 +25,7 @@ export type HeaderNavigationItem = {
   id: string
   href: string
   label: string
+  kind?: 'link' | 'apps'
   panel: {
     eyebrow: string
     description: string
@@ -83,14 +90,23 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     },
   },
   {
-    href: discussionBoardHref,
-    id: 'discussion-board',
-    label: 'Discussion Board',
+    href: blogHref,
+    id: 'more',
+    kind: 'apps',
+    label: 'Apps',
     panel: {
-      eyebrow: 'Discussion Board',
+      eyebrow: 'Bakery apps',
       description:
-        'Open the structured question board with topic rows, reply trees, claims, evidence, and visible challenge/support paths.',
+        'Open public tools connected to the bakery: writing, structured discussions, review transparency, and reusable customer-facing systems.',
       cards: [
+        {
+          description:
+            'Read compact notes and essays from the bakery about school, business, community, and what is being learned along the way.',
+          eyebrow: 'Writing',
+          href: blogHref,
+          title: 'Read the blog',
+          tone: 'light',
+        },
         {
           description:
             'Browse the current discussion prompts and open a tree view for replies, questions, support, and challenges.',
@@ -99,12 +115,30 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           title: 'Open discussion board',
           tone: 'dark',
         },
+        {
+          description:
+            'Read public reviews, see what changed in response, and submit a text review.',
+          eyebrow: 'Review transparency',
+          href: reviewsHref,
+          title: 'Open reviews',
+          tone: 'light',
+        },
       ],
       links: [
+        {
+          description: 'Go to the blog.',
+          href: blogHref,
+          label: 'Read the blog',
+        },
         {
           description: 'Go to the discussion board.',
           href: discussionBoardHref,
           label: 'Open discussion board',
+        },
+        {
+          description: 'Go to public reviews.',
+          href: reviewsHref,
+          label: 'Open reviews',
         },
       ],
     },
@@ -117,11 +151,7 @@ const labelToFallbackItem = new Map(
 
 const fallbackItemById = new Map(fallbackHeaderNavigation.map((item) => [item.id, item] as const))
 
-const navItemPriority: Array<HeaderNavigationItem['id']> = [
-  'cookies-of-the-month',
-  'menu',
-  'discussion-board',
-]
+const navItemPriority: Array<HeaderNavigationItem['id']> = ['cookies-of-the-month', 'menu', 'more']
 
 export const headerAnnouncement =
   'Fresh bakes daily. Custom cake orders and pickup help are one click away.'
@@ -160,6 +190,18 @@ export const isHeaderNavigationItemActive = (
 ) => {
   if (isRouteActive(pathname, rotatingCookieFlavorsHref)) {
     return item.id === 'cookies-of-the-month'
+  }
+
+  if (isRouteActive(pathname, blogHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, discussionBoardHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, reviewsHref)) {
+    return item.id === 'more'
   }
 
   return isRouteActive(pathname, item.href)

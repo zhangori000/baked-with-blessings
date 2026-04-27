@@ -2,7 +2,7 @@
 
 import { cn } from '@/utilities/cn'
 import { createUrl } from '@/utilities/createUrl'
-import { shopHref } from '@/utilities/routes'
+import { menuHref } from '@/utilities/routes'
 import { SearchIcon } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
@@ -28,7 +28,7 @@ export const Search: React.FC<Props> = ({ className }) => {
       newParams.delete('q')
     }
 
-    router.push(createUrl(shopHref, newParams))
+    router.push(createUrl(menuHref, newParams))
   }
 
   return (

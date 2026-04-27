@@ -5,7 +5,8 @@ import { Cormorant_Garamond } from 'next/font/google'
 import { getPayload } from 'payload'
 import React from 'react'
 
-import { CateringMenuSection } from '../shop/catering-menu-section.client'
+import { CateringMenuSection } from './_components/catering-menu-section.client'
+import './_components/catering-menu-hero.css'
 
 const cateringSerif = Cormorant_Garamond({
   display: 'swap',

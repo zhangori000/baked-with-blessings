@@ -44,10 +44,16 @@ export function ProgressGarden({
         </div>
 
         <div className="pt-1.5">
-          <div className="relative h-2.5 rounded-full bg-[rgba(126,161,47,0.18)]">
+          <div
+            className="relative h-2.5 rounded-full bg-[rgba(126,161,47,0.18)]"
+            style={{ background: 'var(--progress-garden-track, rgba(126,161,47,0.18))' }}
+          >
             <div
-              className="h-full rounded-full bg-[#7ea12f] transition-[width] duration-300 ease-out"
-              style={{ width: `${progressPercentage}%` }}
+              className="relative z-[2] h-full rounded-full bg-[#7ea12f] transition-[width] duration-300 ease-out"
+              style={{
+                background: 'var(--progress-garden-fill, #7ea12f)',
+                width: `${progressPercentage}%`,
+              }}
             />
 
             {Array.from({ length: currentCount }, (_, index) => (

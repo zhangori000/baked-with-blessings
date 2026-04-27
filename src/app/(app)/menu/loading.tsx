@@ -29,7 +29,7 @@ function LoadingCard() {
 
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-[#f7efe6]">
+    <div className="routeLoadingSurface min-h-screen bg-[#f7efe6]">
       <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-gradient-to-b from-[#7fb2e3] via-[#9cc3e7] to-[#ead9a7]">
         <div className="container flex min-h-[24rem] items-end py-12 md:min-h-[28rem]">
           <div className="w-full max-w-[42rem] space-y-5">

@@ -1,6 +1,6 @@
 'use client'
 
-import { CookieSheepRig } from '@/app/(app)/shop/cookie-sheep-rig'
+import { CookieSheepRig } from '@/app/(app)/menu/_components/cookie-sheep-rig'
 import { cn } from '@/utilities/cn'
 import { type ReactNode } from 'react'
 

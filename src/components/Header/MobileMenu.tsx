@@ -13,10 +13,17 @@ type Props = {
     id: string
     href: string
     isActive?: boolean
+    kind?: 'link' | 'apps'
     label: string
     panel: {
       eyebrow: string
       description: string
+      cards?: Array<{
+        description: string
+        eyebrow: string
+        href: string
+        title: string
+      }>
     }
   }>
 }
@@ -25,6 +32,8 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const mainItems = items.filter((item) => item.kind !== 'apps')
+  const appItems = items.filter((item) => item.kind === 'apps')
   const closeMenu = useEffectEvent(() => {
     setIsOpen(false)
   })
@@ -62,6 +71,39 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
     }
   }, [isOpen])
 
+  const renderCard = ({
+    description,
+    eyebrow,
+    href,
+    key,
+    title,
+  }: {
+    description: string
+    eyebrow: string
+    href: string
+    key: string
+    title: string
+  }) => (
+    <article className="siteHeaderMobileCard" key={key}>
+      <div className="siteHeaderMobileCardCopy">
+        <p className="siteHeaderMobileCardEyebrow">{eyebrow}</p>
+        <h3 className="siteHeaderMobileCardTitle">{title}</h3>
+        <p className="siteHeaderMobileCardDescription">{description}</p>
+      </div>
+
+      <Link
+        aria-label={`Open ${title}`}
+        className="siteHeaderMobileCardAction"
+        href={href}
+        onClick={() => {
+          setIsOpen(false)
+        }}
+      >
+        <span className="siteHeaderMobileCardActionLabel">GO</span>
+      </Link>
+    </article>
+  )
+
   return (
     <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
       <div className="siteHeaderMobileControls">
@@ -93,41 +135,43 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
 
       <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>
         <div className="siteHeaderMobilePanelCards">
-          {items.map((item) => (
-            <article className="siteHeaderMobileCard" key={item.id}>
-              <div className="siteHeaderMobileCardCopy">
-                <p className="siteHeaderMobileCardEyebrow">{item.panel.eyebrow}</p>
-                <h3 className="siteHeaderMobileCardTitle">{item.label}</h3>
-                <p className="siteHeaderMobileCardDescription">{item.panel.description}</p>
-              </div>
+          {mainItems.map((item) =>
+            renderCard({
+              description: item.panel.description,
+              eyebrow: item.panel.eyebrow,
+              href: item.href,
+              key: item.id,
+              title: item.label,
+            }),
+          )}
 
-              <Link
-                aria-label={`Open ${item.label}`}
-                className="siteHeaderMobileCardAction"
-                href={item.href}
-                onClick={() => {
-                  setIsOpen(false)
-                }}
-              >
-                <span className="siteHeaderMobileCardActionLabel">GO</span>
-              </Link>
-            </article>
-          ))}
-        </div>
+          {appItems.length ? (
+            <div className="siteHeaderMobileSectionDivider" role="separator">
+              <span>Other pages</span>
+            </div>
+          ) : null}
 
-        <div className="siteHeaderMobileTabs" role="tablist" aria-label="Mobile navigation tabs">
-          {items.map((item) => (
-            <Link
-              className={cn('siteHeaderMobileTab', item.isActive && 'is-active')}
-              href={item.href}
-              key={`tab-${item.id}`}
-              onClick={() => {
-                setIsOpen(false)
-              }}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {appItems.flatMap((item) =>
+            (item.panel.cards?.length
+              ? item.panel.cards
+              : [
+                  {
+                    description: item.panel.description,
+                    eyebrow: item.panel.eyebrow,
+                    href: item.href,
+                    title: item.label,
+                  },
+                ]
+            ).map((card) =>
+              renderCard({
+                description: card.description,
+                eyebrow: card.eyebrow,
+                href: card.href,
+                key: `${item.id}-${card.href}`,
+                title: card.title,
+              }),
+            ),
+          )}
         </div>
       </div>
     </div>

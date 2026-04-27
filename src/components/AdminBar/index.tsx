@@ -23,6 +23,8 @@ const collectionLabels = {
   },
 }
 
+type CollectionLabelKey = keyof typeof collectionLabels
+
 const Title: React.FC = () => <span>Dashboard</span>
 
 export const AdminBar: React.FC<{
@@ -31,9 +33,12 @@ export const AdminBar: React.FC<{
   const { adminBarProps } = props || {}
   const segments = useSelectedLayoutSegments()
   const [show, setShow] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - todo fix, not sure why this is erroring
-  const collection = collectionLabels?.[segments?.[1]] ? segments?.[1] : 'pages'
+  const collection: CollectionLabelKey =
+    segments?.[0] === 'blog'
+      ? 'posts'
+      : segments?.[1] && segments[1] in collectionLabels
+        ? (segments[1] as CollectionLabelKey)
+        : 'pages'
 
   const onAuthChange = React.useCallback((user: CollectionAuthUser) => {
     setShow(isAdminUser(user))

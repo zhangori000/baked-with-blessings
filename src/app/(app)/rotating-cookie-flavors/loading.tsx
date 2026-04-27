@@ -25,7 +25,7 @@ function PosterSkeleton({ active = false }: { active?: boolean }) {
         </div>
       </div>
 
-      <div className="relative h-[18rem] overflow-hidden bg-gradient-to-b from-[#8fc0f0] via-[#a7cef2] to-[#f1d15b]">
+      <div className="relative h-[18rem] overflow-hidden bg-gradient-to-b from-[#eef8ef] via-[#f4f2dc] to-[#f1d15b]">
         <Pill className="absolute left-[10%] top-[14%] h-7 w-14" />
         <Pill className="absolute right-[12%] top-[22%] h-8 w-16" />
         <div className="absolute inset-x-0 bottom-0 h-[22%] bg-[#e0be39]" />
@@ -37,7 +37,7 @@ function PosterSkeleton({ active = false }: { active?: boolean }) {
 
 export default function Loading() {
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#81b5e5] via-[#9fc8ee] to-[#f2d36b]">
+    <section className="routeLoadingSurface min-h-screen bg-gradient-to-b from-[#eef8ef] via-[#f4f2dc] to-[#f1dc78]">
       <div className="container py-8 md:py-12">
         <div className="mx-auto max-w-[70rem] space-y-6">
           <div className="flex items-center justify-between gap-4">

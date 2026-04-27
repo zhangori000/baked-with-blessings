@@ -21,6 +21,7 @@ import { fileURLToPath } from 'url'
 import { Categories } from '@/collections/Categories'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
+import { Posts } from '@/collections/Posts'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
 import {
@@ -28,6 +29,7 @@ import {
   DiscussionEdges,
   DiscussionNodes,
 } from '@/features/discussion-graph/collections'
+import { Reviews } from '@/features/reviews/collections/index'
 import { Brand } from '@/globals/Brand'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
@@ -74,7 +76,9 @@ export default buildConfig({
     DiscussionNodes,
     DiscussionEdges,
     AwarenessMarks,
+    Reviews,
     Pages,
+    Posts,
     Categories,
     Media,
   ],
@@ -92,7 +96,7 @@ export default buildConfig({
         OrderedListFeature(),
         UnorderedListFeature(),
         LinkFeature({
-          enabledCollections: ['pages'],
+          enabledCollections: ['pages', 'posts'],
           fields: ({ defaultFields }) => {
             const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
               if ('name' in field && field.name === 'url') return false

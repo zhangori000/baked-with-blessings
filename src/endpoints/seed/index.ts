@@ -1,5 +1,6 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
+import { seedBlogPosts } from './blog-posts'
 import { importCateringMedia } from './catering-media'
 import { seedCateringProducts } from './catering-products'
 import { importCookieMedia } from './cookie-media'
@@ -82,5 +83,9 @@ export const seed = async ({
     req,
   })
 
-  payload.logger.info('Seeded cookie and catering catalog successfully!')
+  payload.logger.info('- Seeding blog posts...')
+
+  await seedBlogPosts({ payload, req })
+
+  payload.logger.info('Seeded cookie, catering, and blog content successfully!')
 }

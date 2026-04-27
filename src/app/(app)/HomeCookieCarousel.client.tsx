@@ -28,8 +28,8 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
-import type { CookiePosterAsset } from './shop/cookiePosterData'
-import { CookieSheepRig } from './shop/cookie-sheep-rig'
+import type { CookiePosterAsset } from './menu/_components/cookiePosterData'
+import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
 type HomeCookieCarouselProps = {
   posters: CookiePosterAsset[]

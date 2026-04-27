@@ -2,7 +2,7 @@
 
 ## Goal
 
-Move the remaining hardcoded sheep-card / poster metadata out of `src/app/(app)/shop/cookiePosterData.ts` and into Payload so a business administrator can manage it in `/admin`.
+Move the remaining hardcoded sheep-card / poster metadata out of `src/app/(app)/menu/_components/cookiePosterData.ts` and into Payload so a business administrator can manage it in `/admin`.
 
 ## Why this is still hardcoded today
 

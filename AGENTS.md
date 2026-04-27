@@ -20,6 +20,7 @@ Additional local context to use deliberately:
 - For cookie poster cards, do not circularly crop or mask the cookie artwork unless the user explicitly asks for it. Preserve the full cookie silhouette/details, preserve the cookie sheep rig hover-burst behavior unless the user explicitly asks to remove it, and treat the cookie sheep rig and the catering-banner sheep as separate design elements so changes to one do not silently remove the other.
 - Treat the navbar flower design language as a core reusable motif. For menu-item selection feedback, celebratory states, hover accents, or supporting illustrations, reuse that same flower system instead of inventing a different floral style.
 - When a menu flow needs a "chosen" indicator or a completion moment, prefer subtle animated flowers in the established navbar style before adding unrelated visual effects.
+- There is no `/shop` route in this app. Use `/menu` for the customer-facing menu, do not recreate `src/app/(app)/shop`, and keep shared menu UI in `src/app/(app)/menu/_components`.
 
 You are an expert Payload CMS developer. When working with Payload projects, follow these rules:
 

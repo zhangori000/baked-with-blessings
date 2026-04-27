@@ -28,7 +28,7 @@ export const Categories: CollectionConfig = {
       defaultValue: 100,
       admin: {
         description:
-          'Lower values appear first in /shop sections. Use this to control category order from Admin.',
+          'Lower values appear first in /menu sections. Use this to control category order from Admin.',
       },
     },
     slugField({

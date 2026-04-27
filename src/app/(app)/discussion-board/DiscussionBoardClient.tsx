@@ -12,6 +12,7 @@ import {
   type DiscussionTreeData,
 } from '@/features/discussion-graph/types'
 import { cn } from '@/utilities/cn'
+import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -26,8 +27,11 @@ import {
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { FormEvent, MouseEvent, ReactNode } from 'react'
-import { Fragment } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, startTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+
+import { MenuHero, menuSceneryTones, preloadSceneryAssets } from '../menu/_components/catering-menu-scenery'
+import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 
 type Props = {
   initialData: DiscussionTreeData
@@ -57,7 +61,7 @@ const sortNodes = (nodes: DiscussionBoardNode[], sort: DiscussionSortKey) => {
       return b.childCount - a.childCount
     }
 
-    return b.awarenessCount - a.awarenessCount
+    return 0
   })
 }
 
@@ -185,9 +189,28 @@ export function DiscussionBoardClient({
   const [replyEdgeType, setReplyEdgeType] = useState<DiscussionEdgeType>('responds_to')
   const [notice, setNotice] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isGuideOpen, setIsGuideOpen] = useState(true)
+  const [isRoutePending, startRouteRefresh] = useTransition()
+  const [isGuideOpen, setIsGuideOpen] = useState(false)
   const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(() => new Set())
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
+  const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
   const didPrepareInitialHistory = useRef(false)
+
+  useEffect(() => {
+    for (const sceneryTone of menuSceneryTones) {
+      preloadSceneryAssets(sceneryTone)
+    }
+  }, [])
+
+  const handleSelectHeroScenery = (nextSceneryTone: MenuSceneryTone) => {
+    if (nextSceneryTone === heroSceneryTone) return
+
+    preloadSceneryAssets(nextSceneryTone)
+    startTransition(() => {
+      setHeroSceneryTone(nextSceneryTone)
+    })
+    setIsSceneryPickerOpen(false)
+  }
 
   useEffect(() => {
     setSelectedRootId(topicIdFromUrl)
@@ -369,36 +392,13 @@ export function DiscussionBoardClient({
 
       setReplyParentId(null)
       setNotice('Posted.')
-      router.refresh()
+      startRouteRefresh(() => {
+        router.refresh()
+      })
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Unable to post reply.')
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  const reactToNode = async (nodeId: string, reactionType: 'awareness' | 'cry' | 'wiltedRose') => {
-    setNotice(null)
-
-    try {
-      const response = await fetch('/api/discussions/awareness', {
-        body: JSON.stringify({ nodeId, reactionType }),
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-      const json = (await response.json()) as { error?: string; success?: boolean }
-
-      if (!response.ok || !json.success) {
-        throw new Error(json.error || 'Unable to react to this node.')
-      }
-
-      setNotice('Reacted.')
-      router.refresh()
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Unable to react to this node.')
     }
   }
 
@@ -422,7 +422,6 @@ export function DiscussionBoardClient({
           isCollapsed={isCollapsed}
           isFocused={treeRoot?.id === node.id}
           node={node}
-          onReaction={(reactionType) => reactToNode(node.id, reactionType)}
           onReply={openReply}
           onToggleCollapse={() => toggleNodeCollapse(node.id)}
         />
@@ -498,20 +497,38 @@ export function DiscussionBoardClient({
 
   return (
     <div
+      aria-busy={isSubmitting || isRoutePending}
       className={cn(
         'discussionBoardPage',
         treeRoot && 'is-graph-view',
         transitioningRootId && 'is-transitioning',
+        isRoutePending && 'is-route-pending',
       )}
     >
+      <div className="cateringMenuExperience discussionHeroExperience">
+        <MenuHero
+          eyebrow="Public reasoning"
+          isSceneryPickerOpen={isSceneryPickerOpen}
+          isSceneChanging={false}
+          key={heroSceneryTone}
+          onSelectScenery={handleSelectHeroScenery}
+          onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
+          sceneryTone={heroSceneryTone}
+          summary="Open a question, follow replies and follow-up questions, and keep the reasoning visible instead of buried in disconnected comments."
+          title="Discussion Board"
+        />
+      </div>
+
       <section className="discussionBoardShell container">
+        {isRoutePending ? (
+          <p aria-live="polite" className="discussionPendingNotice">
+            Updating discussion
+          </p>
+        ) : null}
         {!treeRoot ? (
           <>
-            <header className="discussionBoardHeader">
-              <div>
-                <p className="discussionBoardEyebrow">Public reasoning</p>
-                <h1>Discussion Board</h1>
-              </div>
+            <header className="discussionBoardHeader discussionBoardToolbar">
+              <p className="discussionBoardToolbarTitle">Sort discussion threads</p>
               <div className="discussionSortRail" aria-label="Sort topics">
                 {discussionSorts.map((item) => (
                   <button
@@ -575,9 +592,6 @@ export function DiscussionBoardClient({
                   <span className="discussionTopicStats" aria-label="Topic stats">
                     <span>{getStatLabel(root.responseCount, 'reply')}</span>
                     <span>{getStatLabel(root.questionCount, 'follow-up question')}</span>
-                    <span>❗ {root.awarenessCount}</span>
-                    <span>😭 {root.cryCount}</span>
-                    <span>🥀 {root.wiltedRoseCount}</span>
                   </span>
                 </button>
               ))}
@@ -671,7 +685,6 @@ function NodeCard({
   isCollapsed,
   isFocused,
   node,
-  onReaction,
   onReply,
   onToggleCollapse,
 }: {
@@ -679,7 +692,6 @@ function NodeCard({
   isCollapsed: boolean
   isFocused: boolean
   node: DiscussionBoardNode
-  onReaction: (reactionType: 'awareness' | 'cry' | 'wiltedRose') => void
   onReply: (nodeId: string, edgeType: DiscussionEdgeType) => void
   onToggleCollapse: () => void
 }) {
@@ -705,30 +717,6 @@ function NodeCard({
       </div>
 
       <div className="discussionNodeUtilityRow">
-        <button
-          aria-label={`Mark this node. Current count ${node.awarenessCount}`}
-          className="discussionReactionButton"
-          onClick={() => onReaction('awareness')}
-          type="button"
-        >
-          ❗ {node.awarenessCount}
-        </button>
-        <button
-          aria-label={`React sobbing to this node. Current count ${node.cryCount}`}
-          className="discussionReactionButton discussionReactionButton-cry"
-          onClick={() => onReaction('cry')}
-          type="button"
-        >
-          😭 {node.cryCount}
-        </button>
-        <button
-          aria-label={`React wilted rose to this node. Current count ${node.wiltedRoseCount}`}
-          className="discussionReactionButton discussionReactionButton-wilted"
-          onClick={() => onReaction('wiltedRose')}
-          type="button"
-        >
-          🥀 {node.wiltedRoseCount}
-        </button>
         {childCount > 0 ? (
           <button className="discussionInlineAction" onClick={onToggleCollapse} type="button">
             <ChevronDown

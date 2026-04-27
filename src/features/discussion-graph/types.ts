@@ -96,13 +96,12 @@ export type DiscussionTreeData = {
   rootNodes: DiscussionBoardNode[]
 }
 
-export type DiscussionSortKey = 'most_awareness' | 'most_discussed' | 'newly_active' | 'recent'
+export type DiscussionSortKey = 'most_discussed' | 'newly_active' | 'recent'
 
 export const discussionSorts: Array<{ label: string; value: DiscussionSortKey }> = [
   { label: 'Recent', value: 'recent' },
   { label: 'Newly active', value: 'newly_active' },
   { label: 'Most discussed', value: 'most_discussed' },
-  { label: 'Most awareness', value: 'most_awareness' },
 ]
 
 export const edgeLabels: Record<DiscussionEdgeType, string> = {

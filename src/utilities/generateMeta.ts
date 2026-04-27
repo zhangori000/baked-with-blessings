@@ -1,26 +1,51 @@
 import type { Metadata } from 'next'
 
-import type { Page, Product } from '../payload-types'
+import type { Page, Post, Product } from '../payload-types'
 
+import { getServerSideURL } from './getURL'
 import { mergeOpenGraph } from './mergeOpenGraph'
 
-export const generateMeta = async (args: { doc: Page | Product }): Promise<Metadata> => {
-  const { doc } = args || {}
+type MetaDoc = Page | Post | Product | null | undefined
+
+const buildAbsoluteURL = (pathOrURL: string) => {
+  if (pathOrURL.startsWith('http://') || pathOrURL.startsWith('https://')) {
+    return pathOrURL
+  }
+
+  return new URL(pathOrURL, getServerSideURL()).toString()
+}
+
+export const generateMeta = async (args: {
+  doc: MetaDoc
+  pathname?: string
+}): Promise<Metadata> => {
+  const { doc, pathname } = args || {}
+  const excerpt =
+    doc && 'excerpt' in doc && typeof doc.excerpt === 'string' ? doc.excerpt : undefined
+  const title = doc?.meta?.title || doc?.title || 'Baked with Blessings'
+  const description =
+    doc?.meta?.description ||
+    excerpt ||
+    'Baked with Blessings is a bakery and cafe sharing cookies, catering, and notes from the business.'
+  const canonicalPath = pathname ?? (doc?.slug ? (doc.slug === 'home' ? '/' : `/${doc.slug}`) : '/')
+  const canonicalURL = buildAbsoluteURL(canonicalPath)
 
   const ogImage =
     typeof doc?.meta?.image === 'object' &&
     doc.meta.image !== null &&
     'url' in doc.meta.image &&
-    `${process.env.NEXT_PUBLIC_SERVER_URL}${doc.meta.image.url}`
+    typeof doc.meta.image.url === 'string'
+      ? buildAbsoluteURL(doc.meta.image.url)
+      : undefined
 
   return {
-    description: doc?.meta?.description,
+    alternates: {
+      canonical: canonicalURL,
+    },
+    description,
+    metadataBase: new URL(getServerSideURL()),
     openGraph: mergeOpenGraph({
-      ...(doc?.meta?.description
-        ? {
-            description: doc?.meta?.description,
-          }
-        : {}),
+      description,
       images: ogImage
         ? [
             {
@@ -28,9 +53,15 @@ export const generateMeta = async (args: { doc: Page | Product }): Promise<Metad
             },
           ]
         : undefined,
-      title: doc?.meta?.title || doc?.title || 'Baked with Blessings',
-      url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
+      title,
+      url: canonicalURL,
     }),
-    title: doc?.meta?.title || doc?.title || 'Baked with Blessings',
+    title,
+    twitter: {
+      card: 'summary_large_image',
+      description,
+      images: ogImage ? [ogImage] : undefined,
+      title,
+    },
   }
 }

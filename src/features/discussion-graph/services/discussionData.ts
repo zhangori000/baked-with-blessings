@@ -182,23 +182,11 @@ const starterTopics: StarterTopic[] = [
     tags: ['minnesota', 'visitors', 'minneapolis', 'saint-paul', 'things-to-do'],
     title: 'If a friend visited Minnesota for the first time, where should you take them?',
   },
-  {
-    content: {
-      blocks: [
-        {
-          id: 'question_1',
-          text: 'Which companies are able to buy land and build apartment buildings near Stadium Village at UMN?',
-          type: 'question',
-        },
-      ],
-    },
-    sourceLabel: 'Minneapolis campus-area planning documents',
-    sourceUrl:
-      'https://lims.minneapolismn.gov/Download/Agenda/3019/2910/RPT-PLAN13648-DinkytownMixedUseRLS.pdf',
-    tags: ['stadium-village', 'umn', 'apartments', 'redevelopment', 'real-estate'],
-    title:
-      'Which companies are able to buy land and build apartment buildings near Stadium Village at UMN?',
-  },
+]
+
+const removedStarterTopicTitles = [
+  'Which companies are able to buy land and build apartment buildings near Stadium Village at UMN?',
+  'Who gets to replace Dinkytown commercial strips with apartments, and how does the money work?',
 ]
 
 type ExampleReply = {
@@ -416,6 +404,69 @@ const syncStarterDiscussionTopics = async (payload: Payload) => {
         tags: topic.tags.map((tag) => ({ tag })),
         title: topic.title,
       },
+      id: String(node.id),
+      overrideAccess: true,
+    })
+  }
+}
+
+const deleteRemovedStarterTopics = async (payload: Payload) => {
+  const removedResult = await payload.find({
+    collection: 'discussion-nodes',
+    depth: 0,
+    limit: 50,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      and: [
+        { tenantId: { equals: DISCUSSION_TENANT_ID } },
+        {
+          or: removedStarterTopicTitles.map((title) => ({
+            title: {
+              equals: title,
+            },
+          })),
+        },
+      ],
+    },
+  })
+
+  if (!removedResult.docs.length) return
+
+  const removedIds = new Set(
+    removedResult.docs.map((doc) => String((doc as unknown as Record<string, unknown>).id)),
+  )
+
+  const edgeResult = await payload.find({
+    collection: 'discussion-edges',
+    depth: 0,
+    limit: 1000,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      tenantId: {
+        equals: DISCUSSION_TENANT_ID,
+      },
+    },
+  })
+
+  for (const edge of edgeResult.docs as unknown as Array<Record<string, unknown>>) {
+    if (
+      removedIds.has(getRelationshipId(edge.fromNode)) ||
+      removedIds.has(getRelationshipId(edge.toNode)) ||
+      removedIds.has(getRelationshipId(edge.rootNode))
+    ) {
+      await (payload as LoosePayload).delete({
+        collection: 'discussion-edges',
+        id: String(edge.id),
+        overrideAccess: true,
+      })
+    }
+  }
+
+  for (const node of removedResult.docs as unknown as Array<Record<string, unknown>>) {
+    await (payload as LoosePayload).delete({
+      collection: 'discussion-nodes',
       id: String(node.id),
       overrideAccess: true,
     })
@@ -803,6 +854,7 @@ export const ensureI94ExampleReplies = async (payload: Payload) => {
 
 export const getDiscussionTreeData = async (payload: Payload): Promise<DiscussionTreeData> => {
   await ensureStarterDiscussionTopics(payload)
+  await deleteRemovedStarterTopics(payload)
   await syncStarterDiscussionTopics(payload)
   await ensureI94ExampleReplies(payload)
 

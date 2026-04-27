@@ -1,10 +1,18 @@
 .discussionBoardPage {
+  --discussion-cream: #fffdf6;
+  --discussion-ink: #10180d;
+  --discussion-forest: #244f2d;
+  --discussion-blue: #183a63;
+  --discussion-muted: #48563b;
+  --discussion-card: rgba(255, 253, 246, 0.94);
+  --foreground: var(--discussion-ink);
+  --primary-foreground: #fffdf6;
+  --sheep-grass-deep: var(--discussion-forest);
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(216, 236, 251, 0.94), rgba(239, 244, 232, 0.96)), var(--background);
-  color: var(--foreground);
+  background: #fff8f2;
+  color: var(--discussion-ink);
   overflow-x: clip;
-  padding: 1rem 0 4rem;
+  padding: 0 0 4rem;
 }
 
 .discussionBoardPage *,
@@ -30,6 +38,46 @@
   gap: 1.5rem;
   max-width: 100%;
   min-width: 0;
+  padding-top: clamp(1.2rem, 3vw, 2rem);
+  position: relative;
+}
+
+.discussionBoardShell::before {
+  background: linear-gradient(180deg, #eef7e8 0%, #fff8f2 18rem);
+  bottom: 0;
+  content: '';
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: -1px;
+  transform: translateX(-50%);
+  width: 100vw;
+  z-index: -1;
+}
+
+.discussionPendingNotice {
+  align-items: center;
+  background: rgba(255, 253, 246, 0.94);
+  border: 1px solid rgba(67, 92, 37, 0.22);
+  border-radius: 999px;
+  box-shadow: 0 14px 34px rgba(15, 24, 12, 0.14);
+  color: #244f2d;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 850;
+  gap: 0.45rem;
+  justify-self: start;
+  margin: 0;
+  padding: 0.62rem 0.88rem;
+}
+
+.discussionPendingNotice::before {
+  animation: discussionPendingPulse 900ms ease-in-out infinite;
+  background: #70b95d;
+  border-radius: 999px;
+  content: '';
+  height: 0.48rem;
+  width: 0.48rem;
 }
 
 .discussionBoardShell > *,
@@ -52,8 +100,26 @@
   width: 100%;
 }
 
+.discussionBoardToolbar {
+  align-items: center;
+  background: rgba(255, 253, 246, 0.92);
+  border: 1px solid rgba(36, 79, 45, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(69, 43, 18, 0.08);
+  padding: 0.85rem;
+}
+
+.discussionBoardToolbarTitle {
+  color: var(--discussion-forest);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .discussionBoardEyebrow {
-  color: var(--sheep-grass-deep);
+  color: var(--discussion-forest);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -63,6 +129,7 @@
 
 .discussionBoardHeader h1,
 .discussionGraphTitle h1 {
+  color: var(--discussion-blue);
   font-size: clamp(2.2rem, 7vw, 5rem);
   font-weight: 800;
   letter-spacing: 0;
@@ -96,10 +163,10 @@
 .discussionDepthControl button,
 .discussionBackButton {
   align-items: center;
-  background: rgba(247, 245, 238, 0.82);
-  border: 1px solid rgba(8, 12, 26, 0.16);
+  background: rgba(255, 253, 246, 0.9);
+  border: 1px solid rgba(36, 79, 45, 0.18);
   border-radius: 8px;
-  color: var(--foreground);
+  color: var(--discussion-ink);
   display: inline-flex;
   font-size: 0.8rem;
   font-weight: 800;
@@ -122,8 +189,8 @@
 
 .discussionSortButton.is-active,
 .discussionDepthControl button.is-active {
-  background: var(--sheep-grass-deep);
-  color: var(--primary-foreground);
+  background: var(--discussion-forest);
+  color: var(--discussion-cream);
 }
 
 .discussionTopicList {
@@ -133,8 +200,8 @@
 
 .discussionTopicRow {
   align-items: stretch;
-  background: rgba(247, 245, 238, 0.9);
-  border: 1px solid rgba(8, 12, 26, 0.13);
+  background: var(--discussion-card);
+  border: 1px solid rgba(36, 79, 45, 0.18);
   border-radius: 8px;
   box-shadow: 0 18px 40px rgba(46, 65, 42, 0.08);
   color: inherit;
@@ -167,7 +234,7 @@
 .discussionTopicKicker,
 .discussionNodeTopline {
   align-items: center;
-  color: #657050;
+  color: var(--discussion-muted);
   display: flex;
   flex-wrap: wrap;
   font-size: 0.75rem;
@@ -177,21 +244,21 @@
 }
 
 .discussionHerePill {
-  background: var(--sheep-grass-deep);
+  background: var(--discussion-forest);
   border-radius: 999px;
-  color: var(--primary-foreground);
+  color: var(--discussion-cream);
   padding: 0.22rem 0.5rem;
 }
 
 .discussionTopicTitle {
-  color: var(--foreground);
+  color: var(--discussion-ink);
   font-size: clamp(1.05rem, 2vw, 1.45rem);
   font-weight: 800;
   line-height: 1.12;
 }
 
 .discussionTopicPreview {
-  color: #36402d;
+  color: #2d3827;
   font-size: 0.92rem;
   line-height: 1.45;
 }
@@ -258,6 +325,19 @@
     filter: blur(3px);
     opacity: 0;
     transform: translate(-18px, 50px) rotate(-2deg);
+  }
+}
+
+@keyframes discussionPendingPulse {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(0.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -524,7 +604,6 @@
 .discussionNodeActions button,
 .discussionActionsToggle,
 .discussionInlineAction,
-.discussionReactionButton,
 .discussionCollapsedBranch,
 .discussionReplyComposer button,
 .discussionReplyComposer select,
@@ -537,7 +616,6 @@
 .discussionNodeActions button,
 .discussionActionsToggle,
 .discussionInlineAction,
-.discussionReactionButton,
 .discussionCollapsedBranch,
 .discussionReplyComposer button {
   align-items: center;
@@ -563,24 +641,6 @@
 .discussionActionsToggle {
   background: #fffdf6;
   border-color: rgba(67, 92, 37, 0.22);
-}
-
-.discussionReactionButton {
-  background: #fff4f4;
-  border-color: rgba(191, 71, 45, 0.22);
-  color: #812f1d;
-}
-
-.discussionReactionButton-cry {
-  background: #fff7d6;
-  border-color: rgba(142, 104, 22, 0.25);
-  color: #6d4d0d;
-}
-
-.discussionReactionButton-wilted {
-  background: #f7edf4;
-  border-color: rgba(123, 52, 95, 0.22);
-  color: #703157;
 }
 
 .discussionNodeUtilityRow {
@@ -1071,11 +1131,11 @@
 
 @media (min-width: 760px) {
   .discussionBoardPage {
-    padding: 8.5rem 0 5rem;
+    padding: 0 0 5rem;
   }
 
   .discussionBoardPage.is-graph-view {
-    padding-top: 1.5rem;
+    padding-top: 0;
   }
 
   .discussionBoardHeader {

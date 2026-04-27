@@ -10,7 +10,7 @@ The frontend work then refactors the sheep-card experience so the cookie body im
 
 Start with the media/storage layer in `package.json`, `src/payload.config.ts`, and `src/collections/Media.ts`. That is the infrastructure change that makes the rest of the PR possible. After that, move to the import/seed flow in `scripts/import-cookie-media.ts`, `scripts/seed.ts`, `src/endpoints/seed/cookie-catalog.ts`, `src/endpoints/seed/cookie-media.ts`, `src/endpoints/seed/cookie-products.ts`, and `src/endpoints/seed/index.ts`.
 
-Once the storage and data flow are clear, review the storefront refactor in `src/app/(app)/shop/cookiePosterData.ts`, `src/app/(app)/shop/page.tsx`, `src/app/(app)/shop/cookie-poster-grid.tsx`, `src/app/(app)/shop/cookie-sheep-rig.tsx`, and `src/app/(app)/cookies/[slug]/page.tsx`. Finish with the support docs and backlog notes under `ai-instructions/learnings/2026-04-16/` and `backlog/`.
+Once the storage and data flow are clear, review the storefront refactor in `src/app/(app)/menu/_components/cookiePosterData.ts`, `src/app/(app)/menu/page.tsx`, `src/app/(app)/menu/_components/cookie-poster-grid.tsx`, `src/app/(app)/menu/_components/cookie-sheep-rig.tsx`, and the cookie detail route if present. Finish with the support docs and backlog notes under `ai-instructions/learnings/2026-04-16/` and `backlog/`.
 
 ## Media and Storage Changes
 

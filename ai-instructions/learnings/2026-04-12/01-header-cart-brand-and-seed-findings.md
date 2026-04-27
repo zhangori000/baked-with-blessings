@@ -40,7 +40,7 @@ That is why the local seed image logic looked correct in source code but still f
 
 ## Storefront media URL finding
 
-The broken `/shop` product images were not caused by missing media records. The media documents existed. The real issue was URL normalization in the frontend image layer. Same-origin media URLs were being converted into absolute URLs like `http://localhost:3000/api/media/...` and then handed to `next/image`, which rejected them in that setup. The fix was to normalize those URLs back to relative same-origin paths before rendering.
+The broken legacy storefront product images were not caused by missing media records. The media documents existed. The real issue was URL normalization in the frontend image layer. Same-origin media URLs were being converted into absolute URLs like `http://localhost:3000/api/media/...` and then handed to `next/image`, which rejected them in that setup. The fix was to normalize those URLs back to relative same-origin paths before rendering. The current customer-facing menu route is `/menu`.
 
 The broader lesson is that an image can exist in Payload and still fail in the storefront if the frontend hands the optimizer the wrong shape of URL.
 

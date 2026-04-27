@@ -1,4 +1,5 @@
 export const rotatingCookieFlavorsHref = '/rotating-cookie-flavors'
 export const menuHref = '/menu'
+export const blogHref = '/blog'
 export const discussionBoardHref = '/discussion-board'
-export const shopHref = menuHref
+export const reviewsHref = '/reviews'

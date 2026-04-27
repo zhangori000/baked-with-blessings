@@ -78,7 +78,9 @@ export interface Config {
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
     'awareness-marks': AwarenessMark;
+    reviews: Review;
     pages: Page;
+    posts: Post;
     categories: Category;
     media: Media;
     forms: Form;
@@ -115,7 +117,9 @@ export interface Config {
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
     'awareness-marks': AwarenessMarksSelect<false> | AwarenessMarksSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -508,7 +512,7 @@ export interface Product {
     description?: string | null;
   };
   /**
-   * Categories group products on the /shop page and help organize the menu for customers and admins.
+   * Categories group products on the /menu page and help organize the menu for customers and admins.
    */
   categories?: (number | Category)[] | null;
   /**
@@ -651,10 +655,15 @@ export interface CallToActionBlock {
         link: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
-          reference?: {
-            relationTo: 'pages';
-            value: number | Page;
-          } | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
           url?: string | null;
           label: string;
           /**
@@ -708,10 +717,15 @@ export interface Page {
           link: {
             type?: ('reference' | 'custom') | null;
             newTab?: boolean | null;
-            reference?: {
-              relationTo: 'pages';
-              value: number | Page;
-            } | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
             url?: string | null;
             label: string;
             /**
@@ -740,6 +754,51 @@ export interface Page {
     | BannerBlock
     | FormBlock
   )[];
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * Short summary shown on the blog list, page hero, and default SEO description.
+   */
+  excerpt: string;
+  authorName: string;
+  publishedOn?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
   meta?: {
     title?: string | null;
     /**
@@ -796,10 +855,15 @@ export interface ContentBlock {
         link?: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
-          reference?: {
-            relationTo: 'pages';
-            value: number | Page;
-          } | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
           url?: string | null;
           label: string;
           /**
@@ -887,7 +951,7 @@ export interface Category {
   id: number;
   title: string;
   /**
-   * Lower values appear first in /shop sections. Use this to control category order from Admin.
+   * Lower values appear first in /menu sections. Use this to control category order from Admin.
    */
   menuOrder?: number | null;
   /**
@@ -1485,6 +1549,76 @@ export interface AwarenessMark {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: number;
+  tenantId: string;
+  customerName: string;
+  /**
+   * Private. Used only if the bakery needs to follow up.
+   */
+  customerEmail?: string | null;
+  reviewTone: 'loved_it' | 'suggestion';
+  /**
+   * 1 to 5 rating. Half-step values like 4.5 are allowed.
+   */
+  rating: number;
+  title: string;
+  body: string;
+  /**
+   * Optional public context, for example pickup order, catering, or cafe visit.
+   */
+  visitContext?: string | null;
+  photos?: (number | Media)[] | null;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  /**
+   * Private admin note for spam, abuse, unverifiable claims, or unfair framing.
+   */
+  moderationNote?: string | null;
+  /**
+   * Public note when the bakery needs to add context, boundaries, or a factual correction.
+   */
+  fairnessNote?: string | null;
+  responseStatus: 'listening' | 'investigating' | 'changed' | 'stood_firm' | 'closed';
+  /**
+   * Plain-text fallback for the public response.
+   */
+  businessResponse?: string | null;
+  /**
+   * Public bakery reply. Use this when the reply needs formatting.
+   */
+  businessResponseRichText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Public changes or decisions made in response to the review.
+   */
+  actionLog?:
+    | {
+        date: string;
+        title: string;
+        detail: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
@@ -1545,8 +1679,16 @@ export interface PayloadLockedDocument {
         value: number | AwarenessMark;
       } | null)
     | ({
+        relationTo: 'reviews';
+        value: number | Review;
+      } | null)
+    | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1764,6 +1906,37 @@ export interface AwarenessMarksSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  tenantId?: T;
+  customerName?: T;
+  customerEmail?: T;
+  reviewTone?: T;
+  rating?: T;
+  title?: T;
+  body?: T;
+  visitContext?: T;
+  photos?: T;
+  publicStatus?: T;
+  moderationNote?: T;
+  fairnessNote?: T;
+  responseStatus?: T;
+  businessResponse?: T;
+  businessResponseRichText?: T;
+  actionLog?:
+    | T
+    | {
+        date?: T;
+        title?: T;
+        detail?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
@@ -1933,6 +2106,29 @@ export interface FormBlockSelect<T extends boolean = true> {
   introContent?: T;
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  excerpt?: T;
+  authorName?: T;
+  publishedOn?: T;
+  content?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2503,10 +2699,15 @@ export interface Header {
         link: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
-          reference?: {
-            relationTo: 'pages';
-            value: number | Page;
-          } | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
           url?: string | null;
           label: string;
         };
@@ -2527,10 +2728,15 @@ export interface Footer {
         link: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
-          reference?: {
-            relationTo: 'pages';
-            value: number | Page;
-          } | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
           url?: string | null;
           label: string;
         };

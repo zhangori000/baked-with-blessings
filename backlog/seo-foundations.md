@@ -11,5 +11,5 @@ Scope:
 
 Notes:
 
-- Prioritize home, menu/shop, cookie detail pages, and core landing pages.
+- Prioritize home, menu, cookie detail pages, and core landing pages.
 - Keep the implementation compatible with Next.js metadata APIs where possible.
