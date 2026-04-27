@@ -1,4 +1,5 @@
 import { raiseNodeAwareness } from '@/features/discussion-graph/services/discussionMutations'
+import { getDiscussionVisitor } from '@/features/discussion-graph/services/discussionIdentity'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 
@@ -14,14 +15,21 @@ export const POST = async (request: Request) => {
         : input.reactionType === 'wiltedRose'
           ? 'wiltedRose'
           : 'awareness'
+    const visitor = getDiscussionVisitor(request.headers)
     const mark = await raiseNodeAwareness({
       headers: request.headers,
       nodeId,
       payload,
       reactionType,
+      visitor,
     })
+    const response = Response.json({ mark, success: true })
 
-    return Response.json({ mark, success: true })
+    if (visitor.setCookieHeader) {
+      response.headers.append('Set-Cookie', visitor.setCookieHeader)
+    }
+
+    return response
   } catch (error) {
     const status =
       error && typeof error === 'object' && 'status' in error && typeof error.status === 'number'

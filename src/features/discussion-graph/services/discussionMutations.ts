@@ -2,15 +2,25 @@ import type { Payload } from 'payload'
 
 import { buildSearchText, normalizeTags } from '@/features/discussion-graph/content'
 import {
+  type DiscussionVisitor,
+  getDiscussionActorKey,
+  getDiscussionVisitor,
+} from '@/features/discussion-graph/services/discussionIdentity'
+import {
   DISCUSSION_TENANT_ID,
   type ContentBlock,
   type DiscussionContent,
   type DiscussionEdgeType,
   type DiscussionNodeType,
 } from '@/features/discussion-graph/types'
+import { createStableHash, isUniqueConstraintError } from '@/utilities/idempotency'
 
 type LoosePayload = Payload & {
   create: (args: unknown) => Promise<Record<string, unknown>>
+  db: {
+    updateOne: (args: unknown) => Promise<unknown>
+  }
+  find: (args: unknown) => Promise<{ docs: Record<string, unknown>[] }>
   update: (args: unknown) => Promise<Record<string, unknown>>
 }
 
@@ -256,36 +266,105 @@ const buildReplyContent = (input: {
   return { blocks }
 }
 
-const getCounterUpdates = (parent: Record<string, unknown>, edgeType: DiscussionEdgeType) => {
-  const update: Record<string, number> = {
-    childCount: (typeof parent.childCount === 'number' ? parent.childCount : 0) + 1,
-    responseCount: (typeof parent.responseCount === 'number' ? parent.responseCount : 0) + 1,
+const getCounterIncrementUpdate = (edgeType: DiscussionEdgeType) => {
+  const update: Record<string, { $inc: number }> = {
+    childCount: { $inc: 1 },
+    responseCount: { $inc: 1 },
   }
 
   if (edgeType === 'asks_about') {
-    update.questionCount = (typeof parent.questionCount === 'number' ? parent.questionCount : 0) + 1
+    update.questionCount = { $inc: 1 }
   }
 
   if (edgeType === 'supports') {
-    update.supportCount = (typeof parent.supportCount === 'number' ? parent.supportCount : 0) + 1
+    update.supportCount = { $inc: 1 }
   }
 
   if (edgeType === 'challenges') {
-    update.challengeCount =
-      (typeof parent.challengeCount === 'number' ? parent.challengeCount : 0) + 1
+    update.challengeCount = { $inc: 1 }
   }
 
   return update
+}
+
+const getReplySubmissionKey = ({
+  actorKey,
+  content,
+  edgeType,
+  headers,
+  input,
+  nodeType,
+  parentNodeId,
+  title,
+}: {
+  actorKey: string
+  content: DiscussionContent
+  edgeType: DiscussionEdgeType
+  headers: Request['headers']
+  input: Record<string, unknown>
+  nodeType: DiscussionNodeType
+  parentNodeId: string
+  title: string
+}) => {
+  const clientKey =
+    typeof input.idempotencyKey === 'string' && input.idempotencyKey.trim()
+      ? input.idempotencyKey.trim()
+      : headers.get('idempotency-key')?.trim() || ''
+  if (clientKey) {
+    return `reply:client:${createStableHash(
+      JSON.stringify({
+        clientKey,
+        parentNodeId,
+      }),
+      48,
+    )}`
+  }
+
+  const keyMaterial = JSON.stringify({
+    actorKey,
+    content,
+    edgeType,
+    nodeType,
+    parentNodeId,
+    title,
+  })
+
+  return `reply:${actorKey}:${createStableHash(keyMaterial, 48)}`
+}
+
+const findDiscussionNodeBySubmissionKey = async ({
+  payload,
+  submissionKey,
+}: {
+  payload: Payload
+  submissionKey: string
+}) => {
+  const existing = await (payload as LoosePayload).find({
+    collection: 'discussion-nodes',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      submissionKey: {
+        equals: submissionKey,
+      },
+    },
+  })
+
+  return existing.docs[0] || null
 }
 
 export const createDiscussionReply = async ({
   headers,
   input,
   payload,
+  visitor,
 }: {
   headers: Request['headers']
   input: Record<string, unknown>
   payload: Payload
+  visitor?: DiscussionVisitor
 }) => {
   const { user } = await payload.auth({ headers })
 
@@ -342,32 +421,67 @@ export const createDiscussionReply = async ({
   const parentPayloadId = toPayloadId(parentNodeId)
   const rootPayloadId = toPayloadId(rootId)
   const now = new Date().toISOString()
-
-  const createdNode = await (payload as LoosePayload).create({
-    collection: 'discussion-nodes',
-    data: {
-      ...(user && (user.collection === 'customers' || user.collection === 'admins')
-        ? {
-            author: {
-              relationTo: user.collection,
-              value: user.id,
-            },
-          }
-        : {}),
-      authorDisplayName,
-      content,
-      isRoot: false,
-      lastActivityAt: now,
-      moderationStatus: 'visible',
-      rootNode: rootPayloadId,
-      searchText: buildSearchText({ content, tags, title }),
-      tags: tags.map((tag) => ({ tag })),
-      tenantId: DISCUSSION_TENANT_ID,
-      title,
-      type: nodeType,
-    },
-    overrideAccess: true,
+  const discussionVisitor = visitor ?? getDiscussionVisitor(headers)
+  const actorKey = getDiscussionActorKey({
+    user,
+    visitorKey: discussionVisitor.visitorKey,
   })
+  const submissionKey = getReplySubmissionKey({
+    actorKey,
+    content,
+    edgeType,
+    headers,
+    input,
+    nodeType,
+    parentNodeId,
+    title,
+  })
+  const existingNode = await findDiscussionNodeBySubmissionKey({ payload, submissionKey })
+
+  if (existingNode) {
+    return existingNode
+  }
+
+  let createdNode: Record<string, unknown>
+
+  try {
+    createdNode = await (payload as LoosePayload).create({
+      collection: 'discussion-nodes',
+      data: {
+        ...(user && (user.collection === 'customers' || user.collection === 'admins')
+          ? {
+              author: {
+                relationTo: user.collection,
+                value: user.id,
+              },
+            }
+          : {}),
+        authorDisplayName,
+        content,
+        isRoot: false,
+        lastActivityAt: now,
+        moderationStatus: 'visible',
+        rootNode: rootPayloadId,
+        searchText: buildSearchText({ content, tags, title }),
+        submissionKey,
+        tags: tags.map((tag) => ({ tag })),
+        tenantId: DISCUSSION_TENANT_ID,
+        title,
+        type: nodeType,
+      },
+      overrideAccess: true,
+    })
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      const duplicateNode = await findDiscussionNodeBySubmissionKey({ payload, submissionKey })
+
+      if (duplicateNode) {
+        return duplicateNode
+      }
+    }
+
+    throw error
+  }
 
   await (payload as LoosePayload).create({
     collection: 'discussion-edges',
@@ -386,24 +500,22 @@ export const createDiscussionReply = async ({
     overrideAccess: true,
   })
 
-  await (payload as LoosePayload).update({
+  await (payload as LoosePayload).db.updateOne({
     collection: 'discussion-nodes',
     data: {
-      ...getCounterUpdates(parent, edgeType),
+      ...getCounterIncrementUpdate(edgeType),
       lastActivityAt: now,
     },
-    id: parentNodeId,
-    overrideAccess: true,
+    id: toPayloadId(parentNodeId),
   })
 
   if (rootId !== parentNodeId) {
-    await (payload as LoosePayload).update({
+    await (payload as LoosePayload).db.updateOne({
       collection: 'discussion-nodes',
       data: {
         lastActivityAt: now,
       },
-      id: rootId,
-      overrideAccess: true,
+      id: toPayloadId(rootId),
     })
   }
 
@@ -411,18 +523,29 @@ export const createDiscussionReply = async ({
 }
 
 export const raiseNodeAwareness = async ({
+  headers,
   nodeId,
   payload,
   reactionType = 'awareness',
+  visitor,
 }: {
   headers: Request['headers']
   nodeId: string
   payload: Payload
   reactionType?: 'awareness' | 'cry' | 'wiltedRose'
+  visitor?: DiscussionVisitor
 }) => {
   if (!nodeId) {
     throw createError('Choose a node first.')
   }
+
+  const { user } = await payload.auth({ headers })
+  const discussionVisitor = visitor ?? getDiscussionVisitor(headers)
+  const actorKey = getDiscussionActorKey({
+    user,
+    visitorKey: discussionVisitor.visitorKey,
+  })
+  const dedupeKey = `awareness:${nodeId}:${reactionType}:${actorKey}`
 
   const node = (await payload.findByID({
     collection: 'discussion-nodes',
@@ -438,14 +561,42 @@ export const raiseNodeAwareness = async ({
         ? 'wiltedRoseCount'
         : 'awarenessCount'
 
-  await (payload as LoosePayload).update({
+  try {
+    await (payload as LoosePayload).create({
+      collection: 'awareness-marks',
+      data: {
+        dedupeKey,
+        node: toPayloadId(nodeId),
+        reactionType,
+        tenantId: DISCUSSION_TENANT_ID,
+        ...(user && (user.collection === 'customers' || user.collection === 'admins')
+          ? {
+              user: {
+                relationTo: user.collection,
+                value: user.id,
+              },
+            }
+            : {
+                visitorKey: discussionVisitor.visitorKey,
+              }),
+      },
+      overrideAccess: true,
+    })
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return { alreadyMarked: true, node: nodeId, reactionType }
+    }
+
+    throw error
+  }
+
+  await (payload as LoosePayload).db.updateOne({
     collection: 'discussion-nodes',
     data: {
-      [countField]: (typeof node[countField] === 'number' ? node[countField] : 0) + 1,
+      [countField]: { $inc: 1 },
     },
-    id: nodeId,
-    overrideAccess: true,
+    id: toPayloadId(String(node.id || nodeId)),
   })
 
-  return { node: nodeId, reactionType }
+  return { alreadyMarked: false, node: nodeId, reactionType }
 }

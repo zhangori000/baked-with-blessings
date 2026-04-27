@@ -5,8 +5,6 @@ import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 
-import { stripeAdapter } from '@payloadcms/plugin-ecommerce/payments/stripe'
-
 import type { Page, Post, Product } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { ProductsCollection } from '@/collections/Products'
@@ -21,6 +19,7 @@ import {
   extendCollectionItemsWithBatchSelections,
   trayAwareCartItemMatcher,
 } from '@/plugins/ecommerce/trayBuilder'
+import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
   if (!address || typeof address !== 'object' || !('phone' in address)) {
@@ -209,7 +208,25 @@ export const plugins: Plugin[] = [
             )
           : [],
         fields: extendCollectionItemsWithBatchSelections({
-          fields: defaultCollection.fields,
+          fields: [
+            ...defaultCollection.fields,
+            {
+              name: 'mergedSourceCartIDs',
+              type: 'array',
+              admin: {
+                description: 'Guest cart IDs already merged into this cart. Used for retry-safe merges.',
+                initCollapsed: true,
+                readOnly: true,
+              },
+              fields: [
+                {
+                  name: 'sourceCartID',
+                  type: 'text',
+                  required: true,
+                },
+              ],
+            },
+          ],
         }),
         hooks: {
           ...defaultCollection.hooks,
@@ -251,6 +268,17 @@ export const plugins: Plugin[] = [
               ],
             },
           },
+          {
+            name: 'stripePaymentIntentID',
+            type: 'text',
+            unique: true,
+            index: true,
+            admin: {
+              description: 'Stripe PaymentIntent used as the checkout idempotency key.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
         ],
         hooks: {
           ...defaultCollection.hooks,
@@ -263,7 +291,7 @@ export const plugins: Plugin[] = [
     },
     payments: {
       paymentMethods: [
-        stripeAdapter({
+        idempotentStripeAdapter({
           secretKey: process.env.STRIPE_SECRET_KEY!,
           publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
           webhookSecret: process.env.STRIPE_WEBHOOKS_SIGNING_SECRET!,

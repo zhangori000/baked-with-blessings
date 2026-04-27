@@ -75,6 +75,7 @@ export interface Config {
   collections: {
     admins: Admin;
     customers: Customer;
+    'phone-verification-starts': PhoneVerificationStart;
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
     'awareness-marks': AwarenessMark;
@@ -114,6 +115,7 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    'phone-verification-starts': PhoneVerificationStartsSelect<false> | PhoneVerificationStartsSelect<true>;
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
     'awareness-marks': AwarenessMarksSelect<false> | AwarenessMarksSelect<true>;
@@ -343,6 +345,10 @@ export interface Order {
    */
   guestContactValue?: string | null;
   accessToken?: string | null;
+  /**
+   * Stripe PaymentIntent used as the checkout idempotency key.
+   */
+  stripePaymentIntentID?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1372,6 +1378,15 @@ export interface Cart {
   status?: ('active' | 'purchased' | 'abandoned') | null;
   subtotal?: number | null;
   currency?: 'USD' | null;
+  /**
+   * Guest cart IDs already merged into this cart. Used for retry-safe merges.
+   */
+  mergedSourceCartIDs?:
+    | {
+        sourceCartID: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1438,6 +1453,19 @@ export interface Address {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "phone-verification-starts".
+ */
+export interface PhoneVerificationStart {
+  id: number;
+  key: string;
+  flow: 'signup' | 'password-reset';
+  phone: string;
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discussion-nodes".
  */
 export interface DiscussionNode {
@@ -1486,6 +1514,10 @@ export interface DiscussionNode {
    */
   searchText?: string | null;
   moderationStatus: 'visible' | 'hidden';
+  /**
+   * Stable key used to make public reply submission retries idempotent.
+   */
+  submissionKey?: string | null;
   moderationReason?: string | null;
   moderatedBy?: (number | null) | Admin;
   moderatedAt?: string | null;
@@ -1531,6 +1563,7 @@ export interface AwarenessMark {
   id: number;
   tenantId: string;
   node: number | DiscussionNode;
+  reactionType: 'awareness' | 'cry' | 'wiltedRose';
   user?:
     | ({
         relationTo: 'admins';
@@ -1544,6 +1577,10 @@ export interface AwarenessMark {
    * Anonymous browser key used for testing awareness marks.
    */
   visitorKey?: string | null;
+  /**
+   * Unique node/reaction/user key used to make repeated reactions idempotent.
+   */
+  dedupeKey?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1665,6 +1702,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: number | Customer;
+      } | null)
+    | ({
+        relationTo: 'phone-verification-starts';
+        value: number | PhoneVerificationStart;
       } | null)
     | ({
         relationTo: 'discussion-nodes';
@@ -1837,6 +1878,18 @@ export interface CustomersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "phone-verification-starts_select".
+ */
+export interface PhoneVerificationStartsSelect<T extends boolean = true> {
+  key?: T;
+  flow?: T;
+  phone?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discussion-nodes_select".
  */
 export interface DiscussionNodesSelect<T extends boolean = true> {
@@ -1856,6 +1909,7 @@ export interface DiscussionNodesSelect<T extends boolean = true> {
       };
   searchText?: T;
   moderationStatus?: T;
+  submissionKey?: T;
   moderationReason?: T;
   moderatedBy?: T;
   moderatedAt?: T;
@@ -1899,8 +1953,10 @@ export interface DiscussionEdgesSelect<T extends boolean = true> {
 export interface AwarenessMarksSelect<T extends boolean = true> {
   tenantId?: T;
   node?: T;
+  reactionType?: T;
   user?: T;
   visitorKey?: T;
+  dedupeKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2513,6 +2569,12 @@ export interface CartsSelect<T extends boolean = true> {
   status?: T;
   subtotal?: T;
   currency?: T;
+  mergedSourceCartIDs?:
+    | T
+    | {
+        sourceCartID?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2560,6 +2622,7 @@ export interface OrdersSelect<T extends boolean = true> {
   guestContactMethod?: T;
   guestContactValue?: T;
   accessToken?: T;
+  stripePaymentIntentID?: T;
   updatedAt?: T;
   createdAt?: T;
 }

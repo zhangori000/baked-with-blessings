@@ -33,6 +33,7 @@ type ProductConfigLike = {
 
 type CartDocumentLike = {
   items?: TrayBuilderItemLike[] | null
+  mergedSourceCartIDs?: { sourceCartID?: null | string }[] | null
 }
 
 const getRelationshipID = (
@@ -44,6 +45,13 @@ const getRelationshipID = (
 
   return typeof value === 'object' ? value.id : value
 }
+
+const getMergedSourceCartIDSet = (cart: CartDocumentLike) =>
+  new Set(
+    (Array.isArray(cart.mergedSourceCartIDs) ? cart.mergedSourceCartIDs : [])
+      .map((entry) => (typeof entry?.sourceCartID === 'string' ? entry.sourceCartID : ''))
+      .filter(Boolean),
+  )
 
 const normalizeBatchSelections = (item: TrayBuilderItemLike) => {
   const selections = Array.isArray(item.batchSelections) ? item.batchSelections : []
@@ -367,6 +375,39 @@ export const createTrayAwareMergeCartEndpoint = ({
       )
     }
 
+    const targetCart = (await req.payload.findByID({
+      id: targetCartID,
+      collection: cartsSlug,
+      depth: 0,
+      overrideAccess: false,
+      req,
+    })) as CartDocumentLike | null
+
+    if (!targetCart) {
+      return Response.json(
+        {
+          cart: null,
+          message: `Target cart with ID ${String(targetCartID)} not found`,
+          success: false,
+        },
+        { status: 404 },
+      )
+    }
+
+    const sourceCartID = String(data.sourceCartID)
+    const mergedSourceCartIDs = getMergedSourceCartIDSet(targetCart)
+
+    if (mergedSourceCartIDs.has(sourceCartID)) {
+      return Response.json(
+        {
+          cart: targetCart,
+          message: `Source cart ${sourceCartID} was already merged`,
+          success: true,
+        },
+        { status: 200 },
+      )
+    }
+
     const sourceCart = await req.payload.find({
       collection: cartsSlug,
       depth: 0,
@@ -397,25 +438,6 @@ export const createTrayAwareMergeCartEndpoint = ({
         {
           cart: null,
           message: `Source cart with ID ${String(data.sourceCartID)} not found or secret mismatch`,
-          success: false,
-        },
-        { status: 404 },
-      )
-    }
-
-    const targetCart = (await req.payload.findByID({
-      id: targetCartID,
-      collection: cartsSlug,
-      depth: 0,
-      overrideAccess: false,
-      req,
-    })) as CartDocumentLike | null
-
-    if (!targetCart) {
-      return Response.json(
-        {
-          cart: null,
-          message: `Target cart with ID ${String(targetCartID)} not found`,
           success: false,
         },
         { status: 404 },
@@ -460,6 +482,14 @@ export const createTrayAwareMergeCartEndpoint = ({
       collection: cartsSlug,
       data: {
         items: mergedItems as unknown as Record<string, unknown>[],
+        mergedSourceCartIDs: [
+          ...Array.from(mergedSourceCartIDs).map((mergedSourceCartID) => ({
+            sourceCartID: mergedSourceCartID,
+          })),
+          {
+            sourceCartID,
+          },
+        ],
       },
       depth: 0,
       overrideAccess: false,
