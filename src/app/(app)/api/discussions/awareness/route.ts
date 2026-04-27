@@ -15,13 +15,14 @@ export const POST = async (request: Request) => {
         : input.reactionType === 'wiltedRose'
           ? 'wiltedRose'
           : 'awareness'
+    const visitor = getDiscussionVisitor(request.headers)
     const mark = await raiseNodeAwareness({
       headers: request.headers,
       nodeId,
       payload,
       reactionType,
+      visitor,
     })
-    const visitor = getDiscussionVisitor(request.headers)
     const response = Response.json({ mark, success: true })
 
     if (visitor.setCookieHeader) {

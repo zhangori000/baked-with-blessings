@@ -8,12 +8,13 @@ export const POST = async (request: Request) => {
 
   try {
     const input = (await request.json()) as Record<string, unknown>
+    const visitor = getDiscussionVisitor(request.headers)
     const node = await createDiscussionReply({
       headers: request.headers,
       input,
       payload,
+      visitor,
     })
-    const visitor = getDiscussionVisitor(request.headers)
     const response = Response.json({ node, success: true })
 
     if (visitor.setCookieHeader) {

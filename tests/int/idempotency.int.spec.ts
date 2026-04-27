@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { getDiscussionVisitor } from '@/features/discussion-graph/services/discussionIdentity'
+import {
+  DISCUSSION_VISITOR_COOKIE,
+  getDiscussionVisitor,
+} from '@/features/discussion-graph/services/discussionIdentity'
 import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
 import {
   PHONE_VERIFICATION_START_WINDOW_MS,
@@ -22,14 +25,35 @@ describe('idempotency helpers', () => {
     )
   })
 
-  it('derives a stable anonymous discussion visitor key from request headers', () => {
+  it('sets a random anonymous discussion visitor key when no cookie exists', () => {
+    const firstHeaders = new Headers({
+      'user-agent': 'vitest-browser',
+      'x-forwarded-for': '203.0.113.10',
+    })
+    const secondHeaders = new Headers({
+      'user-agent': 'vitest-browser',
+      'x-forwarded-for': '203.0.113.10',
+    })
+    const firstVisitor = getDiscussionVisitor(firstHeaders)
+    const secondVisitor = getDiscussionVisitor(secondHeaders)
+
+    expect(firstVisitor.visitorKey).toMatch(/^anon_[a-zA-Z0-9_-]{12,80}$/)
+    expect(firstVisitor.visitorKey).not.toBe(secondVisitor.visitorKey)
+    expect(getDiscussionVisitor(firstHeaders).visitorKey).toBe(firstVisitor.visitorKey)
+    expect(firstVisitor.setCookieHeader).toContain(`${DISCUSSION_VISITOR_COOKIE}=`)
+  })
+
+  it('reuses an existing anonymous discussion visitor cookie', () => {
     const headers = new Headers({
+      cookie: `${DISCUSSION_VISITOR_COOKIE}=anon_existingVisitor123`,
       'user-agent': 'vitest-browser',
       'x-forwarded-for': '203.0.113.10',
     })
 
-    expect(getDiscussionVisitor(headers).visitorKey).toBe(getDiscussionVisitor(headers).visitorKey)
-    expect(getDiscussionVisitor(headers).setCookieHeader).toContain('bwb_discussion_visitor=')
+    expect(getDiscussionVisitor(headers)).toEqual({
+      setCookieHeader: null,
+      visitorKey: 'anon_existingVisitor123',
+    })
   })
 
   it('returns an existing Stripe order without a transaction id on replay', async () => {

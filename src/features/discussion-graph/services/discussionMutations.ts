@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import { buildSearchText, normalizeTags } from '@/features/discussion-graph/content'
 import {
+  type DiscussionVisitor,
   getDiscussionActorKey,
   getDiscussionVisitor,
 } from '@/features/discussion-graph/services/discussionIdentity'
@@ -309,15 +310,24 @@ const getReplySubmissionKey = ({
     typeof input.idempotencyKey === 'string' && input.idempotencyKey.trim()
       ? input.idempotencyKey.trim()
       : headers.get('idempotency-key')?.trim() || ''
-  const keyMaterial = clientKey
-    ? `client:${clientKey}`
-    : JSON.stringify({
-        content,
-        edgeType,
-        nodeType,
+  if (clientKey) {
+    return `reply:client:${createStableHash(
+      JSON.stringify({
+        clientKey,
         parentNodeId,
-        title,
-      })
+      }),
+      48,
+    )}`
+  }
+
+  const keyMaterial = JSON.stringify({
+    actorKey,
+    content,
+    edgeType,
+    nodeType,
+    parentNodeId,
+    title,
+  })
 
   return `reply:${actorKey}:${createStableHash(keyMaterial, 48)}`
 }
@@ -349,10 +359,12 @@ export const createDiscussionReply = async ({
   headers,
   input,
   payload,
+  visitor,
 }: {
   headers: Request['headers']
   input: Record<string, unknown>
   payload: Payload
+  visitor?: DiscussionVisitor
 }) => {
   const { user } = await payload.auth({ headers })
 
@@ -409,10 +421,10 @@ export const createDiscussionReply = async ({
   const parentPayloadId = toPayloadId(parentNodeId)
   const rootPayloadId = toPayloadId(rootId)
   const now = new Date().toISOString()
-  const visitor = getDiscussionVisitor(headers)
+  const discussionVisitor = visitor ?? getDiscussionVisitor(headers)
   const actorKey = getDiscussionActorKey({
     user,
-    visitorKey: visitor.visitorKey,
+    visitorKey: discussionVisitor.visitorKey,
   })
   const submissionKey = getReplySubmissionKey({
     actorKey,
@@ -515,21 +527,23 @@ export const raiseNodeAwareness = async ({
   nodeId,
   payload,
   reactionType = 'awareness',
+  visitor,
 }: {
   headers: Request['headers']
   nodeId: string
   payload: Payload
   reactionType?: 'awareness' | 'cry' | 'wiltedRose'
+  visitor?: DiscussionVisitor
 }) => {
   if (!nodeId) {
     throw createError('Choose a node first.')
   }
 
   const { user } = await payload.auth({ headers })
-  const visitor = getDiscussionVisitor(headers)
+  const discussionVisitor = visitor ?? getDiscussionVisitor(headers)
   const actorKey = getDiscussionActorKey({
     user,
-    visitorKey: visitor.visitorKey,
+    visitorKey: discussionVisitor.visitorKey,
   })
   const dedupeKey = `awareness:${nodeId}:${reactionType}:${actorKey}`
 
@@ -562,9 +576,9 @@ export const raiseNodeAwareness = async ({
                 value: user.id,
               },
             }
-          : {
-              visitorKey: visitor.visitorKey,
-            }),
+            : {
+                visitorKey: discussionVisitor.visitorKey,
+              }),
       },
       overrideAccess: true,
     })
