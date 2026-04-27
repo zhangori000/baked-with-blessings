@@ -1,8 +1,6 @@
-import nextEnv from '@next/env'
+import { loadScriptEnv } from './lib/load-script-env'
 
-const { loadEnvConfig } = nextEnv
-
-loadEnvConfig(process.cwd())
+loadScriptEnv()
 
 import { seedBlogPosts } from '../src/endpoints/seed/blog-posts'
 

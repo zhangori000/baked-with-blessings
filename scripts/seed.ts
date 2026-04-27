@@ -1,8 +1,6 @@
-import nextEnv from '@next/env'
+import { loadScriptEnv } from './lib/load-script-env'
 
-const { loadEnvConfig } = nextEnv
-
-loadEnvConfig(process.cwd())
+loadScriptEnv()
 
 import { seed } from '../src/endpoints/seed'
 
@@ -35,7 +33,9 @@ const runSeed = async () => {
     const admin = admins.docs[0]
 
     if (!admin) {
-      throw new Error('No admin exists yet. Run `pnpm bootstrap:admin` first, then run `pnpm seed`.')
+      throw new Error(
+        'No admin exists yet. Run `pnpm bootstrap:admin` first, then run `pnpm seed`.',
+      )
     }
 
     const req = await createLocalReq({ user: admin }, payload)

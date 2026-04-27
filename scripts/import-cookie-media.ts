@@ -1,8 +1,6 @@
-import nextEnv from '@next/env'
+import { loadScriptEnv } from './lib/load-script-env'
 
-const { loadEnvConfig } = nextEnv
-
-loadEnvConfig(process.cwd())
+loadScriptEnv()
 
 import { importCookieMedia } from '../src/endpoints/seed/cookie-media'
 
