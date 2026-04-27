@@ -153,6 +153,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.34rem;
+  min-width: 0;
   line-height: 1;
   padding-bottom: 0;
 }
@@ -162,41 +163,21 @@
   content: none;
 }
 
-.siteHeaderBannerAppName {
-  display: inline-flex;
+.siteHeaderBannerDropdownIcon {
   flex: 0 0 auto;
-  align-items: center;
-  gap: 0.26rem;
-  max-width: clamp(9.5rem, 13vw, 13rem);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 0.78rem;
+  height: 0.78rem;
+  margin-top: -0.02rem;
+  stroke-width: 3;
+  opacity: 0.78;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 
-.siteHeaderBannerMoreCue {
-  align-items: center;
-  background: rgba(36, 79, 45, 0.12);
-  border: 1px solid rgba(36, 79, 45, 0.16);
-  border-radius: 999px;
-  color: #244f2d;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  margin-left: 0.1rem;
-  min-height: 1.32rem;
-  padding: 0.28rem 0.48rem 0.24rem;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.siteHeaderBannerLink.is-active .siteHeaderBannerMoreCue,
-.siteHeaderBannerButton[aria-expanded='true'] .siteHeaderBannerMoreCue {
-  background: rgba(255, 253, 246, 0.94);
-  border-color: rgba(255, 253, 246, 0.38);
-  color: #244f2d;
+.siteHeaderBannerButton[aria-expanded='true'] .siteHeaderBannerDropdownIcon {
+  opacity: 1;
+  transform: rotate(180deg);
 }
 
 .siteHeaderBannerLink::before,
@@ -1602,12 +1583,11 @@ body:has(.routeLoadingSurface) .siteHeaderBannerList {
     font-size: 0.76rem;
   }
 
-  .siteHeaderBannerAppName {
-    max-width: clamp(8.8rem, 15vw, 11rem);
-  }
-
-  .siteHeaderBannerMoreCue {
-    display: none;
+  .siteHeaderBannerButton .siteHeaderBannerLabel {
+    max-width: clamp(7rem, 16vw, 10.5rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .siteHeaderActionArea {

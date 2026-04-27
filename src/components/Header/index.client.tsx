@@ -132,6 +132,8 @@ export function HeaderClient({ brand, header }: Props) {
     return accountLabels[href as keyof typeof accountLabels]
   }
 
+  const appsButtonLabel = activeAppLabel || appsNavigationLabel
+
   useEffect(() => {
     setActivePanel(null)
   }, [pathname])
@@ -245,11 +247,7 @@ export function HeaderClient({ brand, header }: Props) {
                     <li className={headerClassNames.bannerItem} key={item.id}>
                       {item.kind === 'apps' ? (
                         <button
-                          aria-label={
-                            activeAppLabel
-                              ? `${appsNavigationLabel}: ${activeAppLabel}. Click for more`
-                              : `${appsNavigationLabel}. Click for more`
-                          }
+                          aria-label={`${appsButtonLabel}. Open other pages menu`}
                           aria-expanded={activePanel === 'more'}
                           className={cn(headerClassNames.bannerLink, 'siteHeaderBannerButton', {
                             'is-active': item.isActive || activePanel === 'more',
@@ -259,13 +257,8 @@ export function HeaderClient({ brand, header }: Props) {
                           }}
                           type="button"
                         >
-                          <span className="siteHeaderBannerLabel">{appsNavigationLabel}</span>
-                          {activeAppLabel ? (
-                            <span className="siteHeaderBannerAppName">
-                              <span aria-hidden="true">:</span> {activeAppLabel}
-                            </span>
-                          ) : null}
-                          <span className="siteHeaderBannerMoreCue">Click for more</span>
+                          <span className="siteHeaderBannerLabel">{appsButtonLabel}</span>
+                          <ChevronDown className="siteHeaderBannerDropdownIcon" />
                         </button>
                       ) : (
                         <Link
