@@ -52,6 +52,23 @@ pnpx create-payload-app my-project -t ecommerce
 
 That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
 
+### Preview bootstrap
+
+After linking the repo to Vercel with `pnpm exec vercel link`, one-off setup commands can be run against the Vercel Preview database and Blob store:
+
+```bash
+pnpm exec vercel env run -e preview -- pnpm bootstrap:admin
+pnpm exec vercel env run -e preview -- pnpm seed
+```
+
+The scripts intentionally load local `.env` files for normal development, but when they run under Vercel env injection they preserve hosted Preview values. If `DATABASE_URL` still points at local Postgres while `NEON_POSTGRES_URL` is present, the scripts use the hosted Neon URL so setup commands do not accidentally seed Docker.
+
+For the dummy customer account, Vercel Sensitive variables may not be downloadable through the CLI. Pass the password locally while keeping the Preview database/blob vars from Vercel:
+
+```bash
+BOOTSTRAP_TEST_CUSTOMER_PASSWORD='your-preview-password' pnpm exec vercel env run -e preview -- pnpm bootstrap:test-customer
+```
+
 ## How it works
 
 The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:

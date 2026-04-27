@@ -52,7 +52,15 @@ if (!isEmail(email)) {
 }
 
 if (!password) {
-  throw new Error('Missing BOOTSTRAP_TEST_CUSTOMER_PASSWORD. Set it before running this script.')
+  throw new Error(
+    [
+      'Missing BOOTSTRAP_TEST_CUSTOMER_PASSWORD. Set it before running this script.',
+      '',
+      'If you are using `vercel env run`, Vercel Sensitive variables may not be downloadable by the CLI.',
+      'Pass a temporary local value while still using Preview database/blob env vars:',
+      "BOOTSTRAP_TEST_CUSTOMER_PASSWORD='your-preview-password' pnpm exec vercel env run -e preview -- pnpm bootstrap:test-customer",
+    ].join('\n'),
+  )
 }
 
 if (password.length < minPasswordLength) {

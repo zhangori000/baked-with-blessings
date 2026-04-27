@@ -4,6 +4,8 @@ import type { File, Payload, PayloadRequest } from 'payload'
 
 import type { Media } from '@/payload-types'
 
+import { clearSeedMediaBlobs } from './blob-media'
+
 const cateringMediaSpec = {
   alt: 'April 2026 catering menu sheet featuring cookie trays, puddings, and focaccia.',
   filename: 'catering-menu-april-2026.png',
@@ -89,7 +91,12 @@ export const importCateringMedia = async ({
   if (existingMedia) {
     const needsVariantRefresh = !mediaHasAllExpectedSizes(existingMedia)
 
-    if (existingMedia.alt !== cateringMediaSpec.alt || needsVariantRefresh) {
+    if (needsVariantRefresh) {
+      await clearSeedMediaBlobs({
+        filename: existingMedia.filename || cateringMediaSpec.filename,
+        payload,
+      })
+
       mediaBySlug[cateringMediaSpec.slug] = await payload.update({
         collection: 'media',
         data: {
@@ -106,6 +113,18 @@ export const importCateringMedia = async ({
           ? `- Refreshed media and generated variants for ${cateringMediaSpec.filename}`
           : `- Updated media metadata for ${cateringMediaSpec.filename}`,
       )
+    } else if (existingMedia.alt !== cateringMediaSpec.alt) {
+      mediaBySlug[cateringMediaSpec.slug] = await payload.update({
+        collection: 'media',
+        data: {
+          alt: cateringMediaSpec.alt,
+        },
+        depth: 0,
+        id: existingMedia.id,
+        req,
+      })
+      updated += 1
+      payload.logger.info(`- Updated media metadata for ${cateringMediaSpec.filename}`)
     } else {
       mediaBySlug[cateringMediaSpec.slug] = existingMedia
       skipped += 1
@@ -119,6 +138,11 @@ export const importCateringMedia = async ({
       updated,
     }
   }
+
+  await clearSeedMediaBlobs({
+    filename: cateringMediaSpec.filename,
+    payload,
+  })
 
   mediaBySlug[cateringMediaSpec.slug] = await payload.create({
     collection: 'media',

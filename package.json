@@ -57,6 +57,7 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@stripe/react-stripe-js": "^3",
     "@stripe/stripe-js": "^4.0.0",
+    "@vercel/blob": "2.3.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cross-env": "^7.0.3",

@@ -4,6 +4,7 @@ import type { File, Payload, PayloadRequest } from 'payload'
 
 import type { Media } from '@/payload-types'
 
+import { clearSeedMediaBlobs } from './blob-media'
 import { cookieCatalog } from './cookie-catalog'
 
 const requiredImageSizes = ['thumbnail', 'card', 'poster', 'tablet'] as const
@@ -86,7 +87,12 @@ export const importCookieMedia = async ({
     if (existingMedia) {
       const needsVariantRefresh = !mediaHasAllExpectedSizes(existingMedia)
 
-      if (existingMedia.alt !== spec.mediaAlt || needsVariantRefresh) {
+      if (needsVariantRefresh) {
+        await clearSeedMediaBlobs({
+          filename: existingMedia.filename || spec.sourceFilename,
+          payload,
+        })
+
         mediaBySlug[spec.slug] = await payload.update({
           collection: 'media',
           data: {
@@ -103,6 +109,18 @@ export const importCookieMedia = async ({
             ? `- Refreshed media and generated variants for ${spec.sourceFilename}`
             : `- Updated media metadata for ${spec.sourceFilename}`,
         )
+      } else if (existingMedia.alt !== spec.mediaAlt) {
+        mediaBySlug[spec.slug] = await payload.update({
+          collection: 'media',
+          data: {
+            alt: spec.mediaAlt,
+          },
+          depth: 0,
+          id: existingMedia.id,
+          req,
+        })
+        updated += 1
+        payload.logger.info(`- Updated media metadata for ${spec.sourceFilename}`)
       } else {
         mediaBySlug[spec.slug] = existingMedia
         skipped += 1
@@ -111,6 +129,11 @@ export const importCookieMedia = async ({
 
       continue
     }
+
+    await clearSeedMediaBlobs({
+      filename: spec.sourceFilename,
+      payload,
+    })
 
     mediaBySlug[spec.slug] = await payload.create({
       collection: 'media',
