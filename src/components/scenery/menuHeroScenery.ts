@@ -1,12 +1,6 @@
 import type { CSSProperties } from 'react'
 
-export type SceneTone =
-  | 'dawn'
-  | 'under-tree'
-  | 'moonlit'
-  | 'classic'
-  | 'blossom'
-  | 'fairy-castle'
+export type SceneTone = 'dawn' | 'under-tree' | 'moonlit' | 'classic' | 'blossom' | 'fairy-castle'
 
 export type SceneCloudConfig = {
   className: string
@@ -41,6 +35,7 @@ export type SceneCritterConfig = {
 
 export type SceneAccentConfig = {
   asset: string
+  bottom?: string
   id: number
   left: string
   scale: number
@@ -281,7 +276,8 @@ export const menuHeroPiecesByScene: Record<SceneTone, readonly ScenePieceConfig[
   ],
   'under-tree': [
     {
-      className: 'left-[-4%] bottom-[3.25rem] w-[35rem] md:left-[0%] md:bottom-[-0.5rem] md:w-[54rem]',
+      className:
+        'left-[-4%] bottom-[3.25rem] w-[35rem] md:left-[0%] md:bottom-[-0.5rem] md:w-[54rem]',
       src: '/sceneries/girl-under-tree-tree.svg?v=2',
     },
   ],
@@ -371,10 +367,7 @@ export const menuSpawnedAccentSourcesByScene: Record<SceneTone, readonly string[
     '/catering/decor/sheep-grin.svg',
     '/catering/decor/sheep-sleepy.svg',
   ],
-  'fairy-castle': [
-    '/sceneries/fairy-castle-house.svg',
-    '/sceneries/fairy-castle-house-wide.svg',
-  ],
+  'fairy-castle': ['/sceneries/fairy-castle-house.svg', '/sceneries/fairy-castle-house-wide.svg'],
 }
 
 export const menuCloudSpawnDesignsByScene: Record<SceneTone, readonly SceneCloudSpawnConfig[]> = {
@@ -402,17 +395,6 @@ export const getNextMenuSceneTone = (current: SceneTone): SceneTone => {
   const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % menuSceneTones.length : 0
 
   return menuSceneTones[nextIndex] ?? menuSceneTones[0]
-}
-
-const hashSeed = (seed: string) =>
-  Array.from(seed).reduce(
-    (total, character, index) => total + character.charCodeAt(0) * (index + 1),
-    0,
-  )
-
-const deterministicBetween = (seed: string, min: number, max: number) => {
-  const normalized = (Math.sin(hashSeed(seed) * 12.9898) + 1) / 2
-  return min + (max - min) * normalized
 }
 
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
@@ -445,6 +427,22 @@ const getSceneAccentScaleRange = (sceneTone: SceneTone): [number, number] => {
   return [0.76, 0.98]
 }
 
+const getSceneAccentBottomRange = (sceneTone: SceneTone): [number, number] => {
+  if (sceneTone === 'blossom') {
+    return [8, 48]
+  }
+
+  if (sceneTone === 'fairy-castle') {
+    return [7, 46]
+  }
+
+  if (sceneTone === 'moonlit') {
+    return [8, 50]
+  }
+
+  return [8, 48]
+}
+
 export const buildSeededMenuSceneAccents = (
   sceneTone: SceneTone,
   count = menuSceneSeededAccentCountByScene[sceneTone],
@@ -454,6 +452,7 @@ export const buildSeededMenuSceneAccents = (
   }
 
   const [minScale, maxScale] = getSceneAccentScaleRange(sceneTone)
+  const [minBottom, maxBottom] = getSceneAccentBottomRange(sceneTone)
   const assets = menuSpawnedAccentSourcesByScene[sceneTone]
   const minLeft = 8
   const maxLeft = 92
@@ -461,11 +460,13 @@ export const buildSeededMenuSceneAccents = (
   return Array.from({ length: count }, (_, index) => {
     const assetIndex = Math.floor(randomBetween(0, Math.max(assets.length, 1)))
     const asset = assets[assetIndex] ?? assets[0] ?? '/flowers/daisy-large.svg'
+    const bottom = randomBetween(minBottom, maxBottom)
     const left = randomBetween(minLeft, maxLeft)
     const scale = randomBetween(minScale, maxScale)
 
     return {
       asset,
+      bottom: `${bottom.toFixed(2)}%`,
       id: Date.now() + Math.random() + index,
       left: `${left.toFixed(2)}%`,
       scale: Number(scale.toFixed(2)),
@@ -475,13 +476,16 @@ export const buildSeededMenuSceneAccents = (
 
 export const createSpawnedMenuSceneAccent = (sceneTone: SceneTone): SceneAccentConfig => {
   const assets = menuSpawnedAccentSourcesByScene[sceneTone]
+  const [minBottom, maxBottom] = getSceneAccentBottomRange(sceneTone)
   const scale =
     sceneTone === 'moonlit'
       ? Number(randomMoonlitAccentScale().toFixed(2))
       : Number(randomBetween(...getSceneAccentScaleRange(sceneTone)).toFixed(2))
 
   return {
-    asset: assets[Math.floor(Math.random() * assets.length)] ?? assets[0] ?? '/flowers/daisy-large.svg',
+    asset:
+      assets[Math.floor(Math.random() * assets.length)] ?? assets[0] ?? '/flowers/daisy-large.svg',
+    bottom: `${randomBetween(minBottom, maxBottom).toFixed(2)}%`,
     id: Date.now() + Math.random(),
     left: `${randomBetween(3, 97).toFixed(2)}%`,
     scale,

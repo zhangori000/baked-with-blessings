@@ -13,7 +13,7 @@ import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { Suspense, useCallback, useEffect, useState } from 'react'
+import React, { Suspense, useCallback, useState } from 'react'
 
 import { cssVariables } from '@/cssVariables'
 import { CheckoutForm } from '@/components/forms/CheckoutForm'
@@ -46,36 +46,20 @@ export const CheckoutPage: React.FC = () => {
   const { addresses } = useAddresses()
   const [shippingAddress, setShippingAddress] = useState<Partial<Address>>()
   const [billingAddress, setBillingAddress] = useState<Partial<Address>>()
+  const [hasDismissedDefaultBillingAddress, setHasDismissedDefaultBillingAddress] = useState(false)
   const [billingAddressSameAsShipping, setBillingAddressSameAsShipping] = useState(true)
   const [isProcessingPayment, setProcessingPayment] = useState(false)
 
   const cartIsEmpty = !cart || !cart.items || !cart.items.length
+  const defaultBillingAddress =
+    !billingAddress && !hasDismissedDefaultBillingAddress && addresses && addresses.length > 0
+      ? addresses[0]
+      : undefined
+  const selectedBillingAddress = billingAddress ?? defaultBillingAddress
 
   const canGoToPayment = Boolean(
-    (email || user) && billingAddress && (billingAddressSameAsShipping || shippingAddress),
+    (email || user) && selectedBillingAddress && (billingAddressSameAsShipping || shippingAddress),
   )
-
-  // On initial load wait for addresses to be loaded and check to see if we can prefill a default one
-  useEffect(() => {
-    if (!shippingAddress) {
-      if (addresses && addresses.length > 0) {
-        const defaultAddress = addresses[0]
-        if (defaultAddress) {
-          setBillingAddress(defaultAddress)
-        }
-      }
-    }
-  }, [addresses])
-
-  useEffect(() => {
-    return () => {
-      setShippingAddress(undefined)
-      setBillingAddress(undefined)
-      setBillingAddressSameAsShipping(true)
-      setEmail('')
-      setEmailEditable(true)
-    }
-  }, [])
 
   const initiatePaymentIntent = useCallback(
     async (paymentID: string) => {
@@ -83,8 +67,10 @@ export const CheckoutPage: React.FC = () => {
         const paymentData = (await initiatePayment(paymentID, {
           additionalData: {
             ...(email ? { customerEmail: email } : {}),
-            billingAddress,
-            shippingAddress: billingAddressSameAsShipping ? billingAddress : shippingAddress,
+            billingAddress: selectedBillingAddress,
+            shippingAddress: billingAddressSameAsShipping
+              ? selectedBillingAddress
+              : shippingAddress,
           },
         })) as Record<string, unknown>
 
@@ -103,7 +89,7 @@ export const CheckoutPage: React.FC = () => {
         toast.error(errorMessage)
       }
     },
-    [billingAddress, billingAddressSameAsShipping, shippingAddress],
+    [billingAddressSameAsShipping, email, initiatePayment, selectedBillingAddress, shippingAddress],
   )
 
   if (!stripe) return null
@@ -127,6 +113,9 @@ export const CheckoutPage: React.FC = () => {
       </div>
     )
   }
+
+  const clientSecret =
+    typeof paymentData?.['clientSecret'] === 'string' ? paymentData['clientSecret'] : null
 
   return (
     <div className="flex flex-col items-stretch justify-stretch my-8 md:flex-row grow gap-10 md:gap-6 lg:gap-8">
@@ -190,7 +179,7 @@ export const CheckoutPage: React.FC = () => {
 
         <h2 className="font-medium text-3xl">Address</h2>
 
-        {billingAddress ? (
+        {selectedBillingAddress ? (
           <div>
             <AddressItem
               actions={
@@ -200,20 +189,28 @@ export const CheckoutPage: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     setBillingAddress(undefined)
+                    setHasDismissedDefaultBillingAddress(true)
                   }}
                 >
                   Remove
                 </Button>
               }
-              address={billingAddress}
+              address={selectedBillingAddress}
             />
           </div>
         ) : user ? (
-          <CheckoutAddresses heading="Billing address" setAddress={setBillingAddress} />
+          <CheckoutAddresses
+            heading="Billing address"
+            setAddress={(address) => {
+              setHasDismissedDefaultBillingAddress(false)
+              setBillingAddress(address)
+            }}
+          />
         ) : (
           <CreateAddressModal
             disabled={!email || Boolean(emailEditable)}
             callback={(address) => {
+              setHasDismissedDefaultBillingAddress(false)
               setBillingAddress(address)
             }}
             skipSubmission={true}
@@ -283,7 +280,7 @@ export const CheckoutPage: React.FC = () => {
           </Button>
         )}
 
-        {!paymentData?.['clientSecret'] && error && (
+        {!clientSecret && error && (
           <div className="my-8">
             <Message error={error} />
 
@@ -300,8 +297,7 @@ export const CheckoutPage: React.FC = () => {
         )}
 
         <Suspense fallback={<React.Fragment />}>
-          {/* @ts-ignore */}
-          {paymentData && paymentData?.['clientSecret'] && (
+          {clientSecret && (
             <div className="pb-16">
               <h2 className="font-medium text-3xl">Payment</h2>
               {error && <p>{`Error: ${error}`}</p>}
@@ -328,7 +324,7 @@ export const CheckoutPage: React.FC = () => {
                       spacingUnit: '4px',
                     },
                   },
-                  clientSecret: paymentData['clientSecret'] as string,
+                  clientSecret,
                   // Stripe Elements renders inside an iframe, so load Rubik there explicitly.
                   fonts: [
                     {
@@ -342,7 +338,7 @@ export const CheckoutPage: React.FC = () => {
                 <div className="flex flex-col gap-8">
                   <CheckoutForm
                     customerEmail={email}
-                    billingAddress={billingAddress}
+                    billingAddress={selectedBillingAddress}
                     setProcessingPayment={setProcessingPayment}
                   />
                   <Button
@@ -366,7 +362,7 @@ export const CheckoutPage: React.FC = () => {
             if (typeof item.product === 'object' && item.product) {
               const {
                 product,
-                product: { id, meta, title, gallery },
+                product: { meta, title, gallery },
                 quantity,
                 variant,
               } = item
@@ -383,16 +379,18 @@ export const CheckoutPage: React.FC = () => {
 
                 const imageVariant = product.gallery?.find(
                   (item: NonNullable<Product['gallery']>[number]) => {
-                  if (!item.variantOption) return false
-                  const variantOptionID =
-                    typeof item.variantOption === 'object'
-                      ? item.variantOption.id
-                      : item.variantOption
+                    if (!item.variantOption) return false
+                    const variantOptionID =
+                      typeof item.variantOption === 'object'
+                        ? item.variantOption.id
+                        : item.variantOption
 
-                    const hasMatch = variant?.options?.some((option: Variant['options'][number]) => {
-                      if (typeof option === 'object') return option.id === variantOptionID
-                      else return option === variantOptionID
-                    })
+                    const hasMatch = variant?.options?.some(
+                      (option: Variant['options'][number]) => {
+                        if (typeof option === 'object') return option.id === variantOptionID
+                        else return option === variantOptionID
+                      },
+                    )
 
                     return hasMatch
                   },

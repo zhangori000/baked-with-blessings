@@ -213,11 +213,14 @@ export function HeaderClient({ brand, header }: Props) {
               href={rotatingCookieFlavorsHref}
             >
               {brand.logoUrl ? (
-                <img
+                <Image
                   alt={brand.logoAlt}
                   className={headerClassNames.brandLogo}
-                  loading="eager"
+                  height={80}
+                  priority
                   src={brand.logoUrl}
+                  unoptimized
+                  width={180}
                 />
               ) : (
                 <>

@@ -578,7 +578,7 @@
   text-transform: uppercase;
 }
 
-.siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(1) .siteHeaderMobileCardAction::after {
+.siteHeaderMobileCard[data-flower-tone='orange'] .siteHeaderMobileCardAction::after {
   background:
     radial-gradient(circle at 50% 50%, #6f5110 0 17%, transparent 19%),
     radial-gradient(circle at 50% 14%, #f0bb78 0 23%, transparent 25%),
@@ -588,7 +588,7 @@
     radial-gradient(circle at 18% 38%, #f0bb78 0 23%, transparent 25%);
 }
 
-.siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(2) .siteHeaderMobileCardAction::after {
+.siteHeaderMobileCard[data-flower-tone='sage'] .siteHeaderMobileCardAction::after {
   background:
     radial-gradient(circle at 50% 50%, #545228 0 17%, transparent 19%),
     radial-gradient(circle at 50% 14%, #f2e7b2 0 23%, transparent 25%),
@@ -598,7 +598,7 @@
     radial-gradient(circle at 18% 38%, #f2e7b2 0 23%, transparent 25%);
 }
 
-.siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(3) .siteHeaderMobileCardAction::after {
+.siteHeaderMobileCard[data-flower-tone='plum'] .siteHeaderMobileCardAction::after {
   background:
     radial-gradient(circle at 50% 50%, #4d4030 0 17%, transparent 19%),
     radial-gradient(circle at 50% 14%, #e6d1da 0 23%, transparent 25%),
@@ -608,7 +608,7 @@
     radial-gradient(circle at 18% 38%, #e6d1da 0 23%, transparent 25%);
 }
 
-.siteHeaderMobilePanelCards .siteHeaderMobileCard:nth-child(4) .siteHeaderMobileCardAction::after {
+.siteHeaderMobileCard[data-flower-tone='rose'] .siteHeaderMobileCardAction::after {
   background:
     radial-gradient(circle at 50% 50%, #6e422f 0 17%, transparent 19%),
     radial-gradient(circle at 50% 14%, #f5bfcb 0 23%, transparent 25%),
@@ -616,6 +616,16 @@
     radial-gradient(circle at 68% 80%, #d94d74 0 23%, transparent 25%),
     radial-gradient(circle at 32% 80%, #ec7e9b 0 23%, transparent 25%),
     radial-gradient(circle at 18% 38%, #f5bfcb 0 23%, transparent 25%);
+}
+
+.siteHeaderMobileCard[data-flower-tone='sunflower'] .siteHeaderMobileCardAction::after {
+  background:
+    radial-gradient(circle at 50% 50%, #6d5711 0 17%, transparent 19%),
+    radial-gradient(circle at 50% 14%, #f4db65 0 23%, transparent 25%),
+    radial-gradient(circle at 82% 38%, #dfb929 0 23%, transparent 25%),
+    radial-gradient(circle at 68% 80%, #b8941d 0 23%, transparent 25%),
+    radial-gradient(circle at 32% 80%, #dfb929 0 23%, transparent 25%),
+    radial-gradient(circle at 18% 38%, #f4db65 0 23%, transparent 25%);
 }
 
 .siteHeaderMobileTabs {

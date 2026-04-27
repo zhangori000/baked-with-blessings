@@ -92,18 +92,29 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
             key={`${sceneTone}-${cloud.className}-${cloud.src}`}
             style={cloud.style}
           >
-            <Image alt="" aria-hidden="true" className="h-auto w-full" height={240} src={cloud.src} unoptimized width={360} />
+            <Image
+              alt=""
+              aria-hidden="true"
+              className="h-auto w-full"
+              height={240}
+              src={cloud.src}
+              unoptimized
+              width={360}
+            />
           </span>
         ))}
 
         <picture className="absolute inset-x-0 bottom-0 h-24 md:h-32">
           {mobileMeadowSrc ? <source media="(max-width: 767px)" srcSet={mobileMeadowSrc} /> : null}
-          <img
+          <Image
             alt=""
             aria-hidden="true"
-            className="h-full w-full object-cover object-bottom"
+            className="object-cover object-bottom"
             draggable="false"
+            fill
+            sizes="100vw"
             src={meadowSrc}
+            unoptimized
           />
         </picture>
       </div>
@@ -118,93 +129,93 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
           }}
         >
-        <div className="flex min-h-[17rem] flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <section className="max-w-[34rem] md:pt-1">
-            <Link
-              aria-label={brand.brandName}
-              className="inline-flex shrink-0 rounded-2xl bg-[#fff8e6]/90 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_24px_rgba(5,12,5,0.12)]"
-              href="/"
-            >
-              <Image
-                alt={brand.logoAlt}
-                className="h-auto w-[8.75rem] object-contain sm:w-[10rem]"
-                height={64}
-                loading="eager"
-                src={brand.logoUrl}
-                unoptimized
-                width={176}
-              />
-            </Link>
-          </section>
+          <div className="flex min-h-[17rem] flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            <section className="max-w-[34rem] md:pt-1">
+              <Link
+                aria-label={brand.brandName}
+                className="inline-flex shrink-0 rounded-2xl bg-[#fff8e6]/90 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_24px_rgba(5,12,5,0.12)]"
+                href="/"
+              >
+                <Image
+                  alt={brand.logoAlt}
+                  className="h-auto w-[8.75rem] object-contain sm:w-[10rem]"
+                  height={64}
+                  loading="eager"
+                  src={brand.logoUrl}
+                  unoptimized
+                  width={176}
+                />
+              </Link>
+            </section>
 
-          <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
-            <nav aria-label="Footer links">
-              <ul className="flex flex-wrap gap-2 md:justify-end">
-                {navItems.map((item, index) => {
-                  const linkProps =
-                    item.link && typeof item.link === 'object'
-                      ? (item.link as Record<string, unknown>)
-                      : {}
-                  const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
-                  const footerLinkStyle = {
-                    '--footer-link-bg': 'rgba(255,252,244,0.56)',
-                    '--footer-link-border': footerBorder,
-                    '--footer-link-color': footerText,
-                  } as React.CSSProperties
+            <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
+              <nav aria-label="Footer links">
+                <ul className="flex flex-wrap gap-2 md:justify-end">
+                  {navItems.map((item, index) => {
+                    const linkProps =
+                      item.link && typeof item.link === 'object'
+                        ? (item.link as Record<string, unknown>)
+                        : {}
+                    const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
+                    const footerLinkStyle = {
+                      '--footer-link-bg': 'rgba(255,252,244,0.56)',
+                      '--footer-link-border': footerBorder,
+                      '--footer-link-color': footerText,
+                    } as React.CSSProperties
 
-                  return (
-                    <li key={item.id ?? `footer-link-${index}`} style={footerLinkStyle}>
-                      <CMSLink
-                        appearance="link"
-                        className="inline-flex rounded-full border border-[var(--footer-link-border)] bg-[var(--footer-link-bg)] px-3.5 py-2.5 text-[0.92rem] font-extrabold tracking-[0.01em] text-[var(--footer-link-color)] transition hover:-translate-y-0.5"
-                        {...footerLinkProps}
-                      />
-                    </li>
-                  )
-                })}
-              </ul>
-            </nav>
+                    return (
+                      <li key={item.id ?? `footer-link-${index}`} style={footerLinkStyle}>
+                        <CMSLink
+                          appearance="link"
+                          className="inline-flex rounded-full border border-[var(--footer-link-border)] bg-[var(--footer-link-bg)] px-3.5 py-2.5 text-[0.92rem] font-extrabold tracking-[0.01em] text-[var(--footer-link-color)] transition hover:-translate-y-0.5"
+                          {...footerLinkProps}
+                        />
+                      </li>
+                    )
+                  })}
+                </ul>
+              </nav>
 
-            <div className="flex flex-wrap gap-2 md:justify-end">
-              {socialLinks.map(({ href, icon: Icon, label }) => (
-                <a
-                  aria-label={label}
-                  className="inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[0.9rem] font-extrabold tracking-[0.01em] transition hover:-translate-y-0.5"
-                  href={href}
-                  key={label}
-                  rel="noreferrer"
-                  style={{ backgroundColor: 'rgba(255,252,244,0.56)', color: footerText }}
-                  target="_blank"
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div
-          className="mt-auto flex flex-col gap-3 rounded-2xl px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem] md:flex-row md:items-center md:justify-between"
-          style={{ backgroundColor: 'rgba(255,252,244,0.48)', color: footerMuted }}
-        >
-          <p>
-            &copy; {currentYear} {copyrightName}
-            {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
-          </p>
-
-          <div className="flex flex-wrap gap-x-4 gap-y-1 font-extrabold">
-            <Link className="transition hover:opacity-70" href="/account">
-              Account
-            </Link>
-            <Link className="transition hover:opacity-70" href="/menu">
-              Menu
-            </Link>
-            <Link className="transition hover:opacity-70" href="/contact">
-              Contact
-            </Link>
+              <div className="flex flex-wrap gap-2 md:justify-end">
+                {socialLinks.map(({ href, icon: Icon, label }) => (
+                  <a
+                    aria-label={label}
+                    className="inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[0.9rem] font-extrabold tracking-[0.01em] transition hover:-translate-y-0.5"
+                    href={href}
+                    key={label}
+                    rel="noreferrer"
+                    style={{ backgroundColor: 'rgba(255,252,244,0.56)', color: footerText }}
+                    target="_blank"
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
           </div>
-        </div>
+
+          <div
+            className="mt-auto flex flex-col gap-3 rounded-2xl px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem] md:flex-row md:items-center md:justify-between"
+            style={{ backgroundColor: 'rgba(255,252,244,0.48)', color: footerMuted }}
+          >
+            <p>
+              &copy; {currentYear} {copyrightName}
+              {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
+            </p>
+
+            <div className="flex flex-wrap gap-x-4 gap-y-1 font-extrabold">
+              <Link className="transition hover:opacity-70" href="/account">
+                Account
+              </Link>
+              <Link className="transition hover:opacity-70" href="/menu">
+                Menu
+              </Link>
+              <Link className="transition hover:opacity-70" href="/contact">
+                Contact
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

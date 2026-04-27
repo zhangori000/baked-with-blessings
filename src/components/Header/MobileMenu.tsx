@@ -28,6 +28,11 @@ type Props = {
   }>
 }
 
+type MobileFlowerTone = 'orange' | 'plum' | 'rose' | 'sage' | 'sunflower'
+
+const mainCardFlowerTones: MobileFlowerTone[] = ['orange', 'sage']
+const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
+
 export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -77,14 +82,16 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
     href,
     key,
     title,
+    tone,
   }: {
     description: string
     eyebrow: string
     href: string
     key: string
     title: string
+    tone: MobileFlowerTone
   }) => (
-    <article className="siteHeaderMobileCard" key={key}>
+    <article className="siteHeaderMobileCard" data-flower-tone={tone} key={key}>
       <div className="siteHeaderMobileCardCopy">
         <p className="siteHeaderMobileCardEyebrow">{eyebrow}</p>
         <h3 className="siteHeaderMobileCardTitle">{title}</h3>
@@ -135,13 +142,14 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
 
       <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>
         <div className="siteHeaderMobilePanelCards">
-          {mainItems.map((item) =>
+          {mainItems.map((item, index) =>
             renderCard({
               description: item.panel.description,
               eyebrow: item.panel.eyebrow,
               href: item.href,
               key: item.id,
               title: item.label,
+              tone: mainCardFlowerTones[index % mainCardFlowerTones.length],
             }),
           )}
 
@@ -162,13 +170,14 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
                     title: item.label,
                   },
                 ]
-            ).map((card) =>
+            ).map((card, index) =>
               renderCard({
                 description: card.description,
                 eyebrow: card.eyebrow,
                 href: card.href,
                 key: `${item.id}-${card.href}`,
                 title: card.title,
+                tone: appCardFlowerTones[index % appCardFlowerTones.length],
               }),
             ),
           )}

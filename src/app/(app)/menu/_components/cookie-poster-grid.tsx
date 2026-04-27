@@ -4,6 +4,7 @@ import type { SceneTone } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { menuHref } from '@/utilities/routes'
 import Link from 'next/link'
+import Image from 'next/image'
 import React, { useState } from 'react'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
@@ -32,6 +33,7 @@ type SpawnedPosterCloud = {
 
 type SpawnedPosterFlower = {
   bob: string
+  bottom: string
   delay: string
   duration: string
   id: number
@@ -126,6 +128,7 @@ const buildSeededPosterFlowers = (cardIndex: number): SpawnedPosterFlower[] => {
   return [
     {
       bob: '0.18rem',
+      bottom: '5%',
       delay: '-0.8s',
       duration: '4.4s',
       id: cardIndex * 10 + 1,
@@ -135,6 +138,7 @@ const buildSeededPosterFlowers = (cardIndex: number): SpawnedPosterFlower[] => {
     },
     {
       bob: '0.22rem',
+      bottom: '12%',
       delay: '-2.1s',
       duration: '4.9s',
       id: cardIndex * 10 + 2,
@@ -162,6 +166,7 @@ const createSpawnedPosterCloud = (sceneryTone: PosterSceneTone): SpawnedPosterCl
 
 const createSpawnedPosterFlower = (): SpawnedPosterFlower => ({
   bob: `${(0.16 + Math.random() * 0.14).toFixed(2)}rem`,
+  bottom: `${(4 + Math.random() * 28).toFixed(2)}%`,
   delay: `-${(Math.random() * 4.2).toFixed(2)}s`,
   duration: `${(4.1 + Math.random() * 1.7).toFixed(2)}s`,
   id: ++spawnedPosterFlowerID,
@@ -170,7 +175,13 @@ const createSpawnedPosterFlower = (): SpawnedPosterFlower => ({
   tilt: `${(Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 2.4)}deg`,
 })
 
-function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster: CookiePosterAsset }) {
+function CookiePosterRailCard({
+  cardIndex,
+  poster,
+}: {
+  cardIndex: number
+  poster: CookiePosterAsset
+}) {
   const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone('classic')
   const [isIngredientNoteOpen, setIsIngredientNoteOpen] = useState(false)
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedPosterCloud[]>([])
@@ -178,7 +189,8 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
     buildSeededPosterFlowers(cardIndex),
   )
 
-  const staticCloudAssets = posterCloudAssetsByScenery[sceneryTone] ?? posterCloudAssetsByScenery.classic
+  const staticCloudAssets =
+    posterCloudAssetsByScenery[sceneryTone] ?? posterCloudAssetsByScenery.classic
   const sceneStyle = {
     ['--cookie-bottom' as string]: '2.85rem',
     ['--cookie-size' as string]: 'clamp(14.8rem, 64%, 16.4rem)',
@@ -188,7 +200,9 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
   const handleChangeScenery = () => {
     setSceneryTone((current) => {
       const currentIndex = posterSceneryTones.indexOf(current)
-      return posterSceneryTones[(currentIndex + 1) % posterSceneryTones.length] ?? posterSceneryTones[0]
+      return (
+        posterSceneryTones[(currentIndex + 1) % posterSceneryTones.length] ?? posterSceneryTones[0]
+      )
     })
     setIsIngredientNoteOpen(false)
     setSpawnedClouds([])
@@ -215,14 +229,18 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
             </button>
             <button
               className="cookiePosterSceneButton"
-              onClick={() => setSpawnedClouds((current) => [...current, createSpawnedPosterCloud(sceneryTone)])}
+              onClick={() =>
+                setSpawnedClouds((current) => [...current, createSpawnedPosterCloud(sceneryTone)])
+              }
               type="button"
             >
               Spawn cloud
             </button>
             <button
               className="cookiePosterSceneButton"
-              onClick={() => setSpawnedFlowers((current) => [...current, createSpawnedPosterFlower()])}
+              onClick={() =>
+                setSpawnedFlowers((current) => [...current, createSpawnedPosterFlower()])
+              }
               type="button"
             >
               Spawn flower
@@ -236,19 +254,25 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
             />
           </div>
 
-          <img
+          <Image
             alt=""
             aria-hidden="true"
             className="cookiePosterSky absolute inset-0 h-full w-full object-cover"
+            fill
+            priority
+            sizes="21rem"
             src={posterSkyByScenery[sceneryTone]}
+            unoptimized
           />
 
           {posterClouds.map((cloud, index) => (
-            <img
+            <Image
               alt=""
               aria-hidden="true"
               className="cookiePosterSceneCloud"
+              height={280}
               key={`${poster.slug}-cloud-${sceneryTone}-${index}`}
+              priority
               src={staticCloudAssets[index % staticCloudAssets.length] ?? staticCloudAssets[0]}
               style={
                 {
@@ -257,15 +281,19 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
                   ['--cloud-duration' as string]: cloud.duration,
                 } as React.CSSProperties
               }
+              unoptimized
+              width={520}
             />
           ))}
 
           {spawnedClouds.map((cloud) => (
-            <img
+            <Image
               alt=""
               aria-hidden="true"
               className="cookiePosterSceneCloud"
+              height={280}
               key={cloud.id}
+              priority
               src={cloud.src}
               style={
                 {
@@ -276,6 +304,8 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
                   width: cloud.width,
                 } as React.CSSProperties
               }
+              unoptimized
+              width={520}
             />
           ))}
 
@@ -283,19 +313,25 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
 
           {sceneryTone === 'moonlit' ? <CookiePosterMoonlitLinework /> : null}
 
-          <img
+          <Image
             alt=""
             aria-hidden="true"
             className="cookiePosterMeadow absolute inset-x-0 bottom-0 z-[2] h-full w-full object-cover object-bottom"
+            fill
+            priority
+            sizes="21rem"
             src={posterMeadowByScenery[sceneryTone]}
+            unoptimized
           />
 
           {spawnedFlowers.map((flower) => (
-            <img
+            <Image
               alt=""
               aria-hidden="true"
               className="cookiePosterSceneFlower"
+              height={120}
               key={flower.id}
+              priority
               src="/flowers/menu-nav-flower.svg"
               style={
                 {
@@ -304,9 +340,12 @@ function CookiePosterRailCard({ cardIndex, poster }: { cardIndex: number; poster
                   ['--poster-flower-duration' as string]: flower.duration,
                   ['--poster-flower-scale' as string]: `${flower.scale}`,
                   ['--poster-flower-tilt' as string]: flower.tilt,
+                  bottom: flower.bottom,
                   left: flower.left,
                 } as React.CSSProperties
               }
+              unoptimized
+              width={120}
             />
           ))}
 
@@ -375,7 +414,14 @@ function CookiePosterIngredientNote({
           type="button"
         >
           <span className="cookiePosterInfoButtonIcon" aria-hidden="true">
-            <img alt="" className="cookiePosterInfoButtonFlower" src="/flowers/menu-nav-flower.svg" />
+            <Image
+              alt=""
+              className="cookiePosterInfoButtonFlower"
+              height={52}
+              src="/flowers/menu-nav-flower.svg"
+              unoptimized
+              width={64}
+            />
           </span>
           <span>{poster.infoButtonLabel}</span>
         </button>
@@ -405,7 +451,10 @@ function CookiePosterIngredientNote({
 
           <ul className="cookiePosterIngredientList">
             {poster.ingredients.map((ingredient) => (
-              <li className="cookiePosterIngredientRow" key={`${ingredient.name}-${ingredient.detail ?? ''}`}>
+              <li
+                className="cookiePosterIngredientRow"
+                key={`${ingredient.name}-${ingredient.detail ?? ''}`}
+              >
                 <span className="cookiePosterIngredientName">{ingredient.name}</span>
                 {ingredient.detail ? (
                   <span className="cookiePosterIngredientDetail">{ingredient.detail}</span>
@@ -781,7 +830,7 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
         .cookiePosterSceneFlower {
           animation: cookiePosterFlowerLife var(--poster-flower-duration, 4.6s) ease-in-out infinite;
           animation-delay: var(--poster-flower-delay, 0s);
-          bottom: 0.45rem;
+          bottom: 4%;
           left: 0;
           pointer-events: none;
           position: absolute;

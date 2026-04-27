@@ -18,12 +18,12 @@
   <path d="M60 24L110 44" opacity="0.7" stroke="#6ad4a0" stroke-width="1" />
   <path d="M180 14L250 39" opacity="0.6" stroke="#6ad4a0" stroke-width="1" />
   <path d="M310 29L360 49" opacity="0.5" stroke="#6ad4a0" stroke-width="1" />
-  <rect x="0" y="94" width="680" height="22" fill="#2a5868" opacity="0.6" />
-  <line x1="50" y1="104" x2="150" y2="104" opacity="0.4" stroke="#6ad4a0" stroke-width="0.8" />
-  <line x1="200" y1="108" x2="320" y2="108" opacity="0.3" stroke="#6ad4a0" stroke-width="0.8" />
-  <line x1="380" y1="106" x2="480" y2="106" opacity="0.3" stroke="#6ad4a0" stroke-width="0.8" />
+  <rect x="0" y="80" width="680" height="28" fill="#2a5868" opacity="0.6" />
+  <line x1="50" y1="90" x2="150" y2="90" opacity="0.4" stroke="#6ad4a0" stroke-width="0.8" />
+  <line x1="200" y1="94" x2="320" y2="94" opacity="0.3" stroke="#6ad4a0" stroke-width="0.8" />
+  <line x1="380" y1="92" x2="480" y2="92" opacity="0.3" stroke="#6ad4a0" stroke-width="0.8" />
   <path
-    d="M0 118Q200 108 400 123Q550 133 680 118V240H0V118Z"
+    d="M0 94Q200 84 400 99Q550 109 680 94V240H0V94Z"
     fill="url(#meadowNight)"
   />
 </svg>

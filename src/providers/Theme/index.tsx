@@ -22,20 +22,30 @@ const applyThemeVariables = (themeToSet: Theme) => {
   )
 }
 
+const resolveInitialTheme = (): Theme | undefined => {
+  if (!canUseDOM) {
+    return undefined
+  }
+
+  const preference = window.localStorage.getItem(themeLocalStorageKey)
+
+  if (themeIsValid(preference)) {
+    return preference
+  }
+
+  return getImplicitPreference() ?? defaultTheme
+}
+
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme | undefined>(
-    canUseDOM ? (document.documentElement.getAttribute('data-theme') as Theme) : undefined,
-  )
+  const [theme, setThemeState] = useState<Theme | undefined>(resolveInitialTheme)
 
   const setTheme = useCallback((themeToSet: Theme | null) => {
     if (themeToSet === null) {
       window.localStorage.removeItem(themeLocalStorageKey)
-      const implicitPreference = getImplicitPreference()
-      document.documentElement.setAttribute('data-theme', implicitPreference || '')
-      if (implicitPreference) {
-        applyThemeVariables(implicitPreference)
-        setThemeState(implicitPreference)
-      }
+      const nextTheme = getImplicitPreference() ?? defaultTheme
+      document.documentElement.setAttribute('data-theme', nextTheme)
+      applyThemeVariables(nextTheme)
+      setThemeState(nextTheme)
     } else {
       setThemeState(themeToSet)
       window.localStorage.setItem(themeLocalStorageKey, themeToSet)
@@ -45,23 +55,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   useEffect(() => {
-    let themeToSet: Theme = defaultTheme
-    const preference = window.localStorage.getItem(themeLocalStorageKey)
-
-    if (themeIsValid(preference)) {
-      themeToSet = preference
-    } else {
-      const implicitPreference = getImplicitPreference()
-
-      if (implicitPreference) {
-        themeToSet = implicitPreference
-      }
+    if (!theme) {
+      return
     }
 
-    document.documentElement.setAttribute('data-theme', themeToSet)
-    applyThemeVariables(themeToSet)
-    setThemeState(themeToSet)
-  }, [])
+    document.documentElement.setAttribute('data-theme', theme)
+    applyThemeVariables(theme)
+  }, [theme])
 
   return <ThemeContext.Provider value={{ setTheme, theme }}>{children}</ThemeContext.Provider>
 }

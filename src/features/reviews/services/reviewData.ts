@@ -75,39 +75,48 @@ const getActionLog = (value: unknown) => {
 const isPublicReviewPhoto = (value: PublicReviewPhoto | null): value is PublicReviewPhoto =>
   Boolean(value)
 
-export const serializeReview = (doc: Record<string, unknown>): PublicReview => ({
-  actionLog: getActionLog(doc.actionLog),
-  body: typeof doc.body === 'string' ? doc.body : '',
-  businessResponse:
-    typeof doc.businessResponse === 'string' && doc.businessResponse.trim()
-      ? doc.businessResponse.trim()
-      : undefined,
-  businessResponseRichText:
-    doc.businessResponseRichText &&
-    typeof doc.businessResponseRichText === 'object' &&
-    'root' in doc.businessResponseRichText
-      ? (doc.businessResponseRichText as PublicReview['businessResponseRichText'])
-      : undefined,
-  createdAt: typeof doc.createdAt === 'string' ? doc.createdAt : new Date().toISOString(),
-  customerName:
-    typeof doc.customerName === 'string' && doc.customerName.trim()
-      ? doc.customerName.trim()
-      : 'Bakery guest',
-  fairnessNote:
-    typeof doc.fairnessNote === 'string' && doc.fairnessNote.trim()
-      ? doc.fairnessNote.trim()
-      : undefined,
-  id: toStringId(doc.id),
-  photos: Array.isArray(doc.photos) ? doc.photos.map(getPhoto).filter(isPublicReviewPhoto) : [],
-  rating: typeof doc.rating === 'number' ? doc.rating : 5,
-  reviewTone: doc.reviewTone === 'suggestion' ? 'suggestion' : ('loved_it' as ReviewTone),
-  responseStatus:
-    typeof doc.responseStatus === 'string'
-      ? (doc.responseStatus as ReviewResponseStatus)
-      : 'listening',
-  title: typeof doc.title === 'string' ? doc.title : 'Review',
-  visitContext: undefined,
-})
+const toReviewRecord = (doc: unknown): Record<string, unknown> =>
+  doc && typeof doc === 'object' ? (doc as Record<string, unknown>) : {}
+
+export const serializeReview = (doc: unknown): PublicReview => {
+  const review = toReviewRecord(doc)
+
+  return {
+    actionLog: getActionLog(review.actionLog),
+    body: typeof review.body === 'string' ? review.body : '',
+    businessResponse:
+      typeof review.businessResponse === 'string' && review.businessResponse.trim()
+        ? review.businessResponse.trim()
+        : undefined,
+    businessResponseRichText:
+      review.businessResponseRichText &&
+      typeof review.businessResponseRichText === 'object' &&
+      'root' in review.businessResponseRichText
+        ? (review.businessResponseRichText as PublicReview['businessResponseRichText'])
+        : undefined,
+    createdAt: typeof review.createdAt === 'string' ? review.createdAt : new Date().toISOString(),
+    customerName:
+      typeof review.customerName === 'string' && review.customerName.trim()
+        ? review.customerName.trim()
+        : 'Bakery guest',
+    fairnessNote:
+      typeof review.fairnessNote === 'string' && review.fairnessNote.trim()
+        ? review.fairnessNote.trim()
+        : undefined,
+    id: toStringId(review.id),
+    photos: Array.isArray(review.photos)
+      ? review.photos.map(getPhoto).filter(isPublicReviewPhoto)
+      : [],
+    rating: typeof review.rating === 'number' ? review.rating : 5,
+    reviewTone: review.reviewTone === 'suggestion' ? 'suggestion' : ('loved_it' as ReviewTone),
+    responseStatus:
+      typeof review.responseStatus === 'string'
+        ? (review.responseStatus as ReviewResponseStatus)
+        : 'listening',
+    title: typeof review.title === 'string' ? review.title : 'Review',
+    visitContext: undefined,
+  }
+}
 
 const starterReviews: StarterReview[] = [
   {
@@ -146,7 +155,8 @@ const starterReviews: StarterReview[] = [
   },
   {
     body: 'The rotating cookie box was a fun surprise. The soft banana cookie was my favorite one in the set.',
-    businessResponse: 'Thank you. The banana cookie is meant to be soft-baked, so this is great to hear.',
+    businessResponse:
+      'Thank you. The banana cookie is meant to be soft-baked, so this is great to hear.',
     createdAtOffsetDays: 4,
     customerName: 'Nadia R.',
     publicStatus: 'published',
@@ -376,10 +386,7 @@ export const getReviewsPageData = async (payload: Payload): Promise<ReviewsPageD
     pagination: false,
     sort: '-createdAt',
     where: {
-      and: [
-        { tenantId: { equals: REVIEW_TENANT_ID } },
-        { publicStatus: { equals: 'published' } },
-      ],
+      and: [{ tenantId: { equals: REVIEW_TENANT_ID } }, { publicStatus: { equals: 'published' } }],
     },
   })
 

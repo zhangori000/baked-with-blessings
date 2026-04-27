@@ -21,6 +21,7 @@ type SpawnedCloud = {
 
 type SpawnedFlower = {
   asset: string
+  bottom?: string
   id: number
   left: string
   scale: number
@@ -171,10 +172,8 @@ const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
   'under-tree':
     'linear-gradient(180deg, rgba(108, 165, 210, 0.94) 0%, rgba(165, 204, 228, 0.94) 100%)',
   moonlit: 'linear-gradient(180deg, rgba(19, 41, 76, 0.96) 0%, rgba(29, 66, 98, 0.94) 100%)',
-  classic:
-    'linear-gradient(180deg, rgba(233, 245, 255, 0.96) 0%, rgba(219, 236, 247, 0.95) 100%)',
-  blossom:
-    'linear-gradient(180deg, rgba(248, 235, 240, 0.94) 0%, rgba(242, 224, 232, 0.94) 100%)',
+  classic: 'linear-gradient(180deg, rgba(233, 245, 255, 0.96) 0%, rgba(219, 236, 247, 0.95) 100%)',
+  blossom: 'linear-gradient(180deg, rgba(248, 235, 240, 0.94) 0%, rgba(242, 224, 232, 0.94) 100%)',
   'fairy-castle':
     'linear-gradient(180deg, rgba(214, 220, 209, 0.96) 0%, rgba(191, 201, 186, 0.94) 100%)',
 }
@@ -681,6 +680,9 @@ const normalizeGalleryImages = (product: Partial<Product>): MediaType[] => {
   })
 }
 
+const getGalleryImageKey = (image: MediaType, index: number) =>
+  `${image.id ?? image.url ?? 'gallery-photo'}-${index}`
+
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
 
 const hashString = (value: string) => {
@@ -726,7 +728,12 @@ export const preloadSceneryAssets = (sceneryTone: MenuSceneryTone) => {
   }
 }
 
-const buildFlowerMotionStyle = (key: string, left: string, scale: number): React.CSSProperties => {
+const buildFlowerMotionStyle = (
+  key: string,
+  left: string,
+  scale: number,
+  position?: { bottom?: string },
+): React.CSSProperties => {
   const seed = Array.from(key).reduce(
     (total, character, index) => total + character.charCodeAt(0) * (index + 1),
     0,
@@ -737,6 +744,7 @@ const buildFlowerMotionStyle = (key: string, left: string, scale: number): React
   const delay = (seed % 8) * -0.34
 
   return {
+    ...(position?.bottom ? { bottom: position.bottom } : {}),
     left,
     ['--flower-bob' as string]: `${bob.toFixed(2)}rem`,
     ['--flower-delay' as string]: `${delay.toFixed(2)}s`,
@@ -796,6 +804,29 @@ const createSpawnedCloud = (
   }
 }
 
+const getSpawnedAccentBottomRange = (
+  sceneryTone: MenuSceneryTone,
+  kind: 'hero' | 'panel',
+): [number, number] => {
+  if (sceneryTone === 'blossom') {
+    return kind === 'hero' ? [8, 44] : [6, 42]
+  }
+
+  if (sceneryTone === 'fairy-castle') {
+    return kind === 'hero' ? [5, 38] : [4, 36]
+  }
+
+  if (sceneryTone === 'moonlit') {
+    return kind === 'hero' ? [10, 68] : [8, 58]
+  }
+
+  if (sceneryTone === 'under-tree') {
+    return kind === 'hero' ? [10, 72] : [8, 60]
+  }
+
+  return kind === 'hero' ? [8, 52] : [6, 48]
+}
+
 const createSpawnedFlower = ({
   assetOverride,
   kind = 'panel',
@@ -832,41 +863,27 @@ const createSpawnedFlower = ({
             ? [0.84, 1.06]
             : sceneryTone === 'fairy-castle'
               ? [1.08, 1.58]
-            : [0.86, 1.08]
+              : [0.86, 1.08]
   const [minLeft, maxLeft] = kind === 'hero' ? [8, 92] : [8, 92]
+  const [minBottom, maxBottom] = getSpawnedAccentBottomRange(sceneryTone, kind)
   const [minScale, maxScale] = kind === 'hero' ? heroScaleRange : panelScaleRange
   const assets = spawnedFlowerAssetsByScenery[sceneryTone]
 
   return {
-    asset: assetOverride ?? assets[Math.floor(Math.random() * assets.length)] ?? '/flowers/daisy.svg',
+    asset:
+      assetOverride ?? assets[Math.floor(Math.random() * assets.length)] ?? '/flowers/daisy.svg',
+    bottom: `${randomBetween(minBottom, maxBottom).toFixed(2)}%`,
     id: Date.now() + Math.random(),
     left: `${(leftOverride ?? randomBetween(minLeft, maxLeft)).toFixed(2)}%`,
     scale: Number((scaleOverride ?? randomBetween(minScale, maxScale)).toFixed(2)),
   }
 }
 
-const createSymmetricSpawnedFlowers = (
+const createSpawnedFlowerCluster = (
   sceneryTone: MenuSceneryTone,
   kind: 'hero' | 'panel',
-  currentCount: number,
 ): SpawnedFlower[] => {
-  const assets = spawnedFlowerAssetsByScenery[sceneryTone]
-  const pairIndex = Math.floor(currentCount / 2)
-  const offsetPattern = [12, 22, 32, 40, 16, 28, 36]
-  const offset = offsetPattern[pairIndex % offsetPattern.length] + randomBetween(-1.75, 1.75)
-  const left = Math.max(8, Math.min(42, 50 - offset))
-  const right = 100 - left
-  const asset = assets[Math.floor(Math.random() * assets.length)] ?? '/flowers/daisy.svg'
-  const baseFlower = createSpawnedFlower({ assetOverride: asset, kind, leftOverride: left, sceneryTone })
-  const mirroredFlower = createSpawnedFlower({
-    assetOverride: asset,
-    kind,
-    leftOverride: right,
-    scaleOverride: baseFlower.scale,
-    sceneryTone,
-  })
-
-  return [baseFlower, mirroredFlower]
+  return [createSpawnedFlower({ kind, sceneryTone }), createSpawnedFlower({ kind, sceneryTone })]
 }
 
 const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'panel') => {
@@ -993,16 +1010,18 @@ export function DecorativeSceneImage({
       <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
         <picture className="block h-full w-full">
           <source media="(max-width: 767px)" srcSet={mobileSrc} />
-          <img
+          <Image
             alt=""
             aria-hidden="true"
-            className={
-              fit === 'cover' ? 'h-full w-full object-cover' : 'h-auto w-full object-contain'
-            }
+            className={fit === 'cover' ? 'object-cover' : 'h-auto w-full object-contain'}
             draggable="false"
-            loading={priority ? 'eager' : 'lazy'}
+            fill={fit === 'cover'}
+            height={fit === 'cover' ? undefined : 1200}
+            priority={priority}
             sizes={sizes}
             src={src}
+            unoptimized
+            width={fit === 'cover' ? undefined : 1200}
           />
         </picture>
       </span>
@@ -1125,6 +1144,8 @@ export function MenuHero({
   const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>(() =>
     buildSeededFlowers(sceneryTone, 'hero', seededAccentCount),
   )
+  const anchoredHeroAccents = spawnedFlowers.filter((flower) => !flower.bottom)
+  const floatingHeroAccents = spawnedFlowers.filter((flower) => flower.bottom)
   const sceneClouds = heroCloudsByScenery[sceneryTone] ?? heroCloudsByScenery.dawn
   const heroCritters = heroCrittersByScenery[sceneryTone] ?? heroCrittersByScenery.dawn
   const heroPieces = heroPiecesByScenery[sceneryTone] ?? heroPiecesByScenery.dawn
@@ -1205,7 +1226,7 @@ export function MenuHero({
     setSpawnedFlowers((current) => [
       ...current,
       ...(spawnedAccentLabelByScenery[sceneryTone] === 'Spawn a flower'
-        ? createSymmetricSpawnedFlowers(sceneryTone, 'hero', current.length)
+        ? createSpawnedFlowerCluster(sceneryTone, 'hero')
         : [createSpawnedFlower({ kind: 'hero', sceneryTone })]),
     ])
   }
@@ -1275,7 +1296,7 @@ export function MenuHero({
               )}
             />
           ))}
-          {spawnedFlowers.map((flower) => (
+          {anchoredHeroAccents.map((flower) => (
             <FlowerSprite
               asset={flower.asset}
               animateIn
@@ -1283,6 +1304,23 @@ export function MenuHero({
               key={flower.id}
               living
               style={buildFlowerMotionStyle(`hero-spawn-${flower.id}`, flower.left, flower.scale)}
+            />
+          ))}
+        </div>
+        <div aria-hidden="true" className="cateringHeroSpawnField">
+          {floatingHeroAccents.map((flower) => (
+            <FlowerSprite
+              asset={flower.asset}
+              animateIn
+              className="cateringHeroLineFlower cateringHeroLineFlowerSpawned"
+              key={flower.id}
+              living
+              style={buildFlowerMotionStyle(
+                `hero-field-spawn-${flower.id}`,
+                flower.left,
+                flower.scale,
+                { bottom: flower.bottom },
+              )}
             />
           ))}
         </div>
@@ -1366,6 +1404,9 @@ export function PersuasionGardenPanel({
   const [panelFace, setPanelFace] = useState<'details' | 'gallery'>('details')
   const [panelTransition, setPanelTransition] = useState<'idle' | 'closing' | 'opening'>('idle')
   const [transitionGhostFace, setTransitionGhostFace] = useState<'details' | 'gallery' | null>(null)
+  const [loadedGalleryImageKeys, setLoadedGalleryImageKeys] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  )
   const persuasionCopy = buildPersuasionCopy(product, summary)
   const galleryImages = useMemo(() => normalizeGalleryImages(product), [product])
   const hasGallery = galleryImages.length > 0
@@ -1461,7 +1502,7 @@ export function PersuasionGardenPanel({
     setSpawnedFlowers((current) => [
       ...current,
       ...(spawnedAccentLabelByScenery[sceneryTone] === 'Spawn a flower'
-        ? createSymmetricSpawnedFlowers(sceneryTone, 'panel', current.length)
+        ? createSpawnedFlowerCluster(sceneryTone, 'panel')
         : [createSpawnedFlower({ kind: 'panel', sceneryTone })]),
     ])
   }
@@ -1488,6 +1529,18 @@ export function PersuasionGardenPanel({
         transitionTimeoutRef.current = null
       }, SHUTTER_PHASE_MS)
     }, SHUTTER_PHASE_MS)
+  }
+
+  const markGalleryImageLoaded = (imageKey: string) => {
+    setLoadedGalleryImageKeys((current) => {
+      if (current.has(imageKey)) {
+        return current
+      }
+
+      const next = new Set(current)
+      next.add(imageKey)
+      return next
+    })
   }
 
   const isGalleryFace = panelFace === 'gallery'
@@ -1690,6 +1743,7 @@ export function PersuasionGardenPanel({
                     `panel-spawn-${flower.id}`,
                     flower.left,
                     flower.scale,
+                    { bottom: flower.bottom },
                   )}
                 />
               ))}
@@ -1723,41 +1777,71 @@ export function PersuasionGardenPanel({
 
               <div className="cateringPhotoBoard mt-3 h-[calc(100%-3.25rem)] overflow-y-auto pb-10 pr-1">
                 <div className="columns-1 gap-3 md:columns-3">
-                  {galleryImages.map((image, index) => (
-                    <div
-                      className="mb-3 break-inside-avoid overflow-hidden rounded-[1rem]"
-                      key={image.id ?? `${product.id ?? 'product'}-gallery-${index}`}
-                    >
-                      <Media
-                        className={cn(
-                          'relative w-full overflow-hidden rounded-[1rem]',
-                          index % 3 === 0
-                            ? 'aspect-[4/5]'
-                            : index % 3 === 1
-                              ? 'aspect-[4/3]'
-                              : 'aspect-square',
-                        )}
-                        imgClassName="h-full w-full object-cover"
-                        resource={image}
+                  <div className="cateringPhotoStartMarker mb-4 break-inside-avoid text-center">
+                    <p className="cateringMenuEyebrow text-[0.76rem] text-[rgba(23,21,16,0.48)]">
+                      Beginning of photos
+                    </p>
+                    <div className="cateringPhotoStartBorder relative mx-auto mt-2 h-8">
+                      <GrowingGrassBorder
+                        className="cateringPhotoTopBorder"
+                        flowerPositions={[22, 42, 62, 82]}
+                        flowerSize="1.9rem"
+                        lineInset="0"
+                        lineHeight="0.2rem"
+                        sizes="32px"
+                        style={{ bottom: '0.12rem' }}
                       />
                     </div>
-                  ))}
-                  <div className="cateringPhotoEndMarker mb-1 break-inside-avoid py-9 text-center md:py-12">
-                    <p className="cateringMenuEyebrow text-[0.82rem] text-[rgba(23,21,16,0.44)]">
-                      No more photos
-                    </p>
                   </div>
-                </div>
-                <div className="cateringPhotoScrollableBorder relative mt-2 h-10">
-                  <GrowingGrassBorder
-                    className="cateringPhotoBottomBorder"
-                    flowerPositions={[18, 39, 61, 82]}
-                    flowerSize="2.15rem"
-                    lineInset="0"
-                    lineHeight="0.26rem"
-                    sizes="36px"
-                    style={{ bottom: '0.2rem' }}
-                  />
+                  {galleryImages.map((image, index) => {
+                    const imageKey = getGalleryImageKey(image, index)
+                    const isGalleryImageLoaded = loadedGalleryImageKeys.has(imageKey)
+
+                    return (
+                      <div
+                        aria-busy={!isGalleryImageLoaded}
+                        className={cn(
+                          'cateringPhotoCard mb-3 break-inside-avoid overflow-hidden rounded-[1rem]',
+                          !isGalleryImageLoaded && 'cateringPhotoCardLoading',
+                        )}
+                        key={imageKey}
+                      >
+                        {!isGalleryImageLoaded ? (
+                          <span aria-hidden="true" className="cateringPhotoSkeleton" />
+                        ) : null}
+                        <Media
+                          className={cn(
+                            'relative w-full overflow-hidden rounded-[1rem]',
+                            index % 3 === 0
+                              ? 'aspect-[4/5]'
+                              : index % 3 === 1
+                                ? 'aspect-[4/3]'
+                                : 'aspect-square',
+                          )}
+                          imgClassName={cn(
+                            'cateringPhotoImage h-full w-full object-cover',
+                            !isGalleryImageLoaded && 'cateringPhotoImageLoading',
+                          )}
+                          onLoad={() => markGalleryImageLoaded(imageKey)}
+                          resource={image}
+                        />
+                      </div>
+                    )
+                  })}
+                  <div className="cateringPhotoEndMarker mb-2 break-inside-avoid text-center">
+                    <p className="cateringPhotoEndLabel cateringMenuEyebrow">No more photos</p>
+                    <div className="cateringPhotoScrollableBorder relative mx-auto mt-5 h-16">
+                      <GrowingGrassBorder
+                        className="cateringPhotoBottomBorder"
+                        flowerPositions={[14, 31, 49, 67, 84]}
+                        flowerSize="2.65rem"
+                        lineInset="0"
+                        lineHeight="0.3rem"
+                        sizes="44px"
+                        style={{ bottom: '0.26rem' }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

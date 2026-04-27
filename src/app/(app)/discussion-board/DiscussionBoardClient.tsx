@@ -26,11 +26,15 @@ import {
   ThumbsUp,
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { FormEvent, MouseEvent, ReactNode } from 'react'
+import type { FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { Fragment, startTransition } from 'react'
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
-import { MenuHero, menuSceneryTones, preloadSceneryAssets } from '../menu/_components/catering-menu-scenery'
+import {
+  MenuHero,
+  menuSceneryTones,
+  preloadSceneryAssets,
+} from '../menu/_components/catering-menu-scenery'
 import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 
 type Props = {
@@ -149,7 +153,7 @@ const renderInlineText = (value: string): ReactNode[] => {
   })
 }
 
-const closeDetails = (event: MouseEvent<HTMLButtonElement>) => {
+const closeDetails = (event: ReactMouseEvent<HTMLButtonElement>) => {
   event.currentTarget.closest('details')?.removeAttribute('open')
 }
 
@@ -1032,7 +1036,7 @@ function HelpText({ text }: { text: string }) {
   useEffect(() => {
     if (!isOpen) return
 
-    const closeOnOutsideClick = (event: MouseEvent) => {
+    const closeOnOutsideClick = (event: globalThis.MouseEvent) => {
       if (!wrapperRef.current?.contains(event.target as Node)) {
         setIsOpen(false)
       }

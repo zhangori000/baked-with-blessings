@@ -373,6 +373,20 @@ export default buildConfig({
   // ...
 ```
 
+### Vercel environment security
+
+Before creating or promoting a production deployment, run:
+
+```bash
+pnpm run check:env-security
+```
+
+On Vercel production builds this runs in strict mode through `prebuild` and fails if production-critical secrets are missing, still local-only, or still placeholders. To force the same behavior locally, run `pnpm exec cross-env CHECK_ENV_SECURITY_STRICT=true pnpm run check:env-security`.
+
+Mark these Vercel environment variables as Sensitive and rotate any real values that were previously stored as non-sensitive variables: `PAYLOAD_SECRET`, `DATABASE_URL`, `PREVIEW_SECRET`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOKS_SIGNING_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`, and `RESEND_API_KEY`.
+
+Do not mark intentionally public browser values as sensitive: `NEXT_PUBLIC_SERVER_URL`, `NEXT_PUBLIC_DEFAULT_PHONE_COUNTRY`, and `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`. Anything with `NEXT_PUBLIC_` is bundled for the browser and must never contain a secret.
+
 ### Self-hosting
 
 Before deploying your app, you need to:
