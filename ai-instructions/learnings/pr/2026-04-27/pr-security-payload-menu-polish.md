@@ -21,6 +21,9 @@ This PR updates the Baked with Blessings app to Payload `3.84.1`, adds a local g
 - Moved moonlit river/ground artwork upward so the scene has usable foreground space for flowers.
 - Extended the same random vertical/horizontal spawn behavior to the rotating cookie flavors carousel and cookie poster card scenery.
 - Replaced raw customer-facing decorative `<img>` usage in scenery/header/footer/cart/cookie sheep surfaces with `next/image` while keeping intentional admin/external-logo exceptions scoped.
+- Addressed review feedback by allowing product gallery thumbnails to override variant-query preselection until the URL changes again.
+- Reduced `next/image` preload pressure by removing `priority` from repeated decorative carousel layers while keeping priority on the core scene backgrounds.
+- Added a focused gallery regression test for variant-query preselection plus manual thumbnail override.
 
 ## Payload / Database Impact
 
@@ -57,6 +60,9 @@ This PR adds a local safety check for environment variable handling after the Ve
 - `src/components/Footer/FooterClient.tsx`
 - `src/components/scenery/CartSceneShell.tsx`
 - `src/app/(app)/menu/_components/cookie-sheep-rig.tsx`
+- `src/components/product/Gallery.tsx`
+- `tests/int/gallery.int.spec.tsx`
+- `vitest.config.mts`
 
 ## Verification
 
@@ -65,6 +71,7 @@ This PR adds a local safety check for environment variable handling after the Ve
 - Passed: `pnpm.cmd exec tsc --noEmit --pretty false`.
 - Passed: focused Prettier checks for touched menu/scenery files.
 - Passed: focused ESLint checks for touched menu/scenery/header/footer/cart files.
+- Passed: `pnpm.cmd exec vitest run --config ./vitest.config.mts tests/int/gallery.int.spec.tsx`.
 - Passed: `git diff --check` for touched menu/scenery files.
 - Browser checked: `/menu` gallery "See photos" flow, skeleton behavior, enlarged "No more photos" marker, moonlit scenery, and under-tree scenery.
 - Browser checked: `/rotating-cookie-flavors` mobile and desktop scenery spawning.

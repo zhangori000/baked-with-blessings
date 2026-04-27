@@ -16,7 +16,11 @@ type Props = {
 
 export const Gallery: React.FC<Props> = ({ gallery }) => {
   const searchParams = useSearchParams()
-  const [current, setCurrent] = React.useState(0)
+  const searchKey = useMemo(() => searchParams.toString(), [searchParams])
+  const [manualSelection, setManualSelection] = React.useState<{
+    index: number
+    searchKey: string
+  } | null>(null)
   const [api, setApi] = React.useState<CarouselApi>()
 
   const requestedIndex = useMemo(() => {
@@ -41,7 +45,11 @@ export const Gallery: React.FC<Props> = ({ gallery }) => {
     }
   }, [api, requestedIndex])
 
-  const activeIndex = requestedIndex === -1 ? current : requestedIndex
+  const manualIndex = manualSelection?.searchKey === searchKey ? manualSelection.index : null
+  const activeIndex = Math.min(
+    gallery.length - 1,
+    Math.max(0, manualIndex ?? (requestedIndex === -1 ? 0 : requestedIndex)),
+  )
 
   return (
     <div>
@@ -62,7 +70,7 @@ export const Gallery: React.FC<Props> = ({ gallery }) => {
               <CarouselItem
                 className="basis-1/5"
                 key={`${item.image.id}-${i}`}
-                onClick={() => setCurrent(i)}
+                onClick={() => setManualSelection({ index: i, searchKey })}
               >
                 <GridTileImage active={i === activeIndex} media={item.image} />
               </CarouselItem>

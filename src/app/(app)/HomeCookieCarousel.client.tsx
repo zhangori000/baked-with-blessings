@@ -1029,7 +1029,6 @@ export function HomeCookieCarousel({
                     draggable="false"
                     key={cloud.id}
                     height={400}
-                    priority
                     src={cloud.src}
                     style={cloud.style}
                     unoptimized
@@ -1045,7 +1044,6 @@ export function HomeCookieCarousel({
                     draggable="false"
                     key={cloud.id}
                     height={400}
-                    priority
                     src={cloud.src}
                     style={cloud.style}
                     unoptimized
@@ -1061,7 +1059,6 @@ export function HomeCookieCarousel({
                     draggable="false"
                     height={1200}
                     key={`piece-${sceneTone}-${index}-${piece.src}`}
-                    priority
                     src={piece.src}
                     style={piece.style}
                     unoptimized
@@ -1077,7 +1074,6 @@ export function HomeCookieCarousel({
                     draggable="false"
                     height={320}
                     key={`critter-${sceneTone}-${index}-${critter.src}`}
-                    priority
                     src={critter.src}
                     style={critter.style}
                     unoptimized
@@ -1236,7 +1232,6 @@ export function HomeCookieCarousel({
                       draggable="false"
                       height={180}
                       key={flower.id}
-                      priority
                       src={flower.src}
                       style={flower.style}
                       unoptimized
@@ -1253,7 +1248,6 @@ export function HomeCookieCarousel({
                       draggable="false"
                       height={180}
                       key={flower.id}
-                      priority
                       src={flower.src}
                       style={flower.style}
                       unoptimized
@@ -1271,7 +1265,6 @@ export function HomeCookieCarousel({
                     className="homeCookieGrass"
                     draggable="false"
                     height={600}
-                    priority
                     src="/grassland.svg"
                     style={{ bottom: `${-grassDropPx}px` }}
                     unoptimized
