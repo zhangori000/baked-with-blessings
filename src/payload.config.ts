@@ -24,6 +24,7 @@ import { Pages } from '@/collections/Pages'
 import { Posts } from '@/collections/Posts'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
+import { PhoneVerificationStarts } from '@/collections/PhoneVerificationStarts'
 import {
   AwarenessMarks,
   DiscussionEdges,
@@ -73,6 +74,7 @@ export default buildConfig({
   collections: [
     Admins,
     Customers,
+    PhoneVerificationStarts,
     DiscussionNodes,
     DiscussionEdges,
     AwarenessMarks,

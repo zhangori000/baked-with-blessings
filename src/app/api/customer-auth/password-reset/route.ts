@@ -3,8 +3,9 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 import { findCustomerByPhone } from '@/utilities/customerAuth'
+import { startPhoneVerificationOnce } from '@/utilities/phoneVerificationStartGuard'
 import { isEmailIdentifier, normalizeEmail, normalizePhoneNumber, maskPhoneNumber } from '@/utilities/phone'
-import { checkPhoneVerification, startPhoneVerification } from '@/utilities/twilioVerify'
+import { checkPhoneVerification } from '@/utilities/twilioVerify'
 
 type PasswordResetBody = {
   identifier?: string
@@ -63,7 +64,11 @@ export async function POST(request: Request) {
     }
 
     if (!verificationCode) {
-      await startPhoneVerification(normalizedPhone)
+      await startPhoneVerificationOnce({
+        flow: 'password-reset',
+        payload,
+        phoneNumber: normalizedPhone,
+      })
 
       return Response.json(
         {

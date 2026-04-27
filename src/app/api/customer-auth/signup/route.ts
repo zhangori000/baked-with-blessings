@@ -8,8 +8,9 @@ import {
 } from '@/collections/Customers/hooks/customerPhoneIdentity'
 import { findExistingCustomer, normalizeCustomerContact } from '@/utilities/customerAuth'
 import { sendCustomerWelcomeEmail } from '@/utilities/email/sendCustomerWelcomeEmail'
+import { startPhoneVerificationOnce } from '@/utilities/phoneVerificationStartGuard'
 import { isEmailIdentifier, maskPhoneNumber } from '@/utilities/phone'
-import { checkPhoneVerification, startPhoneVerification } from '@/utilities/twilioVerify'
+import { checkPhoneVerification } from '@/utilities/twilioVerify'
 
 type SignupBody = {
   email?: string
@@ -77,7 +78,11 @@ export async function POST(request: Request) {
     }
 
     if (phone && !verificationCode) {
-      await startPhoneVerification(phone)
+      await startPhoneVerificationOnce({
+        flow: 'signup',
+        payload,
+        phoneNumber: phone,
+      })
 
       return Response.json(
         {

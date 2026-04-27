@@ -87,6 +87,14 @@ const getStatLabel = (count: number, label: string) => {
   return `${count} ${count === 1 ? label : plural}`
 }
 
+const createSubmissionKey = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 const urlPattern = /(https?:\/\/[^\s)]+)/
 
 const getPreviewText = (value: string, maxLength = 132) => {
@@ -192,6 +200,7 @@ export function DiscussionBoardClient({
   const [replyParentId, setReplyParentId] = useState<string | null>(null)
   const [replyEdgeType, setReplyEdgeType] = useState<DiscussionEdgeType>('responds_to')
   const [notice, setNotice] = useState<string | null>(null)
+  const [replySubmissionKey, setReplySubmissionKey] = useState(createSubmissionKey)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRoutePending, startRouteRefresh] = useTransition()
   const [isGuideOpen, setIsGuideOpen] = useState(false)
@@ -356,6 +365,7 @@ export function DiscussionBoardClient({
   const openReply = (nodeId: string, edgeType: DiscussionEdgeType) => {
     setReplyParentId(nodeId)
     setReplyEdgeType(edgeType)
+    setReplySubmissionKey(createSubmissionKey())
     setNotice(null)
   }
 
@@ -376,6 +386,7 @@ export function DiscussionBoardClient({
           bodyText: formData.get('bodyText'),
           edgeType,
           displayName: formData.get('displayName'),
+          idempotencyKey: replySubmissionKey,
           nodeType,
           parentNodeId: replyParentId,
           questionText: formData.get('questionText'),
@@ -384,6 +395,7 @@ export function DiscussionBoardClient({
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          'Idempotency-Key': replySubmissionKey,
         },
         method: 'POST',
       })
@@ -395,6 +407,7 @@ export function DiscussionBoardClient({
       }
 
       setReplyParentId(null)
+      setReplySubmissionKey(createSubmissionKey())
       setNotice('Posted.')
       startRouteRefresh(() => {
         router.refresh()

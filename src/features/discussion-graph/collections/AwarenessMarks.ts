@@ -13,7 +13,7 @@ export const AwarenessMarks: CollectionConfig = {
     update: adminOnly,
   },
   admin: {
-    defaultColumns: ['node', 'user', 'visitorKey', 'createdAt'],
+    defaultColumns: ['node', 'reactionType', 'user', 'visitorKey', 'createdAt'],
     group: 'Discussion Graph',
     useAsTitle: 'id',
   },
@@ -33,6 +33,27 @@ export const AwarenessMarks: CollectionConfig = {
       required: true,
     },
     {
+      name: 'reactionType',
+      type: 'select',
+      defaultValue: 'awareness',
+      index: true,
+      options: [
+        {
+          label: 'Awareness',
+          value: 'awareness',
+        },
+        {
+          label: 'Cry',
+          value: 'cry',
+        },
+        {
+          label: 'Wilted rose',
+          value: 'wiltedRose',
+        },
+      ],
+      required: true,
+    },
+    {
       name: 'user',
       type: 'relationship',
       index: true,
@@ -45,6 +66,17 @@ export const AwarenessMarks: CollectionConfig = {
         description: 'Anonymous browser key used for testing awareness marks.',
       },
       index: true,
+    },
+    {
+      name: 'dedupeKey',
+      type: 'text',
+      admin: {
+        description: 'Unique node/reaction/user key used to make repeated reactions idempotent.',
+        position: 'sidebar',
+        readOnly: true,
+      },
+      index: true,
+      unique: true,
     },
   ],
   timestamps: true,

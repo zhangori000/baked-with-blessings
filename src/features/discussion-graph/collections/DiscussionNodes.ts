@@ -127,6 +127,17 @@ export const DiscussionNodes: CollectionConfig = {
       required: true,
     },
     {
+      name: 'submissionKey',
+      type: 'text',
+      admin: {
+        description: 'Stable key used to make public reply submission retries idempotent.',
+        position: 'sidebar',
+        readOnly: true,
+      },
+      index: true,
+      unique: true,
+    },
+    {
       name: 'moderationReason',
       type: 'textarea',
     },
