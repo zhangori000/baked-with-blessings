@@ -2,9 +2,9 @@
 
 import { Price } from '@/components/Price'
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
+import { SceneButton } from '@/design-system/bakery'
 import type { Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
-import { LoaderCircle } from 'lucide-react'
 import React from 'react'
 
 import { CookieSheepRig } from './cookie-sheep-rig'
@@ -325,24 +325,15 @@ export function SimpleItemPanel({
           ) : null}
         </div>
 
-        <button
-          className={cn(
-            'inline-flex min-h-[3rem] w-full items-center justify-center rounded-full bg-[#171510] px-5 text-[0.98rem] tracking-[-0.02em] text-white transition duration-200',
-            isCartPending ? 'cursor-progress opacity-88' : 'cursor-pointer hover:bg-[#2a2822]',
-          )}
-          disabled={isCartPending}
+        <SceneButton
+          className="cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+          loading={isCartPending}
+          loadingLabel={`Adding ${product.title ?? 'item'} to cart`}
           onClick={onAddToCart}
-          type="button"
+          variant="primary"
         >
-          {isCartPending ? (
-            <span className="inline-flex items-center gap-2">
-              <LoaderCircle className="h-4 w-4 animate-spin" />
-              Adding to cart...
-            </span>
-          ) : (
-            'Add to cart'
-          )}
-        </button>
+          Add to cart
+        </SceneButton>
       </div>
     </div>
   )
@@ -497,7 +488,8 @@ export function BatchBuilderPanel({
             const maxScrollLeft = Math.max(rail.scrollWidth - rail.clientWidth, 0)
             const isAtLeftEdge = touchScrollLeftRef.current <= 0 && rail.scrollLeft <= 0
             const isAtRightEdge =
-              touchScrollLeftRef.current >= maxScrollLeft - 1 && rail.scrollLeft >= maxScrollLeft - 1
+              touchScrollLeftRef.current >= maxScrollLeft - 1 &&
+              rail.scrollLeft >= maxScrollLeft - 1
 
             if (isAtLeftEdge && deltaX > 0) {
               event.preventDefault()
@@ -533,54 +525,40 @@ export function BatchBuilderPanel({
 
               return (
                 <div className="cateringFlavorRailItem" key={flavor.id}>
-                    <TrayFlavorCard
-                      actionLabel={actionLabel}
-                      clouds={flavorCardCloudsForScenery}
-                      flavor={flavor}
-                      isIngredientNoteOpen={areIngredientReceiptsOpen}
-                      isSelected={isSelected}
-                      meadowSrc={flavorCardMeadowForScenery}
-                      mobileSkySrc={flavorCardMobileSkyForScenery}
-                      onChoose={() => onAddFlavor(flavor.id)}
-                      onToggleIngredientNotes={() =>
-                        setAreIngredientReceiptsOpen((current) => !current)
-                      }
-                      renderSceneImage={renderSceneImage}
-                      sceneryTone={sceneryTone}
-                      skySrc={flavorCardSkyForScenery}
-                    />
+                  <TrayFlavorCard
+                    actionLabel={actionLabel}
+                    clouds={flavorCardCloudsForScenery}
+                    flavor={flavor}
+                    isIngredientNoteOpen={areIngredientReceiptsOpen}
+                    isSelected={isSelected}
+                    meadowSrc={flavorCardMeadowForScenery}
+                    mobileSkySrc={flavorCardMobileSkyForScenery}
+                    onChoose={() => onAddFlavor(flavor.id)}
+                    onToggleIngredientNotes={() =>
+                      setAreIngredientReceiptsOpen((current) => !current)
+                    }
+                    renderSceneImage={renderSceneImage}
+                    sceneryTone={sceneryTone}
+                    skySrc={flavorCardSkyForScenery}
+                  />
                 </div>
               )
             })}
           </div>
         </div>
 
-        <button
-          className={cn(
-            'cateringMenuRoundHeading inline-flex min-h-[3rem] w-full items-center justify-center rounded-full px-5 text-[0.98rem] tracking-[-0.02em] transition duration-200',
-            canAddTray && !isTrayPending
-              ? 'cursor-pointer bg-[#171510] text-white hover:bg-[#2a2822]'
-              : isTrayPending
-                ? 'cursor-progress bg-[#171510] text-white opacity-90'
-                : 'cursor-not-allowed bg-[#171510]/12 text-[#171510]/42',
-          )}
-          disabled={!canAddTray || isTrayPending}
+        <SceneButton
+          className="cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+          disabled={!canAddTray}
+          loading={isTrayPending}
+          loadingLabel="Adding tray to cart"
           onClick={onAddToCart}
-          type="button"
+          variant="primary"
         >
-          <span className="inline-flex items-center justify-center gap-2">
-            {isTrayPending ? (
-              <>
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-                Adding tray...
-              </>
-            ) : selectedFlavor ? (
-              `Add ${selectedFlavor.title} Tray to cart`
-            ) : (
-              'Choose a tray flavor first'
-            )}
-          </span>
-        </button>
+          {selectedFlavor
+            ? `Add ${selectedFlavor.title} Tray to cart`
+            : 'Choose a tray flavor first'}
+        </SceneButton>
       </div>
     </div>
   )

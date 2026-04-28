@@ -10,6 +10,8 @@ type SceneButtonVariant = 'ghost' | 'primary'
 
 type SceneButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'> & {
   loading?: boolean
+  loadingLabel?: string
+  progressLabel?: string
   variant?: SceneButtonVariant
 }
 
@@ -33,20 +35,41 @@ const variantStyleProps: Record<
 }
 
 export const SceneButton = React.forwardRef<HTMLButtonElement, SceneButtonProps>(
-  ({ children, className, type = 'button', variant = 'primary', ...props }, ref) => (
-    <BakeryPressable
-      className={cn('bakerySceneButton', variantClassName[variant], className)}
-      paddingX="4"
-      paddingY="2"
-      radius="pill"
-      ref={ref}
-      type={type}
-      {...variantStyleProps[variant]}
-      {...props}
-    >
-      {children}
-    </BakeryPressable>
-  ),
+  (
+    {
+      'aria-label': ariaLabel,
+      children,
+      className,
+      loading = false,
+      loadingLabel,
+      progressLabel,
+      type = 'button',
+      variant = 'primary',
+      ...props
+    },
+    ref,
+  ) => {
+    const resolvedLoadingLabel = loadingLabel ?? progressLabel ?? 'Loading'
+
+    return (
+      <BakeryPressable
+        aria-label={ariaLabel ?? (loading ? resolvedLoadingLabel : undefined)}
+        className={cn('bakerySceneButton', variantClassName[variant], className)}
+        data-loading={loading || undefined}
+        loading={loading}
+        paddingX="4"
+        paddingY="2"
+        radius="pill"
+        ref={ref}
+        type={type}
+        {...variantStyleProps[variant]}
+        {...props}
+      >
+        {loading ? <span aria-hidden="true" className="bakerySceneButtonSpinner" /> : null}
+        <span className="bakerySceneButtonContent">{children}</span>
+      </BakeryPressable>
+    )
+  },
 )
 
 SceneButton.displayName = 'SceneButton'

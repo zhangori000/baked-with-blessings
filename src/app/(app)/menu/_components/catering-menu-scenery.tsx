@@ -5,7 +5,13 @@ import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { GrowingGrassBorder } from '@/components/flowers/GrowingGrassBorder'
 import { Media } from '@/components/Media'
 import { RichText } from '@/components/RichText'
-import { SceneActionRow, SceneButton, useBakeryAnnouncer } from '@/design-system/bakery'
+import {
+  SceneActionRow,
+  SceneButton,
+  type BakerySlotClassNames,
+  type BakerySlotStyles,
+  useBakeryAnnouncer,
+} from '@/design-system/bakery'
 import { bakerySceneThemes } from '@/design-system/bakery/tokens'
 import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
@@ -82,14 +88,52 @@ type MenuHeroProps = {
 }
 
 type PersuasionGardenPanelProps = {
+  classNames?: PersuasionGardenPanelClassNames
   isSceneryPickerOpen: boolean
   isSceneChanging: boolean
   onSelectScenery: (tone: MenuSceneryTone) => void
   onToggleSceneryPicker: () => void
   product: Partial<Product>
   sceneryTone: MenuSceneryTone
+  styles?: PersuasionGardenPanelStyles
   summary: string
 }
+
+export const persuasionGardenPanelSlots = [
+  'root',
+  'viewport',
+  'detailFace',
+  'galleryFace',
+  'sky',
+  'cloud',
+  'foreground',
+  'heading',
+  'body',
+  'actionShell',
+  'actionRow',
+  'actionButtonWrap',
+  'actionButton',
+  'photosButton',
+  'sceneryButton',
+  'meadowLayer',
+  'meadow',
+  'scenePiece',
+  'flower',
+  'wildflower',
+  'spawnedFlower',
+  'galleryContent',
+  'galleryToolbar',
+  'photoBoard',
+  'photoCard',
+  'transitionOverlay',
+  'transitionLine',
+] as const
+
+export type PersuasionGardenPanelSlot = (typeof persuasionGardenPanelSlots)[number]
+
+export type PersuasionGardenPanelClassNames = BakerySlotClassNames<PersuasionGardenPanelSlot>
+
+export type PersuasionGardenPanelStyles = BakerySlotStyles<PersuasionGardenPanelSlot>
 
 export const menuSceneryTones: MenuSceneryTone[] = [
   'dawn',
@@ -767,7 +811,7 @@ const buildFlowerMotionStyle = (
   key: string,
   left: string,
   scale: number,
-  position?: { bottom?: string },
+  styleOverrides?: React.CSSProperties,
 ): React.CSSProperties => {
   const seed = Array.from(key).reduce(
     (total, character, index) => total + character.charCodeAt(0) * (index + 1),
@@ -779,7 +823,7 @@ const buildFlowerMotionStyle = (
   const delay = (seed % 8) * -0.34
 
   return {
-    ...(position?.bottom ? { bottom: position.bottom } : {}),
+    ...styleOverrides,
     left,
     ['--flower-bob' as string]: `${bob.toFixed(2)}rem`,
     ['--flower-delay' as string]: `${delay.toFixed(2)}s`,
@@ -1085,20 +1129,27 @@ function CateringActionButton({
   className,
   disabled,
   onClick,
+  style,
+  wrapperClassName,
+  wrapperStyle,
 }: {
   buttonRef?: React.Ref<HTMLButtonElement>
   children: React.ReactNode
   className?: string
   disabled?: boolean
   onClick: () => void
+  style?: React.CSSProperties
+  wrapperClassName?: string
+  wrapperStyle?: React.CSSProperties
 }) {
   return (
-    <span className="cateringActionButtonWrap">
+    <span className={cn('cateringActionButtonWrap', wrapperClassName)} style={wrapperStyle}>
       <SceneButton
         className={cn('cateringSpawnButton', className)}
         disabled={disabled}
         onClick={onClick}
         ref={buttonRef}
+        style={style}
         variant="ghost"
       >
         {children}
@@ -1406,12 +1457,14 @@ export function MenuHero({
 }
 
 export function PersuasionGardenPanel({
+  classNames,
   isSceneryPickerOpen,
   isSceneChanging,
   onSelectScenery,
   onToggleSceneryPicker,
   product,
   sceneryTone,
+  styles,
   summary,
 }: PersuasionGardenPanelProps) {
   const SHUTTER_PHASE_MS = 240
@@ -1588,19 +1641,20 @@ export function PersuasionGardenPanel({
     <div
       data-scene={sceneryTone}
       data-panel-transition={panelTransition}
-      className="relative [perspective:2200px]"
+      className={cn('relative [perspective:2200px]', classNames?.root)}
       style={
         {
           minHeight: hasGallery ? '34rem' : '30rem',
           ['--catering-panel-transition-distance' as string]: hasGallery ? '34rem' : '30rem',
           ['--catering-scene-charge' as string]: `var(--scene-action-aura, ${sceneButtonAuraByScenery[sceneryTone]})`,
           ['--catering-panel-fill' as string]: `var(--scene-panel-fill, ${panelBackgroundByScenery[sceneryTone]})`,
+          ...styles?.root,
         } as React.CSSProperties
       }
     >
       <div
-        className="relative h-full overflow-hidden rounded-[1.45rem]"
-        style={{ minHeight: hasGallery ? '34rem' : '30rem' }}
+        className={cn('relative h-full overflow-hidden rounded-[1.45rem]', classNames?.viewport)}
+        style={{ minHeight: hasGallery ? '34rem' : '30rem', ...styles?.viewport }}
       >
         {showDetailsFace ? (
           <div
@@ -1609,30 +1663,33 @@ export function PersuasionGardenPanel({
               `cateringScene-${sceneryTone}`,
               showDetailsAsGhost &&
                 'cateringPanelWipeGhost cateringPanelWipeGhostToPhotos pointer-events-none z-[4]',
+              classNames?.detailFace,
             )}
+            style={styles?.detailFace}
           >
             <DecorativeSceneImage
-              className="cateringSceneSky cateringPersuasionSky"
+              className={cn('cateringSceneSky cateringPersuasionSky', classNames?.sky)}
               fit="cover"
               mobileSrc={mobileSkySrc}
               sizes="100vw"
               src={skySrc}
+              style={styles?.sky}
             />
             {sceneClouds.map((cloud) => (
               <DecorativeSceneImage
-                className={cn('cateringPersuasionCloud', cloud.className)}
+                className={cn('cateringPersuasionCloud', cloud.className, classNames?.cloud)}
                 key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
                 sizes="24vw"
                 src={cloud.src}
-                style={cloud.style}
+                style={{ ...cloud.style, ...styles?.cloud }}
               />
             ))}
             {spawnedClouds.map((cloud) => (
               <DecorativeSceneImage
-                className="cateringPersuasionCloud"
+                className={cn('cateringPersuasionCloud', classNames?.cloud)}
                 key={cloud.id}
                 src={cloud.src}
-                style={{ left: cloud.left, top: cloud.top, width: cloud.width }}
+                style={{ left: cloud.left, top: cloud.top, width: cloud.width, ...styles?.cloud }}
               />
             ))}
 
@@ -1640,20 +1697,35 @@ export function PersuasionGardenPanel({
               className={cn(
                 'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]',
                 (isPanelTransitioning || showDetailsAsGhost) && 'cateringPanelForegroundHidden',
+                classNames?.foreground,
               )}
+              style={styles?.foreground}
             >
-              <h4 className="cateringMenuRoundHeading cateringPersuasionHeading text-[clamp(1.85rem,3.6vw,2.45rem)] leading-[0.95] tracking-[-0.04em]">
+              <h4
+                className={cn(
+                  'cateringMenuRoundHeading cateringPersuasionHeading text-[clamp(1.85rem,3.6vw,2.45rem)] leading-[0.95] tracking-[-0.04em]',
+                  classNames?.heading,
+                )}
+                style={styles?.heading}
+              >
                 {buildPersuasionHeading()}
               </h4>
 
               {product.menuExpandedPitch ? (
                 <RichText
-                  className="cateringPitch cateringPersuasionBody prose-p:leading-7"
+                  className={cn(
+                    'cateringPitch cateringPersuasionBody prose-p:leading-7',
+                    classNames?.body,
+                  )}
                   data={product.menuExpandedPitch}
                   enableGutter={false}
+                  style={styles?.body}
                 />
               ) : (
-                <div className="cateringPersuasionBody space-y-4">
+                <div
+                  className={cn('cateringPersuasionBody space-y-4', classNames?.body)}
+                  style={styles?.body}
+                >
                   {persuasionCopy.map((paragraph) => (
                     <p className="text-[1rem] leading-8 md:text-[1.06rem]" key={paragraph}>
                       {paragraph}
@@ -1662,18 +1734,45 @@ export function PersuasionGardenPanel({
                 </div>
               )}
 
-              <div className="relative pt-1" ref={chooserAnchorRef}>
-                <SceneActionRow className="cateringActionRow cateringPanelActionRow" gap="2">
-                  <CateringActionButton onClick={spawnCloud}>
+              <div
+                className={cn('relative pt-1', classNames?.actionShell)}
+                ref={chooserAnchorRef}
+                style={styles?.actionShell}
+              >
+                <SceneActionRow
+                  className={cn('cateringActionRow cateringPanelActionRow', classNames?.actionRow)}
+                  gap="2"
+                  style={styles?.actionRow}
+                >
+                  <CateringActionButton
+                    className={classNames?.actionButton}
+                    onClick={spawnCloud}
+                    style={styles?.actionButton}
+                    wrapperClassName={classNames?.actionButtonWrap}
+                    wrapperStyle={styles?.actionButtonWrap}
+                  >
                     {spawnedCloudLabelByScenery[sceneryTone]}
                   </CateringActionButton>
-                  <CateringActionButton onClick={spawnFlower}>
+                  <CateringActionButton
+                    className={classNames?.actionButton}
+                    onClick={spawnFlower}
+                    style={styles?.actionButton}
+                    wrapperClassName={classNames?.actionButtonWrap}
+                    wrapperStyle={styles?.actionButtonWrap}
+                  >
                     {spawnedAccentLabelByScenery[sceneryTone]}
                   </CateringActionButton>
                   {hasGallery ? (
                     <CateringActionButton
-                      className="cateringPhotosButton"
+                      className={cn(
+                        'cateringPhotosButton',
+                        classNames?.actionButton,
+                        classNames?.photosButton,
+                      )}
                       onClick={() => runPanelTransition('gallery')}
+                      style={{ ...styles?.actionButton, ...styles?.photosButton }}
+                      wrapperClassName={classNames?.actionButtonWrap}
+                      wrapperStyle={styles?.actionButtonWrap}
                     >
                       <Image
                         alt=""
@@ -1691,8 +1790,13 @@ export function PersuasionGardenPanel({
                     buttonRef={chooserButtonRef}
                     className={cn(
                       (isSceneChanging || isSceneryPickerOpen) && 'cateringSpawnButtonCharging',
+                      classNames?.actionButton,
+                      classNames?.sceneryButton,
                     )}
                     onClick={onToggleSceneryPicker}
+                    style={{ ...styles?.actionButton, ...styles?.sceneryButton }}
+                    wrapperClassName={classNames?.actionButtonWrap}
+                    wrapperStyle={styles?.actionButtonWrap}
                   >
                     Change scenery
                   </CateringActionButton>
@@ -1707,30 +1811,45 @@ export function PersuasionGardenPanel({
               </div>
             </div>
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[6.7rem] overflow-hidden">
+            <div
+              className={cn(
+                'pointer-events-none absolute inset-x-0 bottom-0 h-[6.7rem] overflow-hidden',
+                classNames?.meadowLayer,
+              )}
+              style={styles?.meadowLayer}
+            >
               <DecorativeSceneImage
-                className="cateringSceneMeadow cateringPersuasionMeadow"
+                className={cn('cateringSceneMeadow cateringPersuasionMeadow', classNames?.meadow)}
                 fit="cover"
                 sizes="100vw"
                 src={meadowSrc}
+                style={styles?.meadow}
               />
               {panelPieces.map((piece) => (
                 <DecorativeSceneImage
-                  className={cn('cateringPersuasionSceneryPiece', piece.className)}
+                  className={cn(
+                    'cateringPersuasionSceneryPiece',
+                    piece.className,
+                    classNames?.scenePiece,
+                  )}
                   key={`${sceneryTone}-${piece.className}-${piece.src}`}
                   priority={isEagerSceneAsset(piece.src)}
                   sizes="40vw"
                   src={piece.src}
-                  style={piece.style}
+                  style={{ ...piece.style, ...styles?.scenePiece }}
                 />
               ))}
               {panelCritters.map((critter) => (
                 <DecorativeSceneImage
-                  className={cn('cateringPersuasionSceneryPiece', critter.className)}
+                  className={cn(
+                    'cateringPersuasionSceneryPiece',
+                    critter.className,
+                    classNames?.scenePiece,
+                  )}
                   key={`${sceneryTone}-${critter.className}-${critter.src}`}
                   sizes="4rem"
                   src={critter.src}
-                  style={critter.style}
+                  style={{ ...critter.style, ...styles?.scenePiece }}
                 />
               ))}
               {persuasionSheep.map((sheep) => (
@@ -1746,26 +1865,32 @@ export function PersuasionGardenPanel({
               {panelWildflowers.map((flower) => (
                 <FlowerSprite
                   asset={flower.asset}
-                  className="cateringPersuasionFlower cateringPersuasionWildflower"
+                  className={cn(
+                    'cateringPersuasionFlower cateringPersuasionWildflower',
+                    classNames?.flower,
+                    classNames?.wildflower,
+                  )}
                   key={`panel-wild-${flower.left}-${flower.asset}`}
                   living
                   style={buildFlowerMotionStyle(
                     `panel-wild-${flower.left}-${flower.asset}`,
                     flower.left,
                     flower.scale,
+                    styles?.wildflower,
                   )}
                 />
               ))}
               {panelFlowers.map((flower) => (
                 <FlowerSprite
                   asset={flower.asset}
-                  className="cateringPersuasionFlower"
+                  className={cn('cateringPersuasionFlower', classNames?.flower)}
                   key={`${flower.left}-${flower.asset}`}
                   living
                   style={buildFlowerMotionStyle(
                     `panel-${flower.left}-${flower.asset}`,
                     flower.left,
                     flower.scale,
+                    styles?.flower,
                   )}
                 />
               ))}
@@ -1773,14 +1898,18 @@ export function PersuasionGardenPanel({
                 <FlowerSprite
                   asset={flower.asset}
                   animateIn
-                  className="cateringPersuasionFlower cateringPersuasionFlowerSpawned"
+                  className={cn(
+                    'cateringPersuasionFlower cateringPersuasionFlowerSpawned',
+                    classNames?.flower,
+                    classNames?.spawnedFlower,
+                  )}
                   key={flower.id}
                   living
                   style={buildFlowerMotionStyle(
                     `panel-spawn-${flower.id}`,
                     flower.left,
                     flower.scale,
-                    { bottom: flower.bottom },
+                    { bottom: flower.bottom, ...styles?.spawnedFlower },
                   )}
                 />
               ))}
@@ -1794,15 +1923,22 @@ export function PersuasionGardenPanel({
               'absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               showGalleryAsGhost &&
                 'cateringPanelWipeGhost cateringPanelWipeGhostToDetails pointer-events-none z-[4]',
+              classNames?.galleryFace,
             )}
+            style={styles?.galleryFace}
           >
             <div
               className={cn(
                 'cateringGalleryContent h-full',
                 panelTransition === 'closing' && 'cateringGalleryContentTransitioning',
+                classNames?.galleryContent,
               )}
+              style={styles?.galleryContent}
             >
-              <div className="flex justify-start">
+              <div
+                className={cn('flex justify-start', classNames?.galleryToolbar)}
+                style={styles?.galleryToolbar}
+              >
                 <SceneButton
                   className="cateringSpawnButton shrink-0"
                   onClick={() => runPanelTransition('details')}
@@ -1812,7 +1948,13 @@ export function PersuasionGardenPanel({
                 </SceneButton>
               </div>
 
-              <div className="cateringPhotoBoard mt-3 h-[calc(100%-3.25rem)] overflow-y-auto pb-10 pr-1">
+              <div
+                className={cn(
+                  'cateringPhotoBoard mt-3 h-[calc(100%-3.25rem)] overflow-y-auto pb-10 pr-1',
+                  classNames?.photoBoard,
+                )}
+                style={styles?.photoBoard}
+              >
                 <div className="columns-1 gap-3 md:columns-3">
                   <div className="cateringPhotoStartMarker mb-4 break-inside-avoid text-center">
                     <p className="cateringMenuEyebrow text-[0.76rem] text-[rgba(23,21,16,0.48)]">
@@ -1840,8 +1982,10 @@ export function PersuasionGardenPanel({
                         className={cn(
                           'cateringPhotoCard mb-3 break-inside-avoid overflow-hidden rounded-[1rem]',
                           !isGalleryImageLoaded && 'cateringPhotoCardLoading',
+                          classNames?.photoCard,
                         )}
                         key={imageKey}
+                        style={styles?.photoCard}
                       >
                         {!isGalleryImageLoaded ? (
                           <span aria-hidden="true" className="cateringPhotoSkeleton" />
@@ -1891,7 +2035,9 @@ export function PersuasionGardenPanel({
             className={cn(
               'pointer-events-none absolute inset-0 z-[10] overflow-hidden rounded-[1.45rem]',
               panelTransition === 'idle' && 'hidden',
+              classNames?.transitionOverlay,
             )}
+            style={styles?.transitionOverlay}
           >
             <div
               className={cn(
@@ -1901,9 +2047,11 @@ export function PersuasionGardenPanel({
                   (transitionGhostFace === 'gallery'
                     ? 'cateringPanelRepaintLineToDetails'
                     : 'cateringPanelRepaintLineToPhotos'),
+                classNames?.transitionLine,
               )}
               style={{
                 ['--catering-tear-duration' as string]: `${SHUTTER_PHASE_MS}ms`,
+                ...styles?.transitionLine,
               }}
             />
           </div>

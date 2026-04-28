@@ -1,6 +1,6 @@
 'use client'
 
-import { bakeryMediaQueries, useBakeryMediaQuery } from '@/design-system/bakery'
+import { bakeryMediaQueries, useBakeryAnnouncer, useBakeryMediaQuery } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import { MenuIcon, ShoppingBag, X } from 'lucide-react'
 import Link from 'next/link'
@@ -36,6 +36,7 @@ const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
 
 export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   const pathname = usePathname()
+  const { announce } = useBakeryAnnouncer()
   const isTabletUp = useBakeryMediaQuery(bakeryMediaQueries.tabletUp)
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -60,6 +61,7 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
       if (!menuRef.current || !event.target) return
       if (menuRef.current.contains(event.target as Node)) return
       setIsOpen(false)
+      announce('Mobile navigation closed.')
     }
 
     window.addEventListener('mousedown', onPointerDown)
@@ -69,7 +71,7 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
       window.removeEventListener('mousedown', onPointerDown)
       window.removeEventListener('touchstart', onPointerDown)
     }
-  }, [isOpen])
+  }, [announce, isOpen])
 
   const renderCard = ({
     description,
@@ -114,7 +116,9 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
           aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
           className="siteHeaderMobileIconButton"
           onClick={() => {
-            setIsOpen((current) => !current)
+            const nextOpen = !isOpen
+            setIsOpen(nextOpen)
+            announce(nextOpen ? 'Mobile navigation opened.' : 'Mobile navigation closed.')
           }}
           type="button"
         >

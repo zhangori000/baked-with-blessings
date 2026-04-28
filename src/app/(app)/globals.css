@@ -642,6 +642,11 @@
     pointer-events: none;
   }
 
+  .bakeryPressable[aria-busy='true'] {
+    cursor: progress;
+    opacity: 0.9;
+  }
+
   .bakeryPressable:not(:disabled):hover {
     transform: translateY(-1px);
   }
@@ -656,8 +661,35 @@
     justify-content: center;
     line-height: 1;
     min-height: 2.75rem;
+    overflow: visible;
+    position: relative;
     text-align: center;
     white-space: nowrap;
+  }
+
+  .bakerySceneButtonContent {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .bakerySceneButton[data-loading='true'] .bakerySceneButtonContent {
+    visibility: hidden;
+  }
+
+  .bakerySceneButtonSpinner {
+    animation: bakerySceneButtonSpinner 720ms linear infinite;
+    border: 2px solid currentcolor;
+    border-right-color: transparent;
+    border-radius: 999px;
+    height: 1.12rem;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.12rem;
   }
 
   .bakerySceneButton-primary {
@@ -667,6 +699,16 @@
 
   .bakerySceneButton-ghost {
     border-color: var(--bakery-color-border);
+  }
+
+  @keyframes bakerySceneButtonSpinner {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
   }
 
   .bakery-bg-actionBg {

@@ -27,6 +27,7 @@ import {
   mobileSkyByScenery,
   preloadSceneryAssets,
   skyByScenery,
+  type PersuasionGardenPanelClassNames,
 } from './catering-menu-scenery'
 import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
 import { buildCookiePosterAsset } from './cookiePosterData'
@@ -37,6 +38,13 @@ type CateringMenuSectionProps = {
 }
 
 type SceneryPickerAnchor = 'hero' | 'panel'
+
+const menuPersuasionPanelClassNames = {
+  actionRow: 'cateringMenuPersuasionActionRow',
+  galleryFace: 'cateringMenuPersuasionGalleryFace',
+  photoBoard: 'cateringMenuPersuasionPhotoBoard',
+  root: 'cateringMenuPersuasionRoot',
+} satisfies PersuasionGardenPanelClassNames
 
 const cateringDisplayOrder = [
   'cookie-tray',
@@ -377,6 +385,7 @@ function CateringMenuRow({
             onAddToCart={handleAddToCart}
             persuasionPanel={
               <PersuasionGardenPanel
+                classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
                 isSceneChanging={isSceneChanging}
                 onSelectScenery={onSelectScenery}
@@ -400,6 +409,7 @@ function CateringMenuRow({
             onAddToCart={handleAddToCart}
             persuasionPanel={
               <PersuasionGardenPanel
+                classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
                 isSceneChanging={isSceneChanging}
                 onSelectScenery={onSelectScenery}

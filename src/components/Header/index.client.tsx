@@ -5,6 +5,7 @@ import { EditItemQuantityButton } from '@/components/Cart/EditItemQuantityButton
 import { CartModal } from '@/components/Cart/CartModal'
 import { Price } from '@/components/Price'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
+import { useBakeryAnnouncer } from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
@@ -86,12 +87,15 @@ const getActiveAppLabel = (pathname: string) => {
 
 const appsNavigationLabel = 'Other pages'
 
+const formatCartQuantity = (quantity: number) => `${quantity} item${quantity === 1 ? '' : 's'}`
+
 export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
   const panelInnerRef = useRef<HTMLDivElement | null>(null)
   const { isScrolled } = useHeaderVisibility()
+  const { announce } = useBakeryAnnouncer()
   const { cart } = useCart()
   const { user, logout } = useAuth()
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
@@ -174,12 +178,37 @@ export function HeaderClient({ brand, header }: Props) {
     }
   }, [activePanel])
 
-  const handleToggle = (panel: ActivePanel) => {
-    setActivePanel((current) => (current === panel ? null : panel))
+  const accountPanelName = user ? 'Account menu' : 'Sign-in menu'
+
+  const announceHeaderPanelClosed = (panel: ActivePanel) => {
+    if (panel === 'account') {
+      announce(`${accountPanelName} closed.`)
+      return
+    }
+
+    if (panel === 'more') {
+      announce('Other pages menu closed.')
+      return
+    }
+
+    if (panel === 'bag') {
+      announce('Cart panel closed.')
+    }
+  }
+
+  const toggleHeaderPanel = (
+    panel: Exclude<ActivePanel, null>,
+    openMessage: string,
+    closeMessage: string,
+  ) => {
+    const willOpen = activePanel !== panel
+    setActivePanel(willOpen ? panel : null)
+    announce(willOpen ? openMessage : closeMessage)
   }
 
   const openCartModal = () => {
     setActivePanel(null)
+    announce(`Cart opened. ${formatCartQuantity(cartQuantity)} in cart.`)
     window.dispatchEvent(new Event('bwb:open-cart'))
   }
 
@@ -205,7 +234,10 @@ export function HeaderClient({ brand, header }: Props) {
         <button
           aria-label="Close open header panel"
           className="siteHeaderPanelBackdrop"
-          onClick={() => setActivePanel(null)}
+          onClick={() => {
+            announceHeaderPanelClosed(activePanel)
+            setActivePanel(null)
+          }}
           type="button"
         />
       ) : null}
@@ -257,7 +289,11 @@ export function HeaderClient({ brand, header }: Props) {
                             'is-active': item.isActive || activePanel === 'more',
                           })}
                           onClick={() => {
-                            handleToggle('more')
+                            toggleHeaderPanel(
+                              'more',
+                              'Other pages menu opened.',
+                              'Other pages menu closed.',
+                            )
                           }}
                           type="button"
                         >
@@ -300,7 +336,11 @@ export function HeaderClient({ brand, header }: Props) {
                   activePanel === 'account' ? 'is-active' : null,
                 )}
                 onClick={() => {
-                  handleToggle('account')
+                  toggleHeaderPanel(
+                    'account',
+                    `${accountPanelName} opened.`,
+                    `${accountPanelName} closed.`,
+                  )
                 }}
                 type="button"
               >

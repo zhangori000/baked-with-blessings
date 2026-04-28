@@ -283,19 +283,144 @@ component
   asks a named question instead of manually reading window.innerWidth
 ```
 
+This next migration added the bakery version of the CDS slot pattern for the persuasion/photo
+panel:
+
+```txt
+BakerySlotClassNames
+BakerySlotStyles
+PersuasionGardenPanelClassNames
+PersuasionGardenPanelStyles
+persuasionGardenPanelSlots
+```
+
+Instead of the parent needing to know a giant pile of internal classes, it can now target named
+regions:
+
+```tsx
+<PersuasionGardenPanel
+  classNames={{
+    root: 'cateringMenuPersuasionRoot',
+    actionRow: 'cateringMenuPersuasionActionRow',
+    galleryFace: 'cateringMenuPersuasionGalleryFace',
+    photoBoard: 'cateringMenuPersuasionPhotoBoard',
+  }}
+/>
+```
+
+The important idea is not those exact class names. The important idea is that the component exposes
+a controlled styling vocabulary:
+
+```txt
+root
+viewport
+detailFace
+galleryFace
+foreground
+actionRow
+meadowLayer
+flower
+photoBoard
+transitionLine
+```
+
+That makes future styling requests safer. A request like "move the photo button row" can target
+`actionRow`. A request like "make the photo board taller" can target `photoBoard`. A request like
+"tune the flowers" can target `flower`, `wildflower`, or `spawnedFlower`.
+
+This next migration added the bakery version of CDS-style button loading behavior:
+
+```txt
+SceneButton loading
+SceneButton loadingLabel
+SceneButton progressLabel
+```
+
+The button now owns the repeated loading decisions:
+
+```txt
+disable interaction while loading
+set aria-busy
+provide an accessible loading label
+hide the normal label visually
+center one consistent spinner
+keep the button's layout stable
+```
+
+So callers can write:
+
+```tsx
+<SceneButton loading={isPending} loadingLabel="Adding tray to cart">
+  Add Banana Crumble Tray to cart
+</SceneButton>
+```
+
+The caller still decides when the action is pending. The design system decides how pending buttons
+look and behave.
+
+This next migration connected the announcer to the header and mobile navigation:
+
+```txt
+mobile navigation opened
+mobile navigation closed
+account menu opened
+account menu closed
+sign-in menu opened
+sign-in menu closed
+other pages menu opened
+other pages menu closed
+cart opened with item count
+```
+
+The point is not that every click needs a visible toast. The point is that layout-level actions can
+now report important state changes through the same hidden live-region system:
+
+```tsx
+const { announce } = useBakeryAnnouncer()
+
+announce('Other pages menu opened.')
+```
+
+This is the behavior equivalent of tokens. Components stop inventing separate announcement logic and
+use one shared contract.
+
+This next migration connected the announcer to cart item controls:
+
+```txt
+item removed from cart
+item quantity increased
+item quantity reduced
+cart item update failed
+```
+
+The cart buttons now also use product-aware labels:
+
+```txt
+Remove Cookie Tray from cart
+Increase Cookie Tray quantity
+Reduce Cookie Tray quantity
+```
+
+The small implementation detail that matters:
+
+```txt
+DeleteItemButton
+EditItemQuantityButton
+  ask a shared helper for the item title
+  perform the cart mutation
+  announce the result through useBakeryAnnouncer
+```
+
+This keeps the behavior attached to the reusable cart controls. The cart modal and the header quick
+cart both benefit because they use the same buttons.
+
 ## 6. Good Future Chapter-5 Migrations
 
 The next useful migrations from this chapter would be:
 
 ```txt
-slot APIs for PersuasionGardenPanel
-  root, detailFace, galleryFace, actionRow, meadowLayer, flowerLayer
-
-loading state in SceneButton
-  consistent disabled, busy, spinner, and label behavior
-
-header/menu announcements
-  announce mobile nav opened, cart opened, account menu opened
+menu form announcements
+  announce ingredient receipt opened, tray flavor selected, and add-to-cart failures
 ```
 
 The broader CDS lesson:
