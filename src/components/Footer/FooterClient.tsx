@@ -2,6 +2,7 @@
 
 import { CMSLink } from '@/components/Link'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
+import { SceneSurface } from '@/design-system/bakery'
 import {
   Dialog,
   DialogClose,
@@ -87,11 +88,8 @@ function TikTokIcon(props: React.ComponentProps<'svg'>) {
 }
 
 export function FooterClient({ brand, copyrightName, currentYear, navItems }: FooterClientProps) {
-  const footerText = '#1f2f20'
-  const footerMuted = 'rgba(31, 47, 32, 0.72)'
-  const footerBorder = 'rgba(31, 47, 32, 0.16)'
   const footerPillClassName =
-    'inline-flex min-h-[2.6rem] min-w-0 shrink-0 items-center gap-2 rounded-full border border-[var(--footer-link-border)] bg-[var(--footer-link-bg)] px-3.5 py-2.5 whitespace-nowrap text-[0.92rem] font-extrabold leading-none tracking-[0.01em] text-[var(--footer-link-color)] transition hover:-translate-y-0.5'
+    'inline-flex min-h-[2.6rem] min-w-0 shrink-0 items-center gap-2 rounded-full border border-[var(--bakery-footer-link-border)] bg-[var(--bakery-footer-link-bg)] px-3.5 py-2.5 whitespace-nowrap text-[0.92rem] font-extrabold leading-none tracking-[0.01em] text-[var(--bakery-footer-link-color)] transition hover:-translate-y-0.5'
 
   const socialLinks = [
     {
@@ -113,9 +111,10 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
 
   return (
     <Dialog>
-      <footer
+      <SceneSurface
+        as="footer"
         className="relative min-h-[26rem] overflow-hidden px-3 pb-4 pt-10 sm:px-4 sm:pb-5 sm:pt-12 md:min-h-[24rem] md:px-6 md:pb-6 md:pt-14"
-        style={{ background: '#d8ecfb' }}
+        variant="footer"
       >
         <CartSceneShell
           className="absolute inset-0 !overflow-hidden"
@@ -127,10 +126,10 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
             <div
               className="grid rounded-[1.35rem] border px-4 pb-4 pt-7 sm:px-5 sm:pb-5 sm:pt-8 md:px-6 md:py-6"
               style={{
-                backgroundColor: 'rgba(255, 252, 244, 0.2)',
-                borderColor: 'rgba(255, 252, 244, 0.22)',
-                color: footerText,
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.22)',
+                backgroundColor: 'var(--bakery-footer-panel-bg)',
+                borderColor: 'var(--bakery-footer-border)',
+                boxShadow: 'var(--bakery-footer-panel-shadow)',
+                color: 'var(--bakery-footer-fg)',
               }}
             >
               <div className="flex min-h-[19rem] flex-col gap-5 md:min-h-[17rem] md:flex-row md:items-start md:justify-between">
@@ -164,14 +163,9 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                         if (isUnavailableFooterLink(linkProps)) return null
 
                         const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
-                        const footerLinkStyle = {
-                          '--footer-link-bg': 'rgba(255,252,244,0.56)',
-                          '--footer-link-border': footerBorder,
-                          '--footer-link-color': footerText,
-                        } as React.CSSProperties
 
                         return (
-                          <li key={item.id ?? `footer-link-${index}`} style={footerLinkStyle}>
+                          <li key={item.id ?? `footer-link-${index}`}>
                             {isContactFooterLink(linkProps) ? (
                               <DialogTrigger asChild>
                                 <button className={footerPillClassName} type="button">
@@ -188,15 +182,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                           </li>
                         )
                       })}
-                      <li
-                        style={
-                          {
-                            '--footer-link-bg': 'rgba(255,252,244,0.56)',
-                            '--footer-link-border': footerBorder,
-                            '--footer-link-color': footerText,
-                          } as React.CSSProperties
-                        }
-                      >
+                      <li>
                         <Link className={footerPillClassName} href="/account">
                           Account
                         </Link>
@@ -212,7 +198,10 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                         href={href}
                         key={label}
                         rel="noreferrer"
-                        style={{ backgroundColor: 'rgba(255,252,244,0.56)', color: footerText }}
+                        style={{
+                          backgroundColor: 'var(--bakery-footer-link-bg)',
+                          color: 'var(--bakery-footer-link-color)',
+                        }}
                         target="_blank"
                       >
                         <Icon className="h-4 w-4" />
@@ -225,29 +214,49 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
 
               <div
                 className="mt-3 rounded-2xl border border-[rgba(31, 47, 32, 0.08)] px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem]"
-                style={{ backgroundColor: 'rgba(255,252,244,0.48)', color: footerMuted }}
+                style={{
+                  backgroundColor: 'var(--bakery-footer-link-bg)',
+                  borderColor: 'var(--bakery-footer-border)',
+                  color: 'var(--bakery-footer-muted)',
+                }}
               >
                 <p>
                   &copy; {currentYear} {copyrightName}
-                  {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
+                  {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights
+                  reserved.
                 </p>
               </div>
             </div>
           </div>
         </CartSceneShell>
-      </footer>
+      </SceneSurface>
 
-      <DialogContent className="border-[#4b3b24]/15 bg-[#fffaf0] text-[#2f2414] shadow-[0_24px_80px_rgba(47,36,20,0.24)] sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        style={{
+          backgroundColor: 'var(--bakery-color-bg-primary)',
+          borderColor: 'var(--bakery-color-border)',
+          boxShadow: '0 24px 80px rgba(47,36,20,0.24)',
+          color: 'var(--bakery-color-fg)',
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-extrabold tracking-[-0.02em]">
             Contact Baked with Blessings
           </DialogTitle>
-          <DialogDescription className="text-base leading-7 text-[#6c583a]">
+          <DialogDescription
+            className="text-base leading-7"
+            style={{ color: 'var(--bakery-color-fg-muted)' }}
+          >
             Hey, for now, we only have Instagram. DM me at{' '}
             <a
-              className="font-extrabold text-[#2f2414] underline decoration-[#2f2414]/25 underline-offset-4 transition hover:opacity-75"
+              className="font-extrabold underline underline-offset-4 transition hover:opacity-75"
               href={instagramHref}
               rel="noreferrer"
+              style={{
+                color: 'var(--bakery-color-fg)',
+                textDecorationColor: 'color-mix(in srgb, var(--bakery-color-fg) 25%, transparent)',
+              }}
               target="_blank"
             >
               {instagramHandle}
@@ -259,7 +268,11 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
             <button
-              className="inline-flex items-center justify-center rounded-full bg-[#2f2414] px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#4b3b24]"
+              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-extrabold transition hover:opacity-85"
+              style={{
+                backgroundColor: 'var(--bakery-color-action-bg)',
+                color: 'var(--bakery-color-action-fg)',
+              }}
               type="button"
             >
               Got it

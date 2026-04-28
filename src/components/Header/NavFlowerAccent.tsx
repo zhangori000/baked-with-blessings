@@ -6,26 +6,24 @@ type Props = {
 
 const palettes = {
   orange: {
-    centerInner: '#6b4a07',
-    centerOuter: '#2e2208',
-    edge: '#8a2d00',
-    leaf: '#8a9740',
-    petalInner: '#ffb56c',
-    petalOuter: '#dd5b08',
-    pollen: '#f6e4a4',
+    centerInner: 'var(--scene-flower-center, #6b4a07)',
+    centerOuter: 'var(--scene-flower-center, #2e2208)',
+    edge: 'var(--scene-flower-center, #8a2d00)',
+    leaf: 'var(--scene-meadow, #8a9740)',
+    petalInner: 'var(--scene-flower-glow, #ffb56c)',
+    petalOuter: 'var(--scene-flower-petal, #dd5b08)',
+    pollen: 'var(--flower-sun, #f6e4a4)',
   },
   plum: {
-    centerInner: '#857445',
-    centerOuter: '#3d3517',
-    edge: '#4f3341',
-    leaf: '#7f8c35',
-    petalInner: '#8f687a',
-    petalOuter: '#5a3949',
-    pollen: '#f0e8bb',
+    centerInner: 'var(--scene-flower-center, #857445)',
+    centerOuter: 'var(--scene-flower-center, #3d3517)',
+    edge: 'var(--scene-flower-center, #4f3341)',
+    leaf: 'var(--scene-meadow, #7f8c35)',
+    petalInner: 'var(--scene-flower-glow, #8f687a)',
+    petalOuter: 'var(--scene-flower-petal, #5a3949)',
+    pollen: 'var(--flower-sun, #f0e8bb)',
   },
 } as const
-
-const petalRotations = [0, 60, 120, 180, 240, 300] as const
 
 export function NavFlowerAccent({ tone = 'orange' }: Props) {
   const gradientId = useId()
@@ -54,8 +52,8 @@ export function NavFlowerAccent({ tone = 'orange' }: Props) {
         </radialGradient>
 
         <linearGradient id={stemId} x1="0.2" x2="0.8" y1="0" y2="1">
-          <stop offset="0%" stopColor="#b8c452" />
-          <stop offset="100%" stopColor="#647321" />
+          <stop offset="0%" stopColor={palette.leaf} />
+          <stop offset="100%" stopColor="var(--scene-meadow-shadow, #647321)" />
         </linearGradient>
       </defs>
 
@@ -66,10 +64,14 @@ export function NavFlowerAccent({ tone = 'orange' }: Props) {
         strokeLinecap="round"
         strokeWidth="5"
       />
-      <path d="M61 96 C74 93 84 98 88 111 C77 113 69 110 61 101 Z" fill="#87963b" opacity="0.94" />
+      <path
+        d="M61 96 C74 93 84 98 88 111 C77 113 69 110 61 101 Z"
+        fill="var(--scene-meadow, #87963b)"
+        opacity="0.94"
+      />
       <path
         d="M60 108 C49 103 40 105 32 117 C44 121 52 118 60 112 Z"
-        fill="#798634"
+        fill="var(--scene-meadow-shadow, #798634)"
         opacity="0.9"
       />
 
