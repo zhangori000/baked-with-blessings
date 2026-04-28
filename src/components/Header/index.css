@@ -1398,12 +1398,12 @@ body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
 }
 
 body:has(.routeLoadingSurface) .siteHeader {
-  --site-header-text: #10180d !important;
-  background: #eef8ef !important;
+  --site-header-text: var(--route-loading-banner-color, #10180d) !important;
+  background: var(--route-loading-background, #eef8ef) !important;
 }
 
 body:has(.routeLoadingSurface) .siteHeaderViewport {
-  background: #eef8ef !important;
+  background: var(--route-loading-background, #eef8ef) !important;
 }
 
 body:has(.routeLoadingSurface) .siteHeaderBrand,
@@ -1411,7 +1411,7 @@ body:has(.routeLoadingSurface) .siteHeaderActionButton,
 body:has(.routeLoadingSurface) .siteHeaderMobileIconButton,
 body:has(.routeLoadingSurface) .siteHeaderMobileBagButton,
 body:has(.routeLoadingSurface) .siteHeaderMobileBagCount {
-  color: #10180d !important;
+  color: var(--route-loading-banner-color, #10180d) !important;
   text-shadow: none !important;
 }
 
@@ -1664,6 +1664,6 @@ body:has(.routeLoadingSurface) .siteHeaderBannerList {
 
 body:has(.routeLoadingSurface) .siteHeader,
 body:has(.routeLoadingSurface) .siteHeaderViewport {
-  background: #eef8ef !important;
+  background: var(--route-loading-background, #eef8ef) !important;
   background-image: none !important;
 }

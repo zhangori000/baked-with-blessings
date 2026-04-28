@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import type { Product } from '@/payload-types'
+import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { measureServerStep } from '@/utilities/devTiming'
 import { Cormorant_Garamond } from 'next/font/google'
 import { getPayload } from 'payload'
@@ -37,6 +38,7 @@ const cateringProductSelect = {
 } as const
 
 export default async function CateringMenuPage() {
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await measureServerStep('payload init: catering menu', () =>
     getPayload({ config: configPromise }),
   )
@@ -112,7 +114,10 @@ export default async function CateringMenuPage() {
 
   return (
     <div className={cateringSerif.variable}>
-      <CateringMenuSection products={products.docs as Partial<Product>[]} />
+      <CateringMenuSection
+        initialSceneryTone={initialSceneryTone}
+        products={products.docs as Partial<Product>[]}
+      />
     </div>
   )
 }

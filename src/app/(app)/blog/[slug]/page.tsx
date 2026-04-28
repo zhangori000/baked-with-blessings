@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
 import { RichText } from '@/components/RichText'
+import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import { generateMeta } from '@/utilities/generateMeta'
 import { ArrowLeft } from 'lucide-react'
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Args) {
   const { slug = '' } = await params
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
   const post = await queryPostBySlug(slug)
 
   if (!post) {
@@ -52,6 +54,7 @@ export default async function BlogPostPage({ params }: Args) {
         <div className="blogHero blogHeroPost">
           <BlogSceneryHero
             eyebrow={heroEyebrow || 'Baked with Blessings'}
+            initialSceneryTone={initialSceneryTone}
             summary={post.excerpt}
             title={post.title}
           />

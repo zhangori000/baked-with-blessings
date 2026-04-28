@@ -5,9 +5,10 @@ import { SceneryLoadingShell } from '@/components/scenery/SceneryLoadingShell'
 export default function Loading() {
   return (
     <SceneryLoadingShell
-      message="Loading catering menu..."
-      titleWidth="w-[min(30rem,80vw)]"
-      variant="menu"
+      cardCount={4}
+      message="Loading blog..."
+      titleWidth="w-[min(18rem,68vw)]"
+      variant="list"
     />
   )
 }

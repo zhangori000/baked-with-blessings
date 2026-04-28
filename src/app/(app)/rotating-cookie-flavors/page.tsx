@@ -1,3 +1,5 @@
+import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+
 import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
 import { queryHomeCookiePosters } from '../cookiePosterQueries'
 
@@ -7,7 +9,14 @@ export const metadata = {
 }
 
 export default async function RotatingCookieFlavorsPage() {
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
   const posters = await queryHomeCookiePosters()
 
-  return <HomeCookieCarousel posters={posters} sceneVariant="scenery" />
+  return (
+    <HomeCookieCarousel
+      initialSceneryTone={initialSceneryTone}
+      posters={posters}
+      sceneVariant="scenery"
+    />
+  )
 }

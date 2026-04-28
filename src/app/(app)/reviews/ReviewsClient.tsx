@@ -19,11 +19,16 @@ import { useRouter } from 'next/navigation'
 import type { FormEvent } from 'react'
 import { startTransition, useEffect, useState, useTransition } from 'react'
 
-import { MenuHero, menuSceneryTones, preloadSceneryAssets } from '../menu/_components/catering-menu-scenery'
+import {
+  MenuHero,
+  menuSceneryTones,
+  preloadSceneryAssets,
+} from '../menu/_components/catering-menu-scenery'
 import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 
 type Props = {
   initialData: ReviewsPageData
+  initialSceneryTone?: MenuSceneryTone
 }
 
 const formatDate = (value: string) => {
@@ -54,13 +59,13 @@ const getResponseFlowerSrc = (review: PublicReview) => {
   return responseFlowerSources[seed % responseFlowerSources.length] || responseFlowerSources[0]
 }
 
-export function ReviewsClient({ initialData }: Props) {
+export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: Props) {
   const router = useRouter()
   const [notice, setNotice] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComposerOpen, setIsComposerOpen] = useState(false)
   const [isPageRefreshing, startPageRefresh] = useTransition()
-  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
 
   useEffect(() => {
@@ -270,12 +275,7 @@ function ReviewForm({
 
       <label>
         Review <span>required</span>
-        <textarea
-          name="body"
-          placeholder="Tell us what happened."
-          required
-          rows={5}
-        />
+        <textarea name="body" placeholder="Tell us what happened." required rows={5} />
       </label>
 
       {notice ? <p className="reviewsNotice">{notice}</p> : null}
@@ -296,7 +296,11 @@ function ReviewCard({ review }: { review: PublicReview }) {
   const responseFlowerSrc = getResponseFlowerSrc(review)
 
   return (
-    <article className="reviewThread" data-expanded={isExpanded} data-status={review.responseStatus}>
+    <article
+      className="reviewThread"
+      data-expanded={isExpanded}
+      data-status={review.responseStatus}
+    >
       <section className="reviewCard">
         <div className="reviewCardTop">
           <div>

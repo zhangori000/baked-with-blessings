@@ -40,6 +40,7 @@ import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 type Props = {
   initialData: DiscussionTreeData
   initialFocusedNodeId?: string
+  initialSceneryTone?: MenuSceneryTone
   initialTopicId?: string
 }
 
@@ -186,6 +187,7 @@ const getVisibleEdgeGroups = (edges: DiscussionBoardEdge[]) => {
 export function DiscussionBoardClient({
   initialData,
   initialFocusedNodeId,
+  initialSceneryTone = 'classic',
   initialTopicId,
 }: Props) {
   const router = useRouter()
@@ -205,7 +207,7 @@ export function DiscussionBoardClient({
   const [isRoutePending, startRouteRefresh] = useTransition()
   const [isGuideOpen, setIsGuideOpen] = useState(false)
   const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(() => new Set())
-  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
   const didPrepareInitialHistory = useRef(false)
 

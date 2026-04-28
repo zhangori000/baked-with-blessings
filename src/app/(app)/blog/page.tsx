@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
+import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import { getPayload } from 'payload'
 import { ArrowRight } from 'lucide-react'
@@ -28,6 +29,7 @@ const postsSelect = {
 } as const
 
 export default async function BlogPage() {
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config: configPromise })
 
   const posts = await payload.find({
@@ -51,6 +53,7 @@ export default async function BlogPage() {
         <div className="blogHero">
           <BlogSceneryHero
             eyebrow="Baked with Blessings"
+            initialSceneryTone={initialSceneryTone}
             summary="Compact essays and notes from the bakery about school, business, community, and what is being learned along the way."
             title="Blog"
           />

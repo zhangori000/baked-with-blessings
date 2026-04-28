@@ -319,7 +319,12 @@
     border-radius: 999px;
     background:
       radial-gradient(circle at 58% 30%, rgba(255, 255, 255, 0.92) 0 12%, transparent 13%),
-      radial-gradient(circle at 50% 50%, rgba(251, 248, 220, 0.98) 0 58%, rgba(227, 235, 194, 0.92) 76%, rgba(190, 206, 175, 0.78) 100%);
+      radial-gradient(
+        circle at 50% 50%,
+        rgba(251, 248, 220, 0.98) 0 58%,
+        rgba(227, 235, 194, 0.92) 76%,
+        rgba(190, 206, 175, 0.78) 100%
+      );
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.34),
       0 0 28px rgba(245, 240, 196, 0.34),
@@ -339,9 +344,7 @@
 
   body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
   body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
-    filter:
-      drop-shadow(0 0 0.8px rgba(8, 10, 16, 0.9))
-      drop-shadow(0 2px 8px rgba(7, 9, 18, 0.2));
+    filter: drop-shadow(0 0 0.8px rgba(8, 10, 16, 0.9)) drop-shadow(0 2px 8px rgba(7, 9, 18, 0.2));
     height: clamp(3rem, 4.2vw, 4.15rem);
     max-height: none;
     max-width: clamp(7.15rem, 10.6vw, 8.45rem);
@@ -477,12 +480,12 @@
   }
 
   body:has(.routeLoadingSurface) .siteHeader {
-    --site-header-text: #10180d !important;
-    background: #eef8ef !important;
+    --site-header-text: var(--route-loading-banner-color, #10180d) !important;
+    background: var(--route-loading-background, #eef8ef) !important;
   }
 
   body:has(.routeLoadingSurface) .siteHeaderViewport {
-    background: #eef8ef !important;
+    background: var(--route-loading-background, #eef8ef) !important;
   }
 
   body:has(.routeLoadingSurface) .siteHeaderBrand,
@@ -490,7 +493,7 @@
   body:has(.routeLoadingSurface) .siteHeaderMobileIconButton,
   body:has(.routeLoadingSurface) .siteHeaderMobileBagButton,
   body:has(.routeLoadingSurface) .siteHeaderMobileBagCount {
-    color: #10180d !important;
+    color: var(--route-loading-banner-color, #10180d) !important;
     text-shadow: none !important;
   }
 
@@ -544,8 +547,7 @@
 .shopSkyCloud {
   position: absolute;
   color: rgb(255 255 255 / 100%);
-  filter:
-    drop-shadow(0 18px 28px rgb(255 255 255 / 58%))
+  filter: drop-shadow(0 18px 28px rgb(255 255 255 / 58%))
     drop-shadow(0 0 30px rgb(255 255 255 / 80%));
   opacity: 1;
   overflow: visible;
@@ -570,14 +572,12 @@
   }
 
   50% {
-    transform:
-      translate3d(
+    transform: translate3d(
         calc(var(--cloud-anchor-x, 0px) - var(--cloud-drift-x, 7rem)),
         var(--cloud-drift-y, -1rem),
         0
       )
-      rotate(var(--cloud-tilt, 0deg))
-      scale(var(--cloud-scale, 1));
+      rotate(var(--cloud-tilt, 0deg)) scale(var(--cloud-scale, 1));
   }
 }
 
@@ -589,14 +589,12 @@
   }
 
   50% {
-    transform:
-      translate3d(
+    transform: translate3d(
         calc(var(--cloud-anchor-x, 0px) + var(--cloud-drift-x, 7rem)),
         var(--cloud-drift-y, -1rem),
         0
       )
-      rotate(var(--cloud-tilt, 0deg))
-      scale(var(--cloud-scale, 1));
+      rotate(var(--cloud-tilt, 0deg)) scale(var(--cloud-scale, 1));
   }
 }
 
@@ -805,11 +803,191 @@ body:has(.cateringScene-moonlit) .siteHeaderBannerList .siteHeaderBannerLink.is-
 }
 
 body:has(.routeLoadingSurface) {
-  background: #fff8f2 !important;
+  background: var(--route-loading-background, #fff8f2) !important;
 }
 
 body:has(.routeLoadingSurface) .siteHeader,
 body:has(.routeLoadingSurface) .siteHeaderViewport {
-  background: #eef8ef !important;
+  background: var(--route-loading-background, #eef8ef) !important;
   background-image: none !important;
+}
+
+.sceneryLoadingShell {
+  background: var(--route-loading-background, #fff8f2);
+  color: #172415;
+}
+
+.sceneryLoadingHero {
+  background: var(--route-loading-background, #eef8ef);
+  isolation: isolate;
+}
+
+.sceneryLoadingHeroSky,
+.sceneryLoadingHeroOverlay,
+.sceneryLoadingHeroMeadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sceneryLoadingHeroSky {
+  z-index: 0;
+  background-image: var(--route-loading-sky, url('/sceneries/classic-sky.svg'));
+  background-position: center;
+  background-size: cover;
+}
+
+.sceneryLoadingHeroOverlay {
+  z-index: 1;
+  background: var(
+    --route-loading-overlay,
+    linear-gradient(180deg, rgb(255 255 255 / 8%) 0%, rgb(245 239 218 / 16%) 100%)
+  );
+}
+
+.sceneryLoadingHeroMeadow {
+  z-index: 2;
+  background-image: var(--route-loading-meadow, url('/sceneries/classic-meadow.svg'));
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.sceneryLoadingBanner {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: min(100%, 20rem);
+  min-height: 2.35rem;
+  padding: 0.56rem 0.82rem;
+  border: 1px solid rgb(255 255 255 / 48%);
+  border-radius: 999px;
+  background: var(--route-loading-banner-bg, rgb(255 253 246 / 90%));
+  box-shadow:
+    0 14px 28px rgb(18 32 18 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 54%);
+  color: var(--route-loading-banner-color, #172415);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  opacity: 0;
+  transform: translateY(0.2rem);
+  animation: sceneryLoadingBannerReveal 1ms linear 260ms forwards;
+}
+
+.sceneryLoadingSpark {
+  position: absolute;
+  z-index: 3;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 82%);
+  box-shadow: 0 0 18px rgb(255 255 255 / 46%);
+  pointer-events: none;
+}
+
+.sceneryLoadingSpark--one {
+  left: 12%;
+  bottom: 11%;
+}
+
+.sceneryLoadingSpark--two {
+  right: 26%;
+  bottom: 18%;
+}
+
+.sceneryLoadingSpark--three {
+  right: 12%;
+  bottom: 12%;
+}
+
+.sceneryLoadingCardScene {
+  position: relative;
+  overflow: hidden;
+  background: var(--route-loading-background, #eef8ef);
+}
+
+.sceneryLoadingCardScene::before,
+.sceneryLoadingCardScene::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+}
+
+.sceneryLoadingCardScene::before {
+  background-image: var(--route-loading-sky, url('/sceneries/classic-sky.svg'));
+  background-position: center;
+  background-size: cover;
+}
+
+.sceneryLoadingCardScene::after {
+  background-image: var(--route-loading-meadow, url('/sceneries/classic-meadow.svg'));
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeader,
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #17264b !important;
+}
+
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeaderBrand,
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeaderActionButton,
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeaderMobileIconButton,
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeaderMobileBagButton,
+html[data-menu-scene='moonlit'] body:has(.routeLoadingSurface) .siteHeaderMobileBagCount {
+  color: #f8f1c8 !important;
+  text-shadow: 0 8px 18px rgb(6 18 48 / 34%) !important;
+}
+
+html[data-menu-scene='fairy-castle'] body:has(.routeLoadingSurface) .siteHeader,
+html[data-menu-scene='fairy-castle'] body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #dce2d7 !important;
+}
+
+html[data-menu-scene='blossom'] body:has(.routeLoadingSurface) .siteHeader,
+html[data-menu-scene='blossom'] body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #f7edf2 !important;
+}
+
+html[data-menu-scene='dawn'] body:has(.routeLoadingSurface) .siteHeader,
+html[data-menu-scene='dawn'] body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #fbefe0 !important;
+}
+
+html[data-menu-scene='under-tree'] body:has(.routeLoadingSurface) .siteHeader,
+html[data-menu-scene='under-tree'] body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #e7f0d8 !important;
+}
+
+@keyframes sceneryLoadingBannerReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .sceneryLoadingHeroSky,
+  .sceneryLoadingCardScene::before {
+    background-image: var(
+      --route-loading-sky-mobile,
+      var(--route-loading-sky, url('/sceneries/classic-sky.svg'))
+    );
+  }
+
+  .sceneryLoadingHero .container {
+    align-items: start;
+    padding-top: 4.35rem;
+  }
+
+  .sceneryLoadingBanner {
+    max-width: min(100%, 16rem);
+    min-height: 2.18rem;
+    padding: 0.5rem 0.72rem;
+    font-size: 0.72rem;
+  }
 }

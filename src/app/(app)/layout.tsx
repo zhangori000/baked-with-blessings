@@ -5,6 +5,7 @@ import { AdminBar } from '@/components/AdminBar'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { InitMenuScene } from '@/components/scenery/InitMenuScene'
 import { ViewportFlowers } from '@/components/ViewportFlowers'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
@@ -70,6 +71,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html className={rubik.variable} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
+        <InitMenuScene />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
         <link href="/favicon.ico" rel="alternate icon" sizes="32x32" />
       </head>

@@ -31,6 +31,7 @@ import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
 import { buildCookiePosterAsset } from './cookiePosterData'
 
 type CateringMenuSectionProps = {
+  initialSceneryTone?: MenuSceneryTone
   products: Partial<Product>[]
 }
 
@@ -417,9 +418,12 @@ function CateringMenuRow({
   )
 }
 
-export function CateringMenuSection({ products }: CateringMenuSectionProps) {
+export function CateringMenuSection({
+  initialSceneryTone = 'classic',
+  products,
+}: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
-  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const isSceneChanging = false
   const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
 

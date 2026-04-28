@@ -28,13 +28,11 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
-import type {
-  CookiePosterAsset,
-  CookieInfoRichText,
-} from './menu/_components/cookiePosterData'
+import type { CookiePosterAsset, CookieInfoRichText } from './menu/_components/cookiePosterData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
 type HomeCookieCarouselProps = {
+  initialSceneryTone?: SceneTone
   posters: CookiePosterAsset[]
   sceneVariant?: 'grassland' | 'scenery'
 }
@@ -44,10 +42,7 @@ type CarouselTransition = {
   outgoingIndex: number
 } | null
 
-type CarouselInfoPhase =
-  | 'hidden'
-  | 'ready'
-  | 'open'
+type CarouselInfoPhase = 'hidden' | 'ready' | 'open'
 
 type ShowcaseSceneCloud = {
   className?: string
@@ -618,6 +613,7 @@ const resolveCookieBodyImageSrc = (poster: CookiePosterAsset | null | undefined)
   return poster.bodyFallbackSrc
 }
 export function HomeCookieCarousel({
+  initialSceneryTone = 'classic',
   posters,
   sceneVariant = 'grassland',
 }: HomeCookieCarouselProps) {
@@ -632,7 +628,7 @@ export function HomeCookieCarousel({
   })
   const [cookieCenterPx, setCookieCenterPx] = useState<number | null>(null)
   const [grassDropPx, setGrassDropPx] = useState(0)
-  const [sceneTone, setSceneTone] = usePersistentMenuSceneTone('classic')
+  const [sceneTone, setSceneTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
   const [transition, setTransition] = useState<CarouselTransition>(null)

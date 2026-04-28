@@ -1,4 +1,5 @@
 import { getReviewsPageData } from '@/features/reviews/services/reviewData'
+import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
 import { getPayload } from 'payload'
@@ -23,12 +24,13 @@ export const metadata = {
 }
 
 async function ReviewsPageContent() {
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config })
   const data = await getReviewsPageData(payload)
 
   return (
     <div className={reviewSerif.variable}>
-      <ReviewsClient initialData={data} />
+      <ReviewsClient initialData={data} initialSceneryTone={initialSceneryTone} />
     </div>
   )
 }

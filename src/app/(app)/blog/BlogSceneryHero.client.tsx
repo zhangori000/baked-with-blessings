@@ -3,17 +3,27 @@
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import React, { startTransition, useEffect, useState } from 'react'
 
-import { MenuHero, menuSceneryTones, preloadSceneryAssets } from '../menu/_components/catering-menu-scenery'
+import {
+  MenuHero,
+  menuSceneryTones,
+  preloadSceneryAssets,
+} from '../menu/_components/catering-menu-scenery'
 import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 
 type BlogSceneryHeroProps = {
   eyebrow: string
+  initialSceneryTone?: MenuSceneryTone
   summary: string
   title: string
 }
 
-export function BlogSceneryHero({ eyebrow, summary, title }: BlogSceneryHeroProps) {
-  const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone('classic')
+export function BlogSceneryHero({
+  eyebrow,
+  initialSceneryTone = 'classic',
+  summary,
+  title,
+}: BlogSceneryHeroProps) {
+  const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
   const isSceneChanging = false
 
