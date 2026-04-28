@@ -1345,7 +1345,7 @@ export function MenuHero({
         <div className="cateringHeroCopy max-w-[42rem] space-y-4">
           <div className="space-y-4">
             <p className="cateringMenuEyebrow cateringHeroEyebrow">{eyebrow}</p>
-            <h1 className="cateringMenuHeroDisplay max-w-[10ch] text-[clamp(3.5rem,8.6vw,6rem)] leading-[0.88] tracking-[-0.045em] text-[#19395f]">
+            <h1 className="cateringMenuHeroDisplay max-w-[10ch] text-[clamp(3.5rem,8.6vw,6rem)] leading-[0.88] tracking-[-0.045em]">
               {title}
             </h1>
             <p className="cateringHeroSummary max-w-[35rem] text-[1.02rem] leading-8 md:text-[1.14rem]">

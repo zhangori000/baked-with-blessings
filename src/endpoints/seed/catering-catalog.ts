@@ -2,6 +2,7 @@ import { cookieCatalog } from './cookie-catalog'
 
 export type CateringSeedSpec = {
   expandedPitchParagraphs: string[]
+  galleryImageSlugs?: string[]
   imageSlug: string
   menuBehavior: 'batchBuilder' | 'simple'
   menuPortionLabel: string
@@ -22,17 +23,34 @@ export const cateringCategory = {
 
 const cookieFlavorSlugs = cookieCatalog.map((cookie) => cookie.slug)
 
+const cookieTrayGalleryImageSlugs = [
+  'img-4887',
+  'baked-with-blessings-box-in-sun',
+  'img-4903',
+  'img-4904',
+  'img-4883',
+  'img-4902',
+  'img-4896',
+  'img-4919',
+  'img-0403',
+  'img-0404',
+  'img-4891',
+  'img-4898',
+]
+
+const miniCookieTrayGalleryImageSlugs = ['img-4902', 'img-4919', 'img-4887', 'img-4898', 'img-4896']
+
 export const cateringCatalog: CateringSeedSpec[] = [
   {
     expandedPitchParagraphs: [
       'Build one tray with ten jumbo cookies and mix flavors however you like. It is the easiest way to share the big bakery flavors without over-ordering individual cookies.',
       'The tray price gives customers a better catering value, and the cookies still taste rich without feeling too sweet. This is the item for office drops, Bible study tables, and birthdays when people want variety.',
     ],
-    imageSlug: 'brookie',
+    galleryImageSlugs: cookieTrayGalleryImageSlugs,
+    imageSlug: cookieTrayGalleryImageSlugs[0],
     menuBehavior: 'batchBuilder',
     menuPortionLabel: '10 jumbo cookies',
-    metaDescription:
-      'A catering tray of ten jumbo cookies with mix-and-match flavor selection.',
+    metaDescription: 'A catering tray of ten jumbo cookies with mix-and-match flavor selection.',
     priceInUSD: 3000,
     requiredSelectionCount: 10,
     selectableProductSlugs: cookieFlavorSlugs,
@@ -45,11 +63,11 @@ export const cateringCatalog: CateringSeedSpec[] = [
       'This tray keeps the same mix-and-match flexibility but in a mini-cookie format that is easier to pass around at meetings, showers, and dessert tables.',
       'It is a strong value option when you want the variety and bakery look of a cookie assortment while keeping portions lighter and more budget-friendly.',
     ],
-    imageSlug: 'biscoff',
+    galleryImageSlugs: miniCookieTrayGalleryImageSlugs,
+    imageSlug: miniCookieTrayGalleryImageSlugs[0],
     menuBehavior: 'batchBuilder',
     menuPortionLabel: '10 mini cookies',
-    metaDescription:
-      'A catering tray of ten mini cookies with mix-and-match flavor selection.',
+    metaDescription: 'A catering tray of ten mini cookies with mix-and-match flavor selection.',
     priceInUSD: 2000,
     requiredSelectionCount: 10,
     selectableProductSlugs: cookieFlavorSlugs,
@@ -62,7 +80,8 @@ export const cateringCatalog: CateringSeedSpec[] = [
       'Ten cups of banana pudding make it easy to serve a full group without scooping or plating anything yourself.',
       'It is rich, familiar, and crowd-pleasing, with a catering format that saves time and usually lands as a better value than ordering individual dessert cups one by one.',
     ],
-    imageSlug: 'catering-menu-april-2026',
+    galleryImageSlugs: ['banana-pudding-close-up', 'banana-pudding-tray'],
+    imageSlug: 'banana-pudding-close-up',
     menuBehavior: 'simple',
     menuPortionLabel: '10 cups',
     metaDescription: 'Ten individual banana pudding cups packaged for catering orders.',
@@ -76,7 +95,8 @@ export const cateringCatalog: CateringSeedSpec[] = [
       'Sticky toffee pudding in a ten-cup catering format is an easy dessert upgrade when you want something warm, comforting, and a little more special than the usual sheet-pan option.',
       'The format keeps serving simple, and the flavor feels homemade instead of generic party dessert.',
     ],
-    imageSlug: 'catering-menu-april-2026',
+    galleryImageSlugs: ['sticky-toffee-pudding'],
+    imageSlug: 'sticky-toffee-pudding',
     menuBehavior: 'simple',
     menuPortionLabel: '10 cups',
     metaDescription: 'Ten sticky toffee pudding cups prepared for catering pickup.',

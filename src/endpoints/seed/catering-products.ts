@@ -6,13 +6,15 @@ import { createHeadingAndParagraphsRichText, createParagraphRichText } from './r
 
 const buildCateringProductData = ({
   category,
-  image,
+  galleryImages,
+  metaImage,
   relatedProducts,
   selectableProducts,
   spec,
 }: {
   category: Category
-  image: Media
+  galleryImages: Media[]
+  metaImage: Media
   relatedProducts: Product[]
   selectableProducts: Product[]
   spec: CateringSeedSpec
@@ -21,7 +23,7 @@ const buildCateringProductData = ({
     _status: 'published',
     categories: [category],
     description: createParagraphRichText(spec.summary),
-    gallery: [{ image }],
+    gallery: galleryImages.map((image) => ({ image })),
     layout: [],
     menuBehavior: spec.menuBehavior,
     menuExpandedPitch: createHeadingAndParagraphsRichText({
@@ -31,7 +33,7 @@ const buildCateringProductData = ({
     menuPortionLabel: spec.menuPortionLabel,
     meta: {
       description: spec.metaDescription,
-      image,
+      image: metaImage,
       title: `${spec.title} | Baked with Blessings`,
     },
     priceInUSD: spec.priceInUSD,
@@ -46,6 +48,22 @@ const buildCateringProductData = ({
     slug: spec.slug,
     title: spec.title,
   }
+}
+
+const resolveMedia = ({
+  mediaBySlug,
+  slug,
+}: {
+  mediaBySlug: Record<string, Media>
+  slug: string
+}) => {
+  const image = mediaBySlug[slug]
+
+  if (!image) {
+    throw new Error(`Missing media document for catering image slug "${slug}".`)
+  }
+
+  return image
 }
 
 export const seedCateringProducts = async ({
@@ -67,11 +85,10 @@ export const seedCateringProducts = async ({
   })
 
   for (const spec of cateringCatalog) {
-    const image = mediaBySlug[spec.imageSlug]
-
-    if (!image) {
-      throw new Error(`Missing media document for catering image slug "${spec.imageSlug}".`)
-    }
+    const metaImage = resolveMedia({ mediaBySlug, slug: spec.imageSlug })
+    const galleryImages = (spec.galleryImageSlugs ?? [spec.imageSlug]).map((slug) =>
+      resolveMedia({ mediaBySlug, slug }),
+    )
 
     const selectableProducts = (spec.selectableProductSlugs ?? []).map((slug) => {
       const product = cookieProductsBySlug[slug]
@@ -90,7 +107,8 @@ export const seedCateringProducts = async ({
       collection: 'products',
       data: buildCateringProductData({
         category,
-        image,
+        galleryImages,
+        metaImage,
         relatedProducts,
         selectableProducts,
         spec,

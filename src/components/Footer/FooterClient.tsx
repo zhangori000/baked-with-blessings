@@ -91,7 +91,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
   const footerMuted = 'rgba(31, 47, 32, 0.72)'
   const footerBorder = 'rgba(31, 47, 32, 0.16)'
   const footerPillClassName =
-    'inline-flex rounded-full border border-[var(--footer-link-border)] bg-[var(--footer-link-bg)] px-3.5 py-2.5 text-[0.92rem] font-extrabold tracking-[0.01em] text-[var(--footer-link-color)] transition hover:-translate-y-0.5'
+    'inline-flex min-h-[2.6rem] min-w-0 shrink-0 items-center gap-2 rounded-full border border-[var(--footer-link-border)] bg-[var(--footer-link-bg)] px-3.5 py-2.5 whitespace-nowrap text-[0.92rem] font-extrabold leading-none tracking-[0.01em] text-[var(--footer-link-color)] transition hover:-translate-y-0.5'
 
   const socialLinks = [
     {
@@ -154,7 +154,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
 
                 <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
                   <nav aria-label="Footer links">
-                    <ul className="flex flex-wrap gap-2 md:justify-end">
+                    <ul className="flex flex-wrap gap-2.5 md:justify-end">
                       {navItems.map((item, index) => {
                         const linkProps =
                           item.link && typeof item.link === 'object'
@@ -204,7 +204,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                     </ul>
                   </nav>
 
-                  <div className="flex flex-wrap gap-2 md:justify-end">
+                  <div className="flex flex-wrap gap-2.5 md:justify-end">
                     {socialLinks.map(({ href, icon: Icon, label }) => (
                       <a
                         aria-label={label}
@@ -224,7 +224,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
               </div>
 
               <div
-                className="mt-auto rounded-2xl px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem]"
+                className="mt-3 rounded-2xl border border-[rgba(31, 47, 32, 0.08)] px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem]"
                 style={{ backgroundColor: 'rgba(255,252,244,0.48)', color: footerMuted }}
               >
                 <p>

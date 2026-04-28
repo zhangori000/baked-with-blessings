@@ -43,7 +43,7 @@ In practice, that means:
 - `cookie-sheep-rig.tsx` renders the cookie body with live Payload media and only falls back to the static SVG body if no media exists.
 - `cookies/[slug]/page.tsx` now loads the cookie from Payload instead of relying on a fully static poster dataset.
 
-This does not yet make every sheep-card presentation field admin-editable. Chips, subtitle, and related poster chrome are still hardcoded, and that follow-up is intentionally tracked in the backlog rather than folded into this PR.
+Historical note: at the time of this PR, chips, subtitle, and related poster chrome were still hardcoded. That follow-up has since been implemented in the `Products.poster` admin fields, so this note should not be used as current backlog.
 
 ## Verification and Local Workflow
 
