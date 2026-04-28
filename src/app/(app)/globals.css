@@ -349,6 +349,84 @@
     width: auto;
   }
 
+  @media (max-width: 639px) {
+    body:has(.home-page-placeholder) .siteHeaderShellRow {
+      align-items: center;
+      padding-bottom: 0.28rem !important;
+      padding-top: 0.36rem !important;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobileMenu {
+      margin-left: auto;
+      margin-right: -0.34rem;
+      transform: none;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderBrand.has-logo {
+      max-width: 7.8rem;
+      min-width: 0;
+      overflow: visible;
+      padding: 0.06rem 0.14rem !important;
+      width: auto;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderBrandLogo {
+      height: clamp(2.1rem, 9.8vw, 2.7rem) !important;
+      max-height: none !important;
+      max-width: clamp(6.25rem, 29vw, 7.8rem) !important;
+      width: auto !important;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobileControls {
+      align-items: center;
+      gap: 0.18rem;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobileIconButton {
+      height: 1.28rem;
+      width: 1.28rem;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobileIconButton svg,
+    body:has(.home-page-placeholder) .siteHeaderMobileBagIcon {
+      height: 0.76rem;
+      width: 0.76rem;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobileBagButton {
+      gap: 0.14rem;
+      min-width: 1.9rem;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobileBagCount {
+      font-size: 0.68rem;
+      line-height: 1;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobilePanel {
+      left: 50%;
+      right: auto;
+      width: min(20rem, calc(100vw - 2rem));
+      transform: translateX(-50%) scale(0.985);
+      transform-origin: top center;
+    }
+
+    body:has(.home-page-placeholder) .siteHeaderMobilePanel.is-open {
+      transform: translateX(-50%) scale(1);
+    }
+
+    body:has(.homeCookieScene-moonlit) .siteHeaderBrand.has-logo,
+    body:has(.cateringScene-moonlit) .siteHeaderBrand.has-logo {
+      padding: 0.06rem 0.14rem !important;
+    }
+
+    body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
+    body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
+      height: clamp(2.1rem, 9.8vw, 2.7rem) !important;
+      max-width: clamp(6.25rem, 29vw, 7.8rem) !important;
+    }
+  }
+
   body:has(.homeCookieScene-moonlit) .siteHeaderMobileIconButton,
   body:has(.homeCookieScene-moonlit) .siteHeaderMobileBagButton,
   body:has(.homeCookieScene-moonlit) .siteHeaderMobileBagCount,

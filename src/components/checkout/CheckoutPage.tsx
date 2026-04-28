@@ -26,11 +26,17 @@ import { AddressItem } from '@/components/addresses/AddressItem'
 import { FormItem } from '@/components/forms/FormItem'
 import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { cn } from '@/utilities/cn'
 
 const apiKey = `${process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}`
 const stripe = loadStripe(apiKey)
 
-export const CheckoutPage: React.FC = () => {
+type CheckoutPageProps = {
+  embedded?: boolean
+  onOrderComplete?: (result: { accessToken?: string; orderID: number | string }) => void
+}
+
+export const CheckoutPage: React.FC<CheckoutPageProps> = ({ embedded = false, onOrderComplete }) => {
   const { user } = useAuth()
   const router = useRouter()
   const { cart } = useCart()
@@ -118,9 +124,19 @@ export const CheckoutPage: React.FC = () => {
     typeof paymentData?.['clientSecret'] === 'string' ? paymentData['clientSecret'] : null
 
   return (
-    <div className="flex flex-col items-stretch justify-stretch my-8 md:flex-row grow gap-10 md:gap-6 lg:gap-8">
-      <div className="basis-full lg:basis-2/3 flex flex-col gap-8 justify-stretch">
-        <h2 className="font-medium text-3xl">Contact</h2>
+    <div
+      className={cn(
+        'flex flex-col items-stretch justify-stretch grow',
+        embedded ? 'my-0 gap-5' : 'my-8 md:flex-row gap-10 md:gap-6 lg:gap-8',
+      )}
+    >
+      <div
+        className={cn(
+          'basis-full flex flex-col justify-stretch',
+          embedded ? 'gap-5' : 'lg:basis-2/3 gap-8',
+        )}
+      >
+        <h2 className={cn('font-medium', embedded ? 'text-2xl' : 'text-3xl')}>Contact</h2>
         {!user && (
           <div className=" bg-accent dark:bg-black rounded-lg p-4 w-full flex items-center">
             <div className="prose dark:prose-invert">
@@ -177,7 +193,7 @@ export const CheckoutPage: React.FC = () => {
           </div>
         )}
 
-        <h2 className="font-medium text-3xl">Address</h2>
+        <h2 className={cn('font-medium', embedded ? 'text-2xl' : 'text-3xl')}>Address</h2>
 
         {selectedBillingAddress ? (
           <div>
@@ -299,7 +315,7 @@ export const CheckoutPage: React.FC = () => {
         <Suspense fallback={<React.Fragment />}>
           {clientSecret && (
             <div className="pb-16">
-              <h2 className="font-medium text-3xl">Payment</h2>
+              <h2 className={cn('font-medium', embedded ? 'text-2xl' : 'text-3xl')}>Payment</h2>
               {error && <p>{`Error: ${error}`}</p>}
               <Elements
                 options={{
@@ -339,6 +355,7 @@ export const CheckoutPage: React.FC = () => {
                   <CheckoutForm
                     customerEmail={email}
                     billingAddress={selectedBillingAddress}
+                    onOrderComplete={onOrderComplete}
                     setProcessingPayment={setProcessingPayment}
                   />
                   <Button
@@ -355,7 +372,7 @@ export const CheckoutPage: React.FC = () => {
         </Suspense>
       </div>
 
-      {!cartIsEmpty && (
+      {!embedded && !cartIsEmpty && (
         <div className="basis-full lg:basis-1/3 lg:pl-8 p-8 border-none bg-primary/5 flex flex-col gap-8 rounded-lg">
           <h2 className="text-3xl font-medium">Your cart</h2>
           {cart?.items?.map((item, index) => {

@@ -2,6 +2,7 @@
 
 import { DeleteItemButton } from '@/components/Cart/DeleteItemButton'
 import { EditItemQuantityButton } from '@/components/Cart/EditItemQuantityButton'
+import { CartModal } from '@/components/Cart/CartModal'
 import { Price } from '@/components/Price'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { useAuth } from '@/providers/Auth'
@@ -177,6 +178,11 @@ export function HeaderClient({ brand, header }: Props) {
     setActivePanel((current) => (current === panel ? null : panel))
   }
 
+  const openCartModal = () => {
+    setActivePanel(null)
+    window.dispatchEvent(new Event('bwb:open-cart'))
+  }
+
   const handleLogout = async () => {
     if (!logout || isLoggingOut) return
     setIsLoggingOut(true)
@@ -235,9 +241,7 @@ export function HeaderClient({ brand, header }: Props) {
             <MobileMenu
               cartQuantity={cartQuantity}
               items={navigationItems}
-              onOpenCart={() => {
-                setActivePanel((current) => (current === 'bag' ? null : 'bag'))
-              }}
+              onOpenCart={openCartModal}
             />
 
             <nav className={headerClassNames.banner} aria-label="Main sections">
@@ -312,7 +316,7 @@ export function HeaderClient({ brand, header }: Props) {
                   activePanel === 'bag' ? 'is-active' : null,
                 )}
                 onClick={() => {
-                  handleToggle('bag')
+                  openCartModal()
                 }}
                 type="button"
               >
@@ -614,10 +618,10 @@ export function HeaderClient({ brand, header }: Props) {
                         <div className="siteHeaderCartQuickFooterActions">
                           <Link
                             className="siteHeaderCartQuickCheckout"
-                            href="/checkout"
+                            href="/menu"
                             onClick={() => setActivePanel(null)}
                           >
-                            Go to checkout
+                            Review cart
                           </Link>
                         </div>
                       </div>
@@ -648,6 +652,7 @@ export function HeaderClient({ brand, header }: Props) {
           </div>
         </div>
       </div>
+      <CartModal renderTrigger={false} />
     </header>
   )
 }

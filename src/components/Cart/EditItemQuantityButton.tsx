@@ -7,10 +7,15 @@ import { MinusIcon, PlusIcon } from 'lucide-react'
 import React, { useMemo } from 'react'
 
 export function EditItemQuantityButton({ type, item }: { item: CartItem; type: 'minus' | 'plus' }) {
-  const { decrementItem, incrementItem, isLoading } = useCart()
+  const { addItem, decrementItem, incrementItem, isLoading } = useCart()
+  const productID =
+    item.product && typeof item.product === 'object' ? item.product.id : item.product
+  const variantID =
+    item.variant && typeof item.variant === 'object' ? item.variant.id : item.variant
+  const canAddSameItem = type === 'plus' && Boolean(productID)
 
   const disabled = useMemo(() => {
-    if (!item.id) return true
+    if (!item.id && !canAddSameItem) return true
 
     const target =
       item.variant && typeof item.variant === 'object'
@@ -31,7 +36,7 @@ export function EditItemQuantityButton({ type, item }: { item: CartItem; type: '
     }
 
     return false
-  }, [item, type])
+  }, [canAddSameItem, item, type])
 
   return (
     <form>
@@ -47,12 +52,20 @@ export function EditItemQuantityButton({ type, item }: { item: CartItem; type: '
         onClick={(e: React.FormEvent<HTMLButtonElement>) => {
           e.preventDefault()
 
-          if (item.id) {
-            if (type === 'plus') {
-              incrementItem(item.id)
-            } else {
-              decrementItem(item.id)
+          if (type === 'plus') {
+            if (item.id) {
+              void incrementItem(item.id)
+            } else if (productID) {
+              void addItem(
+                {
+                  product: productID,
+                  ...(variantID ? { variant: variantID } : {}),
+                },
+                1,
+              )
             }
+          } else if (item.id) {
+            void decrementItem(item.id)
           }
         }}
         type="button"

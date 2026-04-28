@@ -457,6 +457,39 @@ export interface Product {
      */
     ingredientsIntro?: string | null;
     /**
+     * Rich text shown in the cookie info speech bubble. Use paragraphs and bold text for flavor notes, handling notes, and allergy warnings.
+     */
+    receiptBody?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Deprecated. Kept only to preserve existing database schema; the storefront now uses Info Dialog Text.
+     */
+    receiptTitle?: string | null;
+    /**
+     * Deprecated. Kept only to preserve existing database schema; warnings should now be written directly in Info Dialog Text.
+     */
+    receiptWarnings?:
+      | {
+          tone: 'info' | 'caution' | 'danger';
+          label: string;
+          message: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
      * Ingredients or cookie components that should appear inside the popup note.
      */
     ingredients?:
@@ -2509,6 +2542,16 @@ export interface ProductsSelect<T extends boolean = true> {
         infoButtonLabel?: T;
         ingredientsNoteTitle?: T;
         ingredientsIntro?: T;
+        receiptBody?: T;
+        receiptTitle?: T;
+        receiptWarnings?:
+          | T
+          | {
+              tone?: T;
+              label?: T;
+              message?: T;
+              id?: T;
+            };
         ingredients?:
           | T
           | {

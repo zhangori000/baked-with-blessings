@@ -11,6 +11,7 @@ import { Address } from '@/payload-types'
 type Props = {
   customerEmail?: string
   billingAddress?: Partial<Address>
+  onOrderComplete?: (result: { accessToken?: string; orderID: number | string }) => void
   shippingAddress?: Partial<Address>
   setProcessingPayment: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -18,6 +19,7 @@ type Props = {
 export const CheckoutForm: React.FC<Props> = ({
   customerEmail,
   billingAddress,
+  onOrderComplete,
   setProcessingPayment,
 }) => {
   const stripe = useStripe()
@@ -91,8 +93,15 @@ export const CheckoutForm: React.FC<Props> = ({
               // Clear the cart after successful payment
               clearCart()
 
-              // Redirect to order confirmation page
-              router.push(redirectUrl)
+              if (onOrderComplete) {
+                onOrderComplete({
+                  accessToken,
+                  orderID: confirmResult.orderID as number | string,
+                })
+              } else {
+                // Redirect to order confirmation page
+                router.push(redirectUrl)
+              }
             }
           } catch (err) {
             console.log({ err })

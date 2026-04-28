@@ -303,6 +303,80 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   },
                 },
                 {
+                  name: 'receiptBody',
+                  label: 'Info Dialog Text',
+                  type: 'richText',
+                  admin: {
+                    description:
+                      'Rich text shown in the cookie info speech bubble. Use paragraphs and bold text for flavor notes, handling notes, and allergy warnings.',
+                  },
+                  editor: lexicalEditor({
+                    features: ({ rootFeatures }) => {
+                      return [
+                        ...rootFeatures,
+                        HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
+                        FixedToolbarFeature(),
+                        InlineToolbarFeature(),
+                      ]
+                    },
+                  }),
+                  required: false,
+                },
+                {
+                  name: 'receiptTitle',
+                  label: 'Legacy Receipt Title',
+                  type: 'text',
+                  admin: {
+                    hidden: true,
+                    description:
+                      'Deprecated. Kept only to preserve existing database schema; the storefront now uses Info Dialog Text.',
+                  },
+                },
+                {
+                  name: 'receiptWarnings',
+                  label: 'Legacy Receipt Warnings',
+                  type: 'array',
+                  admin: {
+                    hidden: true,
+                    initCollapsed: true,
+                    description:
+                      'Deprecated. Kept only to preserve existing database schema; warnings should now be written directly in Info Dialog Text.',
+                  },
+                  fields: [
+                    {
+                      name: 'tone',
+                      type: 'select',
+                      defaultValue: 'caution',
+                      options: [
+                        {
+                          label: 'Info',
+                          value: 'info',
+                        },
+                        {
+                          label: 'Caution',
+                          value: 'caution',
+                        },
+                        {
+                          label: 'High Allergy Risk',
+                          value: 'danger',
+                        },
+                      ],
+                      required: true,
+                    },
+                    {
+                      name: 'label',
+                      type: 'text',
+                      defaultValue: 'Allergy note',
+                      required: true,
+                    },
+                    {
+                      name: 'message',
+                      type: 'textarea',
+                      required: true,
+                    },
+                  ],
+                },
+                {
                   name: 'ingredients',
                   type: 'array',
                   admin: {

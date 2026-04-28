@@ -53,6 +53,36 @@ const buildFooterBrand = (brand: BrandGlobalDocument | null) => {
   }
 }
 
+const getFooterLinkLabel = (linkProps: Record<string, unknown>) =>
+  typeof linkProps.label === 'string' ? linkProps.label.trim() : ''
+
+const getFooterLinkHref = (linkProps: Record<string, unknown>) => {
+  if (typeof linkProps.url === 'string') return linkProps.url.trim()
+
+  const reference = linkProps.reference
+  if (!reference || typeof reference !== 'object') return ''
+
+  const referenceValue = (reference as { value?: unknown }).value
+  if (!referenceValue || typeof referenceValue !== 'object') return ''
+
+  const slug = (referenceValue as { slug?: unknown }).slug
+  return typeof slug === 'string' ? `/${slug.trim()}` : ''
+}
+
+const isUnavailableFooterLink = (linkProps: Record<string, unknown>) => {
+  const label = getFooterLinkLabel(linkProps).toLowerCase()
+  const href = getFooterLinkHref(linkProps).toLowerCase()
+
+  return (
+    label.includes('find my order') ||
+    label.includes('admin') ||
+    href.includes('find-order') ||
+    href.includes('find-my-order') ||
+    href === '/admin' ||
+    href.startsWith('/admin/')
+  )
+}
+
 export async function Footer() {
   const payload = await getPayload({ config: configPromise })
   const [footer, brandDocument] = await Promise.all([
@@ -68,13 +98,19 @@ export async function Footer() {
   const brand = buildFooterBrand(brandDocument as BrandGlobalDocument | null)
   const currentYear = new Date().getFullYear()
   const copyrightName = COMPANY_NAME || SITE_NAME || brand.brandName
+  const footerNavItems = (footer.navItems || []).filter((item) => {
+    const linkProps =
+      item.link && typeof item.link === 'object' ? (item.link as Record<string, unknown>) : {}
+
+    return !isUnavailableFooterLink(linkProps)
+  })
 
   return (
     <FooterClient
       brand={brand}
       copyrightName={copyrightName}
       currentYear={currentYear}
-      navItems={footer.navItems || []}
+      navItems={footerNavItems}
     />
   )
 }

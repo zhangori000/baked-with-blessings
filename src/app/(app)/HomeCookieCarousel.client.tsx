@@ -6,7 +6,6 @@ import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { GrowingGrassBorder } from '@/components/flowers/GrowingGrassBorder'
 import {
   buildSeededMenuSceneAccents,
   createSpawnedMenuSceneAccent,
@@ -29,7 +28,10 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
-import type { CookiePosterAsset } from './menu/_components/cookiePosterData'
+import type {
+  CookiePosterAsset,
+  CookieInfoRichText,
+} from './menu/_components/cookiePosterData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
 type HomeCookieCarouselProps = {
@@ -45,11 +47,7 @@ type CarouselTransition = {
 type CarouselInfoPhase =
   | 'hidden'
   | 'ready'
-  | 'lifting'
   | 'open'
-  | 'closing'
-  | 'withering'
-  | 'returning'
 
 type ShowcaseSceneCloud = {
   className?: string
@@ -68,6 +66,57 @@ type ShowcaseFlowerRailBloom = {
   id: string
   src: string
   style: CSSProperties
+}
+
+type InfoTextNode = {
+  format?: number
+  text?: string
+  type?: string
+}
+
+type InfoElementNode = {
+  children?: InfoTextNode[]
+  tag?: string
+  type?: string
+}
+
+const isInfoTextNode = (node: unknown): node is InfoTextNode =>
+  Boolean(node && typeof node === 'object' && (node as InfoTextNode).type === 'text')
+
+const isInfoElementNode = (node: unknown): node is InfoElementNode =>
+  Boolean(node && typeof node === 'object' && 'type' in node)
+
+const renderInfoTextNodes = (nodes: InfoTextNode[] | undefined) =>
+  nodes?.map((node, index) => {
+    if (!isInfoTextNode(node) || !node.text) {
+      return null
+    }
+
+    return node.format && (node.format & 1) === 1 ? (
+      <strong key={`${node.text}-${index}`}>{node.text}</strong>
+    ) : (
+      <span key={`${node.text}-${index}`}>{node.text}</span>
+    )
+  }) ?? null
+
+function CookieInfoRichText({ data }: { data: CookieInfoRichText }) {
+  const nodes = data.root?.children ?? []
+
+  return (
+    <>
+      {nodes.map((node, index) => {
+        if (!isInfoElementNode(node)) {
+          return null
+        }
+
+        if (node.type === 'heading') {
+          return <h4 key={index}>{renderInfoTextNodes(node.children)}</h4>
+        }
+
+        return <p key={index}>{renderInfoTextNodes(node.children)}</p>
+      })}
+    </>
+  )
 }
 
 abstract class PaperOverlayPiece {
@@ -100,10 +149,7 @@ class CloudPaperOverlay extends PaperOverlayPiece {
 }
 
 const JUMP_DURATION_MS = 280
-const INFO_LIFT_DURATION_MS = 430
-const INFO_CLOSE_DURATION_MS = 320
-const INFO_GRASS_HIDE_DURATION_MS = 220
-const INFO_RETURN_DURATION_MS = 280
+const MOBILE_JUMP_DURATION_MS = 175
 const grassVisibleHeightRatioDesktop = Number(((375 - 246.066406) / 375).toFixed(5))
 const grassVisibleHeightRatioMobile = 0.834
 const grassCrestLimitRatio = 0.45
@@ -116,14 +162,6 @@ const showcaseStyle = {
   ['--showcase-ink' as string]: '#17341f',
   ['--showcase-sky' as string]: '#d8ecfb',
   ['--showcase-stamp' as string]: '#fff9ec',
-  ['--control-gap' as string]: '1.1rem',
-  ['--control-size' as string]: 'clamp(3.2rem, 6vw, 4.35rem)',
-  ['--cookie-size' as string]: 'clamp(13rem, 26vw, 17rem)',
-  ['--copy-width' as string]: 'min(92vw, 52rem)',
-  ['--cta-font-size' as string]: 'clamp(1.1rem, 2.3vw, 1.6rem)',
-  ['--cta-padding-x' as string]: '1.6rem',
-  ['--cta-width' as string]: 'clamp(10.25rem, 21vw, 13.5rem)',
-  ['--stage-min-height' as string]: 'clamp(24rem, 58vh, 40rem)',
 } as CSSProperties
 
 const paperCloudOverlays: PaperOverlayPiece[] = [
@@ -602,8 +640,6 @@ export function HomeCookieCarousel({
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
   const activeIndexRef = useRef(0)
   const addedStateTimeoutRef = useRef<number | null>(null)
-  const infoLiftTimeoutRef = useRef<number | null>(null)
-  const infoReadyTimeoutRef = useRef<number | null>(null)
   const isTransitioningRef = useRef(false)
   const measureRef = useRef<HTMLDivElement | null>(null)
   const pendingDirectionRef = useRef<-1 | 1 | null>(null)
@@ -619,12 +655,6 @@ export function HomeCookieCarousel({
       }
       if (timeoutRef.current != null) {
         window.clearTimeout(timeoutRef.current)
-      }
-      if (infoLiftTimeoutRef.current != null) {
-        window.clearTimeout(infoLiftTimeoutRef.current)
-      }
-      if (infoReadyTimeoutRef.current != null) {
-        window.clearTimeout(infoReadyTimeoutRef.current)
       }
     }
   }, [])
@@ -647,8 +677,6 @@ export function HomeCookieCarousel({
       return
     }
 
-    let cancelled = false
-
     sources.forEach((src) => {
       if (preloadedCookieBodySrcsRef.current.has(src)) {
         return
@@ -663,10 +691,6 @@ export function HomeCookieCarousel({
       image.onerror = markSettled
       image.src = src
     })
-
-    return () => {
-      cancelled = true
-    }
   }, [activeIndex, posters])
   useEffect(() => {
     activeIndexRef.current = activeIndex
@@ -692,25 +716,7 @@ export function HomeCookieCarousel({
       slug: null,
     })
 
-    if (infoReadyTimeoutRef.current != null) {
-      window.clearTimeout(infoReadyTimeoutRef.current)
-      infoReadyTimeoutRef.current = null
-    }
-    if (infoLiftTimeoutRef.current != null) {
-      window.clearTimeout(infoLiftTimeoutRef.current)
-      infoLiftTimeoutRef.current = null
-    }
-
-    setInfoPhase('hidden')
-
-    if (transition) {
-      return
-    }
-
-    infoReadyTimeoutRef.current = window.setTimeout(() => {
-      setInfoPhase('ready')
-      infoReadyTimeoutRef.current = null
-    }, 220)
+    setInfoPhase(transition ? 'hidden' : 'ready')
   }, [activeIndex, transition])
 
   useEffect(() => {
@@ -753,7 +759,7 @@ export function HomeCookieCarousel({
         setGrassDropPx(0)
         const centerRatio =
           viewportWidth < 640
-            ? 0.52
+            ? 0.56
             : viewportWidth < 900
               ? 0.58
               : viewportWidth < 1280
@@ -807,6 +813,12 @@ export function HomeCookieCarousel({
   const transitionVariant = transition?.direction === 1 ? 'next' : 'prev'
   const rigTop = cookieCenterPx != null ? `${cookieCenterPx}px` : `calc(54% - ${sceneLiftPx}px)`
   const hasMultiplePosters = posters.length > 1
+  const previousMountedPoster = hasMultiplePosters
+    ? posters[wrapIndex(activeIndex - 1, posters.length)]
+    : null
+  const nextMountedPoster = hasMultiplePosters
+    ? posters[wrapIndex(activeIndex + 1, posters.length)]
+    : null
   const staticSceneClouds = sceneVariant === 'scenery' ? buildStaticShowcaseClouds(sceneTone) : []
   const staticScenePieces =
     sceneVariant === 'scenery'
@@ -821,12 +833,6 @@ export function HomeCookieCarousel({
       ? ({
           ...showcaseStyle,
           ['--home-flower-seam' as string]: menuHeroFlowerSeamByScene[sceneTone],
-          ['--home-body-lift' as string]: '0.95rem',
-          ['--home-body-rotate' as string]: '-4deg',
-          ['--home-info-lift' as string]: 'calc(var(--cookie-size) * 0.58)',
-          ['--home-info-shift-x' as string]: '0rem',
-          ['--home-info-rotate-mid' as string]: '-6deg',
-          ['--home-info-rotate-end' as string]: '-2deg',
           ['--home-scene-charge' as string]: menuSceneButtonAuraByScene[sceneTone],
           ['--home-price-color' as string]: menuScenePriceColorByScene[sceneTone],
           ['--home-price-shadow' as string]: menuScenePriceShadowByScene[sceneTone],
@@ -836,16 +842,16 @@ export function HomeCookieCarousel({
   const isActivePosterPromptState = cartPromptState.slug === activePoster.slug
   const activePosterPromptPhase = isActivePosterPromptState ? cartPromptState.phase : 'idle'
   const activePosterCanAddToCart = typeof activePoster.productId === 'number'
-  const isInfoReceiptVisible =
-    infoPhase === 'lifting' ||
-    infoPhase === 'open' ||
-    infoPhase === 'closing' ||
-    infoPhase === 'withering'
+  const isInfoPromptOpen = infoPhase === 'open'
   const shouldShowInlineInfoControl = sceneVariant === 'scenery' && infoPhase !== 'hidden'
   const isCartPromptOpen =
     activePosterPromptPhase === 'open' ||
     activePosterPromptPhase === 'loading' ||
     activePosterPromptPhase === 'added'
+  const getJumpDurationMs = () =>
+    typeof window !== 'undefined' && window.innerWidth < 640
+      ? MOBILE_JUMP_DURATION_MS
+      : JUMP_DURATION_MS
 
   const finishTransition = () => {
     setTransition(null)
@@ -872,48 +878,20 @@ export function HomeCookieCarousel({
       activeIndexRef.current = nextIndex
       setActiveIndex(nextIndex)
 
-      timeoutRef.current = window.setTimeout(finishTransition, JUMP_DURATION_MS)
+      timeoutRef.current = window.setTimeout(finishTransition, getJumpDurationMs())
     })
   }
 
   const startCloseInfo = () => {
-    if (infoReadyTimeoutRef.current != null) {
-      window.clearTimeout(infoReadyTimeoutRef.current)
-      infoReadyTimeoutRef.current = null
-    }
-
-    if (infoLiftTimeoutRef.current != null) {
-      window.clearTimeout(infoLiftTimeoutRef.current)
-      infoLiftTimeoutRef.current = null
-    }
-
-    setInfoPhase('closing')
-    infoReadyTimeoutRef.current = window.setTimeout(() => {
-      setInfoPhase('withering')
-      infoReadyTimeoutRef.current = window.setTimeout(() => {
-        setInfoPhase('returning')
-        infoReadyTimeoutRef.current = window.setTimeout(() => {
-          setInfoPhase('ready')
-          infoReadyTimeoutRef.current = null
-        }, INFO_RETURN_DURATION_MS)
-      }, INFO_GRASS_HIDE_DURATION_MS)
-    }, INFO_CLOSE_DURATION_MS)
+    setInfoPhase('ready')
   }
 
   const startOpenInfo = () => {
-    if (infoLiftTimeoutRef.current != null) {
-      window.clearTimeout(infoLiftTimeoutRef.current)
-    }
-
-    setInfoPhase('lifting')
-    infoLiftTimeoutRef.current = window.setTimeout(() => {
-      setInfoPhase('open')
-      infoLiftTimeoutRef.current = null
-    }, INFO_LIFT_DURATION_MS)
+    setInfoPhase('open')
   }
 
   const handleInfoControlClick = () => {
-    if (infoPhase === 'lifting' || infoPhase === 'open') {
+    if (infoPhase === 'open') {
       startCloseInfo()
       return
     }
@@ -948,7 +926,7 @@ export function HomeCookieCarousel({
     activeIndexRef.current = nextIndex
     setActiveIndex(nextIndex)
 
-    timeoutRef.current = window.setTimeout(finishTransition, JUMP_DURATION_MS)
+    timeoutRef.current = window.setTimeout(finishTransition, getJumpDurationMs())
   }
 
   const handleOpenCartPrompt = () => {
@@ -1029,6 +1007,28 @@ export function HomeCookieCarousel({
     }
   }
 
+  const renderInfoPrompt = (id: string) =>
+    isInfoPromptOpen ? (
+      <div
+        aria-label={`${activePoster.title} info`}
+        className="homeCookieCartPrompt homeCookieInfoPrompt"
+        id={id}
+        role="dialog"
+      >
+        <button
+          aria-label={`Close info for ${activePoster.title}`}
+          className="homeCookieCartPromptClose homeCookieInfoPromptClose"
+          onClick={startCloseInfo}
+          type="button"
+        >
+          <X aria-hidden="true" size={14} />
+        </button>
+        <div className="homeCookieInfoPromptBody">
+          <CookieInfoRichText data={activePoster.receiptBody} />
+        </div>
+      </div>
+    ) : null
+
   return (
     <section
       aria-label="Cookie showcase"
@@ -1051,7 +1051,7 @@ export function HomeCookieCarousel({
           <div className="homeCookieSceneFrame absolute inset-0" ref={sceneFrameRef}>
             {sceneVariant === 'scenery' ? (
               <>
-                <picture className="homeCookieSceneSky">
+                <picture className="homeCookieSceneSky" style={{ position: 'absolute' }}>
                   {menuHeroMobileSkyByScene[sceneTone] ? (
                     <source
                       media="(max-width: 767px)"
@@ -1134,10 +1134,11 @@ export function HomeCookieCarousel({
                 <div className="homeCookieSceneActions">
                   {shouldShowInlineInfoControl ? (
                     <div className="homeCookieInfoDock homeCookieInfoDock--inline">
+                      {renderInfoPrompt(`home-cookie-info-inline-${activePoster.slug}`)}
                       <button
-                        aria-controls={`home-cookie-receipt-${activePoster.slug}`}
-                        aria-expanded={isInfoReceiptVisible}
-                        className={`homeCookieInfoButton${isInfoReceiptVisible ? ' is-active' : ''}`}
+                        aria-controls={`home-cookie-info-inline-${activePoster.slug}`}
+                        aria-expanded={isInfoPromptOpen}
+                        className={`homeCookieInfoButton${isInfoPromptOpen ? ' is-active' : ''}`}
                         onClick={handleInfoControlClick}
                         type="button"
                       >
@@ -1182,6 +1183,38 @@ export function HomeCookieCarousel({
               </>
             ) : null}
 
+            {previousMountedPoster ? (
+              <div
+                aria-hidden="true"
+                className="homeCookieRigShell homeCookieRigShell--preload homeCookieRigShell--preload-prev absolute left-1/2"
+                style={{ top: rigTop }}
+              >
+                <CookieSheepRig
+                  priority
+                  bodyFallbackSrc={previousMountedPoster.bodyFallbackSrc}
+                  className="top-1/2 bottom-auto -translate-y-1/2"
+                  image={previousMountedPoster.image}
+                  title={previousMountedPoster.title}
+                />
+              </div>
+            ) : null}
+
+            {nextMountedPoster ? (
+              <div
+                aria-hidden="true"
+                className="homeCookieRigShell homeCookieRigShell--preload homeCookieRigShell--preload-next absolute left-1/2"
+                style={{ top: rigTop }}
+              >
+                <CookieSheepRig
+                  priority
+                  bodyFallbackSrc={nextMountedPoster.bodyFallbackSrc}
+                  className="top-1/2 bottom-auto -translate-y-1/2"
+                  image={nextMountedPoster.image}
+                  title={nextMountedPoster.title}
+                />
+              </div>
+            ) : null}
+
             {transition && outgoingPoster ? (
               <>
                 <div
@@ -1213,15 +1246,7 @@ export function HomeCookieCarousel({
               </>
             ) : (
               <div
-                className={`homeCookieRigShell homeCookieRigShell--active absolute left-1/2${
-                  infoPhase === 'lifting' || infoPhase === 'open'
-                    ? ' homeCookieRigShell--info-open'
-                    : infoPhase === 'closing' || infoPhase === 'withering'
-                      ? ' homeCookieRigShell--info-open'
-                      : infoPhase === 'returning'
-                        ? ' homeCookieRigShell--info-closing'
-                        : ''
-                }`}
+                className="homeCookieRigShell homeCookieRigShell--active absolute left-1/2"
                 ref={rigShellRef}
                 style={{ top: rigTop }}
               >
@@ -1235,19 +1260,20 @@ export function HomeCookieCarousel({
               </div>
             )}
 
-            {sceneVariant === 'scenery' && infoPhase === 'ready' ? (
+            {sceneVariant === 'scenery' && infoPhase !== 'hidden' ? (
               <div
                 className="homeCookieInfoDock homeCookieInfoDock--floating md:hidden"
                 style={{
                   left: '50%',
-                  top: `calc(${rigTop} - var(--cookie-size) * 0.66)`,
+                  top: `calc(${rigTop} - var(--cookie-size) * var(--mobile-info-offset, 0.66))`,
                 }}
               >
+                {renderInfoPrompt(`home-cookie-info-floating-${activePoster.slug}`)}
                 <button
-                  aria-controls={`home-cookie-receipt-${activePoster.slug}`}
-                  aria-expanded="false"
-                  className="homeCookieInfoButton"
-                  onClick={startOpenInfo}
+                  aria-controls={`home-cookie-info-floating-${activePoster.slug}`}
+                  aria-expanded={isInfoPromptOpen}
+                  className={`homeCookieInfoButton${isInfoPromptOpen ? ' is-active' : ''}`}
+                  onClick={handleInfoControlClick}
                   type="button"
                 >
                   {activePoster.infoButtonLabel}
@@ -1257,7 +1283,7 @@ export function HomeCookieCarousel({
 
             {sceneVariant === 'scenery' ? (
               <>
-                <picture className="homeCookieSceneMeadow">
+                <picture className="homeCookieSceneMeadow" style={{ position: 'absolute' }}>
                   {menuHeroMobileMeadowByScene[sceneTone] ? (
                     <source
                       media="(max-width: 639px)"
@@ -1339,76 +1365,6 @@ export function HomeCookieCarousel({
               </div>
             )}
           </div>
-
-          {sceneVariant === 'scenery' ? (
-            <div
-              aria-hidden={
-                infoPhase !== 'open' && infoPhase !== 'closing' && infoPhase !== 'withering'
-              }
-              className={`homeCookieReceipt${
-                infoPhase === 'open'
-                  ? ' is-open'
-                  : infoPhase === 'closing'
-                    ? ' is-closing'
-                    : infoPhase === 'withering'
-                      ? ' is-withering'
-                      : ''
-              }`}
-              id={`home-cookie-receipt-${activePoster.slug}`}
-              style={{
-                left: 'var(--home-receipt-left, calc(50% + var(--home-receipt-left-nudge, 0rem)))',
-                top: `var(--home-receipt-top, calc(${rigTop} + (var(--cookie-size) * 0.5) - var(--home-info-lift, calc(var(--cookie-size) * 0.58)) + var(--home-receipt-top-nudge, 0.18rem)))`,
-              }}
-            >
-              <GrowingGrassBorder
-                animate={
-                  infoPhase === 'open' || infoPhase === 'closing' || infoPhase === 'withering'
-                }
-                className="homeCookieReceiptBorder"
-                flowerPositions={[10, 34, 58, 82]}
-                flowerSize="2.46rem"
-                lineHeight="0.38rem"
-                mode={infoPhase === 'withering' ? 'shrink' : 'grow'}
-                sizes="44px"
-              />
-              <div className="homeCookieReceiptPaper">
-                <div className="homeCookieReceiptHeader">
-                  <div>
-                    <p className="homeCookieReceiptEyebrow">For {activePoster.title}</p>
-                    <h3 className="homeCookieReceiptTitle">{activePoster.ingredientsNoteTitle}</h3>
-                  </div>
-                  <button
-                    aria-label={`Close info for ${activePoster.title}`}
-                    className="homeCookieReceiptClose"
-                    onClick={startCloseInfo}
-                    type="button"
-                  >
-                    Close
-                  </button>
-                </div>
-
-                <p className="homeCookieReceiptIntro">{activePoster.ingredientsIntro}</p>
-
-                <ul className="homeCookieReceiptList">
-                  {activePoster.ingredients.map((ingredient) => (
-                    <li
-                      className="homeCookieReceiptRow"
-                      key={`${ingredient.name}-${ingredient.detail ?? ''}`}
-                    >
-                      <span className="homeCookieReceiptName">{ingredient.name}</span>
-                      <span className="homeCookieReceiptDetail">
-                        {ingredient.detail ?? 'ingredient note'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="homeCookieReceiptBarcode" aria-hidden="true">
-                  <span />
-                </div>
-              </div>
-            </div>
-          ) : null}
 
           <div aria-hidden="true" className="homeCookieNameMeasure" ref={measureRef}>
             {posters.map((p) => (
@@ -1504,6 +1460,13 @@ export function HomeCookieCarousel({
 
       <style>{`
         .homeCookieShowcase {
+          --control-gap: 1.1rem;
+          --control-size: clamp(3.2rem, 6vw, 4.35rem);
+          --cookie-size: clamp(13rem, 26vw, 17rem);
+          --copy-width: min(92vw, 52rem);
+          --cta-font-size: clamp(1.1rem, 2.3vw, 1.6rem);
+          --cta-padding-x: 1.6rem;
+          --cta-width: clamp(10.25rem, 21vw, 13.5rem);
           --home-header-underlap: 7.6rem;
           --home-meadow-height: clamp(6.75rem, 12vh, 8.75rem);
           --copy-bottom: clamp(1rem, 3.8vw, 2.2rem);
@@ -1711,19 +1674,23 @@ export function HomeCookieCarousel({
           z-index: 30;
         }
 
-        .homeCookieRigShell--info-open {
-          animation: homeCookieInfoLift 440ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          z-index: 34;
-        }
-
-        .homeCookieRigShell--info-closing {
-          animation: homeCookieInfoReturn 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          z-index: 34;
-        }
-
         .homeCookieRigShell--incoming,
         .homeCookieRigShell--outgoing {
           pointer-events: none;
+        }
+
+        .homeCookieRigShell--preload {
+          opacity: 0;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .homeCookieRigShell--preload-prev {
+          transform: translate3d(-140vw, 0, 0);
+        }
+
+        .homeCookieRigShell--preload-next {
+          transform: translate3d(140vw, 0, 0);
         }
 
         .homeCookieRigShell--outgoing {
@@ -1756,29 +1723,9 @@ export function HomeCookieCarousel({
           transform-origin: center center;
         }
 
-        .homeCookieRigShell--info-open .cookieSheepBodyImage {
-          transform:
-            translate3d(0, calc(var(--home-body-lift, 0.95rem) * -1), 0)
-            rotate(var(--home-body-rotate, -4deg))
-            scale(1.06);
-          transition:
-            transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-            opacity 220ms ease;
-        }
-
         .homeCookieShowcase .cookieSheepBurstPart {
           opacity: 1;
           transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-        }
-
-        .homeCookieRigShell--info-open .cookieSheepBurstPart {
-          opacity: 0;
-          transform: translate3d(var(--sheep-burst-x, 0), calc(var(--sheep-burst-y, 0) - 0.85rem), 0)
-            rotate(var(--sheep-burst-rotate, 0deg))
-            scale(var(--sheep-burst-scale, 0.7));
-          transition:
-            transform 440ms cubic-bezier(0.22, 1, 0.36, 1),
-            opacity 260ms ease-out;
         }
 
         .homeCookieInfoDock {
@@ -1839,240 +1786,6 @@ export function HomeCookieCarousel({
           border-color: rgba(97, 74, 37, 0.26);
           box-shadow: inset 0 0 0 1px rgba(97, 74, 37, 0.08);
           transform: none;
-        }
-
-        .homeCookieReceipt {
-          max-width: var(--home-receipt-width, min(16.25rem, calc(100vw - 2.4rem)));
-          opacity: 0;
-          pointer-events: none;
-          position: absolute;
-          transform-origin: var(--home-receipt-origin, center top);
-          transform: translate(var(--home-receipt-offset-x, -50%), 1rem);
-          transition:
-            opacity 140ms ease,
-            transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
-          width: var(--home-receipt-width, min(16.25rem, calc(100vw - 2.4rem)));
-          z-index: 92;
-        }
-
-        .homeCookieReceiptBorder {
-          --home-receipt-border-height: 2.55rem;
-          height: var(--home-receipt-border-height);
-          left: 0;
-          right: 0;
-          top: calc(var(--home-receipt-border-height) * -1);
-          transform-origin: center bottom;
-          transition:
-            opacity 180ms ease,
-            transform 220ms cubic-bezier(0.4, 0, 0.8, 0.2);
-          z-index: 3;
-        }
-
-        .homeCookieReceipt.is-open {
-          opacity: 1;
-          pointer-events: auto;
-          transform: translate(var(--home-receipt-offset-x, -50%), 0);
-        }
-
-        .homeCookieReceipt.is-closing {
-          opacity: 1;
-          pointer-events: none;
-          transform: translate(var(--home-receipt-offset-x, -50%), 0);
-        }
-
-        .homeCookieReceipt.is-withering {
-          opacity: 1;
-          pointer-events: none;
-          transform: translate(var(--home-receipt-offset-x, -50%), 0);
-        }
-
-        .homeCookieReceiptPaper {
-          background: #fffefa;
-          border: 1px solid rgba(133, 160, 198, 0.2);
-          border-top: 0;
-          border-radius: 0;
-          box-shadow:
-            0 24px 40px rgba(16, 14, 10, 0.18),
-            0 4px 10px rgba(77, 104, 156, 0.08);
-          min-height: 19.5rem;
-          opacity: 0;
-          overflow: hidden;
-          padding: 0.35rem 1rem 1.1rem;
-          position: relative;
-          transform: scaleY(0.05);
-          transform-origin: top center;
-          transition:
-            opacity 90ms ease 0.12s,
-            transform 420ms cubic-bezier(0.2, 0.9, 0.24, 1) 0.14s;
-        }
-
-        .homeCookieReceipt.is-open .homeCookieReceiptPaper {
-          opacity: 1;
-          transform: scaleY(1);
-        }
-
-        .homeCookieReceipt.is-closing .homeCookieReceiptPaper {
-          opacity: 0;
-          transform: scaleY(0.05);
-          transition:
-            opacity 80ms ease 0.12s,
-            transform 320ms cubic-bezier(0.4, 0, 0.8, 0.2);
-        }
-
-        .homeCookieReceipt.is-withering .homeCookieReceiptPaper {
-          opacity: 0;
-          transform: scaleY(0.05);
-          transition: none;
-        }
-
-        .homeCookieReceipt.is-withering .homeCookieReceiptBorder {
-          opacity: 0;
-          transform: scale(0.92);
-        }
-
-        .homeCookieReceiptHeader,
-        .homeCookieReceiptIntro,
-        .homeCookieReceiptList {
-          position: relative;
-          z-index: 1;
-        }
-
-        .homeCookieReceiptHeader {
-          align-items: start;
-          display: flex;
-          gap: 1rem;
-          justify-content: space-between;
-        }
-
-        .homeCookieReceiptEyebrow {
-          color: rgba(101, 75, 36, 0.68);
-          font-size: 0.68rem;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          margin-bottom: 0.3rem;
-          text-transform: uppercase;
-        }
-
-        .homeCookieReceiptTitle {
-          color: #4f3818;
-          font-family: var(--font-rounded-display);
-          font-size: 1.02rem;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          line-height: 1.05;
-          margin: 0;
-        }
-
-        .homeCookieReceiptClose {
-          color: rgba(83, 61, 30, 0.72);
-          font-family: var(--font-rounded-display);
-          font-size: 0.76rem;
-          font-weight: 700;
-          line-height: 1;
-          transition: color 160ms ease;
-        }
-
-        .homeCookieReceiptClose:hover,
-        .homeCookieReceiptClose:focus-visible {
-          color: rgba(83, 61, 30, 1);
-        }
-
-        .homeCookieReceiptIntro {
-          color: rgba(88, 64, 32, 0.78);
-          font-size: 0.82rem;
-          line-height: 1.5;
-          margin-top: 0.65rem;
-        }
-
-        .homeCookieReceiptList {
-          display: grid;
-          gap: 0.55rem;
-          list-style: none;
-          margin: 1rem 0 0;
-          padding: 0;
-        }
-
-        .homeCookieReceiptBarcode {
-          align-items: end;
-          display: flex;
-          justify-content: center;
-          margin: 1.1rem auto 0;
-          position: relative;
-          width: min(8.8rem, 72%);
-          z-index: 1;
-        }
-
-        .homeCookieReceiptBarcode span {
-          background:
-            repeating-linear-gradient(
-              90deg,
-              #2b2418 0 2px,
-              transparent 2px 5px,
-              #2b2418 5px 6px,
-              transparent 6px 9px,
-              #2b2418 9px 12px,
-              transparent 12px 16px
-            );
-          display: block;
-          height: 2.05rem;
-          opacity: 0.78;
-          width: 100%;
-        }
-
-        .homeCookieReceiptRow {
-          align-items: start;
-          display: grid;
-          gap: 0.22rem;
-          grid-template-columns: minmax(0, 1fr);
-          padding-bottom: 0.5rem;
-        }
-
-        .homeCookieReceiptRow:last-child {
-          padding-bottom: 0;
-        }
-
-        .homeCookieReceiptName {
-          color: #4f3818;
-          font-family: var(--font-rounded-display);
-          font-size: 0.86rem;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-        }
-
-        .homeCookieReceiptDetail {
-          color: rgba(92, 67, 31, 0.6);
-          font-size: 0.67rem;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        @keyframes homeCookieInfoLift {
-          0% {
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-          }
-
-          45% {
-            transform: translate3d(calc(-50% + var(--home-info-shift-x, 0rem) * 0.72), calc(-50% - var(--home-info-lift, calc(var(--cookie-size) * 0.58)) * 0.72), 0) rotate(var(--home-info-rotate-mid, -6deg)) scale(1.02);
-          }
-
-          100% {
-            transform: translate3d(calc(-50% + var(--home-info-shift-x, 0rem)), calc(-50% - var(--home-info-lift, calc(var(--cookie-size) * 0.58))), 0) rotate(var(--home-info-rotate-end, -2deg)) scale(1.01);
-          }
-        }
-
-        @keyframes homeCookieInfoReturn {
-          0% {
-            transform: translate3d(calc(-50% + var(--home-info-shift-x, 0rem)), calc(-50% - var(--home-info-lift, calc(var(--cookie-size) * 0.58))), 0) rotate(var(--home-info-rotate-end, -2deg)) scale(1.01);
-          }
-
-          55% {
-            transform: translate3d(calc(-50% + var(--home-info-shift-x, 0rem) * 0.34), calc(-50% - var(--home-info-lift, calc(var(--cookie-size) * 0.58)) * 0.2), 0) rotate(calc(var(--home-info-rotate-end, -2deg) * 0.28)) scale(1.01);
-          }
-
-          100% {
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-          }
         }
 
         @keyframes homeCookieJumpOutToLeft {
@@ -2276,7 +1989,19 @@ export function HomeCookieCarousel({
           z-index: 48;
         }
 
-        .homeCookieCartPrompt::after {
+        .homeCookieInfoPrompt {
+          bottom: calc(100% + 0.9rem);
+          max-height: min(20rem, calc(100svh - 8rem));
+          min-width: 0;
+          overflow: visible;
+          padding: 0.95rem 1rem 0.9rem;
+          text-align: left;
+          width: min(20rem, calc(100vw - 2rem));
+          z-index: 52;
+        }
+
+        .homeCookieCartPrompt::after,
+        .homeCookieInfoPrompt::after {
           background: rgba(255, 252, 242, 0.96);
           border-bottom: 1px solid rgba(92, 67, 31, 0.12);
           border-right: 1px solid rgba(92, 67, 31, 0.12);
@@ -2287,6 +2012,31 @@ export function HomeCookieCarousel({
           position: absolute;
           transform: translateX(-50%) rotate(45deg);
           width: 0.76rem;
+        }
+
+        .homeCookieInfoPromptBody {
+          color: #4d391d;
+          font-size: 1rem;
+          font-weight: 650;
+          line-height: 1.34;
+          max-height: min(17rem, calc(100svh - 11rem));
+          overflow-y: auto;
+          padding-right: 2rem;
+        }
+
+        .homeCookieInfoPromptBody p,
+        .homeCookieInfoPromptBody h4 {
+          margin: 0;
+        }
+
+        .homeCookieInfoPromptBody p + p,
+        .homeCookieInfoPromptBody h4 + p {
+          margin-top: 0.68rem;
+        }
+
+        .homeCookieInfoPromptBody strong {
+          color: #1b1917;
+          font-weight: 850;
         }
 
         .homeCookieCartPromptClose {
@@ -2450,14 +2200,8 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieArrow::before {
-          background: rgba(255, 255, 255, 0.24);
           content: '';
-          height: 1px;
-          left: 50%;
-          position: absolute;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: 1.45rem;
+          display: none;
         }
 
         .homeCookieArrow svg {
@@ -2526,91 +2270,148 @@ export function HomeCookieCarousel({
 
         @media (max-width: 639px) {
           .homeCookieShowcase {
-            --control-gap: 0.85rem;
-            --control-size: 2.95rem;
-            --cookie-size: clamp(12.6rem, 51.6vw, 15.3rem);
-            --jump-duration: 235ms;
+            --control-gap: 0.9rem;
+            --control-size: clamp(2.78rem, 11.2vw, 3.25rem);
+            --cookie-size: clamp(10.5rem, min(46vw, 21svh), 12.35rem);
+            --jump-duration: ${MOBILE_JUMP_DURATION_MS}ms;
             --copy-bottom: clamp(0.85rem, 2.4vh, 1.35rem);
-            --copy-width: min(86vw, 21rem);
-            --cta-font-size: 0.88rem;
-            --cta-padding-x: 1rem;
-            --cta-width: clamp(7rem, 26vw, 8.5rem);
-            --home-body-lift: 0.95rem;
-            --home-body-rotate: -4deg;
-            --home-header-underlap: 7.2rem;
-            --home-info-lift: calc(var(--cookie-size) * 0.72);
-            --home-receipt-left-nudge: 0rem;
-            --home-receipt-offset-x: -50%;
-            --home-receipt-origin: center top;
-            --home-receipt-top-nudge: 0.18rem;
-            --home-receipt-width: min(11.8rem, calc(100vw - 5.5rem));
+            --copy-width: min(calc(100vw - 2.4rem), 18.75rem);
+            --cta-font-size: 0.86rem;
+            --cta-padding-x: 0.84rem;
+            --cta-width: clamp(7.8rem, 36vw, 9.8rem);
+            --home-header-underlap: 5.95rem;
+            --mobile-info-offset: 0.82;
             --home-meadow-height: 6.4rem;
           }
 
           .homeCookieSceneActions {
-            flex-wrap: wrap;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.66rem;
             justify-content: center;
-            left: 0.85rem;
+            left: 1.4rem;
             max-width: none;
-            right: 0.85rem;
-            top: calc(var(--home-header-underlap) + 0.35rem);
+            right: 1.4rem;
+            top: calc(var(--home-header-underlap) + 0.82rem);
           }
 
           .homeCookieSceneButton {
+            flex: 0 1 auto;
             font-size: 0.74rem;
-            min-height: 2rem;
-            padding-left: 0.72rem;
-            padding-right: 0.72rem;
+            line-height: 1.05;
+            min-height: 1.86rem;
+            padding: 0.42rem 0.78rem;
+            white-space: nowrap;
+            width: auto;
           }
 
           .homeCookieInfoDock {
-            top: calc(${rigTop} - var(--cookie-size) * 0.74);
+            top: calc(${rigTop} - var(--cookie-size) * var(--mobile-info-offset, 1.08));
           }
 
           .homeCookieInfoDock--inline {
             display: none;
           }
 
+          .homeCookieInfoButton {
+            font-size: 0.72rem;
+            min-height: 1.68rem;
+            padding: 0.34rem 0.7rem;
+          }
+
+          .homeCookieSceneCloud {
+            max-width: 46vw;
+          }
+
+          .homeCookieSceneFlower {
+            width: clamp(1.35rem, 4.2vw, 1.8rem);
+          }
+
+          .homeCookieFlowerRailBloom {
+            width: clamp(1.75rem, 5.1vw, 2.35rem);
+          }
+
+          .homeCookieControls {
+            display: block;
+            gap: var(--control-gap);
+            height: var(--control-size);
+            margin-inline: auto;
+            position: relative;
+            width: 100%;
+          }
+
+          .homeCookieNameButtonShell {
+            display: flex;
+            justify-content: center;
+            left: 50%;
+            max-width: calc(100% - 2 * var(--control-size) - 2 * var(--control-gap));
+            min-width: 0;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+          }
+
+          .homeCookieNameButton {
+            max-width: 100%;
+            min-height: var(--control-size);
+            padding-bottom: 0.68rem;
+            padding-top: 0.62rem;
+          }
+
+          .homeCookieArrow {
+            height: var(--control-size);
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: var(--control-size);
+          }
+
+          .homeCookieControls > .homeCookieArrow:first-child {
+            left: 0;
+            right: auto;
+          }
+
+          .homeCookieControls > .homeCookieArrow:last-child {
+            left: auto;
+            right: 0;
+          }
+
+          .homeCookieArrow:active:not(:disabled) {
+            transform: translateY(calc(-50% + 1px));
+          }
+
+          .homeCookieArrow svg {
+            height: 1.18rem;
+            width: 1.18rem;
+          }
+
+          .homeCookieAmount {
+            font-size: 0.78rem;
+            margin-top: 0.62rem;
+          }
+
           @keyframes homeCookieJumpOutToLeft {
             0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
-            22%  { opacity: 1; transform: translate3d(calc(-50% - 30vw), calc(-50% - 5.6rem), 0) rotate(-9deg) scale(0.95); }
-            48%  { opacity: 1; transform: translate3d(calc(-50% - 72vw), calc(-50% - 8.8rem), 0) rotate(-18deg) scale(0.86); }
-            100% { opacity: 0; transform: translate3d(calc(-50% - 118vw), calc(-50% - 3.4rem), 0) rotate(-28deg) scale(0.76); }
+            35%  { opacity: 1; transform: translate3d(calc(-50% - 22vw), calc(-50% - 3.7rem), 0) rotate(-8deg) scale(0.95); }
+            100% { opacity: 0; transform: translate3d(calc(-50% - 54vw), calc(-50% - 1.1rem), 0) rotate(-18deg) scale(0.82); }
           }
 
           @keyframes homeCookieJumpOutToRight {
             0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
-            22%  { opacity: 1; transform: translate3d(calc(-50% + 30vw), calc(-50% - 5.6rem), 0) rotate(9deg) scale(0.95); }
-            48%  { opacity: 1; transform: translate3d(calc(-50% + 72vw), calc(-50% - 8.8rem), 0) rotate(18deg) scale(0.86); }
-            100% { opacity: 0; transform: translate3d(calc(-50% + 118vw), calc(-50% - 3.4rem), 0) rotate(28deg) scale(0.76); }
+            35%  { opacity: 1; transform: translate3d(calc(-50% + 22vw), calc(-50% - 3.7rem), 0) rotate(8deg) scale(0.95); }
+            100% { opacity: 0; transform: translate3d(calc(-50% + 54vw), calc(-50% - 1.1rem), 0) rotate(18deg) scale(0.82); }
           }
 
           @keyframes homeCookieJumpInFromRight {
-            0%   { opacity: 0; transform: translate3d(calc(-50% + 92vw), calc(-50% - 1.4rem), 0) rotate(18deg) scale(0.82); }
-            24%  { opacity: 1; transform: translate3d(calc(-50% + 54vw), calc(-50% - 6.8rem), 0) rotate(12deg) scale(0.9); }
-            62%  { opacity: 1; transform: translate3d(calc(-50% + 16vw), calc(-50% - 4rem), 0) rotate(4deg) scale(0.97); }
+            0%   { opacity: 1; transform: translate3d(calc(-50% + 38vw), calc(-50% - 2.4rem), 0) rotate(11deg) scale(0.88); }
+            52%  { opacity: 1; transform: translate3d(calc(-50% + 12vw), calc(-50% - 3.2rem), 0) rotate(4deg) scale(0.96); }
             100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
           }
 
           @keyframes homeCookieJumpInFromLeft {
-            0%   { opacity: 0; transform: translate3d(calc(-50% - 92vw), calc(-50% - 1.4rem), 0) rotate(-18deg) scale(0.82); }
-            24%  { opacity: 1; transform: translate3d(calc(-50% - 54vw), calc(-50% - 6.8rem), 0) rotate(-12deg) scale(0.9); }
-            62%  { opacity: 1; transform: translate3d(calc(-50% - 16vw), calc(-50% - 4rem), 0) rotate(-4deg) scale(0.97); }
+            0%   { opacity: 1; transform: translate3d(calc(-50% - 38vw), calc(-50% - 2.4rem), 0) rotate(-11deg) scale(0.88); }
+            52%  { opacity: 1; transform: translate3d(calc(-50% - 12vw), calc(-50% - 3.2rem), 0) rotate(-4deg) scale(0.96); }
             100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
-          }
-
-          .homeCookieReceipt {
-            max-width: var(--home-receipt-width);
-            width: var(--home-receipt-width);
-          }
-
-          .homeCookieReceiptBorder {
-            --home-receipt-border-height: 2.75rem;
-          }
-
-          .homeCookieReceiptPaper {
-            min-height: 14.25rem;
-            padding: 0.08rem 0.8rem 0.95rem;
           }
 
           .homeCookieScene-blossom .homeCookieSceneSky {
@@ -2647,17 +2448,17 @@ export function HomeCookieCarousel({
           }
 
           .homeCookieScene-moonlit {
-            --home-flower-rail-lift: 7.35rem;
+            --home-flower-rail-lift: 5.35rem;
             --home-meadow-bottom: -0.15rem;
-            --home-meadow-height: 19.2rem;
+            --home-meadow-height: 15.2rem;
           }
 
           .homeCookieScene-moonlit .homeCookieFlowerRailBloom {
-            width: clamp(2.6rem, 6vw, 4.2rem);
+            width: clamp(1.4rem, 4.4vw, 1.95rem);
           }
 
           .homeCookieScene-moonlit .homeCookieSceneFlower {
-            width: clamp(2.2rem, 5vw, 3.4rem);
+            width: clamp(1.25rem, 4vw, 1.75rem);
           }
 
           .homeCookieFlowerRailBloom:nth-child(2),
@@ -2912,22 +2713,7 @@ export function HomeCookieCarousel({
             --cta-font-size: clamp(1rem, 1.8vw, 1.15rem);
             --cta-padding-x: 1.3rem;
             --cta-width: clamp(9.25rem, 22vw, 11rem);
-            --home-body-lift: 0.95rem;
-            --home-body-rotate: -4deg;
-            --home-info-lift: calc(var(--cookie-size) * 0.6);
-            --home-info-rotate-mid: -6deg;
-            --home-info-rotate-end: -2deg;
-            --home-info-shift-x: 0rem;
-            --home-receipt-left-nudge: 0rem;
-            --home-receipt-offset-x: -50%;
-            --home-receipt-origin: center top;
-            --home-receipt-top-nudge: 0.24rem;
-            --home-receipt-width: min(28rem, calc(100vw - 6rem));
             --home-meadow-height: 6.9rem;
-          }
-
-          .homeCookieReceiptPaper {
-            min-height: 12rem;
           }
         }
 
@@ -2941,24 +2727,7 @@ export function HomeCookieCarousel({
             --cta-font-size: clamp(1.05rem, 1.55vw, 1.25rem);
             --cta-padding-x: 1.45rem;
             --cta-width: clamp(9.75rem, 17vw, 11.75rem);
-            --home-body-lift: 0.95rem;
-            --home-body-rotate: -4deg;
-            --home-info-lift: calc(var(--cookie-size) * 0.62);
-            --home-info-rotate-mid: -6deg;
-            --home-info-rotate-end: -2deg;
-            --home-info-shift-x: 0rem;
-            --home-receipt-left: clamp(8rem, calc(100% - 29.15rem), calc(100% - 8rem));
-            --home-receipt-left-nudge: 0rem;
-            --home-receipt-offset-x: -50%;
-            --home-receipt-origin: center top;
-            --home-receipt-top: calc(var(--home-header-underlap) + 4.65rem);
-            --home-receipt-top-nudge: 0.24rem;
-            --home-receipt-width: min(14.25rem, calc(100vw - 8rem));
             --home-meadow-height: 7.4rem;
-          }
-
-          .homeCookieReceiptPaper {
-            min-height: 18.5rem;
           }
         }
 
@@ -2972,24 +2741,7 @@ export function HomeCookieCarousel({
             --cta-font-size: clamp(1.1rem, 1.4vw, 1.35rem);
             --cta-padding-x: 1.55rem;
             --cta-width: clamp(10rem, 15vw, 12.25rem);
-            --home-body-lift: 0.95rem;
-            --home-body-rotate: -4deg;
-            --home-info-lift: calc(var(--cookie-size) * 0.64);
-            --home-info-rotate-mid: -6deg;
-            --home-info-rotate-end: -2deg;
-            --home-info-shift-x: 0rem;
-            --home-receipt-left: clamp(8rem, calc(100% - 29.15rem), calc(100% - 8rem));
-            --home-receipt-left-nudge: 0rem;
-            --home-receipt-offset-x: -50%;
-            --home-receipt-origin: center top;
-            --home-receipt-top: calc(var(--home-header-underlap) + 4.75rem);
-            --home-receipt-top-nudge: 0.26rem;
-            --home-receipt-width: min(14.5rem, calc(100vw - 10rem));
             --home-meadow-height: 7.9rem;
-          }
-
-          .homeCookieReceiptPaper {
-            min-height: 18.75rem;
           }
         }
 
@@ -3003,46 +2755,10 @@ export function HomeCookieCarousel({
             --cta-font-size: clamp(1.15rem, 1.2vw, 1.4rem);
             --cta-padding-x: 1.7rem;
             --cta-width: clamp(10.5rem, 13vw, 13rem);
-            --home-body-lift: 0.95rem;
-            --home-body-rotate: -4deg;
-            --home-info-lift: calc(var(--cookie-size) * 0.66);
-            --home-info-rotate-mid: -6deg;
-            --home-info-rotate-end: -2deg;
-            --home-info-shift-x: 0rem;
-            --home-receipt-left: clamp(8rem, calc(100% - 29.15rem), calc(100% - 8rem));
-            --home-receipt-left-nudge: 0rem;
-            --home-receipt-offset-x: -50%;
-            --home-receipt-origin: center top;
-            --home-receipt-top: calc(var(--home-header-underlap) + 4.85rem);
-            --home-receipt-top-nudge: 0.3rem;
-            --home-receipt-width: min(14.75rem, calc(100vw - 12rem));
             --home-meadow-height: 8.4rem;
           }
-
-          .homeCookieReceiptPaper {
-            min-height: 19rem;
-          }
         }
 
-        @media (min-width: 900px) {
-          .homeCookieShowcase--scenery .homeCookieRigShell--info-open,
-          .homeCookieShowcase--scenery .homeCookieRigShell--info-closing {
-            animation: none;
-            transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-            z-index: 30;
-          }
-
-          .homeCookieShowcase--scenery .homeCookieRigShell--info-open .cookieSheepBodyImage,
-          .homeCookieShowcase--scenery .homeCookieRigShell--info-closing .cookieSheepBodyImage {
-            transform: scale(1.02);
-          }
-
-          .homeCookieShowcase--scenery .homeCookieRigShell--info-open .cookieSheepBurstPart,
-          .homeCookieShowcase--scenery .homeCookieRigShell--info-closing .cookieSheepBurstPart {
-            opacity: 1;
-            transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-          }
-        }
       `}</style>
     </section>
   )

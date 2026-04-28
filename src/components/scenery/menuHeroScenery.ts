@@ -148,11 +148,11 @@ export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[
   ],
   moonlit: [
     {
-      className: 'left-[2%] top-[9%] w-[18rem] md:w-[22rem]',
+      className: 'left-[2%] top-[9%] w-[10.5rem] md:w-[22rem]',
       src: '/clouds/moonlit-purple-upper-cloud.svg',
     },
     {
-      className: 'right-[6%] top-[14%] w-[18rem] md:w-[22rem]',
+      className: 'right-[6%] top-[14%] w-[10.5rem] md:w-[22rem]',
       src: '/clouds/moonlit-purple-swoop-cloud.svg',
       style: { animationDelay: '-7s' },
     },
