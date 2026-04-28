@@ -20,6 +20,7 @@ type CookieSheepRigProps = {
   className?: string
   href?: string
   image: MediaType | null
+  priority?: boolean
   title: string
 }
 
@@ -144,6 +145,7 @@ export function CookieSheepRig({
   className,
   href,
   image,
+  priority = false,
   title,
 }: CookieSheepRigProps) {
   return (
@@ -193,13 +195,16 @@ export function CookieSheepRig({
               fill
               htmlElement={null}
               imgClassName="cookieSheepBodyImage pointer-events-none object-cover"
+              priority={priority}
               resource={image}
+              unoptimized
             />
           ) : (
             <Image
               alt={`${title} cookie`}
               className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
               fill
+              priority={priority}
               sizes="var(--cookie-size)"
               src={bodyFallbackSrc}
               unoptimized
@@ -213,13 +218,16 @@ export function CookieSheepRig({
               fill
               htmlElement={null}
               imgClassName="cookieSheepBodyImage pointer-events-none object-cover"
+              priority={priority}
               resource={image}
+              unoptimized
             />
           ) : (
             <Image
               alt=""
               className="cookieSheepBodyImage pointer-events-none block h-full w-full object-cover"
               fill
+              priority={priority}
               sizes="var(--cookie-size)"
               src={bodyFallbackSrc}
               unoptimized

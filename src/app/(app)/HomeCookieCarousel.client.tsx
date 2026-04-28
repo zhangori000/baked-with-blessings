@@ -99,7 +99,7 @@ class CloudPaperOverlay extends PaperOverlayPiece {
   }
 }
 
-const JUMP_DURATION_MS = 350
+const JUMP_DURATION_MS = 280
 const INFO_LIFT_DURATION_MS = 430
 const INFO_CLOSE_DURATION_MS = 320
 const INFO_GRASS_HIDE_DURATION_MS = 220
@@ -567,7 +567,18 @@ const meadowFlowerAccents: MeadowFlowerAccent[] = [
 ]
 
 const wrapIndex = (index: number, length: number) => (index + length) % length
+const cookiePreloadNeighborOffsets = [-3, -2, -1, 0, 1, 2, 3]
+const resolveCookieBodyImageSrc = (poster: CookiePosterAsset | null | undefined) => {
+  if (!poster) {
+    return null
+  }
 
+  if (poster.image?.url) {
+    return poster.image.url
+  }
+
+  return poster.bodyFallbackSrc
+}
 export function HomeCookieCarousel({
   posters,
   sceneVariant = 'grassland',
@@ -589,7 +600,6 @@ export function HomeCookieCarousel({
   const [transition, setTransition] = useState<CarouselTransition>(null)
   const [infoPhase, setInfoPhase] = useState<CarouselInfoPhase>('hidden')
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
-
   const activeIndexRef = useRef(0)
   const addedStateTimeoutRef = useRef<number | null>(null)
   const infoLiftTimeoutRef = useRef<number | null>(null)
@@ -597,6 +607,7 @@ export function HomeCookieCarousel({
   const isTransitioningRef = useRef(false)
   const measureRef = useRef<HTMLDivElement | null>(null)
   const pendingDirectionRef = useRef<-1 | 1 | null>(null)
+  const preloadedCookieBodySrcsRef = useRef<Set<string>>(new Set())
   const rigShellRef = useRef<HTMLDivElement | null>(null)
   const sceneFrameRef = useRef<HTMLDivElement | null>(null)
   const timeoutRef = useRef<number | null>(null)
@@ -618,6 +629,45 @@ export function HomeCookieCarousel({
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || posters.length === 0) {
+      return
+    }
+
+    const sources = Array.from(
+      new Set(
+        cookiePreloadNeighborOffsets
+          .map((offset) => posters[wrapIndex(activeIndex + offset, posters.length)])
+          .map(resolveCookieBodyImageSrc)
+          .filter((src): src is string => Boolean(src)),
+      ),
+    )
+
+    if (sources.length === 0) {
+      return
+    }
+
+    let cancelled = false
+
+    sources.forEach((src) => {
+      if (preloadedCookieBodySrcsRef.current.has(src)) {
+        return
+      }
+
+      const image = new window.Image()
+      const markSettled = () => {
+        preloadedCookieBodySrcsRef.current.add(src)
+      }
+
+      image.onload = markSettled
+      image.onerror = markSettled
+      image.src = src
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeIndex, posters])
   useEffect(() => {
     activeIndexRef.current = activeIndex
   }, [activeIndex])
@@ -1139,6 +1189,7 @@ export function HomeCookieCarousel({
                   style={{ top: rigTop }}
                 >
                   <CookieSheepRig
+                    priority
                     bodyFallbackSrc={outgoingPoster.bodyFallbackSrc}
                     className="top-1/2 bottom-auto -translate-y-1/2"
                     image={outgoingPoster.image}
@@ -1152,6 +1203,7 @@ export function HomeCookieCarousel({
                   style={{ top: rigTop }}
                 >
                   <CookieSheepRig
+                    priority
                     bodyFallbackSrc={activePoster.bodyFallbackSrc}
                     className="top-1/2 bottom-auto -translate-y-1/2"
                     image={activePoster.image}
@@ -1174,6 +1226,7 @@ export function HomeCookieCarousel({
                 style={{ top: rigTop }}
               >
                 <CookieSheepRig
+                  priority
                   bodyFallbackSrc={activePoster.bodyFallbackSrc}
                   className="top-1/2 bottom-auto -translate-y-1/2"
                   image={activePoster.image}
@@ -2476,6 +2529,7 @@ export function HomeCookieCarousel({
             --control-gap: 0.85rem;
             --control-size: 2.95rem;
             --cookie-size: clamp(12.6rem, 51.6vw, 15.3rem);
+            --jump-duration: 235ms;
             --copy-bottom: clamp(0.85rem, 2.4vh, 1.35rem);
             --copy-width: min(86vw, 21rem);
             --cta-font-size: 0.88rem;
@@ -2515,6 +2569,34 @@ export function HomeCookieCarousel({
 
           .homeCookieInfoDock--inline {
             display: none;
+          }
+
+          @keyframes homeCookieJumpOutToLeft {
+            0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
+            22%  { opacity: 1; transform: translate3d(calc(-50% - 30vw), calc(-50% - 5.6rem), 0) rotate(-9deg) scale(0.95); }
+            48%  { opacity: 1; transform: translate3d(calc(-50% - 72vw), calc(-50% - 8.8rem), 0) rotate(-18deg) scale(0.86); }
+            100% { opacity: 0; transform: translate3d(calc(-50% - 118vw), calc(-50% - 3.4rem), 0) rotate(-28deg) scale(0.76); }
+          }
+
+          @keyframes homeCookieJumpOutToRight {
+            0%   { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
+            22%  { opacity: 1; transform: translate3d(calc(-50% + 30vw), calc(-50% - 5.6rem), 0) rotate(9deg) scale(0.95); }
+            48%  { opacity: 1; transform: translate3d(calc(-50% + 72vw), calc(-50% - 8.8rem), 0) rotate(18deg) scale(0.86); }
+            100% { opacity: 0; transform: translate3d(calc(-50% + 118vw), calc(-50% - 3.4rem), 0) rotate(28deg) scale(0.76); }
+          }
+
+          @keyframes homeCookieJumpInFromRight {
+            0%   { opacity: 0; transform: translate3d(calc(-50% + 92vw), calc(-50% - 1.4rem), 0) rotate(18deg) scale(0.82); }
+            24%  { opacity: 1; transform: translate3d(calc(-50% + 54vw), calc(-50% - 6.8rem), 0) rotate(12deg) scale(0.9); }
+            62%  { opacity: 1; transform: translate3d(calc(-50% + 16vw), calc(-50% - 4rem), 0) rotate(4deg) scale(0.97); }
+            100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
+          }
+
+          @keyframes homeCookieJumpInFromLeft {
+            0%   { opacity: 0; transform: translate3d(calc(-50% - 92vw), calc(-50% - 1.4rem), 0) rotate(-18deg) scale(0.82); }
+            24%  { opacity: 1; transform: translate3d(calc(-50% - 54vw), calc(-50% - 6.8rem), 0) rotate(-12deg) scale(0.9); }
+            62%  { opacity: 1; transform: translate3d(calc(-50% - 16vw), calc(-50% - 4rem), 0) rotate(-4deg) scale(0.97); }
+            100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
           }
 
           .homeCookieReceipt {

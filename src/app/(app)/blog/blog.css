@@ -42,6 +42,13 @@
   max-width: min(33rem, calc(100vw - 2rem));
 }
 
+.blogHero .cateringScene-moonlit .cateringMenuHeroDisplay,
+.blogHero .cateringScene-moonlit .cateringHeroEyebrow,
+.blogHero .cateringScene-moonlit .cateringHeroSummary {
+  color: #eef6ff;
+  text-shadow: 0 12px 22px rgba(5, 10, 28, 0.24);
+}
+
 .blogIndexShell {
   padding-block: clamp(2.25rem, 5vw, 4.5rem);
 }

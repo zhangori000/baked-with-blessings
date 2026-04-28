@@ -80,7 +80,6 @@ const posterClouds: PosterCloud[] = [
 
 const posterSceneryTones: PosterSceneTone[] = [
   'dawn',
-  'under-tree',
   'moonlit',
   'classic',
   'blossom',

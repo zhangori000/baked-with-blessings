@@ -91,7 +91,6 @@ type PersuasionGardenPanelProps = {
 
 export const menuSceneryTones: MenuSceneryTone[] = [
   'dawn',
-  'under-tree',
   'moonlit',
   'classic',
   'blossom',

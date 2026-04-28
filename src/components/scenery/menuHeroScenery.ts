@@ -43,7 +43,6 @@ export type SceneAccentConfig = {
 
 export const menuSceneTones: SceneTone[] = [
   'dawn',
-  'under-tree',
   'moonlit',
   'classic',
   'blossom',
@@ -91,7 +90,7 @@ export const menuSceneButtonAuraByScene: Record<SceneTone, string> = {
   moonlit: 'rgba(153, 115, 255, 0.88)',
   classic: 'rgba(255, 215, 79, 0.84)',
   blossom: 'rgba(255, 176, 208, 0.9)',
-  'fairy-castle': 'rgba(154, 172, 138, 0.88)',
+  'fairy-castle': 'rgba(255, 211, 117, 0.9)',
 }
 
 export const menuScenePriceColorByScene: Record<SceneTone, string> = {
