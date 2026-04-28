@@ -467,7 +467,11 @@
     color: #f7f5ef !important;
   }
 
-  .cateringScene-moonlit .cateringMenuHeroDisplay,
+  .cateringScene-moonlit .cateringMenuHeroDisplay {
+    color: var(--scene-hero-title, #eef6ff);
+    text-shadow: 0 12px 22px rgba(5, 10, 28, 0.24);
+  }
+
   .cateringScene-moonlit .cateringHeroSummary,
   .cateringScene-moonlit .cateringHeroEyebrow {
     color: #eef6ff;
@@ -528,6 +532,753 @@
     flex-direction: column;
     min-height: 100vh;
     position: relative;
+  }
+
+  .bakeryAccessibilityAnnouncer {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    display: block;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+}
+
+@layer components {
+  .bakeryBox {
+    box-sizing: border-box;
+  }
+
+  .bakeryStackWrap {
+    flex-wrap: wrap;
+  }
+
+  .bakeryText {
+    margin: 0;
+  }
+
+  .bakeryText-body {
+    font-family: var(--font-rounded-body);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.65;
+  }
+
+  .bakeryText-display {
+    font-family: var(--font-catering-serif), 'Iowan Old Style', 'Palatino Linotype', serif;
+    font-size: clamp(3.35rem, 9vw, 6.25rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.86;
+  }
+
+  .bakeryText-eyebrow {
+    font-family: var(--font-rounded-display);
+    font-size: clamp(0.74rem, 1.1vw, 0.86rem);
+    font-weight: 850;
+    letter-spacing: 0.22em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .bakeryText-label {
+    font-family: var(--font-rounded-display);
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .bakeryText-title {
+    font-family: var(--font-rounded-display);
+    font-size: clamp(1.55rem, 3vw, 2.2rem);
+    font-weight: 850;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  .bakeryText-break {
+    overflow-wrap: anywhere;
+  }
+
+  .bakeryText-clip {
+    overflow: hidden;
+  }
+
+  .bakeryText-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bakeryText-wrap {
+    overflow-wrap: normal;
+    white-space: normal;
+  }
+
+  .bakeryText-tabularNumbers {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bakeryPressable {
+    cursor: pointer;
+    position: relative;
+    transition:
+      background-color var(--bakery-motion-quick) ease,
+      border-color var(--bakery-motion-quick) ease,
+      box-shadow var(--bakery-motion-quick) ease,
+      color var(--bakery-motion-quick) ease,
+      transform var(--bakery-motion-quick) cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .bakeryPressable:disabled,
+  .bakeryPressable[aria-disabled='true'] {
+    cursor: default;
+    opacity: 0.56;
+    pointer-events: none;
+  }
+
+  .bakeryPressable:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  .bakerySceneButton {
+    align-items: center;
+    border: 1px solid transparent;
+    display: inline-flex;
+    font-family: var(--font-rounded-display);
+    font-size: 0.875rem;
+    font-weight: 850;
+    justify-content: center;
+    line-height: 1;
+    min-height: 2.75rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .bakerySceneButton-primary {
+    border-color: transparent;
+    box-shadow: 0 0 0 4px var(--scene-action-aura);
+  }
+
+  .bakerySceneButton-ghost {
+    border-color: var(--bakery-color-border);
+  }
+
+  .bakery-bg-actionBg {
+    background: var(--bakery-color-action-bg);
+  }
+
+  .bakery-bg-actionFg {
+    background: var(--bakery-color-action-fg);
+  }
+
+  .bakery-bg-bg {
+    background: var(--bakery-color-bg);
+  }
+
+  .bakery-bg-bgPrimary {
+    background: var(--bakery-color-bg-primary);
+  }
+
+  .bakery-bg-bgSecondary {
+    background: var(--bakery-color-bg-secondary);
+  }
+
+  .bakery-bg-border {
+    background: var(--bakery-color-border);
+  }
+
+  .bakery-bg-fg {
+    background: var(--bakery-color-fg);
+  }
+
+  .bakery-bg-fgMuted {
+    background: var(--bakery-color-fg-muted);
+  }
+
+  .bakery-bg-footerBg {
+    background: var(--bakery-footer-bg);
+  }
+
+  .bakery-bg-footerBorder {
+    background: var(--bakery-footer-border);
+  }
+
+  .bakery-bg-footerFg {
+    background: var(--bakery-footer-fg);
+  }
+
+  .bakery-bg-footerLinkBg {
+    background: var(--bakery-footer-link-bg);
+  }
+
+  .bakery-bg-footerMuted {
+    background: var(--bakery-footer-muted);
+  }
+
+  .bakery-bg-footerPanelBg {
+    background: var(--bakery-footer-panel-bg);
+  }
+
+  .bakery-bg-panelBorder {
+    background: var(--bakery-color-panel-border);
+  }
+
+  .bakery-bg-panelFill {
+    background: var(--bakery-color-panel-fill);
+  }
+
+  .bakery-bg-sceneActionAura {
+    background: var(--scene-action-aura);
+  }
+
+  .bakery-bg-sceneBackground {
+    background: var(--scene-background);
+  }
+
+  .bakery-bg-sceneFlowerCenter {
+    background: var(--scene-flower-center);
+  }
+
+  .bakery-bg-sceneFlowerGlow {
+    background: var(--scene-flower-glow);
+  }
+
+  .bakery-bg-sceneFlowerPetal {
+    background: var(--scene-flower-petal);
+  }
+
+  .bakery-bg-sceneHeroMuted {
+    background: var(--scene-hero-muted);
+  }
+
+  .bakery-bg-sceneHeroText {
+    background: var(--scene-hero-text);
+  }
+
+  .bakery-bg-sceneHeroTitle {
+    background: var(--scene-hero-title);
+  }
+
+  .bakery-bg-sceneMeadow {
+    background: var(--scene-meadow);
+  }
+
+  .bakery-bg-scenePanel {
+    background: var(--scene-panel-fill);
+  }
+
+  .bakery-bg-scenePanelBorder {
+    background: var(--scene-panel-border);
+  }
+
+  .bakery-bg-sceneText {
+    background: var(--scene-text);
+  }
+
+  .bakery-color-actionBg {
+    color: var(--bakery-color-action-bg);
+  }
+
+  .bakery-color-actionFg {
+    color: var(--bakery-color-action-fg);
+  }
+
+  .bakery-color-bg {
+    color: var(--bakery-color-bg);
+  }
+
+  .bakery-color-bgPrimary {
+    color: var(--bakery-color-bg-primary);
+  }
+
+  .bakery-color-bgSecondary {
+    color: var(--bakery-color-bg-secondary);
+  }
+
+  .bakery-color-border {
+    color: var(--bakery-color-border);
+  }
+
+  .bakery-color-fg {
+    color: var(--bakery-color-fg);
+  }
+
+  .bakery-color-fgMuted {
+    color: var(--bakery-color-fg-muted);
+  }
+
+  .bakery-color-footerBg {
+    color: var(--bakery-footer-bg);
+  }
+
+  .bakery-color-footerBorder {
+    color: var(--bakery-footer-border);
+  }
+
+  .bakery-color-footerFg {
+    color: var(--bakery-footer-fg);
+  }
+
+  .bakery-color-footerLinkBg {
+    color: var(--bakery-footer-link-bg);
+  }
+
+  .bakery-color-footerMuted {
+    color: var(--bakery-footer-muted);
+  }
+
+  .bakery-color-footerPanelBg {
+    color: var(--bakery-footer-panel-bg);
+  }
+
+  .bakery-color-panelBorder {
+    color: var(--bakery-color-panel-border);
+  }
+
+  .bakery-color-panelFill {
+    color: var(--bakery-color-panel-fill);
+  }
+
+  .bakery-color-sceneActionAura {
+    color: var(--scene-action-aura);
+  }
+
+  .bakery-color-sceneBackground {
+    color: var(--scene-background);
+  }
+
+  .bakery-color-sceneFlowerCenter {
+    color: var(--scene-flower-center);
+  }
+
+  .bakery-color-sceneFlowerGlow {
+    color: var(--scene-flower-glow);
+  }
+
+  .bakery-color-sceneFlowerPetal {
+    color: var(--scene-flower-petal);
+  }
+
+  .bakery-color-sceneHeroMuted {
+    color: var(--scene-hero-muted);
+  }
+
+  .bakery-color-sceneHeroText {
+    color: var(--scene-hero-text);
+  }
+
+  .bakery-color-sceneHeroTitle {
+    color: var(--scene-hero-title);
+  }
+
+  .bakery-color-sceneMeadow {
+    color: var(--scene-meadow);
+  }
+
+  .bakery-color-scenePanel {
+    color: var(--scene-panel-fill);
+  }
+
+  .bakery-color-scenePanelBorder {
+    color: var(--scene-panel-border);
+  }
+
+  .bakery-color-sceneText {
+    color: var(--scene-text);
+  }
+
+  .bakery-p-0 {
+    padding: var(--bakery-space-0);
+  }
+
+  .bakery-p-0-5 {
+    padding: var(--bakery-space-0-5);
+  }
+
+  .bakery-p-1 {
+    padding: var(--bakery-space-1);
+  }
+
+  .bakery-p-2 {
+    padding: var(--bakery-space-2);
+  }
+
+  .bakery-p-3 {
+    padding: var(--bakery-space-3);
+  }
+
+  .bakery-p-4 {
+    padding: var(--bakery-space-4);
+  }
+
+  .bakery-p-5 {
+    padding: var(--bakery-space-5);
+  }
+
+  .bakery-p-6 {
+    padding: var(--bakery-space-6);
+  }
+
+  .bakery-p-8 {
+    padding: var(--bakery-space-8);
+  }
+
+  .bakery-p-10 {
+    padding: var(--bakery-space-10);
+  }
+
+  .bakery-p-12 {
+    padding: var(--bakery-space-12);
+  }
+
+  .bakery-p-16 {
+    padding: var(--bakery-space-16);
+  }
+
+  .bakery-px-0 {
+    padding-inline: var(--bakery-space-0);
+  }
+
+  .bakery-px-0-5 {
+    padding-inline: var(--bakery-space-0-5);
+  }
+
+  .bakery-px-1 {
+    padding-inline: var(--bakery-space-1);
+  }
+
+  .bakery-px-2 {
+    padding-inline: var(--bakery-space-2);
+  }
+
+  .bakery-px-3 {
+    padding-inline: var(--bakery-space-3);
+  }
+
+  .bakery-px-4 {
+    padding-inline: var(--bakery-space-4);
+  }
+
+  .bakery-px-5 {
+    padding-inline: var(--bakery-space-5);
+  }
+
+  .bakery-px-6 {
+    padding-inline: var(--bakery-space-6);
+  }
+
+  .bakery-px-8 {
+    padding-inline: var(--bakery-space-8);
+  }
+
+  .bakery-px-10 {
+    padding-inline: var(--bakery-space-10);
+  }
+
+  .bakery-px-12 {
+    padding-inline: var(--bakery-space-12);
+  }
+
+  .bakery-px-16 {
+    padding-inline: var(--bakery-space-16);
+  }
+
+  .bakery-py-0 {
+    padding-block: var(--bakery-space-0);
+  }
+
+  .bakery-py-0-5 {
+    padding-block: var(--bakery-space-0-5);
+  }
+
+  .bakery-py-1 {
+    padding-block: var(--bakery-space-1);
+  }
+
+  .bakery-py-2 {
+    padding-block: var(--bakery-space-2);
+  }
+
+  .bakery-py-3 {
+    padding-block: var(--bakery-space-3);
+  }
+
+  .bakery-py-4 {
+    padding-block: var(--bakery-space-4);
+  }
+
+  .bakery-py-5 {
+    padding-block: var(--bakery-space-5);
+  }
+
+  .bakery-py-6 {
+    padding-block: var(--bakery-space-6);
+  }
+
+  .bakery-py-8 {
+    padding-block: var(--bakery-space-8);
+  }
+
+  .bakery-py-10 {
+    padding-block: var(--bakery-space-10);
+  }
+
+  .bakery-py-12 {
+    padding-block: var(--bakery-space-12);
+  }
+
+  .bakery-py-16 {
+    padding-block: var(--bakery-space-16);
+  }
+
+  .bakery-gap-0 {
+    gap: var(--bakery-space-0);
+  }
+
+  .bakery-gap-0-5 {
+    gap: var(--bakery-space-0-5);
+  }
+
+  .bakery-gap-1 {
+    gap: var(--bakery-space-1);
+  }
+
+  .bakery-gap-2 {
+    gap: var(--bakery-space-2);
+  }
+
+  .bakery-gap-3 {
+    gap: var(--bakery-space-3);
+  }
+
+  .bakery-gap-4 {
+    gap: var(--bakery-space-4);
+  }
+
+  .bakery-gap-5 {
+    gap: var(--bakery-space-5);
+  }
+
+  .bakery-gap-6 {
+    gap: var(--bakery-space-6);
+  }
+
+  .bakery-gap-8 {
+    gap: var(--bakery-space-8);
+  }
+
+  .bakery-gap-10 {
+    gap: var(--bakery-space-10);
+  }
+
+  .bakery-gap-12 {
+    gap: var(--bakery-space-12);
+  }
+
+  .bakery-gap-16 {
+    gap: var(--bakery-space-16);
+  }
+
+  .bakery-m-0 {
+    margin: var(--bakery-space-0);
+  }
+
+  .bakery-m-0-5 {
+    margin: var(--bakery-space-0-5);
+  }
+
+  .bakery-m-1 {
+    margin: var(--bakery-space-1);
+  }
+
+  .bakery-m-2 {
+    margin: var(--bakery-space-2);
+  }
+
+  .bakery-m-3 {
+    margin: var(--bakery-space-3);
+  }
+
+  .bakery-m-4 {
+    margin: var(--bakery-space-4);
+  }
+
+  .bakery-m-5 {
+    margin: var(--bakery-space-5);
+  }
+
+  .bakery-m-6 {
+    margin: var(--bakery-space-6);
+  }
+
+  .bakery-m-8 {
+    margin: var(--bakery-space-8);
+  }
+
+  .bakery-m-10 {
+    margin: var(--bakery-space-10);
+  }
+
+  .bakery-m-12 {
+    margin: var(--bakery-space-12);
+  }
+
+  .bakery-m-16 {
+    margin: var(--bakery-space-16);
+  }
+
+  .bakery-mt-0 {
+    margin-top: var(--bakery-space-0);
+  }
+
+  .bakery-mt-0-5 {
+    margin-top: var(--bakery-space-0-5);
+  }
+
+  .bakery-mt-1 {
+    margin-top: var(--bakery-space-1);
+  }
+
+  .bakery-mt-2 {
+    margin-top: var(--bakery-space-2);
+  }
+
+  .bakery-mt-3 {
+    margin-top: var(--bakery-space-3);
+  }
+
+  .bakery-mt-4 {
+    margin-top: var(--bakery-space-4);
+  }
+
+  .bakery-mt-5 {
+    margin-top: var(--bakery-space-5);
+  }
+
+  .bakery-mt-6 {
+    margin-top: var(--bakery-space-6);
+  }
+
+  .bakery-mt-8 {
+    margin-top: var(--bakery-space-8);
+  }
+
+  .bakery-mt-10 {
+    margin-top: var(--bakery-space-10);
+  }
+
+  .bakery-mt-12 {
+    margin-top: var(--bakery-space-12);
+  }
+
+  .bakery-mt-16 {
+    margin-top: var(--bakery-space-16);
+  }
+
+  .bakery-mb-0 {
+    margin-bottom: var(--bakery-space-0);
+  }
+
+  .bakery-mb-0-5 {
+    margin-bottom: var(--bakery-space-0-5);
+  }
+
+  .bakery-mb-1 {
+    margin-bottom: var(--bakery-space-1);
+  }
+
+  .bakery-mb-2 {
+    margin-bottom: var(--bakery-space-2);
+  }
+
+  .bakery-mb-3 {
+    margin-bottom: var(--bakery-space-3);
+  }
+
+  .bakery-mb-4 {
+    margin-bottom: var(--bakery-space-4);
+  }
+
+  .bakery-mb-5 {
+    margin-bottom: var(--bakery-space-5);
+  }
+
+  .bakery-mb-6 {
+    margin-bottom: var(--bakery-space-6);
+  }
+
+  .bakery-mb-8 {
+    margin-bottom: var(--bakery-space-8);
+  }
+
+  .bakery-mb-10 {
+    margin-bottom: var(--bakery-space-10);
+  }
+
+  .bakery-mb-12 {
+    margin-bottom: var(--bakery-space-12);
+  }
+
+  .bakery-mb-16 {
+    margin-bottom: var(--bakery-space-16);
+  }
+
+  .bakery-radius-none {
+    border-radius: var(--bakery-radius-none);
+  }
+
+  .bakery-radius-sm {
+    border-radius: var(--bakery-radius-sm);
+  }
+
+  .bakery-radius-md {
+    border-radius: var(--bakery-radius-md);
+  }
+
+  .bakery-radius-lg {
+    border-radius: var(--bakery-radius-lg);
+  }
+
+  .bakery-radius-xl {
+    border-radius: var(--bakery-radius-xl);
+  }
+
+  .bakery-radius-pill {
+    border-radius: var(--bakery-radius-pill);
+  }
+
+  .bakery-radius-cloud {
+    border-radius: var(--bakery-radius-cloud);
+  }
+
+  .bakery-shadow-none {
+    box-shadow: var(--bakery-shadow-none);
+  }
+
+  .bakery-shadow-raisedSoft {
+    box-shadow: var(--bakery-shadow-raisedSoft);
+  }
+
+  .bakery-shadow-panelFloat {
+    box-shadow: var(--bakery-shadow-panelFloat);
+  }
+
+  .bakery-shadow-innerPressed {
+    box-shadow: var(--bakery-shadow-innerPressed);
+  }
+
+  .bakery-shadow-moonGlow {
+    box-shadow: var(--bakery-shadow-moonGlow);
+  }
+
+  .bakery-shadow-surfaceInset {
+    box-shadow: var(--bakery-shadow-surfaceInset);
   }
 }
 

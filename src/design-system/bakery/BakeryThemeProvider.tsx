@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { createContext, useContext, useMemo, useSyncExternalStore } from 'react'
 
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { useTheme } from '@/providers/Theme'
@@ -17,6 +17,10 @@ import {
 type BakeryThemeContextValue = BakeryTheme
 
 const BakeryThemeContext = createContext<BakeryThemeContextValue | undefined>(undefined)
+
+const subscribeToHydration = () => () => undefined
+const getClientHydrationSnapshot = () => true
+const getServerHydrationSnapshot = () => false
 
 type BakeryThemeManagerProps = {
   children: React.ReactNode
@@ -56,7 +60,13 @@ export const BakeryThemeProvider = ({
 }: BakeryThemeProviderProps) => {
   const { theme: activeColorScheme } = useTheme()
   const [activeScene] = usePersistentMenuSceneTone('classic')
-  const resolvedColorScheme = activeColorScheme ?? 'light'
+  const hasHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  )
+
+  const resolvedColorScheme = hasHydrated && activeColorScheme ? activeColorScheme : 'light'
 
   const themeApi = useMemo(
     () => createBakeryThemeApi(theme, resolvedColorScheme, activeScene),

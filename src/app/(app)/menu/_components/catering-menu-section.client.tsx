@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { bakerySceneThemes, useBakeryAnnouncer } from '@/design-system/bakery'
 import type { Product } from '@/payload-types'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { ChevronDownIcon, LoaderCircle } from 'lucide-react'
@@ -424,6 +425,7 @@ export function CateringMenuSection({
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
+  const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
   const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
 
@@ -451,6 +453,7 @@ export function CateringMenuSection({
     }
 
     preloadSceneryAssets(nextSceneryTone)
+    announce(`Scenery changed to ${bakerySceneThemes[nextSceneryTone]?.label ?? nextSceneryTone}.`)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
@@ -493,35 +496,9 @@ export function CateringMenuSection({
       </section>
 
       <style>{`
-        .cateringMenuHeroDisplay {
-          font-family: var(--font-catering-serif), 'Iowan Old Style', 'Palatino Linotype', serif;
-          font-weight: 800;
-          text-shadow: 0 10px 24px rgba(17, 44, 75, 0.08);
-        }
-
         .cateringMenuRoundHeading {
           font-family: var(--font-rounded-display);
           font-weight: 700;
-        }
-
-        .cateringMenuEyebrow {
-          color: rgba(25, 57, 95, 0.76);
-          font-size: 0.72rem;
-          font-family: var(--font-rounded-display);
-          font-weight: 700;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-        }
-
-        .cateringHeroEyebrow {
-          color: rgba(25, 57, 95, 0.78);
-        }
-
-        .cateringHeroSummary {
-          color: rgba(25, 57, 95, 0.9);
-          font-family: var(--font-rounded-display);
-          font-weight: 700;
-          letter-spacing: -0.015em;
         }
 
         .cateringPitch :is(h1, h2, h3, h4) {
@@ -546,7 +523,7 @@ export function CateringMenuSection({
         }
 
         .cateringPersuasionBody :is(p, li) {
-          color: #27496b;
+          color: var(--scene-text, #27496b);
           font-weight: 650;
         }
 
@@ -567,7 +544,14 @@ export function CateringMenuSection({
         .cateringPersuasionPanel {
           background: var(
             --catering-panel-fill,
-            linear-gradient(180deg, rgba(223, 239, 255, 0.92) 0%, rgba(216, 233, 246, 0.94) 100%)
+            var(
+              --scene-panel-fill,
+              linear-gradient(
+                180deg,
+                rgba(223, 239, 255, 0.92) 0%,
+                rgba(216, 233, 246, 0.94) 100%
+              )
+            )
           );
           isolation: isolate;
         }
@@ -580,9 +564,12 @@ export function CateringMenuSection({
 
         .cateringPanelForeground,
         .cateringGalleryContent {
+          backface-visibility: hidden;
+          transform: translate3d(0, 0, 0);
           transition:
             opacity 180ms ease,
             transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: opacity, transform;
         }
 
         .cateringPanelForegroundHidden,
@@ -602,6 +589,7 @@ export function CateringMenuSection({
             var(--catering-wipe-mask-start),
             var(--catering-wipe-mask-end)
           );
+          will-change: mask-image, -webkit-mask-image;
         }
 
         .cateringPanelWipeGhostToPhotos {
@@ -706,16 +694,19 @@ export function CateringMenuSection({
               90deg,
               rgba(255, 255, 255, 0) 0%,
               rgba(255, 255, 255, 0.74) 12%,
-              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 78%, white 22%) 50%,
+              color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 78%, white 22%) 50%,
               rgba(255, 255, 255, 0.74) 88%,
               rgba(255, 255, 255, 0) 100%
-            );
+          );
           height: 0.2rem;
           opacity: 1;
+          top: 0;
+          transform: translate3d(0, -50%, 0);
           transform-origin: center;
           box-shadow:
-            0 -0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 18%, transparent),
-            0 0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 24%, transparent);
+            0 -0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, transparent),
+            0 0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 24%, transparent);
+          will-change: opacity, transform;
         }
 
         .cateringPanelRepaintLineHidden {
@@ -730,6 +721,11 @@ export function CateringMenuSection({
         .cateringPanelRepaintLineToDetails {
           animation: cateringRepaintLineToDetails var(--catering-tear-duration, 280ms)
             cubic-bezier(0.7, 0, 0.2, 1) forwards;
+        }
+
+        [data-panel-transition='closing'] .cateringPhotoSkeleton,
+        [data-panel-transition='opening'] .cateringPhotoSkeleton {
+          animation: none;
         }
 
         .cateringScene-blossom .cateringPersuasionFlowerSpawned {
@@ -865,7 +861,7 @@ export function CateringMenuSection({
         }
 
         .cateringPersuasionHeading {
-          color: #143e63;
+          color: var(--scene-text, #143e63);
           font-weight: 520;
           text-wrap: balance;
         }
@@ -1412,24 +1408,32 @@ export function CateringMenuSection({
         @keyframes cateringRepaintLineToPhotos {
           0% {
             opacity: 0.96;
-            top: 0%;
+            transform: translate3d(0, -50%, 0);
           }
 
           100% {
             opacity: 0.96;
-            top: 100%;
+            transform: translate3d(
+              0,
+              var(--catering-panel-transition-distance, var(--scene-panel-min-height, 34rem)),
+              0
+            );
           }
         }
 
         @keyframes cateringRepaintLineToDetails {
           0% {
             opacity: 0.96;
-            top: 100%;
+            transform: translate3d(
+              0,
+              var(--catering-panel-transition-distance, var(--scene-panel-min-height, 34rem)),
+              0
+            );
           }
 
           100% {
             opacity: 0.96;
-            top: 0%;
+            transform: translate3d(0, -50%, 0);
           }
         }
 

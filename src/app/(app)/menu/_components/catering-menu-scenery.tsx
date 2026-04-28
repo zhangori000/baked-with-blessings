@@ -5,6 +5,8 @@ import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { GrowingGrassBorder } from '@/components/flowers/GrowingGrassBorder'
 import { Media } from '@/components/Media'
 import { RichText } from '@/components/RichText'
+import { SceneActionRow, SceneButton, useBakeryAnnouncer } from '@/design-system/bakery'
+import { bakerySceneThemes } from '@/design-system/bakery/tokens'
 import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -682,6 +684,40 @@ const normalizeGalleryImages = (product: Partial<Product>): MediaType[] => {
 const getGalleryImageKey = (image: MediaType, index: number) =>
   `${image.id ?? image.url ?? 'gallery-photo'}-${index}`
 
+const getGalleryImagePreloadUrl = (image: MediaType) =>
+  image.sizes?.card?.url ?? image.sizes?.tablet?.url ?? image.thumbnailURL ?? image.url
+
+const preloadGalleryImages = (images: readonly MediaType[]) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  images.slice(0, 6).forEach((image) => {
+    const url = getGalleryImagePreloadUrl(image)
+
+    if (!url) {
+      return
+    }
+
+    const preloadImage = new window.Image()
+    preloadImage.decoding = 'async'
+    preloadImage.src = url
+    void preloadImage.decode?.().catch(() => undefined)
+  })
+}
+
+const getHeroSceneVars = (sceneryTone: MenuSceneryTone): React.CSSProperties => {
+  const sceneTheme = bakerySceneThemes[sceneryTone] ?? bakerySceneThemes.classic
+
+  return {
+    ['--scene-hero-muted' as string]: sceneTheme.color.heroMuted,
+    ['--scene-hero-text' as string]: sceneTheme.color.heroText,
+    ['--scene-hero-title' as string]: sceneTheme.color.heroTitle,
+    ['--scene-muted-text' as string]: sceneTheme.color.mutedText,
+    ['--scene-text' as string]: sceneTheme.color.text,
+  }
+}
+
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
 
 const hashString = (value: string) => {
@@ -969,29 +1005,7 @@ const buildSeededFlowers = (
 
 const getResponsiveFlowerSeedCount = () => 9
 
-const useResponsiveFlowerSeedCount = () => {
-  const [flowerCount, setFlowerCount] = useState(getResponsiveFlowerSeedCount)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const mediaQuery = window.matchMedia('(max-width: 767px)')
-    const sync = () => setFlowerCount(9)
-
-    sync()
-    mediaQuery.addEventListener('change', sync)
-    window.addEventListener('resize', sync)
-
-    return () => {
-      mediaQuery.removeEventListener('change', sync)
-      window.removeEventListener('resize', sync)
-    }
-  }, [])
-
-  return flowerCount
-}
+const useResponsiveFlowerSeedCount = () => getResponsiveFlowerSeedCount()
 
 const isEagerSceneAsset = (src: string) => src === '/sceneries/girl-under-tree-tree.svg'
 
@@ -1006,8 +1020,12 @@ export function DecorativeSceneImage({
 }: DecorativeSceneImageProps) {
   if (mobileSrc) {
     return (
-      <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
-        <picture className="block h-full w-full">
+      <span
+        aria-hidden="true"
+        className={cn('cateringDecorativeImage', className)}
+        style={{ position: 'absolute', ...style }}
+      >
+        <picture className="relative block h-full w-full">
           <source media="(max-width: 767px)" srcSet={mobileSrc} />
           <Image
             alt=""
@@ -1028,7 +1046,11 @@ export function DecorativeSceneImage({
   }
 
   return (
-    <span aria-hidden="true" className={cn('cateringDecorativeImage', className)} style={style}>
+    <span
+      aria-hidden="true"
+      className={cn('cateringDecorativeImage', className)}
+      style={{ position: 'absolute', ...style }}
+    >
       {fit === 'cover' ? (
         <Image
           alt=""
@@ -1072,15 +1094,15 @@ function CateringActionButton({
 }) {
   return (
     <span className="cateringActionButtonWrap">
-      <button
+      <SceneButton
         className={cn('cateringSpawnButton', className)}
         disabled={disabled}
         onClick={onClick}
         ref={buttonRef}
-        type="button"
+        variant="ghost"
       >
         {children}
-      </button>
+      </SceneButton>
     </span>
   )
 }
@@ -1236,11 +1258,14 @@ export function MenuHero({
         'cateringHeroBand relative left-1/2 w-screen -translate-x-1/2',
         `cateringScene-${sceneryTone}`,
       )}
+      data-scene={sceneryTone}
       style={
         {
-          ['--catering-scene-charge' as string]: sceneButtonAuraByScenery[sceneryTone],
-          ['--catering-hero-flower-seam' as string]:
-            heroFlowerSeamByScenery[sceneryTone] ?? heroFlowerSeamByScenery.dawn,
+          ...getHeroSceneVars(sceneryTone),
+          ['--catering-scene-charge' as string]: `var(--scene-action-aura, ${sceneButtonAuraByScenery[sceneryTone]})`,
+          ['--catering-hero-flower-seam' as string]: `var(--scene-flower-seam, ${
+            heroFlowerSeamByScenery[sceneryTone] ?? heroFlowerSeamByScenery.dawn
+          })`,
         } as React.CSSProperties
       }
     >
@@ -1342,17 +1367,13 @@ export function MenuHero({
         />
       ))}
       <div className="cateringHeroContent container relative z-[3]">
-        <div className="cateringHeroCopy max-w-[42rem] space-y-4">
+        <div className="cateringHeroCopy space-y-4">
           <div className="space-y-4">
             <p className="cateringMenuEyebrow cateringHeroEyebrow">{eyebrow}</p>
-            <h1 className="cateringMenuHeroDisplay max-w-[10ch] text-[clamp(3.5rem,8.6vw,6rem)] leading-[0.88] tracking-[-0.045em]">
-              {title}
-            </h1>
-            <p className="cateringHeroSummary max-w-[35rem] text-[1.02rem] leading-8 md:text-[1.14rem]">
-              {summary}
-            </p>
+            <h1 className="cateringMenuHeroDisplay">{title}</h1>
+            <p className="cateringHeroSummary">{summary}</p>
             <div className="relative pt-2" ref={chooserAnchorRef}>
-              <div className="flex flex-wrap gap-2">
+              <SceneActionRow className="cateringActionRow" gap="2">
                 <CateringActionButton onClick={spawnCloud}>
                   {spawnedCloudLabelByScenery[sceneryTone]}
                 </CateringActionButton>
@@ -1368,7 +1389,7 @@ export function MenuHero({
                 >
                   Change scenery
                 </CateringActionButton>
-              </div>
+              </SceneActionRow>
               {isSceneryPickerOpen ? (
                 <SceneryChooserPopover
                   activeTone={sceneryTone}
@@ -1393,7 +1414,7 @@ export function PersuasionGardenPanel({
   sceneryTone,
   summary,
 }: PersuasionGardenPanelProps) {
-  const SHUTTER_PHASE_MS = 280
+  const SHUTTER_PHASE_MS = 240
   const flowerSeedCount = useResponsiveFlowerSeedCount()
   const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
@@ -1406,6 +1427,7 @@ export function PersuasionGardenPanel({
   const [loadedGalleryImageKeys, setLoadedGalleryImageKeys] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
+  const { announce } = useBakeryAnnouncer()
   const persuasionCopy = buildPersuasionCopy(product, summary)
   const galleryImages = useMemo(() => normalizeGalleryImages(product), [product])
   const hasGallery = galleryImages.length > 0
@@ -1511,14 +1533,27 @@ export function PersuasionGardenPanel({
       return
     }
 
+    if (nextFace === 'gallery') {
+      preloadGalleryImages(galleryImages)
+    }
+
+    const previousFace = panelFace
+    const productTitle = typeof product.title === 'string' ? product.title : 'this menu item'
+
     if (transitionTimeoutRef.current != null) {
       window.clearTimeout(transitionTimeoutRef.current)
     }
 
-    setTransitionGhostFace(panelFace)
+    setTransitionGhostFace(null)
     setPanelTransition('closing')
+    announce(
+      nextFace === 'gallery'
+        ? `Opening photos for ${productTitle}.`
+        : `Back to details for ${productTitle}.`,
+    )
 
     transitionTimeoutRef.current = window.setTimeout(() => {
+      setTransitionGhostFace(previousFace)
       setPanelFace(nextFace)
       setPanelTransition('opening')
 
@@ -1551,12 +1586,15 @@ export function PersuasionGardenPanel({
 
   return (
     <div
+      data-scene={sceneryTone}
+      data-panel-transition={panelTransition}
       className="relative [perspective:2200px]"
       style={
         {
           minHeight: hasGallery ? '34rem' : '30rem',
-          ['--catering-scene-charge' as string]: sceneButtonAuraByScenery[sceneryTone],
-          ['--catering-panel-fill' as string]: panelBackgroundByScenery[sceneryTone],
+          ['--catering-panel-transition-distance' as string]: hasGallery ? '34rem' : '30rem',
+          ['--catering-scene-charge' as string]: `var(--scene-action-aura, ${sceneButtonAuraByScenery[sceneryTone]})`,
+          ['--catering-panel-fill' as string]: `var(--scene-panel-fill, ${panelBackgroundByScenery[sceneryTone]})`,
         } as React.CSSProperties
       }
     >
@@ -1625,7 +1663,7 @@ export function PersuasionGardenPanel({
               )}
 
               <div className="relative pt-1" ref={chooserAnchorRef}>
-                <div className="flex flex-wrap gap-2">
+                <SceneActionRow className="cateringActionRow cateringPanelActionRow" gap="2">
                   <CateringActionButton onClick={spawnCloud}>
                     {spawnedCloudLabelByScenery[sceneryTone]}
                   </CateringActionButton>
@@ -1658,7 +1696,7 @@ export function PersuasionGardenPanel({
                   >
                     Change scenery
                   </CateringActionButton>
-                </div>
+                </SceneActionRow>
                 {isSceneryPickerOpen ? (
                   <SceneryChooserPopover
                     activeTone={sceneryTone}
@@ -1765,13 +1803,13 @@ export function PersuasionGardenPanel({
               )}
             >
               <div className="flex justify-start">
-                <button
+                <SceneButton
                   className="cateringSpawnButton shrink-0"
                   onClick={() => runPanelTransition('details')}
-                  type="button"
+                  variant="ghost"
                 >
                   Back to details
-                </button>
+                </SceneButton>
               </div>
 
               <div className="cateringPhotoBoard mt-3 h-[calc(100%-3.25rem)] overflow-y-auto pb-10 pr-1">
@@ -1857,7 +1895,7 @@ export function PersuasionGardenPanel({
           >
             <div
               className={cn(
-                'cateringPanelTearLine absolute left-0 right-0 top-1/2 -translate-y-1/2',
+                'cateringPanelTearLine absolute left-0 right-0',
                 panelTransition === 'closing' && 'cateringPanelRepaintLineHidden',
                 panelTransition === 'opening' &&
                   (transitionGhostFace === 'gallery'

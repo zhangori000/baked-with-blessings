@@ -1,5 +1,6 @@
 'use client'
 
+import { bakeryMediaQueries, useBakeryMediaQuery } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import { MenuIcon, ShoppingBag, X } from 'lucide-react'
 import Link from 'next/link'
@@ -35,6 +36,7 @@ const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
 
 export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   const pathname = usePathname()
+  const isTabletUp = useBakeryMediaQuery(bakeryMediaQueries.tabletUp)
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const mainItems = items.filter((item) => item.kind !== 'apps')
@@ -44,15 +46,8 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   })
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsOpen(false)
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    if (isTabletUp) closeMenu()
+  }, [isTabletUp])
 
   useEffect(() => {
     closeMenu()

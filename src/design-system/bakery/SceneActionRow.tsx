@@ -1,17 +1,18 @@
 'use client'
 
-import type React from 'react'
+import React, { type HTMLAttributes, type ReactNode } from 'react'
 
 import { cn } from '@/utilities/cn'
 
-import { BakeryBox } from './BakeryBox'
+import { HStack } from './BakeryStack'
 import type { BakerySpaceToken } from './tokens'
 
-type SceneActionRowProps = {
+type SceneActionRowProps = Omit<HTMLAttributes<HTMLDivElement>, 'color'> & {
   align?: 'center' | 'end' | 'start'
-  children?: React.ReactNode
+  children?: ReactNode
   className?: string
   gap?: BakerySpaceToken
+  wrap?: boolean
 }
 
 const justifyContentByAlign: Record<NonNullable<SceneActionRowProps['align']>, string> = {
@@ -20,20 +21,19 @@ const justifyContentByAlign: Record<NonNullable<SceneActionRowProps['align']>, s
   start: 'flex-start',
 }
 
-export const SceneActionRow = ({
-  align = 'start',
-  children,
-  className,
-  gap = '3',
-}: SceneActionRowProps) => (
-  <BakeryBox
-    alignItems="center"
-    className={cn('bakerySceneActionRow', className)}
-    display="flex"
-    flexDirection="row"
-    gap={gap}
-    justifyContent={justifyContentByAlign[align]}
-  >
-    {children}
-  </BakeryBox>
+export const SceneActionRow = React.forwardRef<HTMLDivElement, SceneActionRowProps>(
+  ({ align = 'start', children, className, gap = '3', wrap = true, ...props }, ref) => (
+    <HStack
+      className={cn('bakerySceneActionRow', className)}
+      gap={gap}
+      justifyContent={justifyContentByAlign[align]}
+      ref={ref}
+      wrap={wrap}
+      {...props}
+    >
+      {children}
+    </HStack>
+  ),
 )
+
+SceneActionRow.displayName = 'SceneActionRow'

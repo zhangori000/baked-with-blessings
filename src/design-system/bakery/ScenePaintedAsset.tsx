@@ -22,6 +22,7 @@ type ScenePaintedAssetProps = {
   fit?: 'contain' | 'cover'
   glowRole?: BakeryColorRole
   height?: number
+  imageClassName?: string
   layer?: SceneAssetLayer
   mobileAsset?: string
   motion?: SceneAssetMotion
@@ -43,6 +44,7 @@ export const ScenePaintedAsset = ({
   fit = 'contain',
   glowRole,
   height = 320,
+  imageClassName,
   layer = 'content',
   mobileAsset,
   motion = 'none',
@@ -84,6 +86,7 @@ export const ScenePaintedAsset = ({
       className={cn(
         'bakeryScenePaintedAssetImage',
         fit === 'cover' ? 'object-cover' : 'object-contain',
+        imageClassName,
       )}
       fill={fill}
       height={fill ? undefined : height}

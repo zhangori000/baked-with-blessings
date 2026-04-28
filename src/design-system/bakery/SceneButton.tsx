@@ -1,41 +1,52 @@
 'use client'
 
-import type React from 'react'
+import React from 'react'
 
 import { cn } from '@/utilities/cn'
 
-import { BakeryBox } from './BakeryBox'
+import { BakeryPressable } from './BakeryPressable'
 
 type SceneButtonVariant = 'ghost' | 'primary'
 
 type SceneButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'> & {
+  loading?: boolean
   variant?: SceneButtonVariant
 }
 
 const variantClassName: Record<SceneButtonVariant, string> = {
-  ghost:
-    'border border-[var(--bakery-color-border)] bg-[var(--bakery-color-bg-secondary)] text-[var(--bakery-color-fg)]',
-  primary:
-    'border border-transparent bg-[var(--bakery-color-action-bg)] text-[var(--bakery-color-action-fg)] shadow-[0_0_0_4px_var(--scene-action-aura)]',
+  ghost: 'bakerySceneButton-ghost',
+  primary: 'bakerySceneButton-primary',
 }
 
-export const SceneButton = ({
-  children,
-  className,
-  type = 'button',
-  variant = 'primary',
-  ...props
-}: SceneButtonProps) => (
-  <BakeryBox
-    as="button"
-    className={cn(
-      'inline-flex min-h-[2.75rem] items-center justify-center rounded-full px-4 py-2 text-sm font-extrabold transition hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-55',
-      variantClassName[variant],
-      className,
-    )}
-    type={type}
-    {...props}
-  >
-    {children}
-  </BakeryBox>
+const variantStyleProps: Record<
+  SceneButtonVariant,
+  Pick<React.ComponentProps<typeof BakeryPressable>, 'background' | 'color'>
+> = {
+  ghost: {
+    background: 'bgSecondary',
+    color: 'fg',
+  },
+  primary: {
+    background: 'actionBg',
+    color: 'actionFg',
+  },
+}
+
+export const SceneButton = React.forwardRef<HTMLButtonElement, SceneButtonProps>(
+  ({ children, className, type = 'button', variant = 'primary', ...props }, ref) => (
+    <BakeryPressable
+      className={cn('bakerySceneButton', variantClassName[variant], className)}
+      paddingX="4"
+      paddingY="2"
+      radius="pill"
+      ref={ref}
+      type={type}
+      {...variantStyleProps[variant]}
+      {...props}
+    >
+      {children}
+    </BakeryPressable>
+  ),
 )
+
+SceneButton.displayName = 'SceneButton'

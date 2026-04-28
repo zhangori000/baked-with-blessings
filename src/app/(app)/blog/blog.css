@@ -1,6 +1,5 @@
 .blogTypography {
   --font-blog-serif: Georgia, 'Times New Roman', Times, serif;
-  --font-catering-serif: var(--font-blog-serif);
 }
 
 .blogContentBand {
@@ -19,34 +18,8 @@
   max-width: min(35rem, 92vw);
 }
 
-.blogHero .cateringMenuHeroDisplay {
-  color: #102f54;
-  font-family: var(--font-blog-serif);
-  letter-spacing: -0.035em;
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.45),
-    0 12px 28px rgba(7, 24, 43, 0.18);
-}
-
-.blogHero .cateringHeroEyebrow,
 .blogHero .cateringHeroSummary {
-  color: #102942;
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.54),
-    0 8px 20px rgba(7, 24, 43, 0.14);
-}
-
-.blogHero .cateringHeroSummary {
-  font-size: clamp(1.02rem, 2.4vw, 1.18rem);
-  line-height: 1.7;
   max-width: min(33rem, calc(100vw - 2rem));
-}
-
-.blogHero .cateringScene-moonlit .cateringMenuHeroDisplay,
-.blogHero .cateringScene-moonlit .cateringHeroEyebrow,
-.blogHero .cateringScene-moonlit .cateringHeroSummary {
-  color: #eef6ff;
-  text-shadow: 0 12px 22px rgba(5, 10, 28, 0.24);
 }
 
 .blogIndexShell {

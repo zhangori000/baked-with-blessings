@@ -52,7 +52,7 @@ export const bakeryPrimitiveTokens = {
     cloudDrift: '18s',
     flowerBob: '4.6s',
     normal: '220ms',
-    panelShutter: '280ms',
+    panelShutter: '180ms',
     quick: '150ms',
     sceneryTransition: '420ms',
     slow: '650ms',
@@ -135,6 +135,9 @@ export type BakerySceneTheme = {
     footerLinkBg: string
     footerMuted: string
     footerPanelBg: string
+    heroMuted: string
+    heroText: string
+    heroTitle: string
     meadow: string
     meadowShadow: string
     mutedText: string
@@ -254,6 +257,9 @@ const sceneColorByTone: Record<
     footerLinkBg: 'rgba(255, 250, 252, 0.58)',
     footerMuted: 'rgba(81, 48, 71, 0.72)',
     footerPanelBg: 'rgba(255, 250, 252, 0.24)',
+    heroMuted: 'rgba(113, 50, 79, 0.8)',
+    heroText: '#513047',
+    heroTitle: '#71324f',
     meadow: '#9ac96c',
     meadowShadow: '#4e6f35',
     mutedText: 'rgba(81, 48, 71, 0.74)',
@@ -271,6 +277,9 @@ const sceneColorByTone: Record<
     footerLinkBg: 'rgba(255, 252, 244, 0.56)',
     footerMuted: 'rgba(31, 47, 32, 0.72)',
     footerPanelBg: 'rgba(255, 252, 244, 0.2)',
+    heroMuted: 'rgba(32, 57, 31, 0.78)',
+    heroText: '#172415',
+    heroTitle: '#20391f',
     meadow: '#94ac31',
     meadowShadow: '#435c25',
     mutedText: 'rgba(23, 52, 31, 0.68)',
@@ -288,6 +297,9 @@ const sceneColorByTone: Record<
     footerLinkBg: 'rgba(255, 248, 231, 0.56)',
     footerMuted: 'rgba(62, 68, 20, 0.74)',
     footerPanelBg: 'rgba(255, 248, 231, 0.22)',
+    heroMuted: 'rgba(91, 66, 23, 0.8)',
+    heroText: '#3e4414',
+    heroTitle: '#5b4217',
     meadow: bakeryPrimitiveTokens.color.grassSunlit,
     meadowShadow: bakeryPrimitiveTokens.color.grassShadow,
     mutedText: 'rgba(62, 68, 20, 0.76)',
@@ -305,6 +317,9 @@ const sceneColorByTone: Record<
     footerLinkBg: 'rgba(250, 246, 226, 0.58)',
     footerMuted: 'rgba(41, 57, 35, 0.72)',
     footerPanelBg: 'rgba(250, 246, 226, 0.2)',
+    heroMuted: '#1f2a19',
+    heroText: '#11170f',
+    heroTitle: '#10150d',
     meadow: '#98ae7e',
     meadowShadow: '#4d6843',
     mutedText: 'rgba(41, 57, 35, 0.72)',
@@ -322,6 +337,9 @@ const sceneColorByTone: Record<
     footerLinkBg: 'rgba(248, 241, 200, 0.16)',
     footerMuted: 'rgba(248, 242, 214, 0.72)',
     footerPanelBg: 'rgba(16, 27, 66, 0.28)',
+    heroMuted: 'rgba(243, 235, 255, 0.82)',
+    heroText: '#eef6ff',
+    heroTitle: '#eef6ff',
     meadow: '#2a4a3a',
     meadowShadow: '#0a2030',
     mutedText: 'rgba(243, 235, 255, 0.76)',
@@ -339,6 +357,9 @@ const sceneColorByTone: Record<
     footerLinkBg: 'rgba(250, 255, 241, 0.58)',
     footerMuted: 'rgba(49, 69, 28, 0.72)',
     footerPanelBg: 'rgba(250, 255, 241, 0.22)',
+    heroMuted: 'rgba(49, 69, 28, 0.78)',
+    heroText: '#31451c',
+    heroTitle: '#31451c',
     meadow: '#8fbc61',
     meadowShadow: '#31451c',
     mutedText: 'rgba(49, 69, 28, 0.74)',

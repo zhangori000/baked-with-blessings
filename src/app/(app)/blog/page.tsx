@@ -6,10 +6,18 @@ import { formatDateTime } from '@/utilities/formatDateTime'
 import { getPayload } from 'payload'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { Cormorant_Garamond } from 'next/font/google'
 
 import { BlogSceneryHero } from './BlogSceneryHero.client'
 import '../menu/_components/catering-menu-hero.css'
 import './blog.css'
+
+const blogHeroSerif = Cormorant_Garamond({
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-catering-serif',
+  weight: ['500', '600', '700'],
+})
 
 export const metadata: Metadata = {
   description:
@@ -48,7 +56,7 @@ export default async function BlogPage() {
   })
 
   return (
-    <div className="blogTypography">
+    <div className={`blogTypography ${blogHeroSerif.variable}`}>
       <div className="cateringMenuExperience" style={{ fontFamily: 'var(--font-rounded-body)' }}>
         <div className="blogHero">
           <BlogSceneryHero

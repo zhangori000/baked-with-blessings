@@ -8,6 +8,7 @@ import { generateMeta } from '@/utilities/generateMeta'
 import { ArrowLeft } from 'lucide-react'
 import { draftMode } from 'next/headers'
 import Link from 'next/link'
+import { Cormorant_Garamond } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { cache } from 'react'
@@ -15,6 +16,13 @@ import { cache } from 'react'
 import { BlogSceneryHero } from '../BlogSceneryHero.client'
 import '../../menu/_components/catering-menu-hero.css'
 import '../blog.css'
+
+const blogHeroSerif = Cormorant_Garamond({
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-catering-serif',
+  weight: ['500', '600', '700'],
+})
 
 type Args = {
   params: Promise<{
@@ -49,7 +57,7 @@ export default async function BlogPostPage({ params }: Args) {
     .join(' / ')
 
   return (
-    <div className="blogTypography">
+    <div className={`blogTypography ${blogHeroSerif.variable}`}>
       <div className="cateringMenuExperience" style={{ fontFamily: 'var(--font-rounded-body)' }}>
         <div className="blogHero blogHeroPost">
           <BlogSceneryHero

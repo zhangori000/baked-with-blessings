@@ -6,59 +6,22 @@ import { cn } from '@/utilities/cn'
 
 import { getBakeryStyles, type BakeryStyleProps } from './styleProps'
 
-type BakeryBoxProps = BakeryStyleProps & {
-  as?: React.ElementType
-  children?: React.ReactNode
-  className?: string
-  style?: CSSProperties
-  [key: string]: unknown
-}
+type BakeryBoxProps = BakeryStyleProps &
+  Omit<React.HTMLAttributes<HTMLElement>, 'color'> & {
+    as?: React.ElementType
+    disabled?: boolean
+    style?: CSSProperties
+    type?: React.ButtonHTMLAttributes<HTMLButtonElement>['type']
+    [key: `data-${string}`]: string | number | boolean | undefined
+  }
 
-export const BakeryBox = ({
-  as: Component = 'div',
-  children,
-  className,
-  style,
-  alignItems,
-  background,
-  color,
-  display,
-  flexDirection,
-  gap,
-  justifyContent,
-  margin,
-  marginBottom,
-  marginTop,
-  padding,
-  paddingX,
-  paddingY,
-  radius,
-  shadow,
-  ...props
-}: BakeryBoxProps) => {
-  const translatedStyles = useMemo(
-    () =>
-      getBakeryStyles(
-        {
-          alignItems,
-          background,
-          color,
-          display,
-          flexDirection,
-          gap,
-          justifyContent,
-          margin,
-          marginBottom,
-          marginTop,
-          padding,
-          paddingX,
-          paddingY,
-          radius,
-          shadow,
-        },
-        style,
-      ),
-    [
+export const BakeryBox = React.forwardRef<HTMLElement, BakeryBoxProps>(
+  (
+    {
+      as: Component = 'div',
+      children,
+      className,
+      style,
       alignItems,
       background,
       color,
@@ -74,17 +37,63 @@ export const BakeryBox = ({
       paddingY,
       radius,
       shadow,
-      style,
-    ],
-  )
+      ...props
+    },
+    ref,
+  ) => {
+    const translatedStyles = useMemo(
+      () =>
+        getBakeryStyles(
+          {
+            alignItems,
+            background,
+            color,
+            display,
+            flexDirection,
+            gap,
+            justifyContent,
+            margin,
+            marginBottom,
+            marginTop,
+            padding,
+            paddingX,
+            paddingY,
+            radius,
+            shadow,
+          },
+          style,
+        ),
+      [
+        alignItems,
+        background,
+        color,
+        display,
+        flexDirection,
+        gap,
+        justifyContent,
+        margin,
+        marginBottom,
+        marginTop,
+        padding,
+        paddingX,
+        paddingY,
+        radius,
+        shadow,
+        style,
+      ],
+    )
 
-  return (
-    <Component
-      className={cn('bakeryBox', translatedStyles.className, className)}
-      style={translatedStyles.style}
-      {...props}
-    >
-      {children}
-    </Component>
-  )
-}
+    return (
+      <Component
+        className={cn('bakeryBox', translatedStyles.className, className)}
+        ref={ref}
+        style={translatedStyles.style}
+        {...props}
+      >
+        {children}
+      </Component>
+    )
+  },
+)
+
+BakeryBox.displayName = 'BakeryBox'
