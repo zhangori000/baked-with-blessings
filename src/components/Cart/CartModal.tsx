@@ -102,7 +102,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
       ) : null}
 
       <SheetContent
-        className="!top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!top-[6.15rem] sm:!bottom-auto sm:!left-auto sm:!right-3 sm:!h-[min(75dvh,calc(100dvh-7rem))] sm:!min-h-[38rem] sm:!w-[min(540px,calc(100vw-24px))] sm:!translate-x-0 sm:!translate-y-0 border border-black/12 rounded-[8px] bg-[#fffefa] p-0 text-black shadow-none"
+        className="!top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!top-3 sm:!bottom-auto sm:!left-auto sm:!right-3 sm:!h-[calc(100dvh-1.5rem)] sm:!max-h-[calc(100dvh-1.5rem)] sm:!min-h-0 sm:!w-[min(560px,calc(100vw-24px))] sm:!translate-x-0 sm:!translate-y-0 border border-black/12 rounded-[12px] bg-[#fffefa] p-0 text-black shadow-[0_28px_80px_rgba(31,36,24,0.22)]"
         hideClose
         onEscapeKeyDown={() => setIsOpen(false)}
         onInteractOutside={() => setIsOpen(false)}
@@ -113,7 +113,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
         <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[8px]">
           <CartSceneShell
             className="cartModalHeaderScene border-b border-black/8 px-4 py-3"
-            contentClassName="pr-14"
+            contentClassName="pr-16"
             hideSheep
             variant="compact"
           >
@@ -131,7 +131,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                 <SheetClose asChild>
                   <BakeryPressable
                     aria-label="Close cart"
-                    className="absolute right-3 top-3 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/12 bg-white/95 text-black shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:border-black/20 hover:bg-black hover:text-white"
+                    className="absolute right-4 top-4 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/12 bg-white/95 text-black shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:border-black/20 hover:bg-black hover:text-white"
                     type="button"
                   >
                     <X className="h-4 w-4" />
@@ -273,9 +273,10 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                       return (
                         <li className="bg-[#fffefa] px-0 py-4" key={index}>
                           <BakeryCard
-                            className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-3.5 bg-white/72 px-2.5 py-2.5 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-4"
-                            radius="sm"
+                            className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-3.5 border border-[rgba(92,67,31,0.12)] bg-[#fffaf0]/90 px-2.5 py-2.5 shadow-[0_10px_28px_rgba(74,57,31,0.07)] sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-4"
+                            radius="md"
                             spacing="none"
+                            tone="transparent"
                           >
                             <div
                               aria-hidden="true"
@@ -401,7 +402,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           }
 
           .cartModalPanelStage {
-            background: #fffefa;
+            background: linear-gradient(180deg, #fffefa 0%, #fff8ed 100%);
           }
 
           .cartModalPanelStage.is-revealing {
@@ -459,8 +460,8 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           }
 
           .cartModalHeaderScene {
-            min-height: 6.6rem;
-            height: 6.6rem;
+            min-height: 8.35rem;
+            height: 8.35rem;
           }
 
           .cartModalHeaderTitle {
@@ -485,8 +486,8 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
 
           .cartModalHeaderTitleWrap {
             border: 1px solid rgba(255, 255, 255, 0.24);
-            border-radius: 0.95rem;
-            padding: 0.45rem 0.88rem;
+            border-radius: 1.05rem;
+            padding: 0.55rem 1rem 0.62rem;
             background: linear-gradient(
               180deg,
               rgba(17, 28, 44, 0.26),

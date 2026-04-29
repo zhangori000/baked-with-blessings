@@ -4,14 +4,13 @@ import Link from 'next/link'
 import React, { Fragment, useCallback, useState, MouseEvent } from 'react'
 import { toast } from '@payloadcms/ui'
 
+import { BakeryPressable } from '@/design-system/bakery'
+
 import styles from './index.module.css'
 
 const SuccessMessage: React.FC = () => (
   <div>
-    Database seeded! You can now{' '}
-    <Link href="/">
-      visit your website
-    </Link>
+    Database seeded! You can now <Link href="/">visit your website</Link>
   </div>
 )
 
@@ -82,14 +81,14 @@ export const SeedButton: React.FC<SeedButtonProps> = ({ className, messageClassN
 
   return (
     <Fragment>
-      <button
+      <BakeryPressable
         className={[styles.button, className].filter(Boolean).join(' ')}
         disabled={loading}
         onClick={handleClick}
         type="button"
       >
         Seed your database
-      </button>
+      </BakeryPressable>
       {message ? (
         <span className={[styles.message, messageClassName].filter(Boolean).join(' ')}>
           {message}

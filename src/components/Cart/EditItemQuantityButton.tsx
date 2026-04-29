@@ -5,7 +5,7 @@ import { BakeryPressable, useBakeryAnnouncer } from '@/design-system/bakery'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import clsx from 'clsx'
 import { MinusIcon, PlusIcon } from 'lucide-react'
-import React, { useMemo } from 'react'
+import React from 'react'
 
 import { formatCartItemQuantity, getCartItemTitle } from './cartItemLabels'
 
@@ -19,30 +19,7 @@ export function EditItemQuantityButton({ type, item }: { item: CartItem; type: '
   const canAddSameItem = type === 'plus' && Boolean(productID)
   const itemTitle = getCartItemTitle(item)
   const currentQuantity = typeof item.quantity === 'number' ? item.quantity : 0
-
-  const disabled = useMemo(() => {
-    if (!item.id && !canAddSameItem) return true
-
-    const target =
-      item.variant && typeof item.variant === 'object'
-        ? item.variant
-        : item.product && typeof item.product === 'object'
-          ? item.product
-          : null
-
-    if (
-      target &&
-      typeof target === 'object' &&
-      target.inventory !== undefined &&
-      target.inventory !== null
-    ) {
-      if (type === 'plus' && item.quantity !== undefined && item.quantity !== null) {
-        return item.quantity >= target.inventory
-      }
-    }
-
-    return false
-  }, [canAddSameItem, item, type])
+  const disabled = !item.id && !canAddSameItem
 
   const handleEditQuantity = async () => {
     try {

@@ -3,7 +3,14 @@
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import Image from 'next/image'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
+import {
+  type CSSProperties,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -44,6 +51,11 @@ type CarouselTransition = {
 } | null
 
 type CarouselInfoPhase = 'hidden' | 'ready' | 'open'
+
+type InfoPromptLayout = {
+  maxHeight: number | null
+  x: number
+}
 
 type ShowcaseSceneCloud = {
   className?: string
@@ -634,9 +646,14 @@ export function HomeCookieCarousel({
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
   const [transition, setTransition] = useState<CarouselTransition>(null)
   const [infoPhase, setInfoPhase] = useState<CarouselInfoPhase>('hidden')
+  const [infoPromptLayout, setInfoPromptLayout] = useState<InfoPromptLayout>({
+    maxHeight: null,
+    x: 0,
+  })
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
   const activeIndexRef = useRef(0)
   const addedStateTimeoutRef = useRef<number | null>(null)
+  const floatingInfoPromptRef = useRef<HTMLElement | null>(null)
   const isTransitioningRef = useRef(false)
   const measureRef = useRef<HTMLDivElement | null>(null)
   const pendingDirectionRef = useRef<-1 | 1 | null>(null)
@@ -692,6 +709,75 @@ export function HomeCookieCarousel({
   useEffect(() => {
     activeIndexRef.current = activeIndex
   }, [activeIndex])
+
+  useLayoutEffect(() => {
+    if (infoPhase !== 'open') {
+      setInfoPromptLayout((current) =>
+        current.x === 0 && current.maxHeight == null ? current : { maxHeight: null, x: 0 },
+      )
+      return
+    }
+
+    const updateInfoPromptLayout = () => {
+      const prompt = floatingInfoPromptRef.current
+      if (!prompt || window.getComputedStyle(prompt).display === 'none') {
+        return
+      }
+
+      const infoButton = prompt.parentElement?.querySelector<HTMLElement>('.homeCookieInfoButton')
+      const rect = prompt.getBoundingClientRect()
+      const viewportPadding = 12
+      const promptGap = 14
+      const headerBoundary =
+        document.querySelector<HTMLElement>('.siteHeaderShellRow') ??
+        document.querySelector<HTMLElement>('.siteHeader')
+      const headerBottom = headerBoundary?.getBoundingClientRect().bottom ?? 0
+      const minTop = Math.max(viewportPadding, headerBottom + 10)
+      const maxRight = window.innerWidth - viewportPadding
+      const anchorTop = infoButton?.getBoundingClientRect().top ?? rect.bottom + promptGap
+      const availableHeight = Math.max(150, anchorTop - promptGap - minTop)
+      const baseRect = {
+        left: rect.left - infoPromptLayout.x,
+        right: rect.right - infoPromptLayout.x,
+      }
+      let nextShiftX = 0
+
+      if (baseRect.left < viewportPadding) {
+        nextShiftX = viewportPadding - baseRect.left
+      } else if (baseRect.right > maxRight) {
+        nextShiftX = maxRight - baseRect.right
+      }
+
+      if (
+        Math.abs(nextShiftX - infoPromptLayout.x) < 1 &&
+        Math.abs(availableHeight - (infoPromptLayout.maxHeight ?? 0)) < 1
+      ) {
+        return
+      }
+
+      setInfoPromptLayout({ maxHeight: availableHeight, x: nextShiftX })
+    }
+
+    const animationFrame = window.requestAnimationFrame(updateInfoPromptLayout)
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateInfoPromptLayout) : null
+
+    if (floatingInfoPromptRef.current) {
+      resizeObserver?.observe(floatingInfoPromptRef.current)
+    }
+
+    window.addEventListener('resize', updateInfoPromptLayout)
+    window.visualViewport?.addEventListener('resize', updateInfoPromptLayout)
+    window.visualViewport?.addEventListener('scroll', updateInfoPromptLayout)
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateInfoPromptLayout)
+      window.visualViewport?.removeEventListener('resize', updateInfoPromptLayout)
+      window.visualViewport?.removeEventListener('scroll', updateInfoPromptLayout)
+    }
+  }, [activeIndex, infoPhase, infoPromptLayout.maxHeight, infoPromptLayout.x])
 
   useEffect(() => {
     if (sceneVariant !== 'scenery') {
@@ -1004,15 +1090,28 @@ export function HomeCookieCarousel({
     }
   }
 
-  const renderInfoPrompt = (id: string) =>
+  const renderInfoPrompt = (id: string, placement: 'floating' | 'inline' = 'inline') =>
     isInfoPromptOpen ? (
       <BakeryCard
         aria-label={`${activePoster.title} info`}
         className="homeCookieCartPrompt homeCookieInfoPrompt"
         id={id}
         radius="lg"
+        ref={placement === 'floating' ? floatingInfoPromptRef : undefined}
         role="dialog"
         spacing="none"
+        style={
+          placement === 'floating'
+            ? ({
+                ['--home-info-arrow-shift-x' as string]: `${infoPromptLayout.x * -1}px`,
+                ['--home-info-popover-max-height' as string]:
+                  infoPromptLayout.maxHeight == null
+                    ? undefined
+                    : `${infoPromptLayout.maxHeight}px`,
+                ['--home-info-popover-shift-x' as string]: `${infoPromptLayout.x}px`,
+              } as CSSProperties)
+            : undefined
+        }
         tone="transparent"
       >
         <BakeryPressable
@@ -1268,13 +1367,13 @@ export function HomeCookieCarousel({
 
             {sceneVariant === 'scenery' && infoPhase !== 'hidden' ? (
               <div
-                className="homeCookieInfoDock homeCookieInfoDock--floating md:hidden"
+                className="homeCookieInfoDock homeCookieInfoDock--floating"
                 style={{
                   left: '50%',
                   top: `calc(${rigTop} - var(--cookie-size) * var(--mobile-info-offset, 0.66))`,
                 }}
               >
-                {renderInfoPrompt(`home-cookie-info-floating-${activePoster.slug}`)}
+                {renderInfoPrompt(`home-cookie-info-floating-${activePoster.slug}`, 'floating')}
                 <BakeryPressable
                   aria-controls={`home-cookie-info-floating-${activePoster.slug}`}
                   aria-expanded={isInfoPromptOpen}
@@ -1602,7 +1701,7 @@ export function HomeCookieCarousel({
           position: absolute;
           right: clamp(0.85rem, 3vw, 2.2rem);
           top: calc(var(--home-header-underlap) + clamp(0.25rem, 1vw, 0.65rem));
-          z-index: 22;
+          z-index: 92;
         }
 
         .homeCookieSceneButton {
@@ -1755,11 +1854,16 @@ export function HomeCookieCarousel({
           transform: none;
         }
 
+        .homeCookieInfoDock--floating {
+          display: none;
+        }
+
         .homeCookieInfoDock--floating.is-open,
         .homeCookieInfoDock--floating:not(.is-open) {
           opacity: 1;
           pointer-events: auto;
           transform: translate(-50%, 0);
+          z-index: 120;
         }
 
         .homeCookieInfoButton {
@@ -1999,14 +2103,25 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieInfoPrompt {
+          --home-info-arrow-shift-x: 0px;
+          --home-info-popover-max-height: min(20rem, calc(100svh - 8rem));
+          --home-info-popover-shift-x: 0px;
           bottom: calc(100% + 0.9rem);
-          max-height: min(20rem, calc(100svh - 8rem));
+          display: flex;
+          flex-direction: column;
+          max-height: var(--home-info-popover-max-height);
           min-width: 0;
           overflow: visible;
           padding: 0.95rem 1rem 0.9rem;
           text-align: left;
-          width: min(20rem, calc(100vw - 2rem));
+          transform: translateX(calc(-50% + var(--home-info-popover-shift-x)));
+          width: min(32rem, calc(100vw - 2rem));
           z-index: 52;
+        }
+
+        .homeCookieInfoDock--inline .homeCookieInfoPrompt {
+          bottom: auto;
+          top: calc(100% + 0.9rem);
         }
 
         .homeCookieCartPrompt::after,
@@ -2023,14 +2138,30 @@ export function HomeCookieCarousel({
           width: 0.76rem;
         }
 
+        .homeCookieInfoPrompt::after {
+          transform: translate(calc(-50% + var(--home-info-arrow-shift-x))) rotate(45deg);
+        }
+
+        .homeCookieInfoDock--inline .homeCookieInfoPrompt::after {
+          border-bottom: 0;
+          border-left: 1px solid rgba(92, 67, 31, 0.12);
+          border-right: 0;
+          border-top: 1px solid rgba(92, 67, 31, 0.12);
+          bottom: auto;
+          top: -0.38rem;
+        }
+
         .homeCookieInfoPromptBody {
           color: #4d391d;
+          flex: 1 1 auto;
           font-size: 1rem;
           font-weight: 650;
           line-height: 1.34;
-          max-height: min(17rem, calc(100svh - 11rem));
+          min-height: 0;
           overflow-y: auto;
           padding-right: 2rem;
+          position: relative;
+          z-index: 1;
         }
 
         .homeCookieInfoPromptBody p,
@@ -2066,6 +2197,10 @@ export function HomeCookieCarousel({
             background-color 150ms ease;
           width: 1.7rem;
           z-index: 1;
+        }
+
+        .homeCookieCartPromptClose.homeCookieInfoPromptClose {
+          z-index: 3;
         }
 
         .homeCookieCartPromptClose:hover,
@@ -2274,6 +2409,37 @@ export function HomeCookieCarousel({
 
           50% {
             transform: translate(-50%, -0.32rem);
+          }
+        }
+
+        @media (max-width: 1040px) {
+          .homeCookieShowcase {
+            --mobile-info-offset: 0.78;
+          }
+
+          .homeCookieSceneActions {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.66rem;
+            justify-content: center;
+            left: 1.4rem;
+            max-width: none;
+            right: 1.4rem;
+            top: calc(var(--home-header-underlap) + 0.82rem);
+          }
+
+          .homeCookieSceneButton {
+            flex: 0 1 auto;
+            white-space: nowrap;
+            width: auto;
+          }
+
+          .homeCookieInfoDock--inline {
+            display: none;
+          }
+
+          .homeCookieInfoDock--floating {
+            display: block;
           }
         }
 
