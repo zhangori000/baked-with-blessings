@@ -1,6 +1,7 @@
 'use client'
 
 import { ProgressBloom } from '@/components/flowers/ProgressBloom'
+import { BakeryCard } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import React from 'react'
 
@@ -25,11 +26,14 @@ export function ProgressGarden({
   const progressPercentage = Math.min(1, currentCount / safeTotal) * 100
 
   return (
-    <div
+    <BakeryCard
       className={cn(
-        'relative overflow-hidden rounded-[1rem] border border-[rgba(91,70,37,0.1)] bg-[#fff8f2] px-3 py-2 shadow-[0_8px_16px_rgba(23,21,16,0.04)]',
+        'relative overflow-hidden border-[rgba(91,70,37,0.1)] bg-[#fff8f2] px-3 py-2 shadow-[0_8px_16px_rgba(23,21,16,0.04)]',
         className,
       )}
+      radius="md"
+      spacing="none"
+      tone="outline"
     >
       <div className="relative z-[1] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -57,14 +61,11 @@ export function ProgressGarden({
             />
 
             {Array.from({ length: currentCount }, (_, index) => (
-              <ProgressBloom
-                key={`slot-${index}`}
-                left={`${((index + 1) / safeTotal) * 100}%`}
-              />
+              <ProgressBloom key={`slot-${index}`} left={`${((index + 1) / safeTotal) * 100}%`} />
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </BakeryCard>
   )
 }

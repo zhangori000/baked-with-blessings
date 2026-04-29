@@ -1,5 +1,12 @@
 import type { Metadata } from 'next'
 
+import {
+  BakeryPageHeader,
+  BakeryPageLead,
+  BakeryPageShell,
+  BakeryPageSurface,
+  BakeryPageTitle,
+} from '@/design-system/bakery'
 import { RenderParams } from '@/components/RenderParams'
 import Link from 'next/link'
 import React from 'react'
@@ -21,18 +28,21 @@ export default async function Login() {
   }
 
   return (
-    <div className="container">
-      <div className="max-w-xl mx-auto my-12">
+    <BakeryPageShell as="main" spacing="lg" width="narrow">
+      <BakeryPageSurface spacing="lg">
         <RenderParams />
 
-        <h1 className="mb-4 text-[1.8rem]">Log in</h1>
-        <p className="mb-8">
-          {`This is where your customers will log in with an email address or phone number to manage their account, review their order history, and more. To manage staff and customers, `}
-          <Link href="/admin">login to the admin dashboard</Link>.
-        </p>
+        <BakeryPageHeader className="mb-8">
+          <BakeryPageTitle>Log in</BakeryPageTitle>
+          <BakeryPageLead>
+            {`Use an email address or phone number to manage your account, review order history, and keep checkout details current. To manage staff and customers, `}
+            <Link href="/admin">login to the admin dashboard</Link>.
+          </BakeryPageLead>
+        </BakeryPageHeader>
+
         <LoginForm />
-      </div>
-    </div>
+      </BakeryPageSurface>
+    </BakeryPageShell>
   )
 }
 

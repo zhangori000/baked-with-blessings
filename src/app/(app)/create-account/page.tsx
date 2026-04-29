@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { BakeryPageShell } from '@/design-system/bakery'
 import { RenderParams } from '@/components/RenderParams'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
@@ -21,10 +22,10 @@ export default async function CreateAccount() {
   }
 
   return (
-    <div className="container py-12 md:py-16">
+    <BakeryPageShell as="main" spacing="lg" width="wide">
       <RenderParams />
       <CreateAccountForm />
-    </div>
+    </BakeryPageShell>
   )
 }
 

@@ -624,6 +624,400 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .bakeryPageShell {
+    --bakery-page-bg: var(--bakery-footer-bg);
+    --bakery-page-border: var(--bakery-footer-border);
+    --bakery-page-fg: var(--bakery-footer-fg);
+    --bakery-page-muted: var(--bakery-footer-muted);
+    --bakery-page-panel: rgba(255, 252, 244, 0.82);
+
+    box-sizing: border-box;
+    color: var(--bakery-page-fg);
+  }
+
+  .bakeryPageShell-paper {
+    background: var(--bakery-page-bg);
+  }
+
+  .bakeryPageShell-theme {
+    --bakery-page-bg: var(--bakery-color-bg);
+    --bakery-page-border: var(--bakery-color-panel-border);
+    --bakery-page-fg: var(--bakery-color-fg);
+    --bakery-page-muted: var(--bakery-color-fg-muted);
+    --bakery-page-panel: var(--bakery-color-panel-fill);
+
+    background: var(--bakery-page-bg);
+  }
+
+  .bakeryPageShell-transparent {
+    background: transparent;
+  }
+
+  .bakeryPageShell-bleed {
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    width: 100vw;
+  }
+
+  .bakeryPageShell-width-full {
+    width: 100%;
+  }
+
+  .bakeryPageShell-width-container,
+  .bakeryPageShell-width-wide,
+  .bakeryPageShell-width-narrow {
+    margin-inline: auto;
+    padding-inline: max(1rem, env(safe-area-inset-left));
+    width: min(100%, var(--bakery-page-shell-width, 76rem));
+  }
+
+  .bakeryPageShell-width-wide {
+    --bakery-page-shell-width: 88rem;
+  }
+
+  .bakeryPageShell-width-narrow {
+    --bakery-page-shell-width: 52rem;
+  }
+
+  .bakeryPageShell-spacing-none {
+    padding-block: 0;
+  }
+
+  .bakeryPageShell-spacing-sm {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .bakeryPageShell-spacing-md {
+    padding-block: clamp(2.25rem, 5vw, 4.5rem);
+  }
+
+  .bakeryPageShell-spacing-lg {
+    padding-block: clamp(3rem, 7vw, 6rem);
+  }
+
+  .bakeryPageSurface {
+    box-sizing: border-box;
+    color: var(--bakery-page-fg);
+    margin-inline: auto;
+    width: min(100%, var(--bakery-page-surface-width, 76rem));
+  }
+
+  .bakeryPageSurface-width-container {
+    --bakery-page-surface-width: 76rem;
+  }
+
+  .bakeryPageSurface-width-wide {
+    --bakery-page-surface-width: 88rem;
+  }
+
+  .bakeryPageSurface-width-narrow {
+    --bakery-page-surface-width: 52rem;
+  }
+
+  .bakeryPageSurface-width-full {
+    --bakery-page-surface-width: 100%;
+  }
+
+  .bakeryPageSurface-paper {
+    background: var(--bakery-page-panel);
+    border: 1px solid var(--bakery-page-border);
+    border-radius: var(--bakery-radius-lg);
+    box-shadow: var(--bakery-shadow-raisedSoft);
+  }
+
+  .bakeryPageSurface-plain,
+  .bakeryPageSurface-transparent {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .bakeryPageSurface-spacing-none {
+    padding: 0;
+  }
+
+  .bakeryPageSurface-spacing-sm {
+    padding: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .bakeryPageSurface-spacing-md {
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .bakeryPageSurface-spacing-lg {
+    padding: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .bakeryPageHeader {
+    display: grid;
+    gap: 0.72rem;
+    max-width: 54rem;
+  }
+
+  .bakeryPageHeader-center {
+    justify-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .bakeryPageHeader-start {
+    justify-items: start;
+    text-align: start;
+  }
+
+  .bakeryPageText-default,
+  .bakeryPageText-strong {
+    color: var(--bakery-page-fg);
+  }
+
+  .bakeryPageText-muted {
+    color: var(--bakery-page-muted);
+  }
+
+  .bakeryPageText-scene {
+    color: var(--scene-text);
+  }
+
+  .bakeryPageEyebrow {
+    font-family: var(--font-rounded-display);
+    font-size: clamp(0.72rem, 1vw, 0.84rem);
+    font-weight: 850;
+    letter-spacing: 0.2em;
+    line-height: 1.2;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .bakeryPageTitle {
+    font-family: var(--font-rounded-display);
+    font-weight: 880;
+    letter-spacing: 0;
+    margin: 0;
+  }
+
+  .bakeryPageTitle-display {
+    font-family: var(--font-catering-serif), Georgia, 'Times New Roman', Times, serif;
+    font-size: clamp(3.1rem, 8vw, 6rem);
+    font-weight: 750;
+    line-height: 0.92;
+  }
+
+  .bakeryPageTitle-title {
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 0.98;
+  }
+
+  .bakeryPageTitle-section {
+    font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+    line-height: 1.06;
+  }
+
+  .bakeryPageLead {
+    font-family: var(--font-rounded-body);
+    font-size: clamp(1rem, 1.4vw, 1.14rem);
+    font-weight: 650;
+    line-height: 1.65;
+    margin: 0;
+    max-width: 56rem;
+  }
+
+  .bakerySectionHeader {
+    align-items: end;
+    border-bottom: 1px solid var(--bakery-page-border);
+    display: flex;
+    gap: 1.25rem;
+    justify-content: space-between;
+    padding-bottom: 0.9rem;
+  }
+
+  .bakerySectionHeaderText {
+    display: grid;
+    gap: 0.42rem;
+    min-width: 0;
+  }
+
+  .bakerySectionHeaderEnd {
+    flex: 0 0 auto;
+  }
+
+  .bakeryCard {
+    --bakery-card-bg: var(--bakery-page-panel, var(--bakery-color-panel-fill));
+    --bakery-card-border: var(--bakery-page-border, var(--bakery-color-panel-border));
+    --bakery-card-fg: var(--bakery-page-fg, var(--bakery-color-fg));
+    --bakery-card-wash-start: rgba(232, 240, 222, 0.95);
+    --bakery-card-wash-end: rgba(255, 252, 244, 0.92);
+
+    box-sizing: border-box;
+    color: var(--bakery-card-fg);
+    position: relative;
+    text-decoration: none;
+  }
+
+  .bakeryCard-paper {
+    background: var(--bakery-card-bg);
+    border: 1px solid var(--bakery-card-border);
+    box-shadow: var(--bakery-shadow-raisedSoft);
+  }
+
+  .bakeryCard-wash {
+    background: linear-gradient(180deg, var(--bakery-card-wash-start), var(--bakery-card-wash-end));
+    border: 1px solid var(--bakery-card-border);
+    box-shadow: var(--bakery-shadow-raisedSoft);
+  }
+
+  .bakeryCard-outline {
+    background: transparent;
+    border: 1px solid var(--bakery-card-border);
+    box-shadow: none;
+  }
+
+  .bakeryCard-transparent {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .bakeryCard-radius-none {
+    border-radius: 0;
+  }
+
+  .bakeryCard-radius-sm {
+    border-radius: var(--bakery-radius-sm);
+  }
+
+  .bakeryCard-radius-md {
+    border-radius: var(--bakery-radius-md);
+  }
+
+  .bakeryCard-radius-lg {
+    border-radius: var(--bakery-radius-lg);
+  }
+
+  .bakeryCard-radius-xl {
+    border-radius: var(--bakery-radius-xl);
+  }
+
+  .bakeryCard-spacing-none {
+    padding: 0;
+  }
+
+  .bakeryCard-spacing-sm {
+    padding: var(--bakery-space-4);
+  }
+
+  .bakeryCard-spacing-md {
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .bakeryCard-spacing-lg {
+    padding: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .bakeryCard-interactive {
+    transition:
+      background-color var(--bakery-motion-quick) ease,
+      border-color var(--bakery-motion-quick) ease,
+      box-shadow var(--bakery-motion-quick) ease,
+      color var(--bakery-motion-quick) ease,
+      transform var(--bakery-motion-quick) cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .bakeryCard-interactive:hover,
+  .bakeryCard-interactive:focus-visible {
+    transform: translateY(-1px);
+  }
+
+  .bakeryAction {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--bakery-radius-pill);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: var(--font-rounded-display);
+    font-weight: 850;
+    gap: 0.5rem;
+    justify-content: center;
+    line-height: 1;
+    min-width: 0;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      background-color var(--bakery-motion-quick) ease,
+      border-color var(--bakery-motion-quick) ease,
+      box-shadow var(--bakery-motion-quick) ease,
+      color var(--bakery-motion-quick) ease,
+      transform var(--bakery-motion-quick) cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
+  }
+
+  .bakeryAction:hover,
+  .bakeryAction:focus-visible {
+    transform: translateY(-1px);
+  }
+
+  .bakeryAction[data-disabled='true'],
+  .bakeryAction:disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+    pointer-events: none;
+    transform: none;
+  }
+
+  .bakeryAction-primary {
+    background: var(--bakery-color-action-bg);
+    border-color: transparent;
+    color: var(--bakery-color-action-fg);
+  }
+
+  .bakeryAction-primary:hover,
+  .bakeryAction-primary:focus-visible {
+    box-shadow: 0 0 0 4px var(--scene-action-aura);
+  }
+
+  .bakeryAction-secondary {
+    background: var(--bakery-color-bg-secondary);
+    border-color: var(--bakery-color-border);
+    color: var(--bakery-color-fg);
+  }
+
+  .bakeryAction-ghost {
+    background: transparent;
+    border-color: var(--bakery-color-border);
+    color: var(--bakery-color-fg);
+  }
+
+  .bakeryAction-sm {
+    font-size: 0.82rem;
+    min-height: 2.35rem;
+    padding: 0.55rem 0.85rem;
+  }
+
+  .bakeryAction-md {
+    font-size: 0.9rem;
+    min-height: 2.75rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .bakeryAction-lg {
+    font-size: 0.95rem;
+    min-height: 3.25rem;
+    padding: 0.85rem 1.2rem;
+  }
+
+  .bakeryAction-block {
+    display: flex;
+    width: 100%;
+  }
+
+  .bakeryActionContent,
+  .bakeryActionNode {
+    align-items: center;
+    display: inline-flex;
+    gap: inherit;
+    justify-content: center;
+  }
+
   .bakeryPressable {
     cursor: pointer;
     position: relative;
@@ -649,6 +1043,50 @@
 
   .bakeryPressable:not(:disabled):hover {
     transform: translateY(-1px);
+  }
+
+  .bakeryPopoverPanel {
+    display: inline-flex;
+    position: relative;
+    width: fit-content;
+  }
+
+  .bakeryPopoverPanel-block {
+    display: flex;
+    width: 100%;
+  }
+
+  .bakeryPopoverPanelContent {
+    position: absolute;
+    z-index: 40;
+  }
+
+  .bakeryPopoverPanelContent-bottom,
+  .bakeryPopoverPanelContent-bottom-start,
+  .bakeryPopoverPanelContent-bottom-end {
+    top: 100%;
+  }
+
+  .bakeryPopoverPanelContent-top,
+  .bakeryPopoverPanelContent-top-start,
+  .bakeryPopoverPanelContent-top-end {
+    bottom: 100%;
+  }
+
+  .bakeryPopoverPanelContent-bottom,
+  .bakeryPopoverPanelContent-top {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .bakeryPopoverPanelContent-bottom-start,
+  .bakeryPopoverPanelContent-top-start {
+    left: 0;
+  }
+
+  .bakeryPopoverPanelContent-bottom-end,
+  .bakeryPopoverPanelContent-top-end {
+    right: 0;
   }
 
   .bakerySceneButton {

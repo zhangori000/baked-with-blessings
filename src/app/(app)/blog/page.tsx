@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
+import {
+  BakeryCard,
+  BakeryPageShell,
+  BakeryPageSurface,
+  BakerySectionHeader,
+} from '@/design-system/bakery'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import { getPayload } from 'payload'
@@ -67,18 +73,25 @@ export default async function BlogPage() {
           />
         </div>
 
-        <section className="blogContentBand relative left-1/2 w-screen -translate-x-1/2">
-          <div className="blogIndexShell container">
-            <div className="blogListHeader">
-              <div>
-                <p className="blogListKicker">Documents</p>
-              </div>
-              <p className="blogListCount">
-                {posts.docs.length === 1
-                  ? '1 published note'
-                  : `${posts.docs.length} published notes`}
-              </p>
-            </div>
+        <BakeryPageShell as="section" bleed className="blogContentBand" spacing="none" width="full">
+          <BakeryPageSurface
+            as="div"
+            className="blogIndexShell container"
+            spacing="none"
+            tone="plain"
+            width="full"
+          >
+            <BakerySectionHeader
+              className="blogListHeader"
+              end={
+                <p className="blogListCount">
+                  {posts.docs.length === 1
+                    ? '1 published note'
+                    : `${posts.docs.length} published notes`}
+                </p>
+              }
+              title="Documents"
+            />
 
             {posts.docs.length ? (
               <div className="blogRows">
@@ -88,7 +101,16 @@ export default async function BlogPage() {
                     : null
 
                   return (
-                    <Link className="blogRow" href={`/blog/${post.slug}`} key={post.id}>
+                    <BakeryCard
+                      as={Link}
+                      className="blogRow"
+                      href={`/blog/${post.slug}`}
+                      interactive
+                      key={post.id}
+                      radius="none"
+                      spacing="none"
+                      tone="transparent"
+                    >
                       <span className="min-w-0">
                         <span className="blogRowMeta">
                           {publishedDate ? <span>{publishedDate}</span> : null}
@@ -102,7 +124,7 @@ export default async function BlogPage() {
                       <span className="blogRowArrow" aria-hidden="true">
                         <ArrowRight size={17} strokeWidth={2.2} />
                       </span>
-                    </Link>
+                    </BakeryCard>
                   )
                 })}
               </div>
@@ -112,8 +134,8 @@ export default async function BlogPage() {
                 appear here.
               </p>
             )}
-          </div>
-        </section>
+          </BakeryPageSurface>
+        </BakeryPageShell>
       </div>
     </div>
   )

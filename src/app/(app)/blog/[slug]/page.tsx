@@ -2,6 +2,12 @@ import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
 import { RichText } from '@/components/RichText'
+import {
+  BakeryPageHeader,
+  BakeryPageShell,
+  BakeryPageSurface,
+  BakeryPageTitle,
+} from '@/design-system/bakery'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -68,9 +74,17 @@ export default async function BlogPostPage({ params }: Args) {
           />
         </div>
 
-        <section className="blogContentBand relative left-1/2 w-screen -translate-x-1/2">
-          <article className="blogPostShell container">
-            <h1 className="blogPostTitle">{post.title}</h1>
+        <BakeryPageShell as="section" bleed className="blogContentBand" spacing="none" width="full">
+          <BakeryPageSurface
+            as="article"
+            className="blogPostShell container"
+            spacing="none"
+            tone="plain"
+            width="narrow"
+          >
+            <BakeryPageHeader>
+              <BakeryPageTitle className="blogPostTitle">{post.title}</BakeryPageTitle>
+            </BakeryPageHeader>
 
             <div className="blogPostByline">
               {publishedDate ? <span>{publishedDate}</span> : null}
@@ -83,8 +97,8 @@ export default async function BlogPostPage({ params }: Args) {
               <ArrowLeft size={16} strokeWidth={2.2} />
               Back to blog
             </Link>
-          </article>
-        </section>
+          </BakeryPageSurface>
+        </BakeryPageShell>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { OrderStatus } from '@/components/OrderStatus'
 import { Price } from '@/components/Price'
 import { Button } from '@/components/ui/button'
+import { BakeryCard } from '@/design-system/bakery'
 import { Order } from '@/payload-types'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import Link from 'next/link'
@@ -13,7 +14,10 @@ export const OrderItem: React.FC<Props> = ({ order }) => {
   const itemsLabel = order.items?.length === 1 ? 'Item' : 'Items'
 
   return (
-    <div className="bg-card border rounded-lg px-4 py-2 md:px-6 md:py-4 flex flex-col sm:flex-row gap-12 sm:items-center sm:justify-between">
+    <BakeryCard
+      className="flex flex-col gap-12 sm:flex-row sm:items-center sm:justify-between"
+      spacing="md"
+    >
       <div className="flex flex-col gap-4">
         <h3 className="text-sm uppercase font-mono tracking-widest text-primary/50 truncate max-w-32 sm:max-w-none">{`#${order.id}`}</h3>
 
@@ -43,6 +47,6 @@ export const OrderItem: React.FC<Props> = ({ order }) => {
       <Button variant="outline" asChild className="self-start sm:self-auto">
         <Link href={`/orders/${order.id}`}>View Order</Link>
       </Button>
-    </div>
+    </BakeryCard>
   )
 }

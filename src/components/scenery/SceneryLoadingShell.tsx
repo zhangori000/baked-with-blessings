@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { BakeryCard } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 
 type SceneryLoadingShellProps = {
@@ -52,7 +53,13 @@ function LoadingHero({ message, titleWidth }: { message: string; titleWidth: str
 
 function ListCard({ tone = 'neutral' }: { tone?: 'discussion' | 'neutral' }) {
   return (
-    <article className="rounded-lg border border-[rgba(67,92,37,0.16)] bg-[#fffdf6]/92 p-4 shadow-[0_18px_40px_rgba(46,65,42,0.08)]">
+    <BakeryCard
+      as="article"
+      className="border-[rgba(67,92,37,0.16)] bg-[#fffdf6]/92 p-4 shadow-[0_18px_40px_rgba(46,65,42,0.08)]"
+      radius="sm"
+      spacing="none"
+      tone="outline"
+    >
       <div className="flex flex-wrap items-center gap-2">
         <SkeletonPill className="h-6 w-24 bg-[#dfe9d6]" />
         <SkeletonPill className="h-4 w-20 bg-[#eadfcf]" />
@@ -67,13 +74,19 @@ function ListCard({ tone = 'neutral' }: { tone?: 'discussion' | 'neutral' }) {
         <SkeletonPill className="h-7 w-28 bg-[#dfe9d6]" />
         {tone === 'discussion' ? <SkeletonPill className="h-7 w-20 bg-[#dfe9d6]" /> : null}
       </div>
-    </article>
+    </BakeryCard>
   )
 }
 
 function MenuCard() {
   return (
-    <article className="overflow-hidden rounded-[1.35rem] border border-[rgba(91,70,37,0.12)] bg-[#fff8f2] shadow-[0_10px_24px_rgba(23,21,16,0.05)]">
+    <BakeryCard
+      as="article"
+      className="overflow-hidden border-[rgba(91,70,37,0.12)] bg-[#fff8f2] shadow-[0_10px_24px_rgba(23,21,16,0.05)]"
+      radius="lg"
+      spacing="none"
+      tone="outline"
+    >
       <div className="space-y-3 px-4 pt-4">
         <div className="flex items-center justify-between gap-3">
           <SkeletonPill className="h-5 w-28" />
@@ -90,14 +103,19 @@ function MenuCard() {
       </div>
 
       <div className="sceneryLoadingCardScene mt-3 h-[16rem]" />
-    </article>
+    </BakeryCard>
   )
 }
 
 function MenuBody() {
   return (
     <section className="container py-6 md:py-10">
-      <div className="rounded-[1.4rem] border border-[rgba(91,70,37,0.1)] bg-[#fffaf4] p-4 shadow-[0_18px_40px_rgba(23,21,16,0.06)] md:p-6">
+      <BakeryCard
+        className="border-[rgba(91,70,37,0.1)] bg-[#fffaf4] p-4 shadow-[0_18px_40px_rgba(23,21,16,0.06)] md:p-6"
+        radius="lg"
+        spacing="none"
+        tone="outline"
+      >
         <div className="space-y-5">
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
             <div className="space-y-3">
@@ -114,7 +132,12 @@ function MenuBody() {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-[1.1rem] border border-[rgba(91,70,37,0.08)] bg-[rgba(255,248,242,0.88)] p-4">
+          <BakeryCard
+            className="space-y-4 border-[rgba(91,70,37,0.08)] bg-[rgba(255,248,242,0.88)] p-4"
+            radius="md"
+            spacing="none"
+            tone="outline"
+          >
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <div className="space-y-2">
                 <SkeletonPill className="h-3 w-24" />
@@ -129,7 +152,7 @@ function MenuBody() {
             <div className="h-3 rounded-full bg-[#dce7bf]">
               <div className="h-full w-[36%] rounded-full bg-[#91b945]" />
             </div>
-          </div>
+          </BakeryCard>
 
           <div className="flex gap-4 overflow-hidden pb-2">
             <div className="w-[min(86vw,20.75rem)] shrink-0">
@@ -143,7 +166,7 @@ function MenuBody() {
             </div>
           </div>
         </div>
-      </div>
+      </BakeryCard>
     </section>
   )
 }
@@ -160,11 +183,15 @@ function ListBody({ cardCount }: { cardCount: number }) {
 
 function PosterCard({ active = false }: { active?: boolean }) {
   return (
-    <article
+    <BakeryCard
+      as="article"
       className={cn(
-        'overflow-hidden rounded-[1.4rem] border border-white/30 bg-white/16 shadow-[0_18px_46px_rgba(17,20,28,0.14)] backdrop-blur-[4px]',
+        'overflow-hidden border-white/30 bg-white/16 shadow-[0_18px_46px_rgba(17,20,28,0.14)] backdrop-blur-[4px]',
         active ? 'scale-[1.02]' : 'opacity-72',
       )}
+      radius="lg"
+      spacing="none"
+      tone="outline"
     >
       <div className="space-y-3 px-4 pt-4">
         <div className="flex items-start justify-between gap-3">
@@ -181,7 +208,7 @@ function PosterCard({ active = false }: { active?: boolean }) {
       </div>
 
       <div className="sceneryLoadingCardScene relative h-[18rem]" />
-    </article>
+    </BakeryCard>
   )
 }
 

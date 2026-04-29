@@ -1,5 +1,6 @@
 import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
+import { BakeryCard } from '@/design-system/bakery'
 import { Product, Variant } from '@/payload-types'
 type Props = {
   product: Product
@@ -54,18 +55,21 @@ export const ProductItem: React.FC<Props> = ({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex items-stretch justify-stretch h-20 w-20 p-2 rounded-lg border">
-        <div className="relative w-full h-full">
+      <BakeryCard
+        className="flex h-20 w-20 items-stretch justify-stretch p-2"
+        radius="sm"
+        spacing="none"
+        tone="outline"
+      >
+        <div className="relative h-full w-full">
           {image && typeof image !== 'string' && (
             <Media className="" fill imgClassName="rounded-lg object-cover" resource={image} />
           )}
         </div>
-      </div>
+      </BakeryCard>
       <div className="flex grow justify-between items-center">
         <div className="flex flex-col gap-1">
-          <p className="font-medium text-lg">
-            {title}
-          </p>
+          <p className="font-medium text-lg">{title}</p>
           {variant && (
             <p className="text-sm font-mono text-primary/50 tracking-widest">
               {variant.options

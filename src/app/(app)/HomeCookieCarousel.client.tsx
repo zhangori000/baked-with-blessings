@@ -28,6 +28,7 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import type { CookiePosterAsset, CookieInfoRichText } from './menu/_components/cookiePosterData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
@@ -1005,24 +1006,27 @@ export function HomeCookieCarousel({
 
   const renderInfoPrompt = (id: string) =>
     isInfoPromptOpen ? (
-      <div
+      <BakeryCard
         aria-label={`${activePoster.title} info`}
         className="homeCookieCartPrompt homeCookieInfoPrompt"
         id={id}
+        radius="lg"
         role="dialog"
+        spacing="none"
+        tone="transparent"
       >
-        <button
+        <BakeryPressable
           aria-label={`Close info for ${activePoster.title}`}
           className="homeCookieCartPromptClose homeCookieInfoPromptClose"
           onClick={startCloseInfo}
           type="button"
         >
           <X aria-hidden="true" size={14} />
-        </button>
+        </BakeryPressable>
         <div className="homeCookieInfoPromptBody">
           <CookieInfoRichText data={activePoster.receiptBody} />
         </div>
-      </div>
+      </BakeryCard>
     ) : null
 
   return (
@@ -1131,7 +1135,7 @@ export function HomeCookieCarousel({
                   {shouldShowInlineInfoControl ? (
                     <div className="homeCookieInfoDock homeCookieInfoDock--inline">
                       {renderInfoPrompt(`home-cookie-info-inline-${activePoster.slug}`)}
-                      <button
+                      <BakeryPressable
                         aria-controls={`home-cookie-info-inline-${activePoster.slug}`}
                         aria-expanded={isInfoPromptOpen}
                         className={`homeCookieInfoButton${isInfoPromptOpen ? ' is-active' : ''}`}
@@ -1139,19 +1143,21 @@ export function HomeCookieCarousel({
                         type="button"
                       >
                         {activePoster.infoButtonLabel}
-                      </button>
+                      </BakeryPressable>
                     </div>
                   ) : null}
-                  <button
+                  <BakeryAction
                     className="homeCookieSceneButton"
                     onClick={() => {
                       setSceneTone(getNextMenuSceneTone(sceneTone))
                     }}
+                    size="sm"
                     type="button"
+                    variant="secondary"
                   >
                     Change scenery
-                  </button>
-                  <button
+                  </BakeryAction>
+                  <BakeryAction
                     className="homeCookieSceneButton"
                     onClick={() =>
                       setSpawnedSceneClouds((current) => [
@@ -1159,11 +1165,13 @@ export function HomeCookieCarousel({
                         createShowcaseCloud(sceneTone),
                       ])
                     }
+                    size="sm"
                     type="button"
+                    variant="secondary"
                   >
                     {menuSceneCloudLabelByScene[sceneTone]}
-                  </button>
-                  <button
+                  </BakeryAction>
+                  <BakeryAction
                     className="homeCookieSceneButton"
                     onClick={() =>
                       setSpawnedSceneFlowers((current) => [
@@ -1171,10 +1179,12 @@ export function HomeCookieCarousel({
                         createShowcaseFlowerForScene(sceneTone),
                       ])
                     }
+                    size="sm"
                     type="button"
+                    variant="secondary"
                   >
                     {menuSceneAccentLabelByScene[sceneTone]}
-                  </button>
+                  </BakeryAction>
                 </div>
               </>
             ) : null}
@@ -1265,7 +1275,7 @@ export function HomeCookieCarousel({
                 }}
               >
                 {renderInfoPrompt(`home-cookie-info-floating-${activePoster.slug}`)}
-                <button
+                <BakeryPressable
                   aria-controls={`home-cookie-info-floating-${activePoster.slug}`}
                   aria-expanded={isInfoPromptOpen}
                   className={`homeCookieInfoButton${isInfoPromptOpen ? ' is-active' : ''}`}
@@ -1273,7 +1283,7 @@ export function HomeCookieCarousel({
                   type="button"
                 >
                   {activePoster.infoButtonLabel}
-                </button>
+                </BakeryPressable>
               </div>
             ) : null}
 
@@ -1372,7 +1382,7 @@ export function HomeCookieCarousel({
 
           <div aria-live="polite" className="homeCookieCopy text-center">
             <div className="homeCookieControls">
-              <button
+              <BakeryPressable
                 aria-label="Show previous cookie"
                 className="homeCookieArrow"
                 disabled={!hasMultiplePosters}
@@ -1380,17 +1390,20 @@ export function HomeCookieCarousel({
                 type="button"
               >
                 <ArrowLeft aria-hidden="true" size={22} />
-              </button>
+              </BakeryPressable>
 
               <div className="homeCookieNameButtonShell">
                 {isCartPromptOpen ? (
-                  <div
+                  <BakeryCard
+                    aria-label={`Add ${activePoster.title} to cart`}
                     aria-live="polite"
                     className="homeCookieCartPrompt"
+                    radius="lg"
                     role="dialog"
-                    aria-label={`Add ${activePoster.title} to cart`}
+                    spacing="none"
+                    tone="transparent"
                   >
-                    <button
+                    <BakeryPressable
                       aria-label="Close add to cart prompt"
                       className="homeCookieCartPromptClose"
                       disabled={activePosterPromptPhase === 'loading'}
@@ -1398,7 +1411,7 @@ export function HomeCookieCarousel({
                       type="button"
                     >
                       <X aria-hidden="true" size={14} />
-                    </button>
+                    </BakeryPressable>
                     <p className="homeCookieCartPromptText">
                       {activePosterPromptPhase === 'loading'
                         ? 'Adding cookie to cart...'
@@ -1408,26 +1421,26 @@ export function HomeCookieCarousel({
                     </p>
                     {activePosterPromptPhase === 'open' ? (
                       <div className="homeCookieCartPromptActions">
-                        <button
+                        <BakeryPressable
                           className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm"
                           onClick={handleConfirmAddToCart}
                           type="button"
                         >
                           Yes
-                        </button>
-                        <button
+                        </BakeryPressable>
+                        <BakeryPressable
                           className="homeCookieCartPromptButton homeCookieCartPromptButton--cancel"
                           onClick={handleCloseCartPrompt}
                           type="button"
                         >
                           No
-                        </button>
+                        </BakeryPressable>
                       </div>
                     ) : null}
-                  </div>
+                  </BakeryCard>
                 ) : null}
 
-                <button
+                <BakeryPressable
                   aria-label={`Open add to cart prompt for ${activePoster.title}`}
                   className="homeCookieNameButton"
                   disabled={!activePosterCanAddToCart || cartIsLoading}
@@ -1436,10 +1449,10 @@ export function HomeCookieCarousel({
                   type="button"
                 >
                   {activePoster.title}
-                </button>
+                </BakeryPressable>
               </div>
 
-              <button
+              <BakeryPressable
                 aria-label="Show next cookie"
                 className="homeCookieArrow"
                 disabled={!hasMultiplePosters}
@@ -1447,7 +1460,7 @@ export function HomeCookieCarousel({
                 type="button"
               >
                 <ArrowRight aria-hidden="true" size={22} />
-              </button>
+              </BakeryPressable>
             </div>
             <span className="homeCookieAmount">{activePoster.amount}</span>
           </div>

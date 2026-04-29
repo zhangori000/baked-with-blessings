@@ -2,7 +2,7 @@
 
 import { Price } from '@/components/Price'
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
-import { SceneButton } from '@/design-system/bakery'
+import { BakeryCard, BakeryPressable, SceneButton } from '@/design-system/bakery'
 import type { Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import React from 'react'
@@ -27,7 +27,7 @@ type DecorativeSceneImageProps = {
 
 function SelectedFlavorButton() {
   return (
-    <button
+    <BakeryPressable
       aria-pressed="true"
       className="cateringMenuRoundHeading relative inline-flex min-h-[2.5rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[rgba(31,43,20,0.16)] bg-[rgba(31,43,20,0.08)] px-4 text-[0.84rem] tracking-[-0.01em] text-[#1f2b14]"
       type="button"
@@ -79,7 +79,7 @@ function SelectedFlavorButton() {
       />
 
       <span className="relative z-[1]">Selected</span>
-    </button>
+    </BakeryPressable>
   )
 }
 
@@ -116,11 +116,15 @@ export function TrayFlavorCard({
   const receiptId = `${flavor.id}-ingredients-receipt`
 
   return (
-    <article
+    <BakeryCard
+      as="article"
       className={cn(
-        'cateringFlavorCard flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]',
+        'cateringFlavorCard flex h-full flex-col overflow-hidden border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]',
         isSelected && 'border-[rgba(34,84,32,0.22)] shadow-[0_16px_30px_rgba(46,76,27,0.12)]',
       )}
+      radius="lg"
+      spacing="none"
+      tone="transparent"
     >
       <div className="px-4 pt-3.5">
         <div className="min-w-0 space-y-3">
@@ -138,13 +142,13 @@ export function TrayFlavorCard({
           {isSelected ? (
             <SelectedFlavorButton />
           ) : (
-            <button
+            <BakeryPressable
               className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.14)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
               onClick={onChoose}
               type="button"
             >
               {actionLabel}
-            </button>
+            </BakeryPressable>
           )}
         </div>
       </div>
@@ -186,7 +190,7 @@ export function TrayFlavorCard({
 
         {hasIngredients ? (
           <div className="absolute bottom-2.5 right-2.5 z-[4]">
-            <button
+            <BakeryPressable
               aria-controls={receiptId}
               aria-expanded={isIngredientNoteOpen}
               aria-label={`Show ingredients for ${flavor.title}`}
@@ -195,7 +199,7 @@ export function TrayFlavorCard({
               type="button"
             >
               {flavor.infoButtonLabel ?? 'Ingredients'}
-            </button>
+            </BakeryPressable>
           </div>
         ) : null}
 
@@ -217,20 +221,23 @@ export function TrayFlavorCard({
               : 'max-h-0 -translate-y-2 px-3 pb-0 opacity-0'
           }`}
         >
-          <div
+          <BakeryCard
             aria-label={`${flavor.title} ingredients`}
             className="relative rounded-b-[1.15rem] rounded-t-[0.72rem] border border-t-0 border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
             id={receiptId}
+            radius="none"
             role="dialog"
+            spacing="none"
+            tone="transparent"
           >
-            <button
+            <BakeryPressable
               aria-label={`Close ingredients for ${flavor.title}`}
-              className="cateringMenuRoundHeading absolute right-3 top-3 text-[0.76rem] text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
+              className="cateringMenuRoundHeading absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
               onClick={onToggleIngredientNotes}
               type="button"
             >
               Close
-            </button>
+            </BakeryPressable>
 
             <p className="cateringMenuEyebrow pr-12">For {flavor.title}</p>
             <h5 className="cateringMenuRoundHeading mt-1 text-[1rem] tracking-[-0.02em] text-[#5d4119]">
@@ -266,10 +273,10 @@ export function TrayFlavorCard({
               aria-hidden="true"
               className="absolute inset-x-0 -bottom-[1px] h-4 bg-[linear-gradient(-45deg,transparent_33%,#f8efd9_33%,#f8efd9_66%,transparent_66%),linear-gradient(45deg,transparent_33%,#f8efd9_33%,#f8efd9_66%,transparent_66%)] bg-[length:14px_16px] bg-[position:left_bottom] bg-repeat-x"
             />
-          </div>
+          </BakeryCard>
         </div>
       ) : null}
-    </article>
+    </BakeryCard>
   )
 }
 
@@ -306,7 +313,12 @@ export function SimpleItemPanel({
     <div className="space-y-5">
       {persuasionPanel}
 
-      <div className="space-y-4 rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)]">
+      <BakeryCard
+        className="space-y-4 border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)]"
+        radius="lg"
+        spacing="none"
+        tone="outline"
+      >
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
@@ -334,7 +346,7 @@ export function SimpleItemPanel({
         >
           Add to cart
         </SceneButton>
-      </div>
+      </BakeryCard>
     </div>
   )
 }
@@ -415,11 +427,14 @@ export function BatchBuilderPanel({
       {persuasionPanel}
 
       <div className="space-y-4">
-        <div
+        <BakeryCard
           className={cn(
-            'rounded-[1.1rem] border border-[rgba(91,70,37,0.1)] bg-[rgba(255,255,255,0.7)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.03)] transition-[transform,box-shadow,border-color] duration-200',
+            'border-[rgba(91,70,37,0.1)] bg-[rgba(255,255,255,0.7)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.03)] transition-[transform,box-shadow,border-color] duration-200',
             shouldPulseTraySummary && 'cateringTraySummaryPulse',
           )}
+          radius="md"
+          spacing="none"
+          tone="outline"
         >
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -443,7 +458,7 @@ export function BatchBuilderPanel({
               </div>
             ) : null}
           </div>
-        </div>
+        </BakeryCard>
 
         <div
           aria-label="Cookie flavor chooser"

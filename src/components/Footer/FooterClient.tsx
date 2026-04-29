@@ -2,7 +2,7 @@
 
 import { CMSLink } from '@/components/Link'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
-import { SceneSurface } from '@/design-system/bakery'
+import { BakeryAction, BakeryCard, SceneSurface } from '@/design-system/bakery'
 import {
   Dialog,
   DialogClose,
@@ -89,7 +89,10 @@ function TikTokIcon(props: React.ComponentProps<'svg'>) {
 
 export function FooterClient({ brand, copyrightName, currentYear, navItems }: FooterClientProps) {
   const footerPillClassName =
-    'inline-flex min-h-[2.6rem] min-w-0 shrink-0 items-center gap-2 rounded-full border border-[var(--bakery-footer-link-border)] bg-[var(--bakery-footer-link-bg)] px-3.5 py-2.5 whitespace-nowrap text-[0.92rem] font-extrabold leading-none tracking-[0.01em] text-[var(--bakery-footer-link-color)] transition hover:-translate-y-0.5'
+    'min-h-[2.6rem] shrink-0 border-[var(--bakery-footer-link-border)] bg-[var(--bakery-footer-link-bg)] px-3.5 py-2.5 whitespace-nowrap text-[0.92rem] tracking-[0.01em] text-[var(--bakery-footer-link-color)]'
+
+  const footerSocialClassName =
+    'border-transparent bg-[var(--bakery-footer-link-bg)] px-3.5 py-2.5 text-[0.9rem] tracking-[0.01em] text-[var(--bakery-footer-link-color)]'
 
   const socialLinks = [
     {
@@ -123,8 +126,11 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
           variant="compact"
         >
           <div className="relative z-[1] mx-auto grid h-full max-w-[1320px] content-stretch">
-            <div
-              className="grid rounded-[1.35rem] border px-4 pb-4 pt-7 sm:px-5 sm:pb-5 sm:pt-8 md:px-6 md:py-6"
+            <BakeryCard
+              className="grid border px-4 pb-4 pt-7 sm:px-5 sm:pb-5 sm:pt-8 md:px-6 md:py-6"
+              radius="lg"
+              spacing="none"
+              tone="transparent"
               style={{
                 backgroundColor: 'var(--bakery-footer-panel-bg)',
                 borderColor: 'var(--bakery-footer-border)',
@@ -134,10 +140,14 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
             >
               <div className="flex min-h-[19rem] flex-col gap-5 md:min-h-[17rem] md:flex-row md:items-start md:justify-between">
                 <section className="max-w-[34rem] md:pt-1">
-                  <Link
+                  <BakeryCard
                     aria-label={brand.brandName}
+                    as={Link}
                     className="inline-flex shrink-0 rounded-2xl bg-[#fff8e6]/90 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_24px_rgba(5,12,5,0.12)]"
                     href="/"
+                    radius="lg"
+                    spacing="none"
+                    tone="transparent"
                   >
                     <Image
                       alt={brand.logoAlt}
@@ -148,7 +158,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                       unoptimized
                       width={176}
                     />
-                  </Link>
+                  </BakeryCard>
                 </section>
 
                 <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
@@ -168,14 +178,19 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                           <li key={item.id ?? `footer-link-${index}`}>
                             {isContactFooterLink(linkProps) ? (
                               <DialogTrigger asChild>
-                                <button className={footerPillClassName} type="button">
+                                <BakeryAction
+                                  className={footerPillClassName}
+                                  size="sm"
+                                  type="button"
+                                  variant="secondary"
+                                >
                                   {getFooterLinkLabel(linkProps) || 'Contact'}
-                                </button>
+                                </BakeryAction>
                               </DialogTrigger>
                             ) : (
                               <CMSLink
                                 appearance="link"
-                                className={footerPillClassName}
+                                className={`bakeryAction bakeryAction-secondary bakeryAction-sm ${footerPillClassName}`}
                                 {...footerLinkProps}
                               />
                             )}
@@ -183,37 +198,45 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                         )
                       })}
                       <li>
-                        <Link className={footerPillClassName} href="/account">
+                        <BakeryAction
+                          as={Link}
+                          className={footerPillClassName}
+                          href="/account"
+                          size="sm"
+                          variant="secondary"
+                        >
                           Account
-                        </Link>
+                        </BakeryAction>
                       </li>
                     </ul>
                   </nav>
 
                   <div className="flex flex-wrap gap-2.5 md:justify-end">
                     {socialLinks.map(({ href, icon: Icon, label }) => (
-                      <a
+                      <BakeryAction
                         aria-label={label}
-                        className="inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[0.9rem] font-extrabold tracking-[0.01em] transition hover:-translate-y-0.5"
+                        as="a"
+                        className={footerSocialClassName}
                         href={href}
                         key={label}
                         rel="noreferrer"
-                        style={{
-                          backgroundColor: 'var(--bakery-footer-link-bg)',
-                          color: 'var(--bakery-footer-link-color)',
-                        }}
+                        size="sm"
                         target="_blank"
+                        variant="secondary"
                       >
                         <Icon className="h-4 w-4" />
                         <span>{label}</span>
-                      </a>
+                      </BakeryAction>
                     ))}
                   </div>
                 </section>
               </div>
 
-              <div
+              <BakeryCard
                 className="mt-3 rounded-2xl border border-[rgba(31, 47, 32, 0.08)] px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem]"
+                radius="lg"
+                spacing="none"
+                tone="transparent"
                 style={{
                   backgroundColor: 'var(--bakery-footer-link-bg)',
                   borderColor: 'var(--bakery-footer-border)',
@@ -225,8 +248,8 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                   {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights
                   reserved.
                 </p>
-              </div>
-            </div>
+              </BakeryCard>
+            </BakeryCard>
           </div>
         </CartSceneShell>
       </SceneSurface>
@@ -267,16 +290,9 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
 
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <button
-              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-extrabold transition hover:opacity-85"
-              style={{
-                backgroundColor: 'var(--bakery-color-action-bg)',
-                color: 'var(--bakery-color-action-fg)',
-              }}
-              type="button"
-            >
+            <BakeryAction size="sm" type="button" variant="primary">
               Got it
-            </button>
+            </BakeryAction>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

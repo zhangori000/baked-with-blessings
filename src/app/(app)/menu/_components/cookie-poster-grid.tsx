@@ -2,6 +2,7 @@
 
 import type { SceneTone } from '@/components/scenery/menuHeroScenery'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -210,7 +211,12 @@ function CookiePosterRailCard({
 
   return (
     <article className="group cookiePosterRailItem h-full">
-      <div className="cookiePosterCard relative flex h-full flex-col overflow-hidden">
+      <BakeryCard
+        className="cookiePosterCard relative flex h-full flex-col overflow-hidden"
+        radius="md"
+        spacing="none"
+        tone="transparent"
+      >
         <div className="cookiePosterMeta flex justify-between gap-3 px-1">
           <h3 className="cookiePosterTitle min-w-0 flex-1 text-[1.28rem] font-medium leading-[0.96] tracking-[-0.03em] text-[#171510] md:text-[1.38rem]">
             <span>{poster.title}</span>
@@ -223,27 +229,37 @@ function CookiePosterRailCard({
 
         <CookiePosterSketchFrame slug={poster.slug} style={sceneStyle}>
           <div className="cookiePosterSceneControls absolute left-3 top-3 z-30 flex max-w-[calc(100%-1.5rem)] flex-wrap gap-2">
-            <button className="cookiePosterSceneButton" onClick={handleChangeScenery} type="button">
+            <BakeryAction
+              className="cookiePosterSceneButton"
+              onClick={handleChangeScenery}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
               Change scenery
-            </button>
-            <button
+            </BakeryAction>
+            <BakeryAction
               className="cookiePosterSceneButton"
               onClick={() =>
                 setSpawnedClouds((current) => [...current, createSpawnedPosterCloud(sceneryTone)])
               }
+              size="sm"
               type="button"
+              variant="secondary"
             >
               Spawn cloud
-            </button>
-            <button
+            </BakeryAction>
+            <BakeryAction
               className="cookiePosterSceneButton"
               onClick={() =>
                 setSpawnedFlowers((current) => [...current, createSpawnedPosterFlower()])
               }
+              size="sm"
               type="button"
+              variant="secondary"
             >
               Spawn flower
-            </button>
+            </BakeryAction>
             <CookiePosterIngredientNote
               className="cookiePosterInfoButton cookiePosterInfoButton--inline hidden md:inline-flex"
               dockClassName="cookiePosterInfoDock cookiePosterInfoDock--inline hidden md:flex"
@@ -362,7 +378,7 @@ function CookiePosterRailCard({
             poster={poster}
           />
         </CookiePosterSketchFrame>
-      </div>
+      </BakeryCard>
     </article>
   )
 }
@@ -404,7 +420,7 @@ function CookiePosterIngredientNote({
   return (
     <>
       <div className={dockClassName ?? 'cookiePosterInfoDock absolute bottom-3 right-3 z-30'}>
-        <button
+        <BakeryPressable
           aria-controls={dialogId}
           aria-expanded={isOpen}
           aria-label={`Show ingredients for ${poster.title}`}
@@ -423,24 +439,27 @@ function CookiePosterIngredientNote({
             />
           </span>
           <span>{poster.infoButtonLabel}</span>
-        </button>
+        </BakeryPressable>
       </div>
 
       {isOpen ? (
-        <div
+        <BakeryCard
           aria-label={`${poster.title} ingredients`}
           className="cookiePosterIngredientCard absolute bottom-14 right-3 z-40 w-[min(13.8rem,calc(100%-1.5rem))]"
           id={dialogId}
+          radius="lg"
           role="dialog"
+          spacing="none"
+          tone="transparent"
         >
-          <button
+          <BakeryPressable
             aria-label={`Close ingredients for ${poster.title}`}
             className="cookiePosterIngredientClose"
             onClick={() => onOpenChange(false)}
             type="button"
           >
             x
-          </button>
+          </BakeryPressable>
 
           <div className="cookiePosterIngredientPin" aria-hidden="true" />
 
@@ -461,7 +480,7 @@ function CookiePosterIngredientNote({
               </li>
             ))}
           </ul>
-        </div>
+        </BakeryCard>
       ) : null}
     </>
   )
@@ -484,9 +503,10 @@ function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) 
   const canAdd = typeof poster.productId === 'number'
 
   return (
-    <button
+    <BakeryAction
       aria-label={`Add ${poster.title} to cart`}
       className="cookiePosterActionButton inline-flex cursor-pointer items-center justify-center text-center text-[0.92rem] font-medium tracking-[-0.01em] text-white transition duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={isLoading}
       onClick={(event) => {
         event.preventDefault()
         event.stopPropagation()
@@ -502,24 +522,29 @@ function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) 
           toast.success(`${poster.title} added to cart.`)
         })
       }}
-      disabled={isLoading}
+      size="sm"
       type="button"
+      variant="primary"
     >
       Add to cart
-    </button>
+    </BakeryAction>
   )
 }
 
 function CookieCateringNotice() {
   return (
-    <section
+    <BakeryCard
       aria-label="Cookie catering notice"
+      as="section"
       className="cookieCateringNotice relative overflow-hidden rounded-[1.8rem] border px-5 py-6 md:px-8 md:py-8"
+      radius="xl"
+      spacing="none"
       style={{
         background:
           'linear-gradient(180deg, rgba(255, 250, 242, 0.97), rgba(251, 246, 235, 0.97)), rgba(255, 250, 242, 0.97)',
         borderColor: 'rgba(91, 70, 37, 0.14)',
       }}
+      tone="transparent"
     >
       <div className="cookieCateringNoticeGlow" />
 
@@ -546,7 +571,7 @@ function CookieCateringNotice() {
           </div>
         </div>
       </div>
-    </section>
+    </BakeryCard>
   )
 }
 

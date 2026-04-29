@@ -3,6 +3,7 @@
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { RichText } from '@/components/RichText'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { BakeryAction, BakeryCard, BakeryPageShell, BakeryPressable } from '@/design-system/bakery'
 import type { PublicReview, ReviewsPageData } from '@/features/reviews/types'
 import {
   ClipboardCheck,
@@ -139,26 +140,32 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: P
           title="Reviews"
         />
       </div>
-      <section className="reviewsShell container">
+      <BakeryPageShell as="section" className="reviewsShell" spacing="none" width="container">
         <section className="reviewsPrinciples" aria-label="Review policy">
-          <article>
+          <BakeryCard as="article" className="reviewsPrincipleCard" spacing="sm">
             <MessageSquareReply aria-hidden="true" className="h-5 w-5" />
             <h2>We respond in public</h2>
             <p>When a review exposes a real problem, the response and follow-up stay visible.</p>
-          </article>
-          <article>
+          </BakeryCard>
+          <BakeryCard as="article" className="reviewsPrincipleCard" spacing="sm">
             <ClipboardCheck aria-hidden="true" className="h-5 w-5" />
             <h2>We track action</h2>
             <p>Changes are folded into the bakery reply so the response stays easy to read.</p>
-          </article>
-          <article>
+          </BakeryCard>
+          <BakeryCard as="article" className="reviewsPrincipleCard" spacing="sm">
             <Scale aria-hidden="true" className="h-5 w-5" />
             <h2>We keep boundaries</h2>
             <p>Unfair, abusive, or inaccurate claims can be declined or answered with context.</p>
-          </article>
+          </BakeryCard>
         </section>
 
-        <section className="reviewDiscountPolicy" aria-label="Review discount policy">
+        <BakeryCard
+          as="section"
+          className="reviewDiscountPolicy"
+          aria-label="Review discount policy"
+          spacing="sm"
+          tone="wash"
+        >
           <div>
             <p className="reviewsEyebrow">Review thank-you</p>
             <h2>Leave a review and get 20% off a future order.</h2>
@@ -168,7 +175,7 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: P
             moderated review is accepted. To prevent abuse, the coupon should be single-use, limited
             to one reward per week, and capped at 8 total review rewards per account.
           </p>
-        </section>
+        </BakeryCard>
 
         <section className="reviewsLayout">
           <div className="reviewsList" aria-label="Published reviews">
@@ -177,7 +184,7 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: P
             ))}
           </div>
         </section>
-      </section>
+      </BakeryPageShell>
 
       {notice ? <p className="reviewsFloatingNotice">{notice}</p> : null}
       {isPageRefreshing ? (
@@ -186,33 +193,38 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: P
         </p>
       ) : null}
 
-      <button
+      <BakeryAction
         className="reviewsComposeButton"
         onClick={() => setIsComposerOpen(true)}
+        size="lg"
         type="button"
+        variant="primary"
       >
         <PenLine aria-hidden="true" className="h-5 w-5" />
         Compose
-      </button>
+      </BakeryAction>
 
       {isComposerOpen ? (
         <div className="reviewsComposerOverlay" role="presentation">
-          <div
+          <BakeryCard
             aria-label="Share a review"
             aria-modal="true"
             className="reviewsComposerPanel"
+            radius="lg"
             role="dialog"
+            spacing="none"
+            tone="transparent"
           >
-            <button
+            <BakeryPressable
               aria-label="Close review form"
               className="reviewsComposerClose"
               onClick={() => setIsComposerOpen(false)}
               type="button"
             >
               <X aria-hidden="true" className="h-5 w-5" />
-            </button>
+            </BakeryPressable>
             <ReviewForm isSubmitting={isSubmitting} notice={notice} onSubmit={submitReview} />
-          </div>
+          </BakeryCard>
         </div>
       ) : null}
     </main>
@@ -280,10 +292,16 @@ function ReviewForm({
 
       {notice ? <p className="reviewsNotice">{notice}</p> : null}
 
-      <button className="reviewsSubmitButton" disabled={isSubmitting} type="submit">
+      <BakeryAction
+        className="reviewsSubmitButton"
+        disabled={isSubmitting}
+        size="sm"
+        type="submit"
+        variant="primary"
+      >
         <Send aria-hidden="true" className="h-4 w-4" />
         {isSubmitting ? 'Submitting' : 'Submit review'}
-      </button>
+      </BakeryAction>
     </form>
   )
 }
@@ -301,7 +319,7 @@ function ReviewCard({ review }: { review: PublicReview }) {
       data-expanded={isExpanded}
       data-status={review.responseStatus}
     >
-      <section className="reviewCard">
+      <BakeryCard as="section" className="reviewCard" spacing="sm">
         <div className="reviewCardTop">
           <div>
             <p className="reviewMeta">
@@ -329,10 +347,16 @@ function ReviewCard({ review }: { review: PublicReview }) {
             ))}
           </div>
         ) : null}
-      </section>
+      </BakeryCard>
 
       {hasResponse ? (
-        <section className="reviewResponse" aria-label="Bakery reply">
+        <BakeryCard
+          as="section"
+          className="reviewResponse"
+          aria-label="Bakery reply"
+          spacing="sm"
+          tone="wash"
+        >
           <div className="reviewResponseContent">
             <p className="reviewResponseLabel">Baked with Blessings replied</p>
             {review.businessResponseRichText ? (
@@ -355,17 +379,19 @@ function ReviewCard({ review }: { review: PublicReview }) {
             unoptimized
             width={64}
           />
-        </section>
+        </BakeryCard>
       ) : null}
 
       {hasHiddenDetails ? (
-        <button
+        <BakeryAction
           className="reviewReadToggle"
           onClick={() => setIsExpanded((current) => !current)}
+          size="sm"
           type="button"
+          variant="secondary"
         >
           {isExpanded ? 'Hide photos' : 'Show photos'}
-        </button>
+        </BakeryAction>
       ) : null}
     </article>
   )

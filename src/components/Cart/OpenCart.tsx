@@ -1,8 +1,9 @@
+import { BakeryPressable } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import { ShoppingBag } from 'lucide-react'
 import type { ButtonHTMLAttributes } from 'react'
 
-type OpenCartButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type OpenCartButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'color'> & {
   className?: string
   quantity?: number
 }
@@ -11,12 +12,13 @@ export function OpenCartButton({ className, quantity, ...rest }: OpenCartButtonP
   const safeQuantity = quantity ?? 0
 
   return (
-    <button
+    <BakeryPressable
       aria-label={quantity ? `Open cart with ${quantity} items` : 'Open cart'}
       className={cn(
         'group relative inline-flex h-12 items-center rounded-full border border-black/10 bg-white px-1 py-1 text-black transition-[border-color,background-color,transform] duration-300 hover:border-black/20 hover:bg-[#f3efe5]',
         className,
       )}
+      radius="pill"
       type="button"
       {...rest}
     >
@@ -28,6 +30,6 @@ export function OpenCartButton({ className, quantity, ...rest }: OpenCartButtonP
           [{safeQuantity}]
         </span>
       </span>
-    </button>
+    </BakeryPressable>
   )
 }

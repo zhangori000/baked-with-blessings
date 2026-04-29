@@ -6,6 +6,9 @@ import { GrowingGrassBorder } from '@/components/flowers/GrowingGrassBorder'
 import { Media } from '@/components/Media'
 import { RichText } from '@/components/RichText'
 import {
+  BakeryCard,
+  BakeryPopoverPanel,
+  BakeryPressable,
   SceneActionRow,
   SceneButton,
   type BakerySlotClassNames,
@@ -1168,33 +1171,31 @@ function SceneryChooserPopover({
   onSelectScenery: (tone: MenuSceneryTone) => void
 }) {
   return (
-    <div className="cateringSceneryChooser absolute left-0 top-full z-[8]">
-      <div className="cateringSceneryChooserBubble">
-        <div
-          aria-hidden="true"
-          className="cateringSceneryChooserTail"
-          style={anchorX != null ? { left: `calc(${anchorX}px - 1.35rem)` } : undefined}
-        />
-        <div className="cateringSceneryChooserRail">
-          {menuSceneryTones.map((tone) => {
-            const isActive = tone === activeTone
+    <div className="cateringSceneryChooserBubble">
+      <div
+        aria-hidden="true"
+        className="cateringSceneryChooserTail"
+        style={anchorX != null ? { left: `calc(${anchorX}px - 1.35rem)` } : undefined}
+      />
+      <div className="cateringSceneryChooserRail">
+        {menuSceneryTones.map((tone) => {
+          const isActive = tone === activeTone
 
-            return (
-              <button
-                className={cn('cateringSceneryChoice', isActive && 'cateringSceneryChoiceActive')}
-                disabled={isActive}
-                key={tone}
-                onClick={() => onSelectScenery(tone)}
-                type="button"
-              >
-                <span className="cateringSceneryChoiceLabel">{menuSceneryLabelByTone[tone]}</span>
-                <span className="cateringSceneryChoiceMeta">
-                  {isActive ? 'Current' : 'Switch to this'}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+          return (
+            <BakeryPressable
+              className={cn('cateringSceneryChoice', isActive && 'cateringSceneryChoiceActive')}
+              disabled={isActive}
+              key={tone}
+              onClick={() => onSelectScenery(tone)}
+              type="button"
+            >
+              <span className="cateringSceneryChoiceLabel">{menuSceneryLabelByTone[tone]}</span>
+              <span className="cateringSceneryChoiceMeta">
+                {isActive ? 'Current' : 'Switch to this'}
+              </span>
+            </BakeryPressable>
+          )
+        })}
       </div>
     </div>
   )
@@ -1251,44 +1252,6 @@ export function MenuHero({
       window.removeEventListener('resize', updateChooserAnchor)
     }
   }, [isSceneryPickerOpen])
-
-  useEffect(() => {
-    if (!isSceneryPickerOpen) {
-      return
-    }
-
-    const closeChooser = () => {
-      onToggleSceneryPicker()
-    }
-
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      if (!chooserAnchorRef.current || !event.target) {
-        return
-      }
-
-      if (chooserAnchorRef.current.contains(event.target as Node)) {
-        return
-      }
-
-      closeChooser()
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeChooser()
-      }
-    }
-
-    window.addEventListener('mousedown', onPointerDown)
-    window.addEventListener('touchstart', onPointerDown)
-    window.addEventListener('keydown', onKeyDown)
-
-    return () => {
-      window.removeEventListener('mousedown', onPointerDown)
-      window.removeEventListener('touchstart', onPointerDown)
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isSceneryPickerOpen, onToggleSceneryPicker])
 
   const spawnCloud = () => {
     setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'hero')])
@@ -1423,7 +1386,21 @@ export function MenuHero({
             <p className="cateringMenuEyebrow cateringHeroEyebrow">{eyebrow}</p>
             <h1 className="cateringMenuHeroDisplay">{title}</h1>
             <p className="cateringHeroSummary">{summary}</p>
-            <div className="relative pt-2" ref={chooserAnchorRef}>
+            <BakeryPopoverPanel
+              block
+              className="pt-2"
+              content={
+                <SceneryChooserPopover
+                  activeTone={sceneryTone}
+                  anchorX={chooserAnchorX}
+                  onSelectScenery={onSelectScenery}
+                />
+              }
+              contentClassName="cateringSceneryChooser absolute left-0 top-full z-[8]"
+              onClose={onToggleSceneryPicker}
+              ref={chooserAnchorRef}
+              visible={isSceneryPickerOpen}
+            >
               <SceneActionRow className="cateringActionRow" gap="2">
                 <CateringActionButton onClick={spawnCloud}>
                   {spawnedCloudLabelByScenery[sceneryTone]}
@@ -1441,14 +1418,7 @@ export function MenuHero({
                   Change scenery
                 </CateringActionButton>
               </SceneActionRow>
-              {isSceneryPickerOpen ? (
-                <SceneryChooserPopover
-                  activeTone={sceneryTone}
-                  anchorX={chooserAnchorX}
-                  onSelectScenery={onSelectScenery}
-                />
-              ) : null}
-            </div>
+            </BakeryPopoverPanel>
           </div>
         </div>
       </div>
@@ -1521,44 +1491,6 @@ export function PersuasionGardenPanel({
       window.removeEventListener('resize', updateChooserAnchor)
     }
   }, [isSceneryPickerOpen])
-
-  useEffect(() => {
-    if (!isSceneryPickerOpen) {
-      return
-    }
-
-    const closeChooser = () => {
-      onToggleSceneryPicker()
-    }
-
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      if (!chooserAnchorRef.current || !event.target) {
-        return
-      }
-
-      if (chooserAnchorRef.current.contains(event.target as Node)) {
-        return
-      }
-
-      closeChooser()
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeChooser()
-      }
-    }
-
-    window.addEventListener('mousedown', onPointerDown)
-    window.addEventListener('touchstart', onPointerDown)
-    window.addEventListener('keydown', onKeyDown)
-
-    return () => {
-      window.removeEventListener('mousedown', onPointerDown)
-      window.removeEventListener('touchstart', onPointerDown)
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isSceneryPickerOpen, onToggleSceneryPicker])
 
   useEffect(() => {
     return () => {
@@ -1657,7 +1589,7 @@ export function PersuasionGardenPanel({
         style={{ minHeight: hasGallery ? '34rem' : '30rem', ...styles?.viewport }}
       >
         {showDetailsFace ? (
-          <div
+          <BakeryCard
             className={cn(
               'cateringPersuasionPanel absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               `cateringScene-${sceneryTone}`,
@@ -1665,7 +1597,10 @@ export function PersuasionGardenPanel({
                 'cateringPanelWipeGhost cateringPanelWipeGhostToPhotos pointer-events-none z-[4]',
               classNames?.detailFace,
             )}
+            radius="xl"
+            spacing="none"
             style={styles?.detailFace}
+            tone="transparent"
           >
             <DecorativeSceneImage
               className={cn('cateringSceneSky cateringPersuasionSky', classNames?.sky)}
@@ -1734,10 +1669,21 @@ export function PersuasionGardenPanel({
                 </div>
               )}
 
-              <div
-                className={cn('relative pt-1', classNames?.actionShell)}
+              <BakeryPopoverPanel
+                block
+                className={cn('pt-1', classNames?.actionShell)}
+                content={
+                  <SceneryChooserPopover
+                    activeTone={sceneryTone}
+                    anchorX={chooserAnchorX}
+                    onSelectScenery={onSelectScenery}
+                  />
+                }
+                contentClassName="cateringSceneryChooser absolute left-0 top-full z-[8]"
+                onClose={onToggleSceneryPicker}
                 ref={chooserAnchorRef}
                 style={styles?.actionShell}
+                visible={isSceneryPickerOpen}
               >
                 <SceneActionRow
                   className={cn('cateringActionRow cateringPanelActionRow', classNames?.actionRow)}
@@ -1801,14 +1747,7 @@ export function PersuasionGardenPanel({
                     Change scenery
                   </CateringActionButton>
                 </SceneActionRow>
-                {isSceneryPickerOpen ? (
-                  <SceneryChooserPopover
-                    activeTone={sceneryTone}
-                    anchorX={chooserAnchorX}
-                    onSelectScenery={onSelectScenery}
-                  />
-                ) : null}
-              </div>
+              </BakeryPopoverPanel>
             </div>
 
             <div
@@ -1914,18 +1853,21 @@ export function PersuasionGardenPanel({
                 />
               ))}
             </div>
-          </div>
+          </BakeryCard>
         ) : null}
 
         {hasGallery && showGalleryFace ? (
-          <div
+          <BakeryCard
             className={cn(
               'absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               showGalleryAsGhost &&
                 'cateringPanelWipeGhost cateringPanelWipeGhostToDetails pointer-events-none z-[4]',
               classNames?.galleryFace,
             )}
+            radius="xl"
+            spacing="none"
             style={styles?.galleryFace}
+            tone="transparent"
           >
             <div
               className={cn(
@@ -1977,7 +1919,7 @@ export function PersuasionGardenPanel({
                     const isGalleryImageLoaded = loadedGalleryImageKeys.has(imageKey)
 
                     return (
-                      <div
+                      <BakeryCard
                         aria-busy={!isGalleryImageLoaded}
                         className={cn(
                           'cateringPhotoCard mb-3 break-inside-avoid overflow-hidden rounded-[1rem]',
@@ -1985,7 +1927,10 @@ export function PersuasionGardenPanel({
                           classNames?.photoCard,
                         )}
                         key={imageKey}
+                        radius="lg"
+                        spacing="none"
                         style={styles?.photoCard}
+                        tone="transparent"
                       >
                         {!isGalleryImageLoaded ? (
                           <span aria-hidden="true" className="cateringPhotoSkeleton" />
@@ -2006,7 +1951,7 @@ export function PersuasionGardenPanel({
                           onLoad={() => markGalleryImageLoaded(imageKey)}
                           resource={image}
                         />
-                      </div>
+                      </BakeryCard>
                     )
                   })}
                   <div className="cateringPhotoEndMarker mb-2 break-inside-avoid text-center">
@@ -2026,7 +1971,7 @@ export function PersuasionGardenPanel({
                 </div>
               </div>
             </div>
-          </div>
+          </BakeryCard>
         ) : null}
 
         {hasGallery ? (

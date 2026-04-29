@@ -1,6 +1,13 @@
 'use client'
 
-import { bakeryMediaQueries, useBakeryAnnouncer, useBakeryMediaQuery } from '@/design-system/bakery'
+import {
+  BakeryAction,
+  BakeryCard,
+  BakeryPressable,
+  bakeryMediaQueries,
+  useBakeryAnnouncer,
+  useBakeryMediaQuery,
+} from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import { MenuIcon, ShoppingBag, X } from 'lucide-react'
 import Link from 'next/link'
@@ -88,30 +95,41 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
     title: string
     tone: MobileFlowerTone
   }) => (
-    <article className="siteHeaderMobileCard" data-flower-tone={tone} key={key}>
+    <BakeryCard
+      as="article"
+      className="siteHeaderMobileCard"
+      data-flower-tone={tone}
+      key={key}
+      radius="lg"
+      spacing="none"
+      tone="transparent"
+    >
       <div className="siteHeaderMobileCardCopy">
         <p className="siteHeaderMobileCardEyebrow">{eyebrow}</p>
         <h3 className="siteHeaderMobileCardTitle">{title}</h3>
         <p className="siteHeaderMobileCardDescription">{description}</p>
       </div>
 
-      <Link
+      <BakeryAction
+        as={Link}
         aria-label={`Open ${title}`}
         className="siteHeaderMobileCardAction"
         href={href}
         onClick={() => {
           setIsOpen(false)
         }}
+        size="sm"
+        variant="secondary"
       >
         <span className="siteHeaderMobileCardActionLabel">GO</span>
-      </Link>
-    </article>
+      </BakeryAction>
+    </BakeryCard>
   )
 
   return (
     <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
       <div className="siteHeaderMobileControls">
-        <button
+        <BakeryPressable
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
           className="siteHeaderMobileIconButton"
@@ -123,9 +141,9 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
           type="button"
         >
           {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
-        </button>
+        </BakeryPressable>
 
-        <button
+        <BakeryPressable
           aria-label={`Open cart with ${cartQuantity} items`}
           className="siteHeaderMobileBagButton"
           onClick={() => {
@@ -136,7 +154,7 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
         >
           <ShoppingBag className="siteHeaderMobileBagIcon h-4 w-4" />
           <span className="siteHeaderMobileBagCount">[{cartQuantity}]</span>
-        </button>
+        </BakeryPressable>
       </div>
 
       <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>

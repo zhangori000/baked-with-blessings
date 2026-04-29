@@ -1,7 +1,7 @@
 'use client'
 
 import { CartItem } from '@/components/Cart'
-import { useBakeryAnnouncer } from '@/design-system/bakery'
+import { BakeryPressable, useBakeryAnnouncer } from '@/design-system/bakery'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import clsx from 'clsx'
 import { MinusIcon, PlusIcon } from 'lucide-react'
@@ -84,7 +84,7 @@ export function EditItemQuantityButton({ type, item }: { item: CartItem; type: '
 
   return (
     <form>
-      <button
+      <BakeryPressable
         disabled={disabled || isLoading}
         aria-label={
           type === 'plus' ? `Increase ${itemTitle} quantity` : `Reduce ${itemTitle} quantity`
@@ -102,7 +102,7 @@ export function EditItemQuantityButton({ type, item }: { item: CartItem; type: '
         type="button"
       >
         {type === 'plus' ? <PlusIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
-      </button>
+      </BakeryPressable>
     </form>
   )
 }

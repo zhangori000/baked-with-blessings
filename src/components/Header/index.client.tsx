@@ -5,7 +5,12 @@ import { EditItemQuantityButton } from '@/components/Cart/EditItemQuantityButton
 import { CartModal } from '@/components/Cart/CartModal'
 import { Price } from '@/components/Price'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
-import { useBakeryAnnouncer } from '@/design-system/bakery'
+import {
+  BakeryAction,
+  BakeryCard,
+  BakeryPressable,
+  useBakeryAnnouncer,
+} from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
@@ -231,7 +236,7 @@ export function HeaderClient({ brand, header }: Props) {
       ref={headerRef}
     >
       {activePanel ? (
-        <button
+        <BakeryPressable
           aria-label="Close open header panel"
           className="siteHeaderPanelBackdrop"
           onClick={() => {
@@ -282,7 +287,7 @@ export function HeaderClient({ brand, header }: Props) {
                   {navigationItems.map((item) => (
                     <li className={headerClassNames.bannerItem} key={item.id}>
                       {item.kind === 'apps' ? (
-                        <button
+                        <BakeryPressable
                           aria-label={`${appsButtonLabel}. Open other pages menu`}
                           aria-expanded={activePanel === 'more'}
                           className={cn(headerClassNames.bannerLink, 'siteHeaderBannerButton', {
@@ -299,7 +304,7 @@ export function HeaderClient({ brand, header }: Props) {
                         >
                           <span className="siteHeaderBannerLabel">{appsButtonLabel}</span>
                           <ChevronDown className="siteHeaderBannerDropdownIcon" />
-                        </button>
+                        </BakeryPressable>
                       ) : (
                         <Link
                           className={cn(headerClassNames.bannerLink, {
@@ -329,7 +334,7 @@ export function HeaderClient({ brand, header }: Props) {
             </nav>
 
             <div className={headerClassNames.actionArea}>
-              <button
+              <BakeryPressable
                 aria-label={user ? `Open account menu` : 'Open account menu'}
                 className={cn(
                   headerClassNames.actionButton,
@@ -347,9 +352,9 @@ export function HeaderClient({ brand, header }: Props) {
                 <UserRound className="h-4 w-4" />
                 <span className="hidden md:inline">Account</span>
                 <ChevronDown className="h-3 w-3" />
-              </button>
+              </BakeryPressable>
 
-              <button
+              <BakeryPressable
                 aria-label={`Open cart with ${cartQuantity} items`}
                 className={cn(
                   headerClassNames.actionButton,
@@ -364,7 +369,7 @@ export function HeaderClient({ brand, header }: Props) {
                 <span className="hidden md:inline">Cart</span>
                 <span className={headerClassNames.actionBadge}>{cartQuantity}</span>
                 <ChevronDown className="h-3 w-3" />
-              </button>
+              </BakeryPressable>
             </div>
           </div>
 
@@ -382,7 +387,13 @@ export function HeaderClient({ brand, header }: Props) {
                     : '',
             )}
           >
-            <div className={headerClassNames.actionPanelInner} ref={panelInnerRef}>
+            <BakeryCard
+              className={headerClassNames.actionPanelInner}
+              radius="xl"
+              ref={panelInnerRef}
+              spacing="none"
+              tone="transparent"
+            >
               {activePanel === 'more' ? (
                 <div className="siteHeaderAppsPanel">
                   <div className="siteHeaderAppsHeader">
@@ -398,10 +409,14 @@ export function HeaderClient({ brand, header }: Props) {
                     </div>
                   </div>
 
-                  <Link
+                  <BakeryCard
+                    as={Link}
                     className="siteHeaderAppCard"
                     href={blogHref}
                     onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
                   >
                     <span className="siteHeaderAppIcon" aria-hidden="true">
                       <BookOpenText className="h-5 w-5" />
@@ -414,12 +429,16 @@ export function HeaderClient({ brand, header }: Props) {
                       </span>
                     </span>
                     <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </Link>
+                  </BakeryCard>
 
-                  <Link
+                  <BakeryCard
+                    as={Link}
                     className="siteHeaderAppCard"
                     href={discussionBoardHref}
                     onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
                   >
                     <span className="siteHeaderAppIcon" aria-hidden="true">
                       <MessageSquareText className="h-5 w-5" />
@@ -433,12 +452,16 @@ export function HeaderClient({ brand, header }: Props) {
                       </span>
                     </span>
                     <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </Link>
+                  </BakeryCard>
 
-                  <Link
+                  <BakeryCard
+                    as={Link}
                     className="siteHeaderAppCard"
                     href={reviewsHref}
                     onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
                   >
                     <span className="siteHeaderAppIcon" aria-hidden="true">
                       <ClipboardCheck className="h-5 w-5" />
@@ -452,7 +475,7 @@ export function HeaderClient({ brand, header }: Props) {
                       </span>
                     </span>
                     <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </Link>
+                  </BakeryCard>
                 </div>
               ) : null}
 
@@ -464,24 +487,33 @@ export function HeaderClient({ brand, header }: Props) {
                   <ul className={headerClassNames.actionPanelList}>
                     {accountLinks.map((href) => (
                       <li key={href}>
-                        <Link
+                        <BakeryAction
+                          as={Link}
                           className="siteHeaderActionLink"
+                          end={<ArrowRight className="h-4 w-4" />}
                           href={href}
                           onClick={() => {
                             setActivePanel(null)
                           }}
+                          size="sm"
+                          variant="secondary"
                         >
                           <span>{getAccountLabel(href)}</span>
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
+                        </BakeryAction>
                       </li>
                     ))}
                   </ul>
 
                   {user ? (
-                    <button className="siteHeaderPanelButton" onClick={handleLogout} type="button">
+                    <BakeryAction
+                      className="siteHeaderPanelButton"
+                      loading={isLoggingOut}
+                      onClick={handleLogout}
+                      type="button"
+                      variant="primary"
+                    >
                       {isLoggingOut ? 'Signing out…' : 'Sign out'}
-                    </button>
+                    </BakeryAction>
                   ) : null}
                 </>
               ) : null}
@@ -656,13 +688,16 @@ export function HeaderClient({ brand, header }: Props) {
                         </div>
 
                         <div className="siteHeaderCartQuickFooterActions">
-                          <Link
+                          <BakeryAction
+                            as={Link}
                             className="siteHeaderCartQuickCheckout"
                             href="/menu"
                             onClick={() => setActivePanel(null)}
+                            size="sm"
+                            variant="primary"
                           >
                             Review cart
-                          </Link>
+                          </BakeryAction>
                         </div>
                       </div>
                     </>
@@ -677,18 +712,21 @@ export function HeaderClient({ brand, header }: Props) {
                           Start with the menu, then come back here to adjust quantity and check out.
                         </p>
                       </div>
-                      <Link
+                      <BakeryAction
+                        as={Link}
                         className="siteHeaderCartQuickCheckout"
                         href={menuHref}
                         onClick={() => setActivePanel(null)}
+                        size="sm"
+                        variant="primary"
                       >
                         Browse the menu
-                      </Link>
+                      </BakeryAction>
                     </div>
                   )}
                 </div>
               ) : null}
-            </div>
+            </BakeryCard>
           </div>
         </div>
       </div>

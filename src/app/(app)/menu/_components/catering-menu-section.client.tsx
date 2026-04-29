@@ -563,6 +563,7 @@ export function CateringMenuSection({
               )
             )
           );
+          contain: paint;
           isolation: isolate;
         }
 
@@ -575,6 +576,7 @@ export function CateringMenuSection({
         .cateringPanelForeground,
         .cateringGalleryContent {
           backface-visibility: hidden;
+          contain: layout paint style;
           transform: translate3d(0, 0, 0);
           transition:
             opacity 180ms ease,
@@ -589,29 +591,19 @@ export function CateringMenuSection({
         }
 
         .cateringPanelWipeGhost {
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            var(--catering-wipe-mask-start),
-            var(--catering-wipe-mask-end)
-          );
-          mask-image: linear-gradient(
-            to bottom,
-            var(--catering-wipe-mask-start),
-            var(--catering-wipe-mask-end)
-          );
-          will-change: mask-image, -webkit-mask-image;
+          contain: paint;
+          transform: translate3d(0, 0, 0);
+          will-change: clip-path, transform;
         }
 
         .cateringPanelWipeGhostToPhotos {
-          --catering-wipe-mask-start: transparent 0 var(--catering-wipe-edge, 0%);
-          --catering-wipe-mask-end: #000 var(--catering-wipe-edge, 0%) 100%;
+          clip-path: inset(var(--catering-wipe-edge, 0%) 0 0 0 round 1.45rem);
           animation: cateringWipeToPhotos var(--catering-tear-duration, 280ms)
             cubic-bezier(0.7, 0, 0.2, 1) forwards;
         }
 
         .cateringPanelWipeGhostToDetails {
-          --catering-wipe-mask-start: #000 0 var(--catering-wipe-edge, 100%);
-          --catering-wipe-mask-end: transparent var(--catering-wipe-edge, 100%) 100%;
+          clip-path: inset(0 0 calc(100% - var(--catering-wipe-edge, 100%)) 0 round 1.45rem);
           animation: cateringWipeToDetails var(--catering-tear-duration, 280ms)
             cubic-bezier(0.7, 0, 0.2, 1) forwards;
         }
@@ -751,6 +743,9 @@ export function CateringMenuSection({
 
         .cateringPhotoCard {
           background: #f5efe7;
+          contain: layout paint style;
+          content-visibility: auto;
+          contain-intrinsic-size: 18rem 14rem;
           isolation: isolate;
           position: relative;
         }

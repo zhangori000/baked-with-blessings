@@ -4,12 +4,26 @@ type TextSegment =
   | string
   | {
       bold?: boolean
+      italic?: boolean
       text: string
     }
 
-const createTextNode = (text: string, options?: { bold?: boolean }) => ({
+const createTextNode = (
+  text: string,
+  options?: {
+    bold?: boolean
+    italic?: boolean
+  },
+) => ({
   detail: 0,
-  format: options?.bold ? 1 : 0,
+  format:
+    options?.bold && options?.italic
+      ? 3
+      : options?.bold
+        ? 1
+        : options?.italic
+          ? 2
+          : 0,
   mode: 'normal' as const,
   style: '',
   text,

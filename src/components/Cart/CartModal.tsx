@@ -6,7 +6,7 @@ import { FormItem } from '@/components/forms/FormItem'
 import { Message } from '@/components/Message'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
-import { Button } from '@/components/ui/button'
+import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { menuHref } from '@/utilities/routes'
@@ -89,11 +89,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
 
   const hasItems = Boolean(cart?.items?.length)
   const modalTitle =
-    panel === 'cart'
-      ? 'Cart'
-      : panel === 'complete'
-        ? 'Order received'
-        : 'Checkout'
+    panel === 'cart' ? 'Cart' : panel === 'complete' ? 'Order received' : 'Checkout'
 
   return (
     <Sheet onOpenChange={handleOpenChange} open={isOpen}>
@@ -125,9 +121,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
               <div className="flex min-h-[5rem] items-start justify-between gap-4">
                 <div className="flex h-full items-start">
                   <div className="cartModalHeaderTitleWrap">
-                    <SheetTitle className="cartModalHeaderTitle">
-                      {modalTitle}
-                    </SheetTitle>
+                    <SheetTitle className="cartModalHeaderTitle">{modalTitle}</SheetTitle>
                   </div>
                   <SheetDescription className="sr-only">
                     {panel === 'complete' ? 'Your order is confirmed.' : 'Cart checkout panel'}
@@ -135,13 +129,13 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                 </div>
 
                 <SheetClose asChild>
-                  <button
+                  <BakeryPressable
                     aria-label="Close cart"
                     className="absolute right-3 top-3 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/12 bg-white/95 text-black shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition duration-200 hover:-translate-y-0.5 hover:border-black/20 hover:bg-black hover:text-white"
                     type="button"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </BakeryPressable>
                 </SheetClose>
               </div>
             </SheetHeader>
@@ -150,7 +144,9 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           <div className="flex items-center justify-between border-b border-black/8 bg-[#fffefa] px-4 py-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-[12px] font-medium text-black/65">
               <ShoppingBag className="h-3.5 w-3.5" />
-              <span>[{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}]</span>
+              <span>
+                [{totalQuantity ?? 0} item{totalQuantity === 1 ? '' : 's'}]
+              </span>
             </div>
           </div>
 
@@ -158,228 +154,244 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             className={`cartModalPanelStage flex min-h-0 flex-1 flex-col ${panel !== 'cart' ? 'is-revealing' : ''}`}
             key={`${panel}-${paintKey}`}
           >
-          {!hasItems && panel !== 'complete' ? (
-            <div className="flex flex-1 flex-col px-4 py-4">
-              <CartSceneShell
-                className="flex min-h-0 flex-1 items-center justify-center rounded-[6px] border border-black/8 px-6 py-8 text-center"
-                contentClassName="mx-auto max-w-[20rem] space-y-5"
-              >
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white">
-                  <ShoppingBag className="h-8 w-8 text-black/70" />
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
-                  <p className="text-sm leading-6 text-black/60">
-                    Add a few bakery items first, then come back here to review quantity and checkout.
-                  </p>
-                </div>
-
-                <Link
-                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
-                  href={menuHref}
+            {!hasItems && panel !== 'complete' ? (
+              <div className="flex flex-1 flex-col px-4 py-4">
+                <CartSceneShell
+                  className="flex min-h-0 flex-1 items-center justify-center rounded-[6px] border border-black/8 px-6 py-8 text-center"
+                  contentClassName="mx-auto max-w-[20rem] space-y-5"
                 >
-                  Browse the menu
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </CartSceneShell>
-            </div>
-          ) : panel === 'auth' ? (
-            <CartAuthGate
-              onBack={() => showPanel('cart')}
-              onSuccess={() => showPanel('checkout')}
-            />
-          ) : panel === 'login' ? (
-            <CartLoginPanel
-              onBack={() => showPanel('auth')}
-              onSuccess={() => showPanel('checkout')}
-            />
-          ) : panel === 'signup' ? (
-            <CartSignupPanel
-              onBack={() => showPanel('auth')}
-              onSuccess={() => showPanel('checkout')}
-            />
-          ) : panel === 'checkout' ? (
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-              <button
-                className="mb-4 inline-flex h-10 items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-sm font-medium text-black/70 transition hover:border-black/20 hover:bg-black hover:text-white"
-                onClick={() => showPanel('cart')}
-                type="button"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Back to cart
-              </button>
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white">
+                    <ShoppingBag className="h-8 w-8 text-black/70" />
+                  </div>
 
-              <CartPaymentPlaceholder />
-            </div>
-          ) : panel === 'complete' && completeOrder ? (
-            <CartCompletePanel order={completeOrder} onClose={() => setIsOpen(false)} />
-          ) : (
-            <>
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-0">
-                <ul className="divide-y divide-black/10">
-                  {cart?.items?.map((item, index) => {
-                    const product = item.product
-                    const variant = item.variant
-
-                    if (typeof product !== 'object' || !item || !product || !product.slug) {
-                      return <React.Fragment key={index} />
-                    }
-
-                    const metaImage =
-                      product.meta?.image && typeof product.meta.image === 'object'
-                        ? product.meta.image
-                        : undefined
-
-                    const firstGalleryImage =
-                      typeof product.gallery?.[0]?.image === 'object'
-                        ? product.gallery[0].image
-                        : undefined
-
-                    let image = firstGalleryImage || metaImage
-                    let price = product.priceInUSD
-                    const isVariant = Boolean(variant) && typeof variant === 'object'
-
-                    if (isVariant) {
-                      price = variant?.priceInUSD
-
-                      const imageVariant = product.gallery?.find(
-                        (galleryItem: NonNullable<Product['gallery']>[number]) => {
-                          if (!galleryItem.variantOption) return false
-
-                          const variantOptionID =
-                            typeof galleryItem.variantOption === 'object'
-                              ? galleryItem.variantOption.id
-                              : galleryItem.variantOption
-
-                          return (
-                            variant?.options?.some((option: Variant['options'][number]) => {
-                              if (typeof option === 'object') return option.id === variantOptionID
-                              return option === variantOptionID
-                            }) || false
-                          )
-                        },
-                      )
-
-                      if (imageVariant && typeof imageVariant.image === 'object') {
-                        image = imageVariant.image
-                      }
-                    }
-
-                    const resolvedImageSrc = resolveMediaDisplayURL(image)
-
-                    return (
-                      <li
-                        className="bg-[#fffefa] px-0 py-4"
-                        key={index}
-                      >
-                        <div className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-3.5 rounded-[6px] border border-black/[0.06] bg-white/72 px-2.5 py-2.5 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-4">
-                          <div
-                            aria-hidden="true"
-                            className="cartModalItemThumb relative h-28 w-28 shrink-0 overflow-hidden rounded-[6px] sm:h-[7.5rem] sm:w-[7.5rem]"
-                          >
-                            {resolvedImageSrc ? (
-                              <Image
-                                alt={image.alt || product.title || ''}
-                                className="cartModalItemThumbImage"
-                                fill
-                                quality={95}
-                                sizes="(min-width: 640px) 192px, 160px"
-                                src={resolvedImageSrc}
-                              />
-                            ) : null}
-                          </div>
-
-                          <div className="min-w-0">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0 space-y-1">
-                                <p className="text-xs font-medium text-black/45">
-                                  {isVariant ? 'Configured item' : 'Bakery item'}
-                                </p>
-                                <p className="block text-base font-semibold leading-5 text-black sm:text-lg sm:leading-6">
-                                  {product.title}
-                                </p>
-                                {isVariant && variant ? (
-                                  <p className="text-sm leading-6 text-black/60 capitalize">
-                                    {variant.options
-                                      ?.map((option: Variant['options'][number]) => {
-                                        if (typeof option === 'object') return option.label
-                                        return null
-                                      })
-                                      .filter(Boolean)
-                                      .join(', ')}
-                                  </p>
-                                ) : null}
-                                <TraySelectionSummary
-                                  className="mt-2 max-h-28 overflow-y-auto pr-1"
-                                  label="Exact tray contents"
-                                  selections={item.batchSelections}
-                                  tone="muted"
-                                />
-                              </div>
-
-                              <DeleteItemButton item={item} />
-                            </div>
-
-                            <div className="mt-3 flex items-center justify-between gap-3">
-                              <div className="inline-flex items-center rounded-full border border-black/10 bg-black/[0.03] px-1 py-1">
-                                <EditItemQuantityButton item={item} type="minus" />
-                                <span className="w-8 text-center text-sm font-medium">
-                                  {item.quantity}
-                                </span>
-                                <EditItemQuantityButton item={item} type="plus" />
-                              </div>
-
-                              {typeof price === 'number' ? (
-                                <Price amount={price} className="text-lg font-medium text-black" />
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-
-              <div className="shrink-0 border-t border-black/10 bg-[#fffefa] px-4 py-2.5">
-                <div className="mb-2 flex items-center justify-between gap-3 border-b border-black/8 pb-2">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-black/45">Subtotal</p>
-                    <p className="mt-0.5 text-[13px] leading-5 text-black/60">
-                      Shipping and taxes are calculated during checkout.
+                  <div className="space-y-2">
+                    <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
+                    <p className="text-sm leading-6 text-black/60">
+                      Add a few bakery items first, then come back here to review quantity and
+                      checkout.
                     </p>
                   </div>
 
-                  {typeof cart?.subtotal === 'number' ? (
-                    <Price amount={cart.subtotal} className="text-xl font-medium text-black" />
-                  ) : null}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Link
-                    className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition duration-200 hover:bg-black/85"
-                    href="#cart-checkout"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      showPanel(user ? 'checkout' : 'auth')
-                    }}
+                  <BakeryAction
+                    as={Link}
+                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+                    href={menuHref}
+                    size="md"
+                    variant="primary"
                   >
-                    Proceed to checkout
-                  </Link>
-
-                  <SheetClose asChild>
-                    <button
-                      className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-2.5 text-sm font-medium text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
-                      type="button"
-                    >
-                      Keep browsing
-                    </button>
-                  </SheetClose>
-                </div>
+                    Browse the menu
+                    <ArrowRight className="h-4 w-4" />
+                  </BakeryAction>
+                </CartSceneShell>
               </div>
-            </>
-          )}
+            ) : panel === 'auth' ? (
+              <CartAuthGate
+                onBack={() => showPanel('cart')}
+                onSuccess={() => showPanel('checkout')}
+              />
+            ) : panel === 'login' ? (
+              <CartLoginPanel
+                onBack={() => showPanel('auth')}
+                onSuccess={() => showPanel('checkout')}
+              />
+            ) : panel === 'signup' ? (
+              <CartSignupPanel
+                onBack={() => showPanel('auth')}
+                onSuccess={() => showPanel('checkout')}
+              />
+            ) : panel === 'checkout' ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                <BakeryAction
+                  className="mb-4 inline-flex h-10 items-center gap-2 rounded-full border border-black/10 bg-white px-4 text-sm font-medium text-black/70 transition hover:border-black/20 hover:bg-black hover:text-white"
+                  onClick={() => showPanel('cart')}
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back to cart
+                </BakeryAction>
+
+                <CartPaymentPlaceholder />
+              </div>
+            ) : panel === 'complete' && completeOrder ? (
+              <CartCompletePanel order={completeOrder} onClose={() => setIsOpen(false)} />
+            ) : (
+              <>
+                <div className="min-h-0 flex-1 overflow-y-auto px-4 py-0">
+                  <ul className="divide-y divide-black/10">
+                    {cart?.items?.map((item, index) => {
+                      const product = item.product
+                      const variant = item.variant
+
+                      if (typeof product !== 'object' || !item || !product || !product.slug) {
+                        return <React.Fragment key={index} />
+                      }
+
+                      const metaImage =
+                        product.meta?.image && typeof product.meta.image === 'object'
+                          ? product.meta.image
+                          : undefined
+
+                      const firstGalleryImage =
+                        typeof product.gallery?.[0]?.image === 'object'
+                          ? product.gallery[0].image
+                          : undefined
+
+                      let image = firstGalleryImage || metaImage
+                      let price = product.priceInUSD
+                      const isVariant = Boolean(variant) && typeof variant === 'object'
+
+                      if (isVariant) {
+                        price = variant?.priceInUSD
+
+                        const imageVariant = product.gallery?.find(
+                          (galleryItem: NonNullable<Product['gallery']>[number]) => {
+                            if (!galleryItem.variantOption) return false
+
+                            const variantOptionID =
+                              typeof galleryItem.variantOption === 'object'
+                                ? galleryItem.variantOption.id
+                                : galleryItem.variantOption
+
+                            return (
+                              variant?.options?.some((option: Variant['options'][number]) => {
+                                if (typeof option === 'object') return option.id === variantOptionID
+                                return option === variantOptionID
+                              }) || false
+                            )
+                          },
+                        )
+
+                        if (imageVariant && typeof imageVariant.image === 'object') {
+                          image = imageVariant.image
+                        }
+                      }
+
+                      const resolvedImageSrc = resolveMediaDisplayURL(image)
+
+                      return (
+                        <li className="bg-[#fffefa] px-0 py-4" key={index}>
+                          <BakeryCard
+                            className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-3.5 bg-white/72 px-2.5 py-2.5 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-4"
+                            radius="sm"
+                            spacing="none"
+                          >
+                            <div
+                              aria-hidden="true"
+                              className="cartModalItemThumb relative h-28 w-28 shrink-0 overflow-hidden rounded-[6px] sm:h-[7.5rem] sm:w-[7.5rem]"
+                            >
+                              {resolvedImageSrc ? (
+                                <Image
+                                  alt={image.alt || product.title || ''}
+                                  className="cartModalItemThumbImage"
+                                  fill
+                                  quality={95}
+                                  sizes="(min-width: 640px) 192px, 160px"
+                                  src={resolvedImageSrc}
+                                />
+                              ) : null}
+                            </div>
+
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0 space-y-1">
+                                  <p className="text-xs font-medium text-black/45">
+                                    {isVariant ? 'Configured item' : 'Bakery item'}
+                                  </p>
+                                  <p className="block text-base font-semibold leading-5 text-black sm:text-lg sm:leading-6">
+                                    {product.title}
+                                  </p>
+                                  {isVariant && variant ? (
+                                    <p className="text-sm leading-6 text-black/60 capitalize">
+                                      {variant.options
+                                        ?.map((option: Variant['options'][number]) => {
+                                          if (typeof option === 'object') return option.label
+                                          return null
+                                        })
+                                        .filter(Boolean)
+                                        .join(', ')}
+                                    </p>
+                                  ) : null}
+                                  <TraySelectionSummary
+                                    className="mt-2 max-h-28 overflow-y-auto pr-1"
+                                    label="Exact tray contents"
+                                    selections={item.batchSelections}
+                                    tone="muted"
+                                  />
+                                </div>
+
+                                <DeleteItemButton item={item} />
+                              </div>
+
+                              <div className="mt-3 flex items-center justify-between gap-3">
+                                <div className="inline-flex items-center rounded-full border border-black/10 bg-black/[0.03] px-1 py-1">
+                                  <EditItemQuantityButton item={item} type="minus" />
+                                  <span className="w-8 text-center text-sm font-medium">
+                                    {item.quantity}
+                                  </span>
+                                  <EditItemQuantityButton item={item} type="plus" />
+                                </div>
+
+                                {typeof price === 'number' ? (
+                                  <Price
+                                    amount={price}
+                                    className="text-lg font-medium text-black"
+                                  />
+                                ) : null}
+                              </div>
+                            </div>
+                          </BakeryCard>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+
+                <div className="shrink-0 border-t border-black/10 bg-[#fffefa] px-4 py-2.5">
+                  <div className="mb-2 flex items-center justify-between gap-3 border-b border-black/8 pb-2">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-black/45">
+                        Subtotal
+                      </p>
+                      <p className="mt-0.5 text-[13px] leading-5 text-black/60">
+                        Shipping and taxes are calculated during checkout.
+                      </p>
+                    </div>
+
+                    {typeof cart?.subtotal === 'number' ? (
+                      <Price amount={cart.subtotal} className="text-xl font-medium text-black" />
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <BakeryAction
+                      as={Link}
+                      block
+                      className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition duration-200 hover:bg-black/85"
+                      href="#cart-checkout"
+                      onClick={(event) => {
+                        event.preventDefault()
+                        showPanel(user ? 'checkout' : 'auth')
+                      }}
+                      size="md"
+                      variant="primary"
+                    >
+                      Proceed to checkout
+                    </BakeryAction>
+
+                    <SheetClose asChild>
+                      <BakeryPressable
+                        className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-2.5 text-sm font-medium text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
+                        type="button"
+                      >
+                        Keep browsing
+                      </BakeryPressable>
+                    </SheetClose>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -593,7 +605,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
 
 function CartPaymentPlaceholder() {
   return (
-    <div className="rounded-[6px] border border-black/8 bg-white px-5 py-5">
+    <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
       <div className="space-y-2">
         <p className="text-2xl font-medium tracking-[-0.04em]">Payment</p>
         <p className="text-sm leading-6 text-black/60">
@@ -602,40 +614,45 @@ function CartPaymentPlaceholder() {
         </p>
       </div>
 
-      <div className="mt-5 rounded-[6px] border border-dashed border-black/15 bg-[#fffefa] px-4 py-8 text-center">
+      <BakeryCard
+        className="mt-5 border-dashed border-black/15 bg-[#fffefa] px-4 py-8 text-center"
+        radius="sm"
+        spacing="none"
+        tone="outline"
+      >
         <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-black/45">
           Payment element placeholder
         </p>
-      </div>
+      </BakeryCard>
 
-      <Button className="mt-5 w-full rounded-full" disabled type="button">
+      <BakeryAction block className="mt-5" disabled type="button" variant="primary">
         Initiate payment
-      </Button>
-    </div>
+      </BakeryAction>
+    </BakeryCard>
   )
 }
 
-function CartAuthGate({
-  onBack,
-  onSuccess,
-}: {
-  onBack: () => void
-  onSuccess: () => void
-}) {
+function CartAuthGate({ onBack, onSuccess }: { onBack: () => void; onSuccess: () => void }) {
   const [expandedForm, setExpandedForm] = useState<null | 'login' | 'signup'>(null)
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-      <div className="cartAuthPanelSurface flex min-h-full flex-col gap-6 px-5 py-5">
+      <BakeryCard
+        className="cartAuthPanelSurface flex min-h-full flex-col gap-6 px-5 py-5"
+        radius="sm"
+        spacing="none"
+      >
         <div className="space-y-4">
-          <button
+          <BakeryAction
             className="inline-flex h-10 items-center gap-2 rounded-full cartAuthGlassButton px-4 text-sm font-medium transition"
             onClick={onBack}
+            size="sm"
             type="button"
+            variant="secondary"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to cart
-          </button>
+          </BakeryAction>
 
           <div className="space-y-2">
             <p className="text-2xl font-semibold leading-tight text-[#1a2232]">
@@ -648,9 +665,14 @@ function CartAuthGate({
         </div>
 
         <div className="grid gap-3">
-          <button
+          <BakeryCard
+            as="button"
             className="cartAuthGlassButton flex items-center justify-between rounded-[10px] px-4 py-4 text-left transition"
+            interactive
             onClick={() => setExpandedForm((current) => (current === 'login' ? null : 'login'))}
+            radius="md"
+            spacing="none"
+            tone="transparent"
             type="button"
           >
             <span>
@@ -660,15 +682,18 @@ function CartAuthGate({
               </span>
             </span>
             <LogIn className="h-5 w-5 text-[#5f4a32]" />
-          </button>
+          </BakeryCard>
 
-          {expandedForm === 'login' ? (
-            <CartLoginPanel embedded onSuccess={onSuccess} />
-          ) : null}
+          {expandedForm === 'login' ? <CartLoginPanel embedded onSuccess={onSuccess} /> : null}
 
-          <button
+          <BakeryCard
+            as="button"
             className="cartAuthGlassButton flex items-center justify-between rounded-[10px] px-4 py-4 text-left transition"
+            interactive
             onClick={() => setExpandedForm((current) => (current === 'signup' ? null : 'signup'))}
+            radius="md"
+            spacing="none"
+            tone="transparent"
             type="button"
           >
             <span>
@@ -678,13 +703,11 @@ function CartAuthGate({
               </span>
             </span>
             <UserPlus className="h-5 w-5 text-[#5f4a32]" />
-          </button>
+          </BakeryCard>
 
-          {expandedForm === 'signup' ? (
-            <CartSignupPanel embedded onSuccess={onSuccess} />
-          ) : null}
+          {expandedForm === 'signup' ? <CartSignupPanel embedded onSuccess={onSuccess} /> : null}
         </div>
-      </div>
+      </BakeryCard>
     </div>
   )
 }
@@ -713,7 +736,8 @@ function CartLoginPanel({
 
   return (
     <div className={embedded ? '' : 'min-h-0 flex-1 overflow-y-auto px-4 py-4'}>
-      <form
+      <BakeryCard
+        as="form"
         className="cartAuthPanelSurface space-y-5 rounded-[6px] px-5 py-5"
         onSubmit={handleSubmit(async (data) => {
           try {
@@ -726,14 +750,16 @@ function CartLoginPanel({
         })}
       >
         {onBack ? (
-          <button
+          <BakeryAction
             className="inline-flex h-10 items-center gap-2 rounded-full cartAuthGlassButton px-4 text-sm font-medium transition"
             onClick={onBack}
+            size="sm"
             type="button"
+            variant="secondary"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back
-          </button>
+          </BakeryAction>
         ) : null}
 
         <Message className="cartAuthHint" error={error} />
@@ -748,7 +774,9 @@ function CartLoginPanel({
             className="cartAuthInput"
             {...register('identifier', { required: 'Email address or phone number is required.' })}
           />
-          {errors.identifier && <FormError className="cartAuthError" message={errors.identifier.message} />}
+          {errors.identifier && (
+            <FormError className="cartAuthError" message={errors.identifier.message} />
+          )}
         </FormItem>
 
         <FormItem>
@@ -761,17 +789,22 @@ function CartLoginPanel({
             className="cartAuthInput"
             {...register('password', { required: 'Please provide a password.' })}
           />
-          {errors.password && <FormError className="cartAuthError" message={errors.password.message} />}
+          {errors.password && (
+            <FormError className="cartAuthError" message={errors.password.message} />
+          )}
         </FormItem>
 
-        <Button
+        <BakeryAction
+          block
           className="cartAuthPrimaryButton h-11 w-full rounded-full"
           disabled={isSubmitting}
+          size="md"
           type="submit"
+          variant="primary"
         >
           {isSubmitting ? 'Processing' : 'Continue to payment'}
-        </Button>
-      </form>
+        </BakeryAction>
+      </BakeryCard>
     </div>
   )
 }
@@ -812,7 +845,8 @@ function CartSignupPanel({
 
   return (
     <div className={embedded ? '' : 'min-h-0 flex-1 overflow-y-auto px-4 py-4'}>
-      <form
+      <BakeryCard
+        as="form"
         className="cartAuthPanelSurface space-y-5 rounded-[6px] px-5 py-5"
         onSubmit={handleSubmit(async (data) => {
           const trimmedEmail = data.email.trim()
@@ -848,14 +882,16 @@ function CartSignupPanel({
         })}
       >
         {onBack ? (
-          <button
+          <BakeryAction
             className="inline-flex h-10 items-center gap-2 rounded-full cartAuthGlassButton px-4 text-sm font-medium transition"
             onClick={onBack}
+            size="sm"
             type="button"
+            variant="secondary"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back
-          </button>
+          </BakeryAction>
         ) : null}
 
         <Message className="cartAuthHint" error={error} />
@@ -864,7 +900,12 @@ function CartSignupPanel({
           <Label className="cartAuthLabel" htmlFor="cart-signup-name">
             Name
           </Label>
-          <Input className="cartAuthInput" id="cart-signup-name" type="text" {...register('name')} />
+          <Input
+            className="cartAuthInput"
+            id="cart-signup-name"
+            type="text"
+            {...register('name')}
+          />
         </FormItem>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -917,7 +958,9 @@ function CartSignupPanel({
               className="cartAuthInput"
               {...register('password', { required: 'Password is required.' })}
             />
-            {errors.password && <FormError className="cartAuthError" message={errors.password.message} />}
+            {errors.password && (
+              <FormError className="cartAuthError" message={errors.password.message} />
+            )}
           </FormItem>
 
           <FormItem>
@@ -963,7 +1006,14 @@ function CartSignupPanel({
           </FormItem>
         ) : null}
 
-        <Button className="cartAuthPrimaryButton h-11 w-full rounded-full" disabled={isSubmitting} type="submit">
+        <BakeryAction
+          block
+          className="cartAuthPrimaryButton h-11 w-full rounded-full"
+          disabled={isSubmitting}
+          size="md"
+          type="submit"
+          variant="primary"
+        >
           {isSubmitting
             ? 'Processing'
             : requiresPhoneVerification
@@ -971,24 +1021,22 @@ function CartSignupPanel({
               : phone.trim()
                 ? 'Send code'
                 : 'Create account and continue'}
-        </Button>
-      </form>
+        </BakeryAction>
+      </BakeryCard>
     </div>
   )
 }
 
-function CartCompletePanel({
-  onClose,
-  order,
-}: {
-  onClose: () => void
-  order: CompleteOrder
-}) {
+function CartCompletePanel({ onClose, order }: { onClose: () => void; order: CompleteOrder }) {
   const orderHref = `/orders/${order.orderID}${order.accessToken ? `?accessToken=${order.accessToken}` : ''}`
 
   return (
     <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
-      <div className="flex min-h-full flex-col items-center justify-center gap-5 rounded-[6px] border border-black/8 bg-white px-6 py-8 text-center">
+      <BakeryCard
+        className="flex min-h-full flex-col items-center justify-center gap-5 bg-white px-6 py-8 text-center"
+        radius="sm"
+        spacing="none"
+      >
         <div className="flex h-16 w-16 items-center justify-center rounded-full border border-black/10 bg-[#fffefa]">
           <CheckCircle2 className="h-8 w-8 text-black/75" />
         </div>
@@ -1001,22 +1049,29 @@ function CartCompletePanel({
         </div>
 
         <div className="grid w-full max-w-[22rem] gap-2">
-          <Link
+          <BakeryAction
+            as={Link}
+            block
             className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
             href={orderHref}
             onClick={onClose}
+            size="md"
+            variant="primary"
           >
             View order
-          </Link>
-          <button
+          </BakeryAction>
+          <BakeryAction
+            block
             className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
             onClick={onClose}
+            size="md"
             type="button"
+            variant="secondary"
           >
             Close
-          </button>
+          </BakeryAction>
         </div>
-      </div>
+      </BakeryCard>
     </div>
   )
 }

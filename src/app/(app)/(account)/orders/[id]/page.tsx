@@ -1,6 +1,7 @@
 import type { Order } from '@/payload-types'
 import type { Metadata } from 'next'
 
+import { BakeryPageSurface } from '@/design-system/bakery'
 import { Price } from '@/components/Price'
 import { Button } from '@/components/ui/button'
 import { formatDateTime } from '@/utilities/formatDateTime'
@@ -134,7 +135,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         </h1>
       </div>
 
-      <div className="bg-card border rounded-lg px-6 py-4 flex flex-col gap-12">
+      <BakeryPageSurface className="flex flex-col gap-12" spacing="lg" width="full">
         <div className="flex flex-col gap-6 lg:flex-row lg:justify-between">
           <div className="">
             <p className="font-mono uppercase text-primary/50 mb-1 text-sm">Order Date</p>
@@ -196,7 +197,7 @@ export default async function Order({ params, searchParams }: PageProps) {
             <AddressItem address={order.shippingAddress} hideActions />
           </div>
         )}
-      </div>
+      </BakeryPageSurface>
     </div>
   )
 }
