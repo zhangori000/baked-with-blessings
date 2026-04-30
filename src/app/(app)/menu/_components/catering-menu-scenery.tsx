@@ -15,7 +15,7 @@ import {
   type BakerySlotStyles,
   useBakeryAnnouncer,
 } from '@/design-system/bakery'
-import { bakerySceneThemes } from '@/design-system/bakery/tokens'
+import { bakeryPrimitiveTokens, bakerySceneThemes } from '@/design-system/bakery/tokens'
 import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -1425,8 +1425,7 @@ export function PersuasionGardenPanel({
   styles,
   summary,
 }: PersuasionGardenPanelProps) {
-  const PANEL_WIPE_MS = 560
-  const PANEL_SETTLE_MS = 820
+  const PANEL_WIPE_MS = Number.parseInt(bakeryPrimitiveTokens.motion.panelPaint, 10)
   const flowerSeedCount = useResponsiveFlowerSeedCount()
   const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
@@ -1434,8 +1433,9 @@ export function PersuasionGardenPanel({
     buildSeededFlowers(sceneryTone, 'panel', seededAccentCount),
   )
   const [panelFace, setPanelFace] = useState<'details' | 'gallery'>('details')
-  const [panelTransition, setPanelTransition] = useState<'idle' | 'closing' | 'opening'>('idle')
-  const [transitionGhostFace, setTransitionGhostFace] = useState<'details' | 'gallery' | null>(null)
+  const [panelTransition, setPanelTransition] = useState<'idle' | 'to-gallery' | 'to-details'>(
+    'idle',
+  )
   const [loadedGalleryImageKeys, setLoadedGalleryImageKeys] = useState<ReadonlySet<string>>(
     () => new Set(),
   )
@@ -1509,15 +1509,13 @@ export function PersuasionGardenPanel({
       preloadGalleryImages(galleryImages)
     }
 
-    const previousFace = panelFace
     const productTitle = typeof product.title === 'string' ? product.title : 'this menu item'
 
     if (transitionTimeoutRef.current != null) {
       window.clearTimeout(transitionTimeoutRef.current)
     }
 
-    setTransitionGhostFace(null)
-    setPanelTransition('closing')
+    setPanelTransition(nextFace === 'gallery' ? 'to-gallery' : 'to-details')
     announce(
       nextFace === 'gallery'
         ? `Opening photos for ${productTitle}.`
@@ -1525,15 +1523,9 @@ export function PersuasionGardenPanel({
     )
 
     transitionTimeoutRef.current = window.setTimeout(() => {
-      setTransitionGhostFace(previousFace)
       setPanelFace(nextFace)
-      setPanelTransition('opening')
-
-      transitionTimeoutRef.current = window.setTimeout(() => {
-        setPanelTransition('idle')
-        setTransitionGhostFace(null)
-        transitionTimeoutRef.current = null
-      }, PANEL_SETTLE_MS)
+      setPanelTransition('idle')
+      transitionTimeoutRef.current = null
     }, PANEL_WIPE_MS)
   }
 
@@ -1550,10 +1542,11 @@ export function PersuasionGardenPanel({
   }
 
   const isGalleryFace = panelFace === 'gallery'
-  const showDetailsFace = !isGalleryFace || transitionGhostFace === 'details'
-  const showDetailsAsGhost = isGalleryFace && transitionGhostFace === 'details'
-  const showGalleryFace = isGalleryFace || transitionGhostFace === 'gallery'
-  const showGalleryAsGhost = !isGalleryFace && transitionGhostFace === 'gallery'
+  const isPanelTransitioning = panelTransition !== 'idle'
+  const isPaintingToGallery = panelTransition === 'to-gallery'
+  const isPaintingToDetails = panelTransition === 'to-details'
+  const showDetailsFace = !isGalleryFace || isPanelTransitioning
+  const showGalleryFace = hasGallery && (isGalleryFace || isPanelTransitioning)
 
   return (
     <div
@@ -1564,6 +1557,7 @@ export function PersuasionGardenPanel({
         {
           minHeight: hasGallery ? '34rem' : '30rem',
           ['--catering-panel-transition-distance' as string]: hasGallery ? '34rem' : '30rem',
+          ['--catering-tear-duration' as string]: `${PANEL_WIPE_MS}ms`,
           ['--catering-scene-charge' as string]: `var(--scene-action-aura, ${sceneButtonAuraByScenery[sceneryTone]})`,
           ['--catering-panel-fill' as string]: `var(--scene-panel-fill, ${panelBackgroundByScenery[sceneryTone]})`,
           ...styles?.root,
@@ -1577,10 +1571,12 @@ export function PersuasionGardenPanel({
         {showDetailsFace ? (
           <BakeryCard
             className={cn(
-              'cateringPersuasionPanel absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
+              'cateringPanelLayer cateringPersuasionPanel absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               `cateringScene-${sceneryTone}`,
-              showDetailsAsGhost &&
-                'cateringPanelWipeGhost cateringPanelWipeGhostToPhotos pointer-events-none z-[4]',
+              !isGalleryFace && panelTransition === 'idle' && 'cateringPanelLayerActive',
+              isPaintingToGallery && 'cateringPanelLayerBase',
+              isPaintingToDetails &&
+                'cateringPanelLayerPaintIn cateringPanelLayerPaintInFromBottom',
               classNames?.detailFace,
             )}
             radius="xl"
@@ -1617,12 +1613,6 @@ export function PersuasionGardenPanel({
             <div
               className={cn(
                 'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]',
-                (panelTransition === 'closing' || showDetailsAsGhost) &&
-                  'cateringPanelForegroundHidden',
-                panelTransition === 'opening' &&
-                  !isGalleryFace &&
-                  !showDetailsAsGhost &&
-                  'cateringPanelForegroundEntering',
                 classNames?.foreground,
               )}
               style={styles?.foreground}
@@ -1706,6 +1696,7 @@ export function PersuasionGardenPanel({
                         classNames?.actionButton,
                         classNames?.photosButton,
                       )}
+                      disabled={isPanelTransitioning}
                       onClick={() => runPanelTransition('gallery')}
                       style={{ ...styles?.actionButton, ...styles?.photosButton }}
                       wrapperClassName={classNames?.actionButtonWrap}
@@ -1730,6 +1721,7 @@ export function PersuasionGardenPanel({
                       classNames?.actionButton,
                       classNames?.sceneryButton,
                     )}
+                    disabled={isPanelTransitioning}
                     onClick={onToggleSceneryPicker}
                     style={{ ...styles?.actionButton, ...styles?.sceneryButton }}
                     wrapperClassName={classNames?.actionButtonWrap}
@@ -1850,9 +1842,10 @@ export function PersuasionGardenPanel({
         {hasGallery && showGalleryFace ? (
           <BakeryCard
             className={cn(
-              'absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
-              showGalleryAsGhost &&
-                'cateringPanelWipeGhost cateringPanelWipeGhostToDetails pointer-events-none z-[4]',
+              'cateringPanelLayer absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-white px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
+              isGalleryFace && panelTransition === 'idle' && 'cateringPanelLayerActive',
+              isPaintingToDetails && 'cateringPanelLayerBase',
+              isPaintingToGallery && 'cateringPanelLayerPaintIn cateringPanelLayerPaintInFromTop',
               classNames?.galleryFace,
             )}
             radius="xl"
@@ -1861,15 +1854,7 @@ export function PersuasionGardenPanel({
             tone="transparent"
           >
             <div
-              className={cn(
-                'cateringGalleryContent h-full',
-                panelTransition === 'closing' && 'cateringGalleryContentTransitioning',
-                panelTransition === 'opening' &&
-                  isGalleryFace &&
-                  !showGalleryAsGhost &&
-                  'cateringGalleryContentEntering',
-                classNames?.galleryContent,
-              )}
+              className={cn('cateringGalleryContent h-full', classNames?.galleryContent)}
               style={styles?.galleryContent}
             >
               <div
@@ -1878,6 +1863,7 @@ export function PersuasionGardenPanel({
               >
                 <SceneButton
                   className="cateringSpawnButton shrink-0"
+                  disabled={isPanelTransitioning}
                   onClick={() => runPanelTransition('details')}
                   variant="ghost"
                 >
@@ -1982,11 +1968,8 @@ export function PersuasionGardenPanel({
             <div
               className={cn(
                 'cateringPanelTearLine absolute left-0 right-0',
-                panelTransition === 'closing' && 'cateringPanelRepaintLineHidden',
-                panelTransition === 'opening' &&
-                  (transitionGhostFace === 'gallery'
-                    ? 'cateringPanelRepaintLineToDetails'
-                    : 'cateringPanelRepaintLineToPhotos'),
+                isPaintingToGallery && 'cateringPanelRepaintLineToPhotos',
+                isPaintingToDetails && 'cateringPanelRepaintLineToDetails',
                 classNames?.transitionLine,
               )}
               style={{

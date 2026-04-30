@@ -7,6 +7,8 @@
  */
 
 /**
+ * Business owner workflow status. Paid checkout creates orders as Processing; update this as the order is fulfilled, cancelled, or refunded.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "OrderStatus".
  */
@@ -306,6 +308,8 @@ export interface Customer {
   collection: 'customers';
 }
 /**
+ * Paid customer orders. Open an order to update fulfillment status and review customer contact, items, and delivery details.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
  */
@@ -357,6 +361,10 @@ export interface Order {
    */
   guestContactValue?: string | null;
   accessToken?: string | null;
+  /**
+   * Set automatically after the new-order email is sent to the business owner.
+   */
+  ownerNotificationSentAt?: string | null;
   /**
    * Stripe PaymentIntent used as the checkout idempotency key.
    */
@@ -2920,6 +2928,7 @@ export interface OrdersSelect<T extends boolean = true> {
   guestContactMethod?: T;
   guestContactValue?: T;
   accessToken?: T;
+  ownerNotificationSentAt?: T;
   stripePaymentIntentID?: T;
   updatedAt?: T;
   createdAt?: T;

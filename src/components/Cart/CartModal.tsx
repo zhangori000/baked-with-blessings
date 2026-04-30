@@ -7,6 +7,7 @@ import { Message } from '@/components/Message'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { TraySelectionSummary } from '@/components/TraySelectionSummary'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
+import { bakeryPrimitiveTokens } from '@/design-system/bakery/tokens'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { menuHref } from '@/utilities/routes'
@@ -104,8 +105,9 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
       ) : null}
 
       <SheetContent
-        className="!top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!top-3 sm:!bottom-auto sm:!left-auto sm:!right-3 sm:!h-[calc(100dvh-1.5rem)] sm:!max-h-[calc(100dvh-1.5rem)] sm:!min-h-0 sm:!w-[min(560px,calc(100vw-24px))] sm:!translate-x-0 sm:!translate-y-0 border border-black/12 rounded-[12px] bg-[#fffefa] p-0 text-black shadow-[0_28px_80px_rgba(31,36,24,0.22)]"
+        className="cartModalContent !top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!top-3 sm:!bottom-auto sm:!left-auto sm:!right-3 sm:!h-[calc(100dvh-1.5rem)] sm:!max-h-[calc(100dvh-1.5rem)] sm:!min-h-0 sm:!w-[min(560px,calc(100vw-24px))] sm:!translate-x-0 sm:!translate-y-0 border border-black/12 rounded-[12px] bg-[#fffefa] p-0 text-black shadow-[0_28px_80px_rgba(31,36,24,0.22)]"
         hideClose
+        motion="modal"
         onEscapeKeyDown={() => setIsOpen(false)}
         onInteractOutside={() => setIsOpen(false)}
         onPointerDownOutside={() => setIsOpen(false)}
@@ -408,13 +410,41 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             background: transparent;
           }
 
+          .cartModalContent {
+            --cart-modal-enter-duration: ${bakeryPrimitiveTokens.motion.modalEnter};
+            --cart-modal-exit-duration: ${bakeryPrimitiveTokens.motion.modalExit};
+            --cart-modal-panel-duration: ${bakeryPrimitiveTokens.motion.panelSwap};
+            --cart-motion-enter: ${bakeryPrimitiveTokens.motion.easeEnter};
+            --cart-motion-exit: ${bakeryPrimitiveTokens.motion.easeExit};
+            transform-origin: center;
+            will-change: opacity, transform;
+          }
+
+          .cartModalContent[data-state='open'] {
+            animation: cartModalSurfaceIn var(--cart-modal-enter-duration) var(--cart-motion-enter)
+              both;
+          }
+
+          .cartModalContent[data-state='closed'] {
+            animation: cartModalSurfaceOut var(--cart-modal-exit-duration) var(--cart-motion-exit)
+              both;
+          }
+
+          @media (min-width: 640px) {
+            .cartModalContent {
+              transform-origin: top right;
+            }
+          }
+
           .cartModalPanelStage {
             background: linear-gradient(180deg, #fffefa 0%, #fff8ed 100%);
+            will-change: opacity, transform;
           }
 
           .cartModalPanelStage.is-revealing {
-            animation: cartModalPanelReveal 980ms cubic-bezier(0.83, 0, 0.17, 1) both;
-            transform-origin: top;
+            animation: cartModalPanelReveal var(--cart-modal-panel-duration) var(--cart-motion-enter)
+              both;
+            transform-origin: top center;
           }
 
           .cartModalItemThumbImage {
@@ -615,15 +645,49 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             }
           }
 
-          @keyframes cartModalPanelReveal {
+          @keyframes cartModalSurfaceIn {
             0% {
-              clip-path: inset(0 0 100% 0);
-              transform: translateY(-0.35rem);
+              opacity: 0;
+              scale: 0.985;
             }
 
             100% {
-              clip-path: inset(0 0 0 0);
-              transform: translateY(0);
+              opacity: 1;
+              scale: 1;
+            }
+          }
+
+          @keyframes cartModalSurfaceOut {
+            0% {
+              opacity: 1;
+              scale: 1;
+            }
+
+            100% {
+              opacity: 0;
+              scale: 0.99;
+            }
+          }
+
+          @keyframes cartModalPanelReveal {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, -0.42rem, 0) scale(0.992);
+            }
+
+            100% {
+              opacity: 1;
+              transform: translate3d(0, 0, 0) scale(1);
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .cartModalContent[data-state='open'],
+            .cartModalContent[data-state='closed'],
+            .cartModalPanelStage.is-revealing,
+            .cartSceneCloud {
+              animation-duration: 1ms !important;
+              animation-iteration-count: 1 !important;
             }
           }
         `}</style>

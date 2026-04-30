@@ -1,6 +1,6 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { seoPlugin } from '@payloadcms/plugin-seo'
-import { CollectionSlug, Plugin } from 'payload'
+import type { CollectionSlug, Field, Plugin } from 'payload'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
@@ -22,6 +22,7 @@ import {
 } from '@/plugins/ecommerce/trayBuilder'
 import { preventPurchasedCartItemChanges } from '@/plugins/ecommerce/cartLifecycle'
 import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
+import { sendOwnerOrderNotificationAfterChange } from '@/utilities/email/sendOwnerOrderNotification'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
   if (!address || typeof address !== 'object' || !('phone' in address)) {
@@ -116,6 +117,31 @@ const createGuestContactFields = () => [
     },
   },
 ]
+
+const enhanceOrderFields = (fields: Field[]): Field[] =>
+  fields.map((field) => {
+    if ('name' in field && field.name === 'status') {
+      const statusField = field as Field & {
+        access?: Record<string, unknown>
+        admin?: Record<string, unknown>
+      }
+
+      return {
+        ...statusField,
+        access: {
+          ...statusField.access,
+          update: adminOnlyFieldAccess,
+        },
+        admin: {
+          ...statusField.admin,
+          description:
+            'Business owner workflow status. Paid checkout creates orders as Processing; update this as the order is fulfilled, cancelled, or refunded.',
+        },
+      } as Field
+    }
+
+    return field
+  })
 
 const generateTitle: GenerateTitle<Product | Page | Post> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Baked with Blessings` : 'Baked with Blessings'
@@ -230,7 +256,8 @@ export const plugins: Plugin[] = [
               name: 'mergedSourceCartIDs',
               type: 'array',
               admin: {
-                description: 'Guest cart IDs already merged into this cart. Used for retry-safe merges.',
+                description:
+                  'Guest cart IDs already merged into this cart. Used for retry-safe merges.',
                 initCollapsed: true,
                 readOnly: true,
               },
@@ -263,9 +290,23 @@ export const plugins: Plugin[] = [
     orders: {
       ordersCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
+        admin: {
+          ...defaultCollection.admin,
+          defaultColumns: [
+            'id',
+            'status',
+            'customerEmail',
+            'guestContactValue',
+            'amount',
+            'ownerNotificationSentAt',
+            'createdAt',
+          ],
+          description:
+            'Paid customer orders. Open an order to update fulfillment status and review customer contact, items, and delivery details.',
+        },
         fields: [
           ...extendCollectionItemsWithBatchSelections({
-            fields: defaultCollection.fields,
+            fields: enhanceOrderFields(defaultCollection.fields),
           }),
           ...createGuestContactFields(),
           {
@@ -289,6 +330,20 @@ export const plugins: Plugin[] = [
             },
           },
           {
+            name: 'ownerNotificationSentAt',
+            type: 'date',
+            index: true,
+            admin: {
+              date: {
+                pickerAppearance: 'dayAndTime',
+              },
+              description:
+                'Set automatically after the new-order email is sent to the business owner.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
+          {
             name: 'stripePaymentIntentID',
             type: 'text',
             unique: true,
@@ -302,6 +357,10 @@ export const plugins: Plugin[] = [
         ],
         hooks: {
           ...defaultCollection.hooks,
+          afterChange: [
+            ...(defaultCollection.hooks?.afterChange ?? []),
+            sendOwnerOrderNotificationAfterChange,
+          ],
           beforeValidate: [
             ...(defaultCollection.hooks?.beforeValidate ?? []),
             createTrayBuilderValidationHook(),
