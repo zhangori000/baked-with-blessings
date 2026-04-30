@@ -99,9 +99,11 @@ export default buildConfig({
     Media,
   ],
   db: postgresAdapter({
+    migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    push: process.env.NODE_ENV !== 'production' && !process.env.VERCEL,
   }),
   editor: lexicalEditor({
     features: () => {
