@@ -2,7 +2,9 @@ import type { Header } from '@/payload-types'
 import {
   blessingsNetworkHref,
   blogHref,
+  contactHref,
   discussionBoardHref,
+  isContactLinkHint,
   menuHref,
   reviewsHref,
   rotatingCookieFlavorsHref,
@@ -91,6 +93,33 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     },
   },
   {
+    href: contactHref,
+    id: 'contact',
+    label: 'Contact',
+    panel: {
+      eyebrow: 'Direct message',
+      description:
+        'Send a note to the bakery owner for custom orders, pickup questions, event details, or anything that needs a real reply.',
+      cards: [
+        {
+          description:
+            'Open the message envelope, write a contact note, and send it to the configured owner inbox.',
+          eyebrow: 'Owner inbox',
+          href: contactHref,
+          title: 'Write a message',
+          tone: 'light',
+        },
+      ],
+      links: [
+        {
+          description: 'Go to the contact page.',
+          href: contactHref,
+          label: 'Write a message',
+        },
+      ],
+    },
+  },
+  {
     href: blogHref,
     id: 'more',
     kind: 'apps',
@@ -165,7 +194,12 @@ const labelToFallbackItem = new Map(
 
 const fallbackItemById = new Map(fallbackHeaderNavigation.map((item) => [item.id, item] as const))
 
-const navItemPriority: Array<HeaderNavigationItem['id']> = ['cookies-of-the-month', 'menu', 'more']
+const navItemPriority: Array<HeaderNavigationItem['id']> = [
+  'cookies-of-the-month',
+  'menu',
+  'contact',
+  'more',
+]
 
 export const headerAnnouncement =
   'Fresh bakes daily. Custom cake orders and pickup help are one click away.'
@@ -178,7 +212,9 @@ export const buildHeaderNavigation = (menu: Header['navItems']) => {
       const label = item.link.label?.trim()
       if (!label) return null
 
-      const fallbackItem = labelToFallbackItem.get(label.toLowerCase())
+      const fallbackItem = isContactLinkHint({ label })
+        ? fallbackItemById.get('contact')
+        : labelToFallbackItem.get(label.toLowerCase())
       if (!fallbackItem) return null
 
       return fallbackItem

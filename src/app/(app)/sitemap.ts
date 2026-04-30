@@ -3,6 +3,7 @@ import type { MetadataRoute } from 'next'
 import configPromise from '@payload-config'
 import {
   blogHref,
+  contactHref,
   discussionBoardHref,
   menuHref,
   reviewsHref,
@@ -15,10 +16,13 @@ const staticPublicRoutes = [
   '/',
   rotatingCookieFlavorsHref,
   menuHref,
+  contactHref,
   blogHref,
   discussionBoardHref,
   reviewsHref,
 ]
+
+const staticPublicRouteSet = new Set(staticPublicRoutes)
 
 const toAbsoluteURL = (path: string) => new URL(path, getServerSideURL()).toString()
 
@@ -67,7 +71,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const pageEntries = pages.docs
-    .filter((page) => page.slug && page.slug !== 'home')
+    .filter(
+      (page) => page.slug && page.slug !== 'home' && !staticPublicRouteSet.has(`/${page.slug}`),
+    )
     .map((page) => ({
       changeFrequency: 'weekly' as const,
       lastModified: page.updatedAt ? new Date(page.updatedAt) : undefined,

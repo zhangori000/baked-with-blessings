@@ -3,16 +3,7 @@
 import { CMSLink } from '@/components/Link'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { BakeryAction, BakeryCard, SceneSurface } from '@/design-system/bakery'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { contactHref, isContactLinkHint } from '@/utilities/routes'
 import { Instagram, Linkedin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -37,7 +28,6 @@ type FooterClientProps = {
 }
 
 const instagramHref = 'https://www.instagram.com/_bakedwithblessings/'
-const instagramHandle = '@_bakedwithblessings'
 
 const getFooterLinkLabel = (linkProps: Record<string, unknown>) =>
   typeof linkProps.label === 'string' ? linkProps.label.trim() : ''
@@ -70,10 +60,10 @@ const isUnavailableFooterLink = (linkProps: Record<string, unknown>) => {
 }
 
 const isContactFooterLink = (linkProps: Record<string, unknown>) => {
-  const label = getFooterLinkLabel(linkProps).toLowerCase()
-  const href = getFooterLinkHref(linkProps).toLowerCase()
-
-  return label === 'contact' || href === '/contact'
+  return isContactLinkHint({
+    href: getFooterLinkHref(linkProps),
+    label: getFooterLinkLabel(linkProps),
+  })
 }
 
 function TikTokIcon(props: React.ComponentProps<'svg'>) {
@@ -113,190 +103,144 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
   ]
 
   return (
-    <Dialog>
-      <SceneSurface
-        as="footer"
-        className="relative min-h-[34rem] overflow-hidden px-3 pb-4 pt-10 sm:min-h-[32rem] sm:px-4 sm:pb-5 sm:pt-12 md:min-h-[29rem] md:px-6 md:pb-6 md:pt-14"
-        variant="footer"
+    <SceneSurface
+      as="footer"
+      className="relative min-h-[34rem] overflow-hidden px-3 pb-4 pt-10 sm:min-h-[32rem] sm:px-4 sm:pb-5 sm:pt-12 md:min-h-[29rem] md:px-6 md:pb-6 md:pt-14"
+      variant="footer"
+    >
+      <CartSceneShell
+        className="absolute inset-0 !overflow-hidden"
+        contentClassName="relative z-[1] min-h-full"
+        hideCompactFlowers
+        hideSheep
+        variant="compact"
       >
-        <CartSceneShell
-          className="absolute inset-0 !overflow-hidden"
-          contentClassName="relative z-[1] min-h-full"
-          hideCompactFlowers
-          hideSheep
-          variant="compact"
-        >
-          <div className="relative z-[1] mx-auto grid h-full max-w-[1320px] box-border content-stretch px-4 pb-5 pt-4 sm:px-5 sm:pb-6 sm:pt-5 md:px-6 md:pb-7 md:pt-6">
+        <div className="relative z-[1] mx-auto grid h-full max-w-[1320px] box-border content-stretch px-4 pb-5 pt-4 sm:px-5 sm:pb-6 sm:pt-5 md:px-6 md:pb-7 md:pt-6">
+          <BakeryCard
+            className="grid border px-4 pb-4 pt-7 sm:px-5 sm:pb-5 sm:pt-8 md:px-6 md:py-6"
+            radius="lg"
+            spacing="none"
+            tone="transparent"
+            style={{
+              backgroundColor: 'var(--bakery-footer-panel-bg)',
+              borderColor: 'var(--bakery-footer-border)',
+              boxShadow: 'var(--bakery-footer-panel-shadow)',
+              color: 'var(--bakery-footer-fg)',
+            }}
+          >
+            <div className="flex min-h-[19rem] flex-col gap-5 md:min-h-[17rem] md:flex-row md:items-start md:justify-between">
+              <section className="max-w-[34rem] md:pt-1">
+                <BakeryCard
+                  aria-label={brand.brandName}
+                  as={Link}
+                  className="inline-flex shrink-0 rounded-2xl bg-[#fff8e6]/90 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_24px_rgba(5,12,5,0.12)]"
+                  href="/"
+                  radius="lg"
+                  spacing="none"
+                  tone="transparent"
+                >
+                  <Image
+                    alt={brand.logoAlt}
+                    className="h-auto w-[8.75rem] object-contain sm:w-[10rem]"
+                    height={64}
+                    loading="eager"
+                    src={brand.logoUrl}
+                    unoptimized
+                    width={176}
+                  />
+                </BakeryCard>
+              </section>
+
+              <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
+                <nav aria-label="Footer links">
+                  <ul className="flex flex-wrap gap-2.5 md:justify-end">
+                    {navItems.map((item, index) => {
+                      const linkProps =
+                        item.link && typeof item.link === 'object'
+                          ? (item.link as Record<string, unknown>)
+                          : {}
+
+                      if (isUnavailableFooterLink(linkProps)) return null
+
+                      const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
+
+                      return (
+                        <li key={item.id ?? `footer-link-${index}`}>
+                          {isContactFooterLink(linkProps) ? (
+                            <BakeryAction
+                              as={Link}
+                              className={footerPillClassName}
+                              href={contactHref}
+                              size="sm"
+                              variant="secondary"
+                            >
+                              {getFooterLinkLabel(linkProps) || 'Contact'}
+                            </BakeryAction>
+                          ) : (
+                            <CMSLink
+                              appearance="link"
+                              className={`bakeryAction bakeryAction-secondary bakeryAction-sm ${footerPillClassName}`}
+                              {...footerLinkProps}
+                            />
+                          )}
+                        </li>
+                      )
+                    })}
+                    <li>
+                      <BakeryAction
+                        as={Link}
+                        className={footerPillClassName}
+                        href="/account"
+                        size="sm"
+                        variant="secondary"
+                      >
+                        Account
+                      </BakeryAction>
+                    </li>
+                  </ul>
+                </nav>
+
+                <div className="flex flex-wrap gap-2.5 md:justify-end">
+                  {socialLinks.map(({ href, icon: Icon, label }) => (
+                    <BakeryAction
+                      aria-label={label}
+                      as="a"
+                      className={footerSocialClassName}
+                      href={href}
+                      key={label}
+                      rel="noreferrer"
+                      size="sm"
+                      target="_blank"
+                      variant="secondary"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{label}</span>
+                    </BakeryAction>
+                  ))}
+                </div>
+              </section>
+            </div>
+
             <BakeryCard
-              className="grid border px-4 pb-4 pt-7 sm:px-5 sm:pb-5 sm:pt-8 md:px-6 md:py-6"
+              className="mt-3 rounded-2xl border border-[rgba(31, 47, 32, 0.08)] px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem]"
               radius="lg"
               spacing="none"
               tone="transparent"
               style={{
-                backgroundColor: 'var(--bakery-footer-panel-bg)',
+                backgroundColor: 'var(--bakery-footer-link-bg)',
                 borderColor: 'var(--bakery-footer-border)',
-                boxShadow: 'var(--bakery-footer-panel-shadow)',
-                color: 'var(--bakery-footer-fg)',
+                color: 'var(--bakery-footer-muted)',
               }}
             >
-              <div className="flex min-h-[19rem] flex-col gap-5 md:min-h-[17rem] md:flex-row md:items-start md:justify-between">
-                <section className="max-w-[34rem] md:pt-1">
-                  <BakeryCard
-                    aria-label={brand.brandName}
-                    as={Link}
-                    className="inline-flex shrink-0 rounded-2xl bg-[#fff8e6]/90 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_10px_24px_rgba(5,12,5,0.12)]"
-                    href="/"
-                    radius="lg"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <Image
-                      alt={brand.logoAlt}
-                      className="h-auto w-[8.75rem] object-contain sm:w-[10rem]"
-                      height={64}
-                      loading="eager"
-                      src={brand.logoUrl}
-                      unoptimized
-                      width={176}
-                    />
-                  </BakeryCard>
-                </section>
-
-                <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
-                  <nav aria-label="Footer links">
-                    <ul className="flex flex-wrap gap-2.5 md:justify-end">
-                      {navItems.map((item, index) => {
-                        const linkProps =
-                          item.link && typeof item.link === 'object'
-                            ? (item.link as Record<string, unknown>)
-                            : {}
-
-                        if (isUnavailableFooterLink(linkProps)) return null
-
-                        const footerLinkProps = linkProps as React.ComponentProps<typeof CMSLink>
-
-                        return (
-                          <li key={item.id ?? `footer-link-${index}`}>
-                            {isContactFooterLink(linkProps) ? (
-                              <DialogTrigger asChild>
-                                <BakeryAction
-                                  className={footerPillClassName}
-                                  size="sm"
-                                  type="button"
-                                  variant="secondary"
-                                >
-                                  {getFooterLinkLabel(linkProps) || 'Contact'}
-                                </BakeryAction>
-                              </DialogTrigger>
-                            ) : (
-                              <CMSLink
-                                appearance="link"
-                                className={`bakeryAction bakeryAction-secondary bakeryAction-sm ${footerPillClassName}`}
-                                {...footerLinkProps}
-                              />
-                            )}
-                          </li>
-                        )
-                      })}
-                      <li>
-                        <BakeryAction
-                          as={Link}
-                          className={footerPillClassName}
-                          href="/account"
-                          size="sm"
-                          variant="secondary"
-                        >
-                          Account
-                        </BakeryAction>
-                      </li>
-                    </ul>
-                  </nav>
-
-                  <div className="flex flex-wrap gap-2.5 md:justify-end">
-                    {socialLinks.map(({ href, icon: Icon, label }) => (
-                      <BakeryAction
-                        aria-label={label}
-                        as="a"
-                        className={footerSocialClassName}
-                        href={href}
-                        key={label}
-                        rel="noreferrer"
-                        size="sm"
-                        target="_blank"
-                        variant="secondary"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span>{label}</span>
-                      </BakeryAction>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              <BakeryCard
-                className="mt-3 rounded-2xl border border-[rgba(31, 47, 32, 0.08)] px-3 py-3 text-[0.9rem] font-semibold tracking-[0.005em] sm:text-[0.95rem]"
-                radius="lg"
-                spacing="none"
-                tone="transparent"
-                style={{
-                  backgroundColor: 'var(--bakery-footer-link-bg)',
-                  borderColor: 'var(--bakery-footer-border)',
-                  color: 'var(--bakery-footer-muted)',
-                }}
-              >
-                <p>
-                  &copy; {currentYear} {copyrightName}
-                  {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights
-                  reserved.
-                </p>
-              </BakeryCard>
+              <p>
+                &copy; {currentYear} {copyrightName}
+                {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights
+                reserved.
+              </p>
             </BakeryCard>
-          </div>
-        </CartSceneShell>
-      </SceneSurface>
-
-      <DialogContent
-        className="sm:max-w-md"
-        style={{
-          backgroundColor: 'var(--bakery-color-bg-primary)',
-          borderColor: 'var(--bakery-color-border)',
-          boxShadow: '0 24px 80px rgba(47,36,20,0.24)',
-          color: 'var(--bakery-color-fg)',
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-extrabold tracking-[-0.02em]">
-            Contact Baked with Blessings
-          </DialogTitle>
-          <DialogDescription
-            className="text-base leading-7"
-            style={{ color: 'var(--bakery-color-fg-muted)' }}
-          >
-            Hey, for now, we only have Instagram. DM me at{' '}
-            <a
-              className="font-extrabold underline underline-offset-4 transition hover:opacity-75"
-              href={instagramHref}
-              rel="noreferrer"
-              style={{
-                color: 'var(--bakery-color-fg)',
-                textDecorationColor: 'color-mix(in srgb, var(--bakery-color-fg) 25%, transparent)',
-              }}
-              target="_blank"
-            >
-              {instagramHandle}
-            </a>
-            .
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter className="sm:justify-start">
-          <DialogClose asChild>
-            <BakeryAction size="sm" type="button" variant="primary">
-              Got it
-            </BakeryAction>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </BakeryCard>
+        </div>
+      </CartSceneShell>
+    </SceneSurface>
   )
 }

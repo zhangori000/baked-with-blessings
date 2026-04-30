@@ -1,6 +1,7 @@
 'use client'
 
 import type { SceneTone } from '@/components/scenery/menuHeroScenery'
+import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
@@ -152,14 +153,15 @@ const buildSeededPosterFlowers = (cardIndex: number): SpawnedPosterFlower[] => {
 const createSpawnedPosterCloud = (sceneryTone: PosterSceneTone): SpawnedPosterCloud => {
   const assets = posterCloudAssetsByScenery[sceneryTone] ?? posterCloudAssetsByScenery.classic
   const src = assets[Math.floor(Math.random() * assets.length)] ?? assets[0]
+  const { left, top } = buildCloudSpawnPosition()
 
   return {
     delay: `-${(Math.random() * 7).toFixed(2)}s`,
     duration: `${(16 + Math.random() * 8).toFixed(2)}s`,
     id: ++spawnedPosterCloudID,
-    left: `${(4 + Math.random() * 40).toFixed(2)}%`,
+    left,
     src,
-    top: `${(6 + Math.random() * 22).toFixed(2)}%`,
+    top,
     width: `${(4.8 + Math.random() * 2.7).toFixed(2)}rem`,
   }
 }

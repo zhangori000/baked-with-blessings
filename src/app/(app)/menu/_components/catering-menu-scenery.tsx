@@ -18,6 +18,7 @@ import {
 import { bakeryPrimitiveTokens, bakerySceneThemes } from '@/design-system/bakery/tokens'
 import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { MenuSceneryTone } from './catering-menu-types'
@@ -847,41 +848,18 @@ const heroFlowerSeamByScenery: Record<MenuSceneryTone, string> = {
 
 const createSpawnedCloud = (
   sceneryTone: MenuSceneryTone,
-  kind: 'hero' | 'panel' = 'panel',
+  _kind: 'hero' | 'panel' = 'panel',
 ): SpawnedCloud => {
   const spawnDesigns = cloudSpawnDesignsByScenery[sceneryTone] ?? brownAnimeCloudSpawnDesigns
   const design =
     spawnDesigns[Math.floor(Math.random() * spawnDesigns.length)] ?? brownAnimeCloudSpawnDesigns[0]
-  const leftRange =
-    kind === 'hero'
-      ? sceneryTone === 'under-tree'
-        ? [24, 76]
-        : [6, 60]
-      : sceneryTone === 'under-tree'
-        ? [12, 64]
-        : [5, 68]
-  const topRange =
-    kind === 'hero'
-      ? sceneryTone === 'under-tree'
-        ? [4.8, 14.2]
-        : sceneryTone === 'moonlit'
-          ? [5.2, 14.8]
-          : sceneryTone === 'classic'
-            ? [5.4, 14.6]
-            : [5.2, 15.2]
-      : sceneryTone === 'under-tree'
-        ? [1.6, 5.4]
-        : sceneryTone === 'moonlit'
-          ? [1.8, 5.8]
-          : sceneryTone === 'classic'
-            ? [1.7, 5.7]
-            : [1.8, 6.1]
+  const { left, top } = buildCloudSpawnPosition()
 
   return {
     id: Date.now() + Math.random(),
-    left: `${randomBetween(leftRange[0], leftRange[1]).toFixed(2)}%`,
+    left,
     src: design.src,
-    top: `${randomBetween(topRange[0], topRange[1]).toFixed(2)}rem`,
+    top,
     width: `${randomBetween(design.minWidth, design.maxWidth).toFixed(2)}rem`,
   }
 }

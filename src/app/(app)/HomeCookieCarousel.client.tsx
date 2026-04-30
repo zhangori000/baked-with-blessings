@@ -36,6 +36,7 @@ import {
   menuSceneButtonAuraByScene,
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
+import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import type { CookiePosterAsset, CookieInfoRichText } from './menu/_components/cookiePosterData'
@@ -299,8 +300,7 @@ const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
     menuCloudSpawnDesignsByScene[sceneTone] ?? menuCloudSpawnDesignsByScene.classic
   const cloud =
     spawnDesigns[Math.floor(Math.random() * spawnDesigns.length)] ?? spawnDesigns[0] ?? null
-  const left = Math.random() * 84
-  const top = 5 + Math.random() * 26
+  const { left, top } = buildCloudSpawnPosition()
 
   return {
     className: '',
@@ -308,8 +308,8 @@ const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
     src: cloud?.src ?? '/clouds/three-ball-cloud-wide.svg',
     style: {
       animationDelay: `-${(Math.random() * 7).toFixed(2)}s`,
-      left: `${left.toFixed(2)}%`,
-      top: `${top.toFixed(2)}%`,
+      left,
+      top,
       width: `${(
         (cloud?.minWidth ?? 10.6) +
         Math.random() * ((cloud?.maxWidth ?? 14.8) - (cloud?.minWidth ?? 10.6))

@@ -18,6 +18,7 @@ import { cn } from '@/utilities/cn'
 import {
   blessingsNetworkHref,
   blogHref,
+  contactHref,
   discussionBoardHref,
   menuHref,
   reviewsHref,
@@ -156,6 +157,7 @@ export function HeaderClient({ brand, header }: Props) {
   useEffect(() => {
     router.prefetch(menuHref)
     router.prefetch(rotatingCookieFlavorsHref)
+    router.prefetch(contactHref)
     router.prefetch(blogHref)
     router.prefetch(discussionBoardHref)
     router.prefetch(blessingsNetworkHref)
