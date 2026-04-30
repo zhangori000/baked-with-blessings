@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
-import Link from 'next/link'
 import React, { Fragment, useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -63,8 +62,9 @@ export const ForgotPasswordForm: React.FC = () => {
           <h1 className="text-xl mb-4">Forgot Password</h1>
           <div className="prose dark:prose-invert mb-8">
             <p>
-              {`Enter the email address or phone number connected to your account. Email-based accounts will receive a reset email. Phone-based accounts will receive a 6-digit verification code. To manage your all users, `}
-              <Link href="/admin">login to the admin dashboard</Link>.
+              Enter the email address or phone number connected to your account. Email-based
+              accounts will receive a reset email. Phone-based accounts will receive a 6-digit
+              verification code.
             </p>
           </div>
           <form className="max-w-lg" onSubmit={handleSubmit(onSubmit)}>

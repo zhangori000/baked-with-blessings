@@ -12,6 +12,7 @@ import { OrderItem } from '@/components/OrderItem'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
 export default async function AccountPage() {
   const headers = await getHeaders()
@@ -22,7 +23,10 @@ export default async function AccountPage() {
 
   if (!user) {
     redirect(
-      `/login?warning=${encodeURIComponent('Please login to access your account settings.')}`,
+      buildCustomerLoginHref({
+        redirect: '/account',
+        warning: 'Please login to access your account settings.',
+      }),
     )
   }
 

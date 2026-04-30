@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 import { useRouter } from 'next/navigation'
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -79,9 +80,10 @@ export const AccountForm: React.FC = () => {
   useEffect(() => {
     if (user === null) {
       router.push(
-        `/login?error=${encodeURIComponent(
-          'You must be logged in to view this page.',
-        )}&redirect=${encodeURIComponent('/account')}`,
+        buildCustomerLoginHref({
+          redirect: '/account',
+          warning: 'You must be logged in to view this page.',
+        }),
       )
     }
 

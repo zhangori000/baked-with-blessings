@@ -9,13 +9,16 @@ import {
   useBakeryMediaQuery,
 } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
-import { MenuIcon, ShoppingBag, X } from 'lucide-react'
+import { MenuIcon, ShoppingBag, UserRound, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 type Props = {
+  accountButtonLabel: string
   cartQuantity: number
+  isAccountOpen: boolean
+  onOpenAccount: () => void
   onOpenCart: () => void
   items: Array<{
     id: string
@@ -41,7 +44,14 @@ type MobileFlowerTone = 'orange' | 'plum' | 'rose' | 'sage' | 'sunflower'
 const mainCardFlowerTones: MobileFlowerTone[] = ['orange', 'sage']
 const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
 
-export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
+export function MobileMenu({
+  accountButtonLabel,
+  cartQuantity,
+  isAccountOpen,
+  items,
+  onOpenAccount,
+  onOpenCart,
+}: Props) {
   const pathname = usePathname()
   const { announce } = useBakeryAnnouncer()
   const isTabletUp = useBakeryMediaQuery(bakeryMediaQueries.tabletUp)
@@ -141,6 +151,20 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
           type="button"
         >
           {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
+        </BakeryPressable>
+
+        <BakeryPressable
+          aria-label={accountButtonLabel}
+          className={cn('siteHeaderMobileIconButton siteHeaderMobileAccountButton', {
+            'is-active': isAccountOpen,
+          })}
+          onClick={() => {
+            setIsOpen(false)
+            onOpenAccount()
+          }}
+          type="button"
+        >
+          <UserRound className="h-4 w-4" />
         </BakeryPressable>
 
         <BakeryPressable

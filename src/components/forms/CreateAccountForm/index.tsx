@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
+import { customerLoginHref } from '@/utilities/routes'
 import { ArrowRight, Mail, ShieldCheck, Smartphone, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -28,7 +29,6 @@ const contactRequirementMessage = 'Enter at least an email address or a phone nu
 
 export const CreateAccountForm: React.FC = () => {
   const searchParams = useSearchParams()
-  const allParams = searchParams.toString() ? `?${searchParams.toString()}` : ''
   const { create } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -316,11 +316,7 @@ export const CreateAccountForm: React.FC = () => {
           </Button>
 
           <p className={styles.loginHint}>
-            Already have an account? <Link href={`/login${allParams}`}>Log in</Link>.
-          </p>
-
-          <p className={styles.loginHint}>
-            Need full site management instead? <Link href="/admin">Use the admin dashboard</Link>.
+            Already have an account? <Link href={customerLoginHref}>Log in</Link>.
           </p>
 
           {phoneValue.trim() && !requiresPhoneVerification && !verificationCode.trim() ? (

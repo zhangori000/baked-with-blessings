@@ -4,6 +4,7 @@ import { seedBlogPosts } from './blog-posts'
 import { ensureBlessingsNetworkStarterContent } from '@/features/blessings-network/services/networkData'
 import { importCateringMedia } from './catering-media'
 import { seedCateringProducts } from './catering-products'
+import { seedFlavorRotation } from './flavor-rotations'
 import { importCookieMedia } from './cookie-media'
 import { seedCookieProducts } from './cookie-products'
 import { clearLegacyMedia } from './legacy-media'
@@ -13,6 +14,7 @@ const productCollectionsToReset: CollectionSlug[] = [
   'orders',
   'carts',
   'addresses',
+  'flavor-rotations',
   'variants',
   'products',
   'categories',
@@ -71,6 +73,14 @@ export const seed = async ({
 
   const cookieSeedResult = await seedCookieProducts({
     mediaBySlug,
+    payload,
+    req,
+  })
+
+  payload.logger.info('- Seeding active flavor rotation...')
+
+  await seedFlavorRotation({
+    cookieProductsBySlug: cookieSeedResult.productsBySlug,
     payload,
     req,
   })

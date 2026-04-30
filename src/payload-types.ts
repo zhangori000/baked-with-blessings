@@ -88,6 +88,7 @@ export interface Config {
     'blessings-network-owner-posts': BlessingsNetworkOwnerPost;
     pages: Page;
     posts: Post;
+    'flavor-rotations': FlavorRotation;
     categories: Category;
     media: Media;
     forms: Form;
@@ -132,6 +133,7 @@ export interface Config {
     'blessings-network-owner-posts': BlessingsNetworkOwnerPostsSelect<false> | BlessingsNetworkOwnerPostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -1856,6 +1858,61 @@ export interface BlessingsNetworkOwnerPost {
   createdAt: string;
 }
 /**
+ * Manual storefront flavor rotations. The active rotation controls which cookie products can be ordered individually; all other cookie flavors stay visible and link customers to /menu for catering trays.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-rotations".
+ */
+export interface FlavorRotation {
+  id: number;
+  /**
+   * Internal admin title, for example "May 2026 Cookie Rotation".
+   */
+  title: string;
+  /**
+   * Only one rotation should be active. Draft and archived rotations are invisible to customers.
+   */
+  status: 'draft' | 'active' | 'archived';
+  /**
+   * This keeps the model flexible for future seasonal or special flavor lineups without changing the storefront API.
+   */
+  rotationType: 'monthly' | 'seasonal' | 'special';
+  /**
+   * Optional public-facing label for this rotation, such as "May cookie rotation" or "Spring specials".
+   */
+  displayLabel?: string | null;
+  /**
+   * How many flavors can be ordered individually for this rotation. Use 3 for the normal monthly model, or raise it before selecting flavors when the owner wants 5, 6, or a larger special lineup.
+   */
+  individualFlavorSlots: number;
+  /**
+   * Choose exactly the number of cookie products set in Rotation size. These are the only cookies customers can order one at a time; every other cookie remains visible and links to /menu for catering trays.
+   */
+  individualFlavors: (number | Product)[];
+  /**
+   * Short label for cookies that are part of the active individual-order lineup.
+   */
+  monthlyFlavorLabel?: string | null;
+  /**
+   * Short label shown beside the lock icon on non-rotation cookie cards.
+   */
+  lockedLabel?: string | null;
+  /**
+   * Plain-English explanation shown for non-rotation cookies. Keep it short so it fits on small cards.
+   */
+  lockedDescription?: string | null;
+  /**
+   * CTA label for catering-only cookies. The link destination remains /menu.
+   */
+  menuLinkLabel?: string | null;
+  /**
+   * Internal notes for the business owner. Not shown on the storefront; useful for future discount or seasonal planning.
+   */
+  ownerNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
@@ -1947,6 +2004,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'flavor-rotations';
+        value: number | FlavorRotation;
       } | null)
     | ({
         relationTo: 'categories';
@@ -2481,6 +2542,25 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-rotations_select".
+ */
+export interface FlavorRotationsSelect<T extends boolean = true> {
+  title?: T;
+  status?: T;
+  rotationType?: T;
+  displayLabel?: T;
+  individualFlavorSlots?: T;
+  individualFlavors?: T;
+  monthlyFlavorLabel?: T;
+  lockedLabel?: T;
+  lockedDescription?: T;
+  menuLinkLabel?: T;
+  ownerNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -5,6 +5,7 @@ import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacemen
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
+import { Lock } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import React, { useState } from 'react'
@@ -190,6 +191,8 @@ function CookiePosterRailCard({
   const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedPosterFlower[]>(
     buildSeededPosterFlowers(cardIndex),
   )
+  const isCateringOnly = poster.canBuyIndividually === false
+  const posterMenuHref = poster.menuHref ?? menuHref
 
   const staticCloudAssets =
     posterCloudAssetsByScenery[sceneryTone] ?? posterCloudAssetsByScenery.classic
@@ -221,13 +224,32 @@ function CookiePosterRailCard({
       >
         <div className="cookiePosterMeta flex justify-between gap-3 px-1">
           <h3 className="cookiePosterTitle min-w-0 flex-1 text-[1.28rem] font-medium leading-[0.96] tracking-[-0.03em] text-[#171510] md:text-[1.38rem]">
-            <span>{poster.title}</span>
+            {isCateringOnly ? (
+              <Link
+                aria-label={`View catering options for ${poster.title} on the menu`}
+                className="cookiePosterLockedNameTag"
+                href={posterMenuHref}
+              >
+                <Lock aria-hidden="true" size={14} strokeWidth={2.4} />
+                <span>{poster.title}</span>
+              </Link>
+            ) : (
+              <span>{poster.title}</span>
+            )}
           </h3>
 
           <div className="shrink-0">
             <CookiePosterAddToCartButton poster={poster} />
           </div>
         </div>
+
+        {isCateringOnly ? (
+          <p className="cookiePosterLockedDescription px-1">
+            <span>{poster.lockedLabel ?? 'Catering only this month'}.</span>{' '}
+            {poster.lockedDescription ??
+              'Available in batches of 10, mini or regular size, on the menu.'}
+          </p>
+        ) : null}
 
         <CookiePosterSketchFrame slug={poster.slug} style={sceneStyle}>
           <div className="cookiePosterSceneControls absolute left-3 top-3 z-30 flex max-w-[calc(100%-1.5rem)] flex-wrap gap-2">
@@ -502,7 +524,23 @@ function CookiePosterSketchFrame({ children, slug, style }: CookiePosterSketchFr
 
 function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) {
   const { addItem, isLoading } = useCart()
+  const isCateringOnly = poster.canBuyIndividually === false
   const canAdd = typeof poster.productId === 'number'
+
+  if (isCateringOnly) {
+    return (
+      <BakeryAction
+        aria-label={`View catering options for ${poster.title} on the menu`}
+        className="cookiePosterActionButton cookiePosterActionButton--locked inline-flex cursor-pointer items-center justify-center text-center text-[0.92rem] font-medium tracking-[-0.01em] transition duration-200"
+        href={poster.menuHref ?? menuHref}
+        size="sm"
+        start={<Lock aria-hidden="true" size={14} strokeWidth={2.4} />}
+        variant="secondary"
+      >
+        {poster.menuLinkLabel ?? 'Menu'}
+      </BakeryAction>
+    )
+  }
 
   return (
     <BakeryAction
@@ -736,6 +774,33 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
         .cookiePosterTitle a {
           display: inline-block;
           max-width: 100%;
+        }
+
+        .cookiePosterLockedNameTag {
+          align-items: center;
+          color: inherit;
+          display: inline-flex;
+          gap: 0.34rem;
+          text-decoration: none;
+        }
+
+        .cookiePosterLockedNameTag span {
+          min-width: 0;
+        }
+
+        .cookiePosterLockedDescription {
+          color: rgba(23, 21, 16, 0.66);
+          font-family: var(--font-rounded-body);
+          font-size: 0.78rem;
+          font-weight: 650;
+          line-height: 1.38;
+          margin-bottom: 0.78rem;
+          margin-top: -0.36rem;
+        }
+
+        .cookiePosterLockedDescription span {
+          color: #171510;
+          font-weight: 800;
         }
 
         .cookieCateringNotice {

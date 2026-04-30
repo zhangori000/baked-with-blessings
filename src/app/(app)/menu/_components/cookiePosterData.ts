@@ -27,8 +27,16 @@ export type CookiePosterMeta = {
 
 export type CookiePosterAsset = CookiePosterMeta & {
   amount: string
+  canBuyCatering?: boolean
+  canBuyIndividually?: boolean
   href: string
   image: Media | null
+  isMonthlyFlavor?: boolean
+  lockedDescription?: string
+  lockedLabel?: string
+  menuHref?: string
+  menuLinkLabel?: string
+  monthlyFlavorLabel?: string
   productId?: number
 }
 
@@ -428,6 +436,8 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
   return {
     ...meta,
     amount: formatAmount(cookiePosterDisplayPriceInUSD),
+    canBuyCatering: true,
+    canBuyIndividually: true,
     href: `/cookies/${meta.slug}`,
     image: normalizeImage(product),
     infoButtonLabel: resolvePosterText({
@@ -463,6 +473,13 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
       key: 'labelTone',
       product,
     }),
+    isMonthlyFlavor: true,
+    lockedDescription:
+      'This flavor is outside the current rotation, but you can still order it in batches of 10 from the menu.',
+    lockedLabel: 'Catering only this month',
+    menuHref: '/menu',
+    menuLinkLabel: 'View menu',
+    monthlyFlavorLabel: "This month's flavor",
     productId: typeof product.id === 'number' ? product.id : undefined,
     summary: resolveSummary(product, meta),
     subtitle: resolvePosterText({

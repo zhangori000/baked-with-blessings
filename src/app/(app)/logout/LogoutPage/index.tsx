@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/providers/Auth'
+import { customerLoginHref, menuHref } from '@/utilities/routes'
 import Link from 'next/link'
 import React, { Fragment, useEffect, useState } from 'react'
 
@@ -31,11 +32,11 @@ export const LogoutPage: React.FC = (props) => {
             What would you like to do next?
             <Fragment>
               {' '}
-              <Link href="/search">Click here</Link>
+              <Link href={menuHref}>Click here</Link>
               {` to shop.`}
             </Fragment>
             {` To log back in, `}
-            <Link href="/login">click here</Link>.
+            <Link href={customerLoginHref}>click here</Link>.
           </p>
         </div>
       )}

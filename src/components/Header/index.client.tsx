@@ -30,7 +30,10 @@ import {
   BookOpenText,
   ChevronDown,
   ClipboardCheck,
+  Eye,
+  EyeOff,
   Handshake,
+  LoaderCircle,
   MessageSquareText,
   PanelsTopLeft,
   ShoppingBag,
@@ -39,7 +42,7 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 
 import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants'
 import { MobileMenu } from './MobileMenu'
@@ -54,6 +57,15 @@ type Props = {
     logoUrl: string | null
   }
   header: Header
+}
+
+type HeaderAdminUser = {
+  email?: string | null
+  id?: number | string
+}
+
+type AdminMeResponse = {
+  user?: HeaderAdminUser | null
 }
 
 const headerClassNames = {
@@ -100,6 +112,16 @@ const appsNavigationLabel = 'Other pages'
 
 const formatCartQuantity = (quantity: number) => `${quantity} item${quantity === 1 ? '' : 's'}`
 
+const getSafeLocalRedirect = (value: null | string) => {
+  if (!value?.startsWith('/') || value.startsWith('//')) {
+    return null
+  }
+
+  return value
+}
+
+const isEmailLike = (value: string) => /\S+@\S+\.\S+/.test(value.trim())
+
 export function HeaderClient({ brand, header }: Props) {
   const pathname = usePathname()
   const router = useRouter()
@@ -108,9 +130,22 @@ export function HeaderClient({ brand, header }: Props) {
   const { isScrolled } = useHeaderVisibility()
   const { announce } = useBakeryAnnouncer()
   const { cart } = useCart()
-  const { user, logout } = useAuth()
+  const { user, login, logout } = useAuth()
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
+  const [accountWarning, setAccountWarning] = useState<string | null>(null)
+  const [customerLoginIdentifier, setCustomerLoginIdentifier] = useState('')
+  const [customerLoginPassword, setCustomerLoginPassword] = useState('')
+  const [customerLoginError, setCustomerLoginError] = useState<string | null>(null)
+  const [isCustomerLoginSubmitting, setIsCustomerLoginSubmitting] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [showCustomerLoginPassword, setShowCustomerLoginPassword] = useState(false)
+  const [adminSessionUser, setAdminSessionUser] = useState<HeaderAdminUser | null>(null)
+  const [isAdminSessionLoading, setIsAdminSessionLoading] = useState(true)
+
+  const hasSignedInAccount = Boolean(user || adminSessionUser)
+  const isAccountSessionPending = !user && isAdminSessionLoading
+  const signedInAccountLabel = user ? 'Customer account' : adminSessionUser ? 'Owner workspace' : null
+  const signedInAccountDetail = user?.email ?? adminSessionUser?.email ?? 'Signed in'
 
   const navigationItems = useMemo(() => {
     return buildHeaderNavigation(header.navItems || []).map((item) => ({
@@ -130,14 +165,16 @@ export function HeaderClient({ brand, header }: Props) {
   )
   const cartSubtotal = typeof cart?.subtotal === 'number' ? cart.subtotal : 0
 
-  const accountLinks = useMemo(
-    () => (user ? ['/account', '/orders', '/account/addresses'] : ['/login', '/create-account']),
-    [user],
-  )
+  const accountLinks = useMemo(() => {
+    if (user) return ['/account', '/orders', '/account/addresses']
+    if (adminSessionUser) return ['/admin']
+    return []
+  }, [adminSessionUser, user])
   const activeAppLabel = getActiveAppLabel(pathname)
 
   const accountLabels = {
     '/account': user ? 'Account settings' : 'Log in',
+    '/admin': 'Dashboard',
     '/orders': user ? 'Orders' : 'Create account',
     '/account/addresses': 'Addresses',
     '/login': 'Log in',
@@ -153,6 +190,15 @@ export function HeaderClient({ brand, header }: Props) {
   useEffect(() => {
     setActivePanel(null)
   }, [pathname])
+
+  useEffect(() => {
+    const currentSearchParams = new URLSearchParams(window.location.search)
+    setAccountWarning(currentSearchParams.get('warning'))
+
+    if (!user && currentSearchParams.get('account') === 'login') {
+      setActivePanel('account')
+    }
+  }, [pathname, user])
 
   useEffect(() => {
     router.prefetch(menuHref)
@@ -173,6 +219,7 @@ export function HeaderClient({ brand, header }: Props) {
       const target = event.target as HTMLElement
       if (target.closest(`.${headerClassNames.actionButton}`)) return
       if (target.closest(`.${headerClassNames.bannerLink}`)) return
+      if (target.closest('.siteHeaderMobileAccountButton')) return
       if (target.closest('.siteHeaderMobileBagButton')) return
 
       closePanel()
@@ -191,7 +238,54 @@ export function HeaderClient({ brand, header }: Props) {
     }
   }, [activePanel])
 
-  const accountPanelName = user ? 'Account menu' : 'Sign-in menu'
+  useEffect(() => {
+    let isCurrent = true
+
+    if (user) {
+      setAdminSessionUser(null)
+      setIsAdminSessionLoading(false)
+      return () => {
+        isCurrent = false
+      }
+    }
+
+    const loadAdminSession = async () => {
+      setIsAdminSessionLoading(true)
+
+      try {
+        const response = await fetch('/api/admins/me', {
+          cache: 'no-store',
+          credentials: 'include',
+        })
+
+        if (!isCurrent) return
+
+        if (!response.ok) {
+          setAdminSessionUser(null)
+          return
+        }
+
+        const data = (await response.json()) as AdminMeResponse
+        setAdminSessionUser(data.user ?? null)
+      } catch {
+        if (isCurrent) {
+          setAdminSessionUser(null)
+        }
+      } finally {
+        if (isCurrent) {
+          setIsAdminSessionLoading(false)
+        }
+      }
+    }
+
+    void loadAdminSession()
+
+    return () => {
+      isCurrent = false
+    }
+  }, [user])
+
+  const accountPanelName = hasSignedInAccount ? 'Account menu' : 'Sign-in menu'
 
   const announceHeaderPanelClosed = (panel: ActivePanel) => {
     if (panel === 'account') {
@@ -225,12 +319,93 @@ export function HeaderClient({ brand, header }: Props) {
     window.dispatchEvent(new Event('bwb:open-cart'))
   }
 
+  const handleCustomerLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (isCustomerLoginSubmitting) {
+      return
+    }
+
+    const identifier = customerLoginIdentifier.trim()
+    const password = customerLoginPassword.trim()
+
+    if (!identifier || !password) {
+      setCustomerLoginError('Enter your customer email or phone number and password.')
+      return
+    }
+
+    setCustomerLoginError(null)
+    setIsCustomerLoginSubmitting(true)
+
+    try {
+      await login({
+        identifier,
+        password,
+      })
+
+      setCustomerLoginIdentifier('')
+      setCustomerLoginPassword('')
+      setShowCustomerLoginPassword(false)
+      setActivePanel(null)
+      announce('Customer account signed in.')
+
+      const redirectPath = getSafeLocalRedirect(
+        new URLSearchParams(window.location.search).get('redirect'),
+      )
+
+      if (redirectPath) {
+        router.push(redirectPath)
+      } else {
+        router.refresh()
+      }
+    } catch {
+      if (isEmailLike(identifier)) {
+        const adminLoginResponse = await fetch('/api/admins/login', {
+          body: JSON.stringify({
+            email: identifier.toLowerCase(),
+            password,
+          }),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        })
+
+        if (adminLoginResponse.ok) {
+          setCustomerLoginIdentifier('')
+          setCustomerLoginPassword('')
+          setShowCustomerLoginPassword(false)
+          setActivePanel(null)
+          window.location.assign('/admin')
+          return
+        }
+      }
+
+      setCustomerLoginError('That email, phone, and password combination did not match an account.')
+    } finally {
+      setIsCustomerLoginSubmitting(false)
+    }
+  }
+
   const handleLogout = async () => {
-    if (!logout || isLoggingOut) return
+    if (isLoggingOut) return
     setIsLoggingOut(true)
     try {
-      await logout()
+      if (user && logout) {
+        await logout()
+      }
+
+      if (adminSessionUser) {
+        await fetch('/api/admins/logout', {
+          credentials: 'include',
+          method: 'POST',
+        })
+        setAdminSessionUser(null)
+      }
+
       setActivePanel(null)
+      router.refresh()
     } finally {
       setIsLoggingOut(false)
     }
@@ -284,8 +459,17 @@ export function HeaderClient({ brand, header }: Props) {
             </Link>
 
             <MobileMenu
+              accountButtonLabel={hasSignedInAccount ? 'Open account menu' : 'Open sign-in menu'}
               cartQuantity={cartQuantity}
+              isAccountOpen={activePanel === 'account'}
               items={navigationItems}
+              onOpenAccount={() => {
+                toggleHeaderPanel(
+                  'account',
+                  `${accountPanelName} opened.`,
+                  `${accountPanelName} closed.`,
+                )
+              }}
               onOpenCart={openCartModal}
             />
 
@@ -512,8 +696,18 @@ export function HeaderClient({ brand, header }: Props) {
               {activePanel === 'account' ? (
                 <>
                   <p className={headerClassNames.actionPanelTitle}>
-                    {user ? 'Account' : 'Sign in'} quick actions
+                    {hasSignedInAccount
+                      ? 'Account quick actions'
+                      : isAccountSessionPending
+                        ? 'Checking account'
+                        : 'Sign in'}
                   </p>
+                  {hasSignedInAccount ? (
+                    <div className="siteHeaderAccountSummary">
+                      <span>{signedInAccountLabel}</span>
+                      <strong>{signedInAccountDetail}</strong>
+                    </div>
+                  ) : null}
                   <ul className={headerClassNames.actionPanelList}>
                     {accountLinks.map((href) => (
                       <li key={href}>
@@ -534,7 +728,94 @@ export function HeaderClient({ brand, header }: Props) {
                     ))}
                   </ul>
 
-                  {user ? (
+                  {isAccountSessionPending ? (
+                    <p className="siteHeaderAuthIntro siteHeaderAuthIntro--pending">
+                      Checking your signed-in account...
+                    </p>
+                  ) : null}
+
+                  {!hasSignedInAccount && !isAccountSessionPending ? (
+                    <form className="siteHeaderAuthPanel" onSubmit={handleCustomerLoginSubmit}>
+                      <p className="siteHeaderAuthIntro">
+                        Use the email or phone number connected to your account. We will keep you
+                        on this page unless your account opens a management workspace.
+                      </p>
+
+                      {customerLoginError ? (
+                        <p className="siteHeaderAuthError" role="alert">
+                          {customerLoginError}
+                        </p>
+                      ) : null}
+
+                      {!customerLoginError && accountWarning ? (
+                        <p className="siteHeaderAuthNotice">{accountWarning}</p>
+                      ) : null}
+
+                      <label className="siteHeaderAuthField">
+                        <span>Email or phone</span>
+                        <input
+                          autoComplete="username"
+                          className="siteHeaderAuthInput"
+                          inputMode="email"
+                          onChange={(event) => setCustomerLoginIdentifier(event.target.value)}
+                          placeholder="you@example.com"
+                          type="text"
+                          value={customerLoginIdentifier}
+                        />
+                      </label>
+
+                      <label className="siteHeaderAuthField">
+                        <span>Password</span>
+                        <span className="siteHeaderPasswordShell">
+                          <input
+                            autoComplete="current-password"
+                            className="siteHeaderAuthInput siteHeaderPasswordInput"
+                            onChange={(event) => setCustomerLoginPassword(event.target.value)}
+                            placeholder="Enter password"
+                            type={showCustomerLoginPassword ? 'text' : 'password'}
+                            value={customerLoginPassword}
+                          />
+                          <BakeryPressable
+                            aria-label={
+                              showCustomerLoginPassword ? 'Hide password' : 'Show password'
+                            }
+                            className="siteHeaderPasswordToggle"
+                            onClick={() => setShowCustomerLoginPassword((current) => !current)}
+                            type="button"
+                          >
+                            {showCustomerLoginPassword ? (
+                              <EyeOff aria-hidden="true" className="h-4 w-4" />
+                            ) : (
+                              <Eye aria-hidden="true" className="h-4 w-4" />
+                            )}
+                          </BakeryPressable>
+                        </span>
+                      </label>
+
+                      <button
+                        className="siteHeaderAuthSubmit"
+                        disabled={isCustomerLoginSubmitting}
+                        type="submit"
+                      >
+                        {isCustomerLoginSubmitting ? (
+                          <>
+                            <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                            Signing in
+                          </>
+                        ) : (
+                          'Sign in'
+                        )}
+                      </button>
+
+                      <div className="siteHeaderAuthLinks">
+                        <Link href="/create-account" onClick={() => setActivePanel(null)}>
+                          Create an account
+                        </Link>
+                      </div>
+                    </form>
+                  ) : null}
+
+                  {hasSignedInAccount ? (
                     <BakeryAction
                       className="siteHeaderPanelButton"
                       loading={isLoggingOut}
@@ -542,7 +823,7 @@ export function HeaderClient({ brand, header }: Props) {
                       type="button"
                       variant="primary"
                     >
-                      {isLoggingOut ? 'Signing out…' : 'Sign out'}
+                      {isLoggingOut ? 'Signing out...' : 'Sign out'}
                     </BakeryAction>
                   ) : null}
                 </>

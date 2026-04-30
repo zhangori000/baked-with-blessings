@@ -1,7 +1,8 @@
 'use client'
 
-import { ArrowLeft, ArrowRight, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Lock, X } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import {
   type AnimationEvent,
@@ -39,6 +40,7 @@ import {
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
+import { menuHref } from '@/utilities/routes'
 import type { CookiePosterAsset, CookieInfoRichText } from './menu/_components/cookiePosterData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
@@ -1024,7 +1026,10 @@ export function HomeCookieCarousel({
 
   const isActivePosterPromptState = cartPromptState.slug === activePoster.slug
   const activePosterPromptPhase = isActivePosterPromptState ? cartPromptState.phase : 'idle'
-  const activePosterCanAddToCart = typeof activePoster.productId === 'number'
+  const activePosterIsCateringOnly = activePoster.canBuyIndividually === false
+  const activePosterCanAddToCart =
+    !activePosterIsCateringOnly && typeof activePoster.productId === 'number'
+  const activePosterMenuHref = activePoster.menuHref ?? menuHref
   const isInfoPromptOpen = infoPhase === 'open'
   const shouldShowInlineInfoControl = sceneVariant === 'scenery' && infoPhase !== 'hidden'
   const isCartPromptOpen =
@@ -1116,7 +1121,7 @@ export function HomeCookieCarousel({
   }
 
   const handleOpenCartPrompt = () => {
-    if (!activePosterCanAddToCart) {
+    if (!activePosterIsCateringOnly && !activePosterCanAddToCart) {
       toast.info('This cookie is not linked to a live product yet.')
       return
     }
@@ -1588,7 +1593,11 @@ export function HomeCookieCarousel({
               <div className="homeCookieNameButtonShell">
                 {isCartPromptOpen ? (
                   <BakeryCard
-                    aria-label={`Add ${activePoster.title} to cart`}
+                    aria-label={
+                      activePosterIsCateringOnly
+                        ? `Catering details for ${activePoster.title}`
+                        : `Add ${activePoster.title} to cart`
+                    }
                     aria-live="polite"
                     className="homeCookieCartPrompt"
                     radius="lg"
@@ -1597,7 +1606,9 @@ export function HomeCookieCarousel({
                     tone="transparent"
                   >
                     <BakeryPressable
-                      aria-label="Close add to cart prompt"
+                      aria-label={
+                        activePosterIsCateringOnly ? 'Close catering details' : 'Close add to cart prompt'
+                      }
                       className="homeCookieCartPromptClose"
                       disabled={activePosterPromptPhase === 'loading'}
                       onClick={handleCloseCartPrompt}
@@ -1606,43 +1617,90 @@ export function HomeCookieCarousel({
                       <X aria-hidden="true" size={14} />
                     </BakeryPressable>
                     <p className="homeCookieCartPromptText">
-                      {activePosterPromptPhase === 'loading'
-                        ? 'Adding cookie to cart...'
-                        : activePosterPromptPhase === 'added'
-                          ? 'Cookie added to cart.'
-                          : 'Add this cookie to cart?'}
+                      {activePosterIsCateringOnly
+                        ? (activePoster.lockedLabel ?? 'Catering only this month')
+                        : activePosterPromptPhase === 'loading'
+                          ? 'Adding cookie to cart...'
+                          : activePosterPromptPhase === 'added'
+                            ? 'Cookie added to cart.'
+                            : 'Add this cookie to cart?'}
                     </p>
+                    {activePosterIsCateringOnly ? (
+                      <p className="homeCookieCartPromptSubtext">
+                        {activePoster.lockedDescription ??
+                          'This flavor is outside the current rotation, but you can still order it in batches of 10, mini or regular size, from the menu.'}
+                      </p>
+                    ) : null}
                     {activePosterPromptPhase === 'open' ? (
                       <div className="homeCookieCartPromptActions">
-                        <BakeryPressable
-                          className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm"
-                          onClick={handleConfirmAddToCart}
-                          type="button"
-                        >
-                          Yes
-                        </BakeryPressable>
-                        <BakeryPressable
-                          className="homeCookieCartPromptButton homeCookieCartPromptButton--cancel"
-                          onClick={handleCloseCartPrompt}
-                          type="button"
-                        >
-                          No
-                        </BakeryPressable>
+                        {activePosterIsCateringOnly ? (
+                          <>
+                            <Link
+                              className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm"
+                              href={activePosterMenuHref}
+                              onClick={handleCloseCartPrompt}
+                            >
+                              {activePoster.menuLinkLabel ?? 'View menu'}
+                            </Link>
+                            <BakeryPressable
+                              className="homeCookieCartPromptButton homeCookieCartPromptButton--cancel"
+                              onClick={handleCloseCartPrompt}
+                              type="button"
+                            >
+                              Close
+                            </BakeryPressable>
+                          </>
+                        ) : (
+                          <>
+                            <BakeryPressable
+                              className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm"
+                              onClick={handleConfirmAddToCart}
+                              type="button"
+                            >
+                              Yes
+                            </BakeryPressable>
+                            <BakeryPressable
+                              className="homeCookieCartPromptButton homeCookieCartPromptButton--cancel"
+                              onClick={handleCloseCartPrompt}
+                              type="button"
+                            >
+                              No
+                            </BakeryPressable>
+                          </>
+                        )}
                       </div>
                     ) : null}
                   </BakeryCard>
                 ) : null}
 
-                <BakeryPressable
-                  aria-label={`Open add to cart prompt for ${activePoster.title}`}
-                  className="homeCookieNameButton"
-                  disabled={!activePosterCanAddToCart || cartIsLoading}
-                  onClick={handleOpenCartPrompt}
-                  style={nameButtonWidth ? { width: `${nameButtonWidth}px` } : undefined}
-                  type="button"
-                >
-                  {activePoster.title}
-                </BakeryPressable>
+                {activePosterIsCateringOnly ? (
+                  <BakeryPressable
+                    aria-label={`Open catering details for ${activePoster.title}`}
+                    className="homeCookieNameButton"
+                    onClick={handleOpenCartPrompt}
+                    style={nameButtonWidth ? { width: `${nameButtonWidth}px` } : undefined}
+                    type="button"
+                  >
+                    <Lock
+                      aria-hidden="true"
+                      className="homeCookieNameLock"
+                      size={15}
+                      strokeWidth={2.4}
+                    />
+                    <span>{activePoster.title}</span>
+                  </BakeryPressable>
+                ) : (
+                  <BakeryPressable
+                    aria-label={`Open add to cart prompt for ${activePoster.title}`}
+                    className="homeCookieNameButton"
+                    disabled={!activePosterCanAddToCart || cartIsLoading}
+                    onClick={handleOpenCartPrompt}
+                    style={nameButtonWidth ? { width: `${nameButtonWidth}px` } : undefined}
+                    type="button"
+                  >
+                    {activePoster.title}
+                  </BakeryPressable>
+                )}
               </div>
 
               <BakeryPressable
@@ -1655,7 +1713,13 @@ export function HomeCookieCarousel({
                 <ArrowRight aria-hidden="true" size={22} />
               </BakeryPressable>
             </div>
-            <span className="homeCookieAmount">{activePoster.amount}</span>
+            <span
+              className={`homeCookieAmount${activePosterIsCateringOnly ? ' homeCookieAmount--locked' : ''}`}
+            >
+              {activePosterIsCateringOnly
+                ? 'Catering only - tap for details'
+                : activePoster.amount}
+            </span>
           </div>
         </div>
       </div>
@@ -2372,6 +2436,17 @@ export function HomeCookieCarousel({
           text-align: left;
         }
 
+        .homeCookieCartPromptSubtext {
+          color: rgba(77, 57, 29, 0.78);
+          font-family: var(--font-rounded-body);
+          font-size: 0.78rem;
+          font-weight: 650;
+          line-height: 1.42;
+          margin: 0.36rem 0 0;
+          padding-right: 1.2rem;
+          text-align: left;
+        }
+
         .homeCookieCartPromptActions {
           display: flex;
           gap: 0.55rem;
@@ -2388,6 +2463,7 @@ export function HomeCookieCarousel({
           justify-content: center;
           min-height: 2rem;
           padding: 0.42rem 0.9rem;
+          text-decoration: none;
           transition:
             transform 150ms ease,
             opacity 150ms ease,
@@ -2438,12 +2514,35 @@ export function HomeCookieCarousel({
         .homeCookieNameButton {
           font-size: var(--cta-font-size);
           font-weight: 600;
+          gap: 0.42rem;
           line-height: 1;
           max-width: calc(100vw - 20vw - 2 * var(--control-size) - 2 * var(--control-gap));
           min-height: var(--control-size);
           min-width: var(--cta-width);
           padding: 0.9rem var(--cta-padding-x) 1rem;
           text-align: center;
+        }
+
+        .homeCookieNameButton .homeCookieNameLock {
+          flex: 0 0 0.95rem;
+          height: 0.95rem;
+          width: 0.95rem;
+        }
+
+        .homeCookieNameButton--locked {
+          background: rgba(24, 22, 20, 0.96);
+          border-color: rgba(255, 255, 255, 0.14);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.08),
+            0 16px 28px rgba(10, 12, 9, 0.22);
+          color: #fff;
+        }
+
+        .homeCookieNameButton--locked span {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .homeCookieNameMeasure {
@@ -2469,14 +2568,56 @@ export function HomeCookieCarousel({
           display: block;
           font-size: 0.78rem;
           font-weight: 700;
+          height: 1rem;
           letter-spacing: 0.18em;
+          line-height: 1rem;
           margin-top: 1.15rem;
+          overflow: hidden;
           position: relative;
           text-shadow:
             var(--home-price-shadow, none),
             0 0 10px rgba(255, 255, 255, 0.18);
+          text-overflow: ellipsis;
           text-transform: uppercase;
+          white-space: nowrap;
           z-index: 42;
+        }
+
+        .homeCookieAmount--locked {
+          font-size: clamp(0.66rem, 1.7vw, 0.74rem);
+          letter-spacing: 0.12em;
+          margin-inline: auto;
+          max-width: min(22rem, calc(100vw - 2rem));
+        }
+
+        @media (max-width: 767px) {
+          .homeCookieAmount--locked {
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
+            max-width: min(17rem, calc(100vw - 7.5rem));
+          }
+        }
+
+        .homeCookieLockedDescription {
+          color: rgba(23, 21, 16, 0.72);
+          font-family: var(--font-rounded-body);
+          font-size: clamp(0.72rem, 1.15vw, 0.84rem);
+          font-weight: 650;
+          line-height: 1.35;
+          margin: 0.55rem auto 0;
+          max-width: min(28rem, calc(100vw - 2.4rem));
+          position: relative;
+          text-wrap: balance;
+          z-index: 42;
+        }
+
+        .homeCookieLockedLabel {
+          align-items: center;
+          color: #1f1b16;
+          display: inline-flex;
+          gap: 0.24rem;
+          margin-right: 0.36rem;
+          white-space: nowrap;
         }
 
         .homeCookieArrow {

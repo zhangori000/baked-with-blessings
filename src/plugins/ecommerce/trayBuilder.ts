@@ -14,6 +14,17 @@ type BatchSelectionLike = {
   quantity?: number | null
 }
 
+type ActiveFlavorRotationLike = {
+  individualFlavors?:
+    | (DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null)[]
+    | null
+}
+
+type CategoryConfigLike = {
+  id?: DefaultDocumentIDType
+  slug?: null | string
+}
+
 type TrayBuilderItemLike = {
   batchSelections?: BatchSelectionLike[] | null
   product?: DefaultDocumentIDType | ProductConfigLike | null
@@ -22,6 +33,9 @@ type TrayBuilderItemLike = {
 }
 
 type ProductConfigLike = {
+  categories?:
+    | (DefaultDocumentIDType | CategoryConfigLike | null)[]
+    | null
   id?: DefaultDocumentIDType
   menuBehavior?: 'batchBuilder' | 'simple' | string | null
   requiredSelectionCount?: null | number
@@ -177,6 +191,8 @@ const validateBatchSelections = async ({
   req: PayloadRequest
 }) => {
   const productCache = new Map<string, ProductConfigLike>()
+  let activeRotationFlavorIDSetPromise: Promise<Set<string> | null> | null = null
+  let cookieCategoryIDPromise: Promise<DefaultDocumentIDType | null> | null = null
 
   const loadProduct = async (
     relationship:
@@ -191,7 +207,12 @@ const validateBatchSelections = async ({
       return undefined
     }
 
-    if (typeof relationship === 'object' && relationship && 'menuBehavior' in relationship) {
+    if (
+      typeof relationship === 'object' &&
+      relationship &&
+      'menuBehavior' in relationship &&
+      'categories' in relationship
+    ) {
       return relationship
     }
 
@@ -211,6 +232,113 @@ const validateBatchSelections = async ({
     productCache.set(cacheKey, product)
 
     return product
+  }
+
+  const loadActiveRotationFlavorIDSet = () => {
+    if (!activeRotationFlavorIDSetPromise) {
+      activeRotationFlavorIDSetPromise = req.payload
+        .find({
+          collection: 'flavor-rotations' as CollectionSlug,
+          depth: 0,
+          limit: 1,
+          overrideAccess: true,
+          pagination: false,
+          req,
+          select: {
+            individualFlavors: true,
+          },
+          sort: '-updatedAt',
+          where: {
+            status: {
+              equals: 'active',
+            },
+          },
+        })
+        .then((result) => {
+          const activeRotation = result.docs[0] as ActiveFlavorRotationLike | undefined
+
+          if (!activeRotation) {
+            return null
+          }
+
+          return new Set(
+            (activeRotation.individualFlavors ?? [])
+              .map((flavor) => getRelationshipID(flavor))
+              .filter((flavorID): flavorID is DefaultDocumentIDType => flavorID != null)
+              .map((flavorID) => String(flavorID)),
+          )
+        })
+    }
+
+    return activeRotationFlavorIDSetPromise
+  }
+
+  const loadCookieCategoryID = () => {
+    if (!cookieCategoryIDPromise) {
+      cookieCategoryIDPromise = req.payload
+        .find({
+          collection: 'categories',
+          depth: 0,
+          limit: 1,
+          overrideAccess: true,
+          pagination: false,
+          req,
+          select: {
+            id: true,
+          },
+          where: {
+            slug: {
+              equals: 'cookies',
+            },
+          },
+        })
+        .then((result) => {
+          const cookieCategory = result.docs[0] as CategoryConfigLike | undefined
+
+          return cookieCategory?.id ?? null
+        })
+    }
+
+    return cookieCategoryIDPromise
+  }
+
+  const validateIndividualCookieAvailability = async ({
+    label,
+    product,
+    productID,
+  }: {
+    label: string
+    product: ProductConfigLike | undefined
+    productID: DefaultDocumentIDType
+  }) => {
+    const activeRotationFlavorIDs = await loadActiveRotationFlavorIDSet()
+
+    if (!activeRotationFlavorIDs) {
+      return
+    }
+
+    const cookieCategoryID = await loadCookieCategoryID()
+
+    if (!cookieCategoryID) {
+      return
+    }
+
+    const productCategoryIDs = new Set(
+      (Array.isArray(product?.categories) ? product.categories : [])
+        .map((category) => getRelationshipID(category))
+        .filter((categoryID): categoryID is DefaultDocumentIDType => categoryID != null)
+        .map((categoryID) => String(categoryID)),
+    )
+
+    if (!productCategoryIDs.has(String(cookieCategoryID))) {
+      return
+    }
+
+    if (!activeRotationFlavorIDs.has(String(productID))) {
+      throw new Error(
+        `${label} is catering-only during the current cookie rotation. Order it through a cookie tray on the menu.`,
+      )
+    }
   }
 
   for (const [itemIndex, item] of items.entries()) {
@@ -235,6 +363,12 @@ const validateBatchSelections = async ({
       if (batchSelections.length > 0) {
         throw new Error(`${label} does not accept tray selections.`)
       }
+
+      await validateIndividualCookieAvailability({
+        label,
+        product,
+        productID,
+      })
 
       continue
     }

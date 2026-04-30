@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation'
 import { AddressListing } from '@/components/addresses/AddressListing'
 import { CreateAddressModal } from '@/components/addresses/CreateAddressModal'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
 export default async function AddressesPage() {
   const headers = await getHeaders()
@@ -17,7 +18,10 @@ export default async function AddressesPage() {
 
   if (!user) {
     redirect(
-      `/login?warning=${encodeURIComponent('Please login to access your account settings.')}`,
+      buildCustomerLoginHref({
+        redirect: '/account/addresses',
+        warning: 'Please login to access your account settings.',
+      }),
     )
   }
 

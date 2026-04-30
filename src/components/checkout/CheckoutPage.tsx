@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
+import { customerLoginHref } from '@/utilities/routes'
 import { useTheme } from '@/providers/Theme'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
@@ -141,7 +142,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ embedded = false, on
           <div className=" bg-accent dark:bg-black rounded-lg p-4 w-full flex items-center">
             <div className="prose dark:prose-invert">
               <Button asChild className="no-underline text-inherit" variant="outline">
-                <Link href="/login">Log in</Link>
+                <Link href={customerLoginHref}>Log in</Link>
               </Button>
               <p className="mt-0">
                 <span className="mx-2">or</span>

@@ -10,6 +10,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
 export default async function Orders() {
   const headers = await getHeaders()
@@ -19,7 +20,12 @@ export default async function Orders() {
   let orders: Order[] | null = null
 
   if (!user) {
-    redirect(`/login?warning=${encodeURIComponent('Please login to access your orders.')}`)
+    redirect(
+      buildCustomerLoginHref({
+        redirect: '/orders',
+        warning: 'Please login to access your orders.',
+      }),
+    )
   }
 
   try {
