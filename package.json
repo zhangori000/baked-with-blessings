@@ -24,7 +24,7 @@
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation eslint . --fix",
     "migrate:vercel": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/run-vercel-migrations.ts",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "prebuild": "pnpm run check:no-shop-route && pnpm run check:env-security && pnpm run migrate:vercel",
+    "prebuild": "pnpm run check:no-shop-route && pnpm run check:env-security",
     "predev": "pnpm run check:no-shop-route",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed.ts",
