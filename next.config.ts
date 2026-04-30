@@ -7,7 +7,18 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 import { redirects } from './redirects'
 
-const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+const getRemoteImageOrigins = () => {
+  const origins = [
+    process.env.NEXT_PUBLIC_SERVER_URL,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined,
+    'http://localhost:3000',
+  ]
+
+  return Array.from(new Set(origins.filter((origin): origin is string => Boolean(origin))))
+}
 
 const nextConfig: NextConfig = {
   images: {
@@ -18,7 +29,7 @@ const nextConfig: NextConfig = {
     ],
     qualities: [90, 95, 100],
     remotePatterns: [
-      ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */].map((item) => {
+      ...getRemoteImageOrigins().map((item) => {
         const url = new URL(item)
 
         return {

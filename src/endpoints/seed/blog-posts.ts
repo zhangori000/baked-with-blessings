@@ -22,7 +22,7 @@ const firstPostParagraphs = [
 
 const firstPostData = {
   _status: 'published' as const,
-  authorName: 'Orianna Paxton',
+  authorName: 'Oscar Kingsley',
   content: createParagraphsRichText(firstPostParagraphs),
   excerpt:
     'A personal reflection on college, credentials, risk, and choosing to build a bakery/cafe while pursuing a degree.',
@@ -88,18 +88,18 @@ const ishiguroReviewContent = createSegmentedParagraphsRichText([
 
 const ishiguroReviewPostData = {
   _status: 'published' as const,
-  authorName: 'Orianna Paxton',
+  authorName: 'Oscar Kingsley',
   content: ishiguroReviewContent,
   excerpt:
     'A reflective read-through of four Kazuo Ishiguro novels and how they use memory to explore emotional restraint, longing, and quiet despair.',
   meta: {
     description:
       'A close reading of Kazuo Ishiguro’s novels and their shared theme of memory, regret, and emotional denial.',
-    title: 'Author/Book Review: Kazuo Ishiguro',
+    title: 'Author Review: Kazuo Ishiguro — a very subtle but strong depression...',
   },
   publishedOn: '2026-04-28T12:00:00.000Z',
   slug: 'author-book-review-kazuo-ishiguro',
-  title: 'Author/Book Review: Kazuo Ishiguro',
+  title: 'Author Review: Kazuo Ishiguro — a very subtle but strong depression...',
 }
 
 const seedPosts = [firstPostData, ishiguroReviewPostData]
