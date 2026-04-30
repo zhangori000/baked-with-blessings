@@ -283,9 +283,6 @@ const validateBatchSelections = async ({
           overrideAccess: true,
           pagination: false,
           req,
-          select: {
-            id: true,
-          },
           where: {
             slug: {
               equals: 'cookies',

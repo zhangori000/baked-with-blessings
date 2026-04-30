@@ -25,6 +25,7 @@ import { Pages } from '@/collections/Pages'
 import { Posts } from '@/collections/Posts'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
+import { EmailVerificationStarts } from '@/collections/EmailVerificationStarts'
 import { PhoneVerificationStarts } from '@/collections/PhoneVerificationStarts'
 import {
   BlessingsNetworkAnswers,
@@ -81,6 +82,7 @@ export default buildConfig({
   collections: [
     Admins,
     Customers,
+    EmailVerificationStarts,
     PhoneVerificationStarts,
     DiscussionNodes,
     DiscussionEdges,

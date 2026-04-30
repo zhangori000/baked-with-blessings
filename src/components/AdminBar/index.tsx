@@ -6,7 +6,7 @@ import { isAdminUser, type CollectionAuthUser } from '@/access/utilities'
 import { cn } from '@/utilities/cn'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { PayloadAdminBar } from '@payloadcms/admin-bar'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const collectionLabels = {
   pages: {
@@ -33,6 +33,7 @@ export const AdminBar: React.FC<{
   const { adminBarProps } = props || {}
   const segments = useSelectedLayoutSegments()
   const [show, setShow] = useState(false)
+  const [authCheckKey, setAuthCheckKey] = useState(0)
   const collection: CollectionLabelKey =
     segments?.[0] === 'blog'
       ? 'posts'
@@ -44,6 +45,40 @@ export const AdminBar: React.FC<{
     setShow(isAdminUser(user))
   }, [])
 
+  const handleAdminBarLogout = React.useCallback(async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+
+    const response = await fetch('/api/admins/logout', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    })
+
+    if (!response.ok) {
+      window.location.assign('/admin/logout')
+      return
+    }
+
+    setShow(false)
+    setAuthCheckKey((current) => current + 1)
+    window.dispatchEvent(new Event('bwb:admin-auth-changed'))
+  }, [])
+
+  useEffect(() => {
+    const handleAdminAuthChanged = () => {
+      setShow(false)
+      setAuthCheckKey((current) => current + 1)
+    }
+
+    window.addEventListener('bwb:admin-auth-changed', handleAdminAuthChanged)
+
+    return () => {
+      window.removeEventListener('bwb:admin-auth-changed', handleAdminAuthChanged)
+    }
+  }, [])
+
   return (
     <div
       className={cn('py-2 bg-black text-white', {
@@ -53,6 +88,7 @@ export const AdminBar: React.FC<{
     >
       <div className="container">
         <PayloadAdminBar
+          key={authCheckKey}
           {...adminBarProps}
           authCollectionSlug="admins"
           className="py-2 text-white"
@@ -69,6 +105,11 @@ export const AdminBar: React.FC<{
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore - todo fix, not sure why this is erroring
             singular: collectionLabels[collection]?.singular || 'Page',
+          }}
+          logoutProps={{
+            ...(adminBarProps?.logoutProps ?? {}),
+            onClick: handleAdminBarLogout,
+            target: '_self',
           }}
           logo={<Title />}
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment

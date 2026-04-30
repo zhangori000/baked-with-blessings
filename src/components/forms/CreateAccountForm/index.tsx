@@ -33,8 +33,9 @@ export const CreateAccountForm: React.FC = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<null | string>(null)
+  const [maskedEmail, setMaskedEmail] = useState<null | string>(null)
   const [maskedPhone, setMaskedPhone] = useState<null | string>(null)
-  const [requiresPhoneVerification, setRequiresPhoneVerification] = useState(false)
+  const [verificationMode, setVerificationMode] = useState<null | 'email' | 'phone'>(null)
 
   const {
     clearErrors,
@@ -50,6 +51,10 @@ export const CreateAccountForm: React.FC = () => {
   const emailValue = watch('email', '')
   const phoneValue = watch('phone', '')
   const verificationCode = watch('verificationCode', '')
+  const isEmailVerification = verificationMode === 'email'
+  const isPhoneVerification = verificationMode === 'phone'
+  const verificationRecipient =
+    (isPhoneVerification ? maskedPhone : maskedEmail) || emailValue || phoneValue || 'your contact method'
 
   useEffect(() => {
     if (emailValue.trim() || phoneValue.trim()) {
@@ -58,12 +63,19 @@ export const CreateAccountForm: React.FC = () => {
     }
   }, [clearErrors, emailValue, errors.email?.type, errors.phone?.type, phoneValue])
 
+  const resetVerificationMode = useCallback(() => {
+    setVerificationMode(null)
+    setMaskedEmail(null)
+    setMaskedPhone(null)
+  }, [])
+
   const primaryActionLabel = useMemo(() => {
     if (loading) return 'Processing'
-    if (requiresPhoneVerification) return 'Verify code and create account'
+    if (verificationMode) return 'Verify code and create account'
     if (phoneValue.trim()) return 'Send verification code'
+    if (emailValue.trim() && !phoneValue.trim()) return 'Send verification code'
     return 'Create account'
-  }, [loading, phoneValue, requiresPhoneVerification])
+  }, [emailValue, loading, phoneValue, verificationMode])
 
   const onSubmit = useCallback(
     async (data: FormData) => {
@@ -94,8 +106,17 @@ export const CreateAccountForm: React.FC = () => {
         clearTimeout(timer)
 
         if (result.requiresPhoneVerification) {
+          resetVerificationMode()
           setMaskedPhone(result.maskedPhone || data.phone)
-          setRequiresPhoneVerification(true)
+          setVerificationMode('phone')
+          setLoading(false)
+          return
+        }
+
+        if (result.requiresEmailVerification) {
+          resetVerificationMode()
+          setMaskedEmail(result.maskedEmail || data.email)
+          setVerificationMode('email')
           setLoading(false)
           return
         }
@@ -110,6 +131,12 @@ export const CreateAccountForm: React.FC = () => {
     },
     [create, router, searchParams, setFieldError],
   )
+
+  const emailRegistration = register('email', {
+    validate: (value) =>
+      !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
+  })
+  const phoneRegistration = register('phone')
 
   return (
     <form className={styles.shell} onSubmit={handleSubmit(onSubmit)}>
@@ -188,17 +215,19 @@ export const CreateAccountForm: React.FC = () => {
                 Email address
                 <span className={styles.optionalLabel}>optional</span>
               </Label>
-              <Input
-                id="email"
-                autoComplete="email"
-                className={styles.input}
-                placeholder="apple@example.com"
-                {...register('email', {
-                  validate: (value) =>
-                    !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
-                })}
-                type="email"
-              />
+            <Input
+              id="email"
+              autoComplete="email"
+              className={styles.input}
+              placeholder="apple@example.com"
+              {...emailRegistration}
+              onChange={(event) => {
+                emailRegistration.onChange(event)
+                clearErrors(['email', 'phone'])
+                resetVerificationMode()
+              }}
+              type="email"
+            />
               <span className={styles.helper}>Use this if you want email-based login or recovery.</span>
               {errors.email && <FormError message={errors.email.message} />}
             </FormItem>
@@ -209,15 +238,20 @@ export const CreateAccountForm: React.FC = () => {
                 Phone number
                 <span className={styles.optionalLabel}>optional</span>
               </Label>
-              <Input
-                id="phone"
-                autoComplete="tel"
-                className={styles.input}
-                placeholder="(312) 555-1212"
-                {...register('phone')}
-                inputMode="tel"
-                type="tel"
-              />
+            <Input
+              id="phone"
+              autoComplete="tel"
+              className={styles.input}
+              placeholder="(312) 555-1212"
+              {...phoneRegistration}
+              onChange={(event) => {
+                phoneRegistration.onChange(event)
+                clearErrors(['email', 'phone'])
+                resetVerificationMode()
+              }}
+              inputMode="tel"
+              type="tel"
+            />
               <span className={styles.helper}>
                 If you use phone, we will text a one-time verification code before the account is created.
               </span>
@@ -274,12 +308,16 @@ export const CreateAccountForm: React.FC = () => {
           </div>
         </div>
 
-        {requiresPhoneVerification && (
+        {verificationMode && (
           <div className={styles.section}>
             <div className={styles.verificationPanel}>
-              <h2 className={styles.verificationTitle}>Finish the phone verification</h2>
+              <h2 className={styles.verificationTitle}>
+                {isPhoneVerification
+                  ? 'Finish the phone verification'
+                  : 'Finish the email verification'}
+              </h2>
               <p className={styles.verificationText}>
-                {`We sent a 6-digit code to ${maskedPhone || 'your phone number'}. Enter it below to finish creating the account.`}
+                {`We sent a 6-digit code to ${verificationRecipient}. Enter it below to finish creating the account.`}
               </p>
 
               <FormItem>
@@ -293,12 +331,15 @@ export const CreateAccountForm: React.FC = () => {
                   inputMode="numeric"
                   maxLength={6}
                   placeholder="123456"
-                  {...register('verificationCode', {
-                    required: 'Enter the 6-digit code we sent to your phone.',
-                    validate: (value) =>
-                      /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
-                  })}
-                  type="text"
+                {...register('verificationCode', {
+                  required:
+                    isPhoneVerification || isEmailVerification
+                      ? `Enter the 6-digit code we sent to ${verificationRecipient}.`
+                      : 'Enter the 6-digit code we sent to your phone.',
+                  validate: (value) =>
+                    /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
+                })}
+                type="text"
                 />
                 <span className={styles.helper}>
                   The account is not created until this code is accepted.
@@ -319,9 +360,19 @@ export const CreateAccountForm: React.FC = () => {
             Already have an account? <Link href={customerLoginHref}>Log in</Link>.
           </p>
 
-          {phoneValue.trim() && !requiresPhoneVerification && !verificationCode.trim() ? (
+          {phoneValue.trim() && !verificationMode && !verificationCode.trim() ? (
             <p className={styles.loginHint}>
               Because you entered a phone number, the next step will send a verification code before the account is created.
+            </p>
+          ) : null}
+
+          {emailValue.trim() &&
+          !phoneValue.trim() &&
+          !verificationMode &&
+          !verificationCode.trim() ? (
+            <p className={styles.loginHint}>
+              Because you entered an email address, the next step will send a verification code before
+              the account is created.
             </p>
           ) : null}
         </div>

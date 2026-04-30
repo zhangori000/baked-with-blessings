@@ -893,8 +893,9 @@ function CartSignupPanel({
 }) {
   const { create } = useAuth()
   const [error, setError] = useState<null | string>(null)
+  const [verificationMode, setVerificationMode] = useState<null | 'email' | 'phone'>(null)
   const [maskedPhone, setMaskedPhone] = useState<null | string>(null)
-  const [requiresPhoneVerification, setRequiresPhoneVerification] = useState(false)
+  const [maskedEmail, setMaskedEmail] = useState<null | string>(null)
   const {
     clearErrors,
     control,
@@ -904,8 +905,27 @@ function CartSignupPanel({
     setError: setFieldError,
   } = useForm<SignupFormData>()
 
+  const email = useWatch({ control, defaultValue: '', name: 'email' })
   const password = useWatch({ control, defaultValue: '', name: 'password' })
   const phone = useWatch({ control, defaultValue: '', name: 'phone' })
+  const verificationCode = useWatch({ control, defaultValue: '', name: 'verificationCode' })
+  const isEmailVerification = verificationMode === 'email'
+  const isPhoneVerification = verificationMode === 'phone'
+  const verificationRecipient = verificationMode === 'phone'
+    ? maskedPhone || phone
+    : maskedEmail || email || 'your contact method'
+  const emailRegistration = register('email', {
+    validate: (value) =>
+      !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
+  })
+  const phoneRegistration = register('phone')
+  const verificationCodeRegistration = register('verificationCode', {
+    required: isPhoneVerification || isEmailVerification
+      ? `Enter the 6-digit code sent to ${verificationRecipient}.`
+      : 'Enter the 6-digit verification code.',
+    validate: (value) =>
+      /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
+  })
 
   return (
     <div className={embedded ? '' : 'min-h-0 flex-1 overflow-y-auto px-4 py-4'}>
@@ -935,7 +955,15 @@ function CartSignupPanel({
 
             if (result.requiresPhoneVerification) {
               setMaskedPhone(result.maskedPhone || trimmedPhone)
-              setRequiresPhoneVerification(true)
+              setMaskedEmail(null)
+              setVerificationMode('phone')
+              return
+            }
+
+            if (result.requiresEmailVerification) {
+              setMaskedEmail(result.maskedEmail || trimmedEmail)
+              setMaskedPhone(null)
+              setVerificationMode('email')
               return
             }
 
@@ -981,13 +1009,14 @@ function CartSignupPanel({
               id="cart-signup-email"
               type="email"
               className="cartAuthInput"
-              {...register('email', {
-                onChange: () => {
-                  clearErrors(['email', 'phone'])
-                },
-                validate: (value) =>
-                  !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
-              })}
+              {...emailRegistration}
+              onChange={(event) => {
+                emailRegistration.onChange(event)
+                clearErrors(['email', 'phone'])
+                setVerificationMode(null)
+                setMaskedEmail(null)
+                setMaskedPhone(null)
+              }}
             />
             {errors.email && <FormError className="cartAuthError" message={errors.email.message} />}
           </FormItem>
@@ -1001,11 +1030,14 @@ function CartSignupPanel({
               inputMode="tel"
               type="tel"
               className="cartAuthInput"
-              {...register('phone', {
-                onChange: () => {
-                  clearErrors(['email', 'phone'])
-                },
-              })}
+              {...phoneRegistration}
+              onChange={(event) => {
+                phoneRegistration.onChange(event)
+                clearErrors(['email', 'phone'])
+                setVerificationMode(null)
+                setMaskedEmail(null)
+                setMaskedPhone(null)
+              }}
             />
             {errors.phone && <FormError className="cartAuthError" message={errors.phone.message} />}
           </FormItem>
@@ -1046,10 +1078,10 @@ function CartSignupPanel({
           </FormItem>
         </div>
 
-        {requiresPhoneVerification ? (
+        {verificationMode ? (
           <FormItem>
             <Label className="cartAuthLabel" htmlFor="cart-signup-verification-code">
-              Verification code
+              {isPhoneVerification ? 'Verification code (text)' : 'Verification code (email)'}
             </Label>
             <Input
               id="cart-signup-verification-code"
@@ -1058,17 +1090,25 @@ function CartSignupPanel({
               placeholder="123456"
               type="text"
               className="cartAuthInput"
-              {...register('verificationCode', {
-                required: `Enter the 6-digit code sent to ${maskedPhone || phone || 'your phone'}.`,
-                validate: (value) =>
-                  /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
-              })}
+              {...verificationCodeRegistration}
             />
             {errors.verificationCode && (
               <FormError className="cartAuthError" message={errors.verificationCode.message} />
             )}
           </FormItem>
         ) : null}
+
+        <div className="grid gap-2 text-xs cartAuthHint">
+          {phone.trim() && !verificationMode && !verificationCode.trim() ? (
+            <p>Enter the code sent to your phone to finish account creation.</p>
+          ) : null}
+          {email.trim() &&
+          !phone.trim() &&
+          !verificationMode &&
+          !verificationCode.trim() ? (
+            <p>Enter the code sent to your email to finish account creation.</p>
+          ) : null}
+        </div>
 
         <BakeryAction
           block
@@ -1080,10 +1120,10 @@ function CartSignupPanel({
         >
           {isSubmitting
             ? 'Processing'
-            : requiresPhoneVerification
+            : verificationMode
               ? 'Verify and continue'
-              : phone.trim()
-                ? 'Send code'
+              : phone.trim() || email.trim()
+                ? 'Send verification code'
                 : 'Create account and continue'}
         </BakeryAction>
       </BakeryCard>

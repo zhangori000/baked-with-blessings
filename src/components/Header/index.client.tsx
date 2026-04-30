@@ -39,16 +39,21 @@ import {
   ShoppingBag,
   UserRound,
 } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants'
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
 type ActivePanel = 'account' | 'bag' | 'more' | null
+type AccountAuthMode = 'create' | 'login'
+
+const customerCreateResendDelayMs = 7 * 1000
 
 type Props = {
   brand: {
@@ -127,16 +132,32 @@ export function HeaderClient({ brand, header }: Props) {
   const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
   const panelInnerRef = useRef<HTMLDivElement | null>(null)
+  const lastAutoSubmittedCreateCodeRef = useRef('')
   const { isScrolled } = useHeaderVisibility()
   const { announce } = useBakeryAnnouncer()
   const { cart } = useCart()
-  const { user, login, logout } = useAuth()
+  const { create, user, login, logout } = useAuth()
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
+  const [accountAuthMode, setAccountAuthMode] = useState<AccountAuthMode>('login')
   const [accountWarning, setAccountWarning] = useState<string | null>(null)
   const [customerLoginIdentifier, setCustomerLoginIdentifier] = useState('')
   const [customerLoginPassword, setCustomerLoginPassword] = useState('')
   const [customerLoginError, setCustomerLoginError] = useState<string | null>(null)
+  const [customerCreateEmail, setCustomerCreateEmail] = useState('')
+  const [customerCreatePassword, setCustomerCreatePassword] = useState('')
+  const [customerCreatePasswordConfirm, setCustomerCreatePasswordConfirm] = useState('')
+  const [customerCreateVerificationCode, setCustomerCreateVerificationCode] = useState('')
+  const [customerCreateError, setCustomerCreateError] = useState<string | null>(null)
+  const [customerCreateNotice, setCustomerCreateNotice] = useState<string | null>(null)
+  const [customerCreateNeedsVerification, setCustomerCreateNeedsVerification] = useState(false)
+  const [customerCreateVerificationRecipient, setCustomerCreateVerificationRecipient] = useState('')
+  const [customerCreateResendAvailableAt, setCustomerCreateResendAvailableAt] = useState<
+    number | null
+  >(null)
+  const [customerCreateResendSeconds, setCustomerCreateResendSeconds] = useState(0)
   const [isCustomerLoginSubmitting, setIsCustomerLoginSubmitting] = useState(false)
+  const [isCustomerCreateSubmitting, setIsCustomerCreateSubmitting] = useState(false)
+  const [isCustomerCreateResending, setIsCustomerCreateResending] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [showCustomerLoginPassword, setShowCustomerLoginPassword] = useState(false)
   const [adminSessionUser, setAdminSessionUser] = useState<HeaderAdminUser | null>(null)
@@ -196,9 +217,30 @@ export function HeaderClient({ brand, header }: Props) {
     setAccountWarning(currentSearchParams.get('warning'))
 
     if (!user && currentSearchParams.get('account') === 'login') {
+      setAccountAuthMode('login')
       setActivePanel('account')
     }
   }, [pathname, user])
+
+  useEffect(() => {
+    if (!customerCreateNeedsVerification || customerCreateResendAvailableAt == null) {
+      setCustomerCreateResendSeconds(0)
+      return
+    }
+
+    const updateResendSeconds = () => {
+      setCustomerCreateResendSeconds(
+        Math.max(0, Math.ceil((customerCreateResendAvailableAt - Date.now()) / 1000)),
+      )
+    }
+
+    updateResendSeconds()
+    const interval = window.setInterval(updateResendSeconds, 250)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [customerCreateNeedsVerification, customerCreateResendAvailableAt])
 
   useEffect(() => {
     router.prefetch(menuHref)
@@ -388,6 +430,245 @@ export function HeaderClient({ brand, header }: Props) {
     }
   }
 
+  const getCustomerCreateContactPayload = () => {
+    const contact = customerCreateEmail.trim()
+    const isEmailSignup = isEmailLike(contact)
+
+    if (!contact) {
+      return {
+        error: 'Enter an email address or phone number first.',
+      }
+    }
+
+    if (!isEmailSignup && contact.replace(/\D/g, '').length < 7) {
+      return {
+        error: 'Enter a valid email address or phone number.',
+      }
+    }
+
+    return {
+      contact,
+      data: {
+        email: isEmailSignup ? contact : undefined,
+        phone: isEmailSignup ? undefined : contact,
+      },
+    }
+  }
+
+  const getCustomerCreatePasswordError = () => {
+    const password = customerCreatePassword.trim()
+    const passwordConfirm = customerCreatePasswordConfirm.trim()
+
+    if (!password || !passwordConfirm) {
+      return 'Enter and confirm your password before creating the account.'
+    }
+
+    if (password.length < 3) {
+      return 'Password must be at least 3 characters.'
+    }
+
+    if (password !== passwordConfirm) {
+      return 'The password confirmation does not match.'
+    }
+
+    return null
+  }
+
+  const handleCustomerCreateSendCode = async () => {
+    if (
+      isCustomerCreateSubmitting ||
+      isCustomerCreateResending ||
+      customerCreateResendSeconds > 0
+    ) {
+      return
+    }
+
+    const contactPayload = getCustomerCreateContactPayload()
+
+    if ('error' in contactPayload) {
+      setCustomerCreateError(contactPayload.error || 'Enter a valid email address or phone number.')
+      return
+    }
+
+    setCustomerCreateError(null)
+    setCustomerCreateNotice(null)
+    setIsCustomerCreateResending(true)
+
+    try {
+      const response = await fetch('/api/customer-auth/signup', {
+        body: JSON.stringify(contactPayload.data),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+      const result = (await response.json()) as {
+        error?: string
+        maskedEmail?: string
+        maskedPhone?: string
+        requiresEmailVerification?: boolean
+        requiresPhoneVerification?: boolean
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Could not send a verification code.')
+      }
+
+      if (result.requiresEmailVerification) {
+        setCustomerCreateVerificationRecipient(result.maskedEmail || contactPayload.contact)
+      } else if (result.requiresPhoneVerification) {
+        setCustomerCreateVerificationRecipient(result.maskedPhone || contactPayload.contact)
+      }
+
+      setCustomerCreateNeedsVerification(true)
+      setCustomerCreateVerificationCode('')
+      lastAutoSubmittedCreateCodeRef.current = ''
+      setCustomerCreateNotice('Verification code sent. You can finish the password fields now.')
+      setCustomerCreateResendAvailableAt(Date.now() + customerCreateResendDelayMs)
+    } catch (error) {
+      setCustomerCreateError(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Could not send a verification code. Please try again.',
+      )
+    } finally {
+      setIsCustomerCreateResending(false)
+    }
+  }
+
+  const handleCustomerCreateSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (isCustomerCreateSubmitting) {
+      return
+    }
+
+    const password = customerCreatePassword.trim()
+    const passwordConfirm = customerCreatePasswordConfirm.trim()
+    const verificationCode = customerCreateVerificationCode.trim()
+    const contactPayload = getCustomerCreateContactPayload()
+
+    if ('error' in contactPayload) {
+      setCustomerCreateError(contactPayload.error || 'Enter a valid email address or phone number.')
+      return
+    }
+
+    if (!customerCreateNeedsVerification) {
+      await handleCustomerCreateSendCode()
+      return
+    }
+
+    const passwordError = getCustomerCreatePasswordError()
+
+    if (passwordError) {
+      setCustomerCreateError(passwordError)
+      return
+    }
+
+    if (verificationCode.length !== 6) {
+      setCustomerCreateError('Enter the 6-digit verification code.')
+      return
+    }
+
+    setCustomerCreateError(null)
+    setCustomerCreateNotice(null)
+    setIsCustomerCreateSubmitting(true)
+
+    try {
+      const result = await create({
+        ...contactPayload.data,
+        password,
+        passwordConfirm,
+        verificationCode,
+      })
+
+      if (result.requiresEmailVerification) {
+        setCustomerCreateNeedsVerification(true)
+        setCustomerCreateVerificationRecipient(result.maskedEmail || contactPayload.contact)
+        setCustomerCreateVerificationCode('')
+        lastAutoSubmittedCreateCodeRef.current = ''
+        setCustomerCreateResendAvailableAt(Date.now() + customerCreateResendDelayMs)
+        setCustomerCreateNotice(null)
+        return
+      }
+
+      if (result.requiresPhoneVerification) {
+        setCustomerCreateNeedsVerification(true)
+        setCustomerCreateVerificationRecipient(result.maskedPhone || contactPayload.contact)
+        setCustomerCreateVerificationCode('')
+        lastAutoSubmittedCreateCodeRef.current = ''
+        setCustomerCreateResendAvailableAt(Date.now() + customerCreateResendDelayMs)
+        setCustomerCreateNotice(null)
+        return
+      }
+
+      setCustomerCreateEmail('')
+      setCustomerCreatePassword('')
+      setCustomerCreatePasswordConfirm('')
+      setCustomerCreateVerificationCode('')
+      lastAutoSubmittedCreateCodeRef.current = ''
+      setCustomerCreateNeedsVerification(false)
+      setCustomerCreateVerificationRecipient('')
+      setCustomerCreateResendAvailableAt(null)
+      setCustomerCreateNotice(null)
+      setShowCustomerLoginPassword(false)
+      setActivePanel('account')
+      announce('Customer account created.')
+      toast.success('Account created.')
+      router.refresh()
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'There was a problem creating your account. Please try again.'
+      setCustomerCreateError(message)
+    } finally {
+      setIsCustomerCreateSubmitting(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!customerCreateNeedsVerification) {
+      lastAutoSubmittedCreateCodeRef.current = ''
+      return
+    }
+
+    const code = customerCreateVerificationCode.trim()
+
+    if (code.length < 6) {
+      lastAutoSubmittedCreateCodeRef.current = ''
+      return
+    }
+
+    if (
+      code.length !== 6 ||
+      isCustomerCreateSubmitting ||
+      isCustomerCreateResending ||
+      lastAutoSubmittedCreateCodeRef.current === code
+    ) {
+      return
+    }
+
+    lastAutoSubmittedCreateCodeRef.current = code
+    const timeout = window.setTimeout(() => {
+      void handleCustomerCreateSubmit({
+        preventDefault: () => undefined,
+      } as FormEvent<HTMLFormElement>)
+    }, 120)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [
+    customerCreateNeedsVerification,
+    customerCreatePassword,
+    customerCreatePasswordConfirm,
+    customerCreateVerificationCode,
+    isCustomerCreateResending,
+    isCustomerCreateSubmitting,
+  ])
+
   const handleLogout = async () => {
     if (isLoggingOut) return
     setIsLoggingOut(true)
@@ -397,13 +678,35 @@ export function HeaderClient({ brand, header }: Props) {
       }
 
       if (adminSessionUser) {
-        await fetch('/api/admins/logout', {
+        const adminLogoutResponse = await fetch('/api/admins/logout', {
           credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           method: 'POST',
         })
+
+        if (!adminLogoutResponse.ok) {
+          throw new Error('Admin logout failed.')
+        }
+
         setAdminSessionUser(null)
+        window.dispatchEvent(new Event('bwb:admin-auth-changed'))
       }
 
+      setCustomerLoginIdentifier('')
+      setCustomerLoginPassword('')
+      setCustomerCreateEmail('')
+      setCustomerCreatePassword('')
+      setCustomerCreatePasswordConfirm('')
+      setCustomerCreateVerificationCode('')
+      setCustomerCreateError(null)
+      setCustomerCreateNotice(null)
+      setCustomerCreateNeedsVerification(false)
+      setCustomerCreateVerificationRecipient('')
+      setCustomerCreateResendAvailableAt(null)
+      setAccountAuthMode('login')
+      setShowCustomerLoginPassword(false)
       setActivePanel(null)
       router.refresh()
     } finally {
@@ -700,7 +1003,11 @@ export function HeaderClient({ brand, header }: Props) {
                       ? 'Account quick actions'
                       : isAccountSessionPending
                         ? 'Checking account'
-                        : 'Sign in'}
+                        : accountAuthMode === 'create'
+                          ? customerCreateNeedsVerification
+                            ? 'Verify code'
+                            : 'Create account'
+                          : 'Sign in'}
                   </p>
                   {hasSignedInAccount ? (
                     <div className="siteHeaderAccountSummary">
@@ -735,83 +1042,233 @@ export function HeaderClient({ brand, header }: Props) {
                   ) : null}
 
                   {!hasSignedInAccount && !isAccountSessionPending ? (
-                    <form className="siteHeaderAuthPanel" onSubmit={handleCustomerLoginSubmit}>
+                    <form
+                      className="siteHeaderAuthPanel"
+                      onSubmit={
+                        accountAuthMode === 'create'
+                          ? handleCustomerCreateSubmit
+                          : handleCustomerLoginSubmit
+                      }
+                    >
                       <p className="siteHeaderAuthIntro">
-                        Use the email or phone number connected to your account. We will keep you
-                        on this page unless your account opens a management workspace.
+                        {accountAuthMode === 'create'
+                          ? 'Create a customer account without leaving this page. Send a code to your email or phone, then finish your password while it arrives.'
+                          : 'Use the email or phone number connected to your account. We will keep you on this page unless your account opens a management workspace.'}
                       </p>
 
-                      {customerLoginError ? (
+                      {accountAuthMode === 'login' && customerLoginError ? (
                         <p className="siteHeaderAuthError" role="alert">
                           {customerLoginError}
                         </p>
                       ) : null}
 
-                      {!customerLoginError && accountWarning ? (
+                      {accountAuthMode === 'create' && customerCreateError ? (
+                        <p className="siteHeaderAuthError" role="alert">
+                          {customerCreateError}
+                        </p>
+                      ) : null}
+
+                      {accountAuthMode === 'create' && customerCreateNotice ? (
+                        <p className="siteHeaderAuthNotice">{customerCreateNotice}</p>
+                      ) : null}
+
+                      {accountAuthMode === 'login' && !customerLoginError && accountWarning ? (
                         <p className="siteHeaderAuthNotice">{accountWarning}</p>
                       ) : null}
 
-                      <label className="siteHeaderAuthField">
-                        <span>Email or phone</span>
-                        <input
-                          autoComplete="username"
-                          className="siteHeaderAuthInput"
-                          inputMode="email"
-                          onChange={(event) => setCustomerLoginIdentifier(event.target.value)}
-                          placeholder="you@example.com"
-                          type="text"
-                          value={customerLoginIdentifier}
-                        />
-                      </label>
-
-                      <label className="siteHeaderAuthField">
-                        <span>Password</span>
-                        <span className="siteHeaderPasswordShell">
+                      {accountAuthMode === 'login' ? (
+                        <label className="siteHeaderAuthField">
+                          <span>Email or phone</span>
                           <input
-                            autoComplete="current-password"
-                            className="siteHeaderAuthInput siteHeaderPasswordInput"
-                            onChange={(event) => setCustomerLoginPassword(event.target.value)}
-                            placeholder="Enter password"
-                            type={showCustomerLoginPassword ? 'text' : 'password'}
-                            value={customerLoginPassword}
+                            autoComplete="username"
+                            className="siteHeaderAuthInput"
+                            inputMode="email"
+                            onChange={(event) => setCustomerLoginIdentifier(event.target.value)}
+                            placeholder="you@example.com"
+                            type="text"
+                            value={customerLoginIdentifier}
                           />
-                          <BakeryPressable
-                            aria-label={
-                              showCustomerLoginPassword ? 'Hide password' : 'Show password'
+                        </label>
+                      ) : (
+                        <>
+                          <div className="siteHeaderAuthContactGroup">
+                            <label className="siteHeaderAuthField">
+                              <span>Email or phone</span>
+                              <input
+                                autoComplete="username"
+                                className="siteHeaderAuthInput"
+                                inputMode="email"
+                                onChange={(event) => {
+                                  setCustomerCreateEmail(event.target.value)
+                                  setCustomerCreateError(null)
+                                }}
+                                placeholder="you@example.com or 555-123-4567"
+                                type="text"
+                                value={customerCreateEmail}
+                              />
+                            </label>
+                            <button
+                              className="siteHeaderAuthInlineButton"
+                              disabled={isCustomerCreateResending || customerCreateResendSeconds > 0}
+                              onClick={handleCustomerCreateSendCode}
+                              type="button"
+                            >
+                              {isCustomerCreateResending
+                                ? 'Sending...'
+                                : customerCreateResendSeconds > 0
+                                  ? `Resend ${customerCreateResendSeconds}s`
+                                  : customerCreateNeedsVerification
+                                    ? 'Resend code'
+                                    : 'Send code'}
+                            </button>
+                          </div>
+
+                          <AnimatePresence initial={false} mode="wait">
+                            {customerCreateNeedsVerification ? (
+                              <motion.div
+                                animate={{ filter: 'blur(0px)', opacity: 1, y: 0 }}
+                                className="siteHeaderAuthVerificationStep"
+                                exit={{ filter: 'blur(4px)', opacity: 0, y: -8 }}
+                                initial={{ filter: 'blur(4px)', opacity: 0, y: -10 }}
+                                key="customer-create-verification"
+                                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                              >
+                                <p className="siteHeaderAuthMicrocopy">
+                                  Code sent to{' '}
+                                  {customerCreateVerificationRecipient || 'your contact method'}.
+                                </p>
+                                <label className="siteHeaderAuthField">
+                                  <span>Verification code</span>
+                                  <input
+                                    autoComplete="one-time-code"
+                                    className="siteHeaderAuthInput siteHeaderVerificationInput"
+                                    inputMode="numeric"
+                                    maxLength={6}
+                                    onChange={(event) => {
+                                      const nextCode = event.target.value
+                                        .replace(/\D/g, '')
+                                        .slice(0, 6)
+                                      setCustomerCreateVerificationCode(nextCode)
+                                      setCustomerCreateError(null)
+                                    }}
+                                    pattern="[0-9]*"
+                                    placeholder="6-digit code"
+                                    type="text"
+                                    value={customerCreateVerificationCode}
+                                  />
+                                </label>
+                              </motion.div>
+                            ) : null}
+                          </AnimatePresence>
+                        </>
+                      )}
+
+                      {accountAuthMode === 'login' || accountAuthMode === 'create' ? (
+                        <label className="siteHeaderAuthField">
+                          <span>Password</span>
+                          <span className="siteHeaderPasswordShell">
+                            <input
+                              autoComplete={
+                                accountAuthMode === 'create' ? 'new-password' : 'current-password'
+                              }
+                              className="siteHeaderAuthInput siteHeaderPasswordInput"
+                              onChange={(event) => {
+                                if (accountAuthMode === 'create') {
+                                  setCustomerCreatePassword(event.target.value)
+                                  return
+                                }
+
+                                setCustomerLoginPassword(event.target.value)
+                              }}
+                              placeholder="Enter password"
+                              type={showCustomerLoginPassword ? 'text' : 'password'}
+                              value={
+                                accountAuthMode === 'create'
+                                  ? customerCreatePassword
+                                  : customerLoginPassword
+                              }
+                            />
+                            <BakeryPressable
+                              aria-label={
+                                showCustomerLoginPassword ? 'Hide password' : 'Show password'
+                              }
+                              className="siteHeaderPasswordToggle"
+                              onClick={() => setShowCustomerLoginPassword((current) => !current)}
+                              type="button"
+                            >
+                              {showCustomerLoginPassword ? (
+                                <EyeOff aria-hidden="true" className="h-4 w-4" />
+                              ) : (
+                                <Eye aria-hidden="true" className="h-4 w-4" />
+                              )}
+                            </BakeryPressable>
+                          </span>
+                        </label>
+                      ) : null}
+
+                      {accountAuthMode === 'create' ? (
+                        <label className="siteHeaderAuthField">
+                          <span>Verify password</span>
+                          <input
+                            autoComplete="new-password"
+                            className="siteHeaderAuthInput"
+                            onChange={(event) =>
+                              setCustomerCreatePasswordConfirm(event.target.value)
                             }
-                            className="siteHeaderPasswordToggle"
-                            onClick={() => setShowCustomerLoginPassword((current) => !current)}
-                            type="button"
-                          >
-                            {showCustomerLoginPassword ? (
-                              <EyeOff aria-hidden="true" className="h-4 w-4" />
-                            ) : (
-                              <Eye aria-hidden="true" className="h-4 w-4" />
-                            )}
-                          </BakeryPressable>
-                        </span>
-                      </label>
+                            placeholder="Re-enter password"
+                            type={showCustomerLoginPassword ? 'text' : 'password'}
+                            value={customerCreatePasswordConfirm}
+                          />
+                        </label>
+                      ) : null}
 
                       <button
                         className="siteHeaderAuthSubmit"
-                        disabled={isCustomerLoginSubmitting}
+                        disabled={
+                          isCustomerLoginSubmitting ||
+                          isCustomerCreateSubmitting ||
+                          isCustomerCreateResending
+                        }
                         type="submit"
                       >
-                        {isCustomerLoginSubmitting ? (
+                        {isCustomerLoginSubmitting || isCustomerCreateSubmitting ? (
                           <>
                             <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
-                            Signing in
+                            {accountAuthMode === 'create' ? 'Creating account' : 'Signing in'}
                           </>
                         ) : (
-                          'Sign in'
+                          accountAuthMode === 'create'
+                            ? customerCreateNeedsVerification
+                              ? 'Create account'
+                              : 'Send code to continue'
+                            : 'Sign in'
                         )}
                       </button>
 
-                      <div className="siteHeaderAuthLinks">
-                        <Link href="/create-account" onClick={() => setActivePanel(null)}>
-                          Create an account
-                        </Link>
-                      </div>
+                      {!customerCreateNeedsVerification ? (
+                        <div className="siteHeaderAuthLinks">
+                        <button
+                          className="siteHeaderAuthLinkButton"
+                          onClick={() => {
+                            setCustomerLoginError(null)
+                            setCustomerCreateError(null)
+                            setCustomerCreateNotice(null)
+                            setCustomerCreateNeedsVerification(false)
+                            setCustomerCreateVerificationCode('')
+                            setCustomerCreateVerificationRecipient('')
+                            setCustomerCreateResendAvailableAt(null)
+                            setAccountAuthMode((current) =>
+                              current === 'create' ? 'login' : 'create',
+                            )
+                          }}
+                          type="button"
+                        >
+                          {accountAuthMode === 'create'
+                            ? 'Already have an account? Sign in'
+                            : 'Create an account'}
+                        </button>
+                        </div>
+                      ) : null}
                     </form>
                   ) : null}
 

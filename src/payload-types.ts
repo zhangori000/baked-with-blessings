@@ -77,6 +77,7 @@ export interface Config {
   collections: {
     admins: Admin;
     customers: Customer;
+    'email-verification-starts': EmailVerificationStart;
     'phone-verification-starts': PhoneVerificationStart;
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
@@ -122,6 +123,7 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    'email-verification-starts': EmailVerificationStartsSelect<false> | EmailVerificationStartsSelect<true>;
     'phone-verification-starts': PhoneVerificationStartsSelect<false> | PhoneVerificationStartsSelect<true>;
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
@@ -1508,6 +1510,22 @@ export interface Address {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-verification-starts".
+ */
+export interface EmailVerificationStart {
+  id: number;
+  key: string;
+  flow: 'signup';
+  email: string;
+  codeHash: string;
+  attempts: number;
+  consumedAt?: string | null;
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "phone-verification-starts".
  */
 export interface PhoneVerificationStart {
@@ -1878,7 +1896,7 @@ export interface FlavorRotation {
    */
   rotationType: 'monthly' | 'seasonal' | 'special';
   /**
-   * Optional public-facing label for this rotation, such as "May cookie rotation" or "Spring specials".
+   * Optional name for this lineup, such as "May cookie rotation" or "Spring specials". Leave blank if you do not want to name the whole lineup.
    */
   displayLabel?: string | null;
   /**
@@ -1890,7 +1908,7 @@ export interface FlavorRotation {
    */
   individualFlavors: (number | Product)[];
   /**
-   * Short label for cookies that are part of the active individual-order lineup.
+   * Short badge text for cookies included in this rotation. The default is fine unless you want wording like "Spring special" or "Available individually".
    */
   monthlyFlavorLabel?: string | null;
   /**
@@ -1960,6 +1978,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: number | Customer;
+      } | null)
+    | ({
+        relationTo: 'email-verification-starts';
+        value: number | EmailVerificationStart;
       } | null)
     | ({
         relationTo: 'phone-verification-starts';
@@ -2154,6 +2176,21 @@ export interface CustomersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-verification-starts_select".
+ */
+export interface EmailVerificationStartsSelect<T extends boolean = true> {
+  key?: T;
+  flow?: T;
+  email?: T;
+  codeHash?: T;
+  attempts?: T;
+  consumedAt?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

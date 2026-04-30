@@ -743,9 +743,9 @@
   transform-origin: top center;
   transform: translateY(-2px) scaleY(0.96);
   transition:
-    opacity 120ms ease,
-    max-height 140ms ease,
-    transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 60ms ease,
+    max-height 0ms linear,
+    transform 60ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .siteHeaderActionPanel.is-open {
@@ -777,7 +777,7 @@
 }
 
 .siteHeaderActionPanel.is-account .siteHeaderActionPanelInner {
-  margin-right: auto;
+  margin-left: auto;
   width: min(28rem, calc(100vw - 1.8rem));
   padding: 1rem;
 }
@@ -1162,6 +1162,46 @@
   padding-right: 3rem;
 }
 
+.siteHeaderAuthContactGroup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.56rem;
+}
+
+.siteHeaderAuthInlineButton {
+  appearance: none;
+  border: 1px solid rgb(23 52 31 / 14%);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 26%), transparent 30%),
+    #f5ecd1;
+  color: #243519;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 900;
+  line-height: 1;
+  min-height: 3rem;
+  padding: 0.68rem 0.86rem;
+  white-space: nowrap;
+  transition:
+    background 130ms ease,
+    opacity 130ms ease,
+    transform 130ms ease;
+}
+
+.siteHeaderAuthInlineButton:hover,
+.siteHeaderAuthInlineButton:focus-visible {
+  background: #ffe69f;
+  transform: translateY(-1px);
+}
+
+.siteHeaderAuthInlineButton:disabled {
+  cursor: wait;
+  opacity: 0.58;
+  transform: none;
+}
+
 .siteHeaderPasswordToggle {
   position: absolute;
   top: 50%;
@@ -1185,6 +1225,68 @@
   background: rgb(23 52 31 / 8%);
   color: #151d10;
   transform: translateY(-50%) scale(1.04);
+}
+
+.siteHeaderAuthVerificationStep {
+  display: grid;
+  gap: 0.48rem;
+  margin-top: -0.2rem;
+}
+
+.siteHeaderAuthMicrocopy {
+  color: rgb(21 29 16 / 66%);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.siteHeaderVerificationInput {
+  font-size: 1.08rem;
+  letter-spacing: 0.08em;
+}
+
+.siteHeaderAuthStepActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.siteHeaderAuthGhostButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.32rem;
+  border: 1px solid rgb(23 52 31 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 70%);
+  color: rgb(21 29 16 / 76%);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 850;
+  line-height: 1;
+  min-height: 2.2rem;
+  padding: 0.56rem 0.8rem;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.siteHeaderAuthGhostButton:hover,
+.siteHeaderAuthGhostButton:focus-visible {
+  background: #fff;
+  color: #151d10;
+  transform: translateY(-1px);
+}
+
+.siteHeaderAuthGhostButton:disabled {
+  cursor: wait;
+  opacity: 0.56;
+  transform: none;
 }
 
 .siteHeaderAuthSubmit {
@@ -1229,7 +1331,8 @@
   padding-top: 0.1rem;
 }
 
-.siteHeaderAuthLinks a {
+.siteHeaderAuthLinks a,
+.siteHeaderAuthLinkButton {
   color: rgb(21 29 16 / 72%);
   font-size: 0.78rem;
   font-weight: 800;
@@ -1240,8 +1343,19 @@
   text-underline-offset: 0.18em;
 }
 
+.siteHeaderAuthLinkButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
 .siteHeaderAuthLinks a:hover,
-.siteHeaderAuthLinks a:focus-visible {
+.siteHeaderAuthLinks a:focus-visible,
+.siteHeaderAuthLinkButton:hover,
+.siteHeaderAuthLinkButton:focus-visible {
   color: #151d10;
 }
 

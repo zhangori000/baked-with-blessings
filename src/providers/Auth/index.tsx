@@ -35,7 +35,13 @@ type Create = (args: {
   passwordConfirm: string
   phone?: string
   verificationCode?: string
-}) => Promise<{ maskedPhone?: string; requiresPhoneVerification?: boolean; success?: boolean }>
+}) => Promise<{
+  maskedEmail?: string
+  maskedPhone?: string
+  requiresEmailVerification?: boolean
+  requiresPhoneVerification?: boolean
+  success?: boolean
+}>
 
 type Login = (args: { identifier: string; password: string }) => Promise<StorefrontCustomer>
 
@@ -105,8 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
 
         const json = (await res.json()) as {
+          maskedEmail?: string
           error?: string
           maskedPhone?: string
+          requiresEmailVerification?: boolean
           requiresPhoneVerification?: boolean
           success?: boolean
         }
@@ -125,7 +133,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
 
         return json
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.message) {
+          throw error
+        }
+
         throw new Error('An error occurred while attempting to create your account.')
       }
     },

@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig, Where } from 'payload'
 
 import { adminOnly } from '@/access/adminOnly'
 import { isAdminUser } from '@/access/utilities'
@@ -19,7 +19,7 @@ const enforceSingleActiveFlavorRotation: CollectionBeforeChangeHook = async ({
   }
 
   const currentID = operation === 'update' ? originalDoc?.id : undefined
-  const where =
+  const where: Where =
     currentID != null
       ? {
           and: [
@@ -175,9 +175,14 @@ export const FlavorRotations: CollectionConfig = {
       relationTo: 'products',
       required: true,
       validate: (value, { siblingData }) => {
+        const rotationSiblingData = siblingData as
+          | {
+              individualFlavorSlots?: unknown
+            }
+          | undefined
         const individualFlavorSlots =
-          typeof siblingData?.individualFlavorSlots === 'number'
-            ? siblingData.individualFlavorSlots
+          typeof rotationSiblingData?.individualFlavorSlots === 'number'
+            ? rotationSiblingData.individualFlavorSlots
             : 3
         const selectedCount = Array.isArray(value) ? value.length : 0
 

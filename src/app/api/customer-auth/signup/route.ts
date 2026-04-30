@@ -8,6 +8,8 @@ import {
 } from '@/collections/Customers/hooks/customerPhoneIdentity'
 import { findExistingCustomer, normalizeCustomerContact } from '@/utilities/customerAuth'
 import { sendCustomerWelcomeEmail } from '@/utilities/email/sendCustomerWelcomeEmail'
+import { checkEmailVerification, startEmailVerificationOnce } from '@/utilities/emailVerificationStartGuard'
+import { maskEmailAddress } from '@/utilities/emailVerification'
 import { startPhoneVerificationOnce } from '@/utilities/phoneVerificationStartGuard'
 import { isEmailIdentifier, maskPhoneNumber } from '@/utilities/phone'
 import { checkPhoneVerification } from '@/utilities/twilioVerify'
@@ -28,6 +30,32 @@ const jsonError = (message: string, status = 400) =>
     },
     { status },
   )
+
+const describeSignupError = (error: unknown) => {
+  const apiError = error as
+    | {
+        data?: {
+          errors?: Array<{
+            message?: string
+            path?: string
+          }>
+        }
+        message?: string
+        status?: number
+      }
+    | undefined
+  const fieldError = apiError?.data?.errors?.[0]
+
+  if (fieldError?.path === 'password') {
+    return 'Password must be at least 3 characters.'
+  }
+
+  if (fieldError?.path && fieldError.message) {
+    return `${fieldError.path}: ${fieldError.message}`
+  }
+
+  return apiError?.message || 'There was a problem creating the account.'
+}
 
 export async function POST(request: Request) {
   const payload = await getPayload({ config })
@@ -50,14 +78,6 @@ export async function POST(request: Request) {
       return jsonError('Enter a valid email address.')
     }
 
-    if (!password) {
-      return jsonError('Password is required.')
-    }
-
-    if (password !== passwordConfirm) {
-      return jsonError('The passwords do not match.')
-    }
-
     const { email, phone } = normalizeCustomerContact({
       email: rawEmail,
       phone: rawPhone,
@@ -77,7 +97,7 @@ export async function POST(request: Request) {
       return jsonError('That email address is already attached to an existing account.', 409)
     }
 
-    if (phone && !verificationCode) {
+    if (!verificationCode && phone) {
       await startPhoneVerificationOnce({
         flow: 'signup',
         payload,
@@ -93,6 +113,39 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!verificationCode && email) {
+      const result = await startEmailVerificationOnce({
+        email,
+        flow: 'signup',
+        payload,
+      })
+
+      if (!result.success) {
+        return jsonError('Unable to send email verification code.', 500)
+      }
+
+      return Response.json(
+        {
+          maskedEmail: maskEmailAddress(email),
+          requiresEmailVerification: true,
+          success: true,
+        },
+        { status: 202 },
+      )
+    }
+
+    if (!password) {
+      return jsonError('Password is required.')
+    }
+
+    if (password.length < 3) {
+      return jsonError('Password must be at least 3 characters.')
+    }
+
+    if (password !== passwordConfirm) {
+      return jsonError('The passwords do not match.')
+    }
+
     if (phone) {
       const approved = await checkPhoneVerification({
         code: verificationCode,
@@ -100,6 +153,29 @@ export async function POST(request: Request) {
       })
 
       if (!approved) {
+        return jsonError('The verification code is invalid or expired.')
+      }
+    } else if (email && verificationCode) {
+      const verification = await checkEmailVerification({
+        code: verificationCode,
+        email,
+        flow: 'signup',
+        payload,
+      })
+
+      if (!verification.success) {
+        if (verification.reason === 'attempts_exceeded') {
+          return jsonError('Too many attempts. Please request a new verification code.')
+        }
+
+        if (verification.reason === 'expired') {
+          return jsonError('The verification code has expired.')
+        }
+
+        if (verification.reason === 'not_found') {
+          return jsonError('No verification attempt found for this email.')
+        }
+
         return jsonError('The verification code is invalid or expired.')
       }
     }
@@ -142,7 +218,11 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     payload.logger.error({ err: error }, 'Customer signup failed')
-    const message = error instanceof Error ? error.message : 'There was a problem creating the account.'
-    return jsonError(message, 500)
+    const status =
+      typeof (error as { status?: unknown })?.status === 'number'
+        ? ((error as { status: number }).status ?? 500)
+        : 500
+
+    return jsonError(describeSignupError(error), status)
   }
 }

@@ -5,7 +5,7 @@ import { startPhoneVerification } from '@/utilities/twilioVerify'
 
 export type PhoneVerificationFlow = 'password-reset' | 'signup'
 
-export const PHONE_VERIFICATION_START_WINDOW_MS = 60 * 1000
+export const PHONE_VERIFICATION_START_WINDOW_MS = 7 * 1000
 
 export const createPhoneVerificationStartKey = ({
   flow,
