@@ -579,15 +579,20 @@ export function CateringMenuSection({
           contain: layout paint style;
           transform: translate3d(0, 0, 0);
           transition:
-            opacity 180ms ease,
-            transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+            opacity 320ms ease,
+            transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
           will-change: opacity, transform;
         }
 
         .cateringPanelForegroundHidden,
         .cateringGalleryContentTransitioning {
           opacity: 0;
-          transform: translateY(-0.18rem);
+          transform: translateY(-0.36rem) scale(0.992);
+        }
+
+        .cateringPanelForegroundEntering,
+        .cateringGalleryContentEntering {
+          animation: cateringPanelContentEnter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
         .cateringPanelWipeGhost {
@@ -599,13 +604,13 @@ export function CateringMenuSection({
         .cateringPanelWipeGhostToPhotos {
           clip-path: inset(var(--catering-wipe-edge, 0%) 0 0 0 round 1.45rem);
           animation: cateringWipeToPhotos var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+            cubic-bezier(0.36, 0, 0.2, 1) forwards;
         }
 
         .cateringPanelWipeGhostToDetails {
           clip-path: inset(0 0 calc(100% - var(--catering-wipe-edge, 100%)) 0 round 1.45rem);
           animation: cateringWipeToDetails var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+            cubic-bezier(0.36, 0, 0.2, 1) forwards;
         }
 
         .cateringPersuasionSky {
@@ -655,6 +660,26 @@ export function CateringMenuSection({
           line-height: 1;
         }
 
+        .cateringAddToCartButton.bakerySceneButton {
+          background: #193822;
+          border-color: transparent;
+          box-shadow: none;
+          color: #fffaf0;
+        }
+
+        .cateringAddToCartButton.bakerySceneButton:hover,
+        .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          background: #102b19;
+          border-color: transparent;
+          box-shadow: none;
+          color: #fffaf0;
+        }
+
+        .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          outline: 3px solid rgba(25, 56, 34, 0.28);
+          outline-offset: 3px;
+        }
+
         .cateringPersuasionMeadow {
           bottom: -0.4rem;
           height: 100%;
@@ -700,15 +725,31 @@ export function CateringMenuSection({
               rgba(255, 255, 255, 0.74) 88%,
               rgba(255, 255, 255, 0) 100%
           );
-          height: 0.2rem;
+          height: 0.28rem;
           opacity: 1;
           top: 0;
           transform: translate3d(0, -50%, 0);
           transform-origin: center;
           box-shadow:
-            0 -0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, transparent),
-            0 0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 24%, transparent);
+            0 -0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, transparent),
+            0 0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 24%, transparent);
           will-change: opacity, transform;
+        }
+
+        .cateringPanelTearLine::before {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 22%, rgba(255, 255, 255, 0.74)) 44%,
+            rgba(255, 255, 255, 0.48) 50%,
+            color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, rgba(255, 255, 255, 0.5)) 56%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          content: '';
+          filter: blur(0.28rem);
+          inset: -1.55rem 0;
+          opacity: 0.72;
+          position: absolute;
         }
 
         .cateringPanelRepaintLineHidden {
@@ -717,12 +758,12 @@ export function CateringMenuSection({
 
         .cateringPanelRepaintLineToPhotos {
           animation: cateringRepaintLineToPhotos var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+            cubic-bezier(0.36, 0, 0.2, 1) forwards;
         }
 
         .cateringPanelRepaintLineToDetails {
           animation: cateringRepaintLineToDetails var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+            cubic-bezier(0.36, 0, 0.2, 1) forwards;
         }
 
         [data-panel-transition='closing'] .cateringPhotoSkeleton,
@@ -748,6 +789,26 @@ export function CateringMenuSection({
           contain-intrinsic-size: 18rem 14rem;
           isolation: isolate;
           position: relative;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > * {
+          animation: cateringPhotoItemEnter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(2) {
+          animation-delay: 50ms;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(3) {
+          animation-delay: 90ms;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(4) {
+          animation-delay: 130ms;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(n + 5) {
+          animation-delay: 170ms;
         }
 
         .cateringPhotoCardLoading {
@@ -1390,6 +1451,42 @@ export function CateringMenuSection({
           }
         }
 
+        @keyframes cateringPanelContentEnter {
+          0% {
+            filter: blur(0.12rem);
+            opacity: 0;
+            transform: translate3d(0, 0.58rem, 0) scale(0.992);
+          }
+
+          58% {
+            opacity: 1;
+          }
+
+          100% {
+            filter: blur(0);
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+        }
+
+        @keyframes cateringPhotoItemEnter {
+          0% {
+            filter: blur(0.08rem);
+            opacity: 0;
+            transform: translate3d(0, 0.72rem, 0) scale(0.985);
+          }
+
+          65% {
+            opacity: 1;
+          }
+
+          100% {
+            filter: blur(0);
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+        }
+
         @keyframes cateringWipeToPhotos {
           0% {
             --catering-wipe-edge: 0%;
@@ -1412,33 +1509,51 @@ export function CateringMenuSection({
 
         @keyframes cateringRepaintLineToPhotos {
           0% {
+            opacity: 0.68;
+            transform: translate3d(0, -50%, 0) scaleY(0.72);
+          }
+
+          16% {
             opacity: 0.96;
-            transform: translate3d(0, -50%, 0);
+          }
+
+          82% {
+            opacity: 0.94;
           }
 
           100% {
-            opacity: 0.96;
+            opacity: 0.74;
             transform: translate3d(
               0,
               var(--catering-panel-transition-distance, var(--scene-panel-min-height, 34rem)),
               0
-            );
+            )
+              scaleY(0.86);
           }
         }
 
         @keyframes cateringRepaintLineToDetails {
           0% {
-            opacity: 0.96;
+            opacity: 0.74;
             transform: translate3d(
               0,
               var(--catering-panel-transition-distance, var(--scene-panel-min-height, 34rem)),
               0
-            );
+            )
+              scaleY(0.86);
+          }
+
+          18% {
+            opacity: 0.96;
+          }
+
+          84% {
+            opacity: 0.94;
           }
 
           100% {
-            opacity: 0.96;
-            transform: translate3d(0, -50%, 0);
+            opacity: 0.68;
+            transform: translate3d(0, -50%, 0) scaleY(0.72);
           }
         }
 
@@ -1450,6 +1565,25 @@ export function CateringMenuSection({
 
           50% {
             transform: translate3d(0.9rem, -0.32rem, 0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .cateringPanelForeground,
+          .cateringGalleryContent,
+          .cateringPhotoImage {
+            transition-duration: 1ms !important;
+          }
+
+          .cateringPanelWipeGhostToPhotos,
+          .cateringPanelWipeGhostToDetails,
+          .cateringPanelRepaintLineToPhotos,
+          .cateringPanelRepaintLineToDetails,
+          .cateringPanelForegroundEntering,
+          .cateringGalleryContentEntering,
+          .cateringGalleryContentEntering .cateringPhotoBoard > div > * {
+            animation-delay: 0ms !important;
+            animation-duration: 1ms !important;
           }
         }
 

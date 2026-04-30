@@ -136,7 +136,7 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: P
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}
-          summary="Leave a review. We publish real replies, show what changed, and keep boundaries when a claim needs context."
+          summary="This page is experimental."
           title="Reviews"
         />
       </div>

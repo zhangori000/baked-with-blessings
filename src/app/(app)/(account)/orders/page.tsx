@@ -2,7 +2,7 @@ import type { Order } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
-import { BakeryPageSurface, BakeryPageTitle } from '@/design-system/bakery'
+import { BakeryPageSurface } from '@/design-system/bakery'
 
 import { OrderItem } from '@/components/OrderItem'
 import { headers as getHeaders } from 'next/headers'
@@ -42,7 +42,6 @@ export default async function Orders() {
   return (
     <>
       <BakeryPageSurface spacing="lg" width="full">
-        <BakeryPageTitle className="mb-8">Orders</BakeryPageTitle>
         {(!orders || !Array.isArray(orders) || orders?.length === 0) && (
           <p className="">You have no orders.</p>
         )}

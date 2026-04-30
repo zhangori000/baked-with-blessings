@@ -172,32 +172,36 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
 
           {appItems.length ? (
             <div className="siteHeaderMobileSectionDivider" role="separator">
-              <span>Other pages</span>
+              <span>Apps</span>
             </div>
           ) : null}
 
-          {appItems.flatMap((item) =>
-            (item.panel.cards?.length
-              ? item.panel.cards
-              : [
-                  {
-                    description: item.panel.description,
-                    eyebrow: item.panel.eyebrow,
-                    href: item.href,
-                    title: item.label,
-                  },
-                ]
-            ).map((card, index) =>
-              renderCard({
-                description: card.description,
-                eyebrow: card.eyebrow,
-                href: card.href,
-                key: `${item.id}-${card.href}`,
-                title: card.title,
-                tone: appCardFlowerTones[index % appCardFlowerTones.length],
-              }),
-            ),
-          )}
+          {appItems.length ? (
+            <div className="siteHeaderMobileAppScroller" aria-label="Other pages">
+              {appItems.flatMap((item) =>
+                (item.panel.cards?.length
+                  ? item.panel.cards
+                  : [
+                      {
+                        description: item.panel.description,
+                        eyebrow: item.panel.eyebrow,
+                        href: item.href,
+                        title: item.label,
+                      },
+                    ]
+                ).map((card, index) =>
+                  renderCard({
+                    description: card.description,
+                    eyebrow: card.eyebrow,
+                    href: card.href,
+                    key: `${item.id}-${card.href}`,
+                    title: card.title,
+                    tone: appCardFlowerTones[index % appCardFlowerTones.length],
+                  }),
+                ),
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

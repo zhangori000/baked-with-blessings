@@ -534,7 +534,7 @@ export function DiscussionBoardClient({
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}
-          summary="Open a question, follow replies and follow-up questions, and keep the reasoning visible instead of buried in disconnected comments."
+          summary="This page is experimental."
           title="Discussion Board"
         />
       </div>
@@ -543,6 +543,7 @@ export function DiscussionBoardClient({
         as="section"
         className="discussionBoardShell"
         spacing="none"
+        tone="transparent"
         width="container"
       >
         {isRoutePending ? (
@@ -792,42 +793,42 @@ function NodeCard({
             {isCollapsed ? 'Expand branch' : 'Collapse branch'}
           </BakeryPressable>
         ) : null}
-      </div>
 
-      <div className="discussionNodeActionPanel" data-open={areActionsOpen}>
-        <BakeryPressable
-          aria-expanded={areActionsOpen}
-          className="discussionActionsToggle"
-          onClick={() => setAreActionsOpen((current) => !current)}
-          type="button"
-        >
-          Actions
-          <ChevronDown
-            aria-hidden="true"
-            className={cn('h-4 w-4', areActionsOpen && 'discussionIconFlipped')}
-          />
-        </BakeryPressable>
+        <div className="discussionNodeActionPanel" data-open={areActionsOpen}>
+          <BakeryPressable
+            aria-expanded={areActionsOpen}
+            className="discussionActionsToggle"
+            onClick={() => setAreActionsOpen((current) => !current)}
+            type="button"
+          >
+            Actions
+            <ChevronDown
+              aria-hidden="true"
+              className={cn('h-4 w-4', areActionsOpen && 'discussionIconFlipped')}
+            />
+          </BakeryPressable>
 
-        {areActionsOpen ? (
-          <div className="discussionNodeActions">
-            <BakeryPressable
-              data-edge="responds_to"
-              onClick={() => onReply(node.id, 'responds_to')}
-              type="button"
-            >
-              <MessageSquarePlus aria-hidden="true" className="h-4 w-4" />
-              Reply
-            </BakeryPressable>
-            <BakeryPressable
-              data-edge="asks_about"
-              onClick={() => onReply(node.id, 'asks_about')}
-              type="button"
-            >
-              <CircleHelp aria-hidden="true" className="h-4 w-4" />
-              Ask question
-            </BakeryPressable>
-          </div>
-        ) : null}
+          {areActionsOpen ? (
+            <div className="discussionNodeActions">
+              <BakeryPressable
+                data-edge="responds_to"
+                onClick={() => onReply(node.id, 'responds_to')}
+                type="button"
+              >
+                <MessageSquarePlus aria-hidden="true" className="h-4 w-4" />
+                Reply
+              </BakeryPressable>
+              <BakeryPressable
+                data-edge="asks_about"
+                onClick={() => onReply(node.id, 'asks_about')}
+                type="button"
+              >
+                <CircleHelp aria-hidden="true" className="h-4 w-4" />
+                Ask question
+              </BakeryPressable>
+            </div>
+          ) : null}
+        </div>
       </div>
     </BakeryCard>
   )

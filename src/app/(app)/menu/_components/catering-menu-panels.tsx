@@ -338,7 +338,7 @@ export function SimpleItemPanel({
         </div>
 
         <SceneButton
-          className="cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+          className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
           loading={isCartPending}
           loadingLabel={`Adding ${product.title ?? 'item'} to cart`}
           onClick={onAddToCart}
@@ -563,7 +563,7 @@ export function BatchBuilderPanel({
         </div>
 
         <SceneButton
-          className="cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+          className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
           disabled={!canAddTray}
           loading={isTrayPending}
           loadingLabel="Adding tray to cart"

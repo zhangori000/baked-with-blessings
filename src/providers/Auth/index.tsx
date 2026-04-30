@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Enter a valid email address or phone number.')
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/login`, {
+      const res = await fetch('/api/customers/login', {
         body: JSON.stringify(loginData),
         credentials: 'include',
         headers: {
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const create = useCallback<Create>(
     async (args) => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customer-auth/signup`, {
+        const res = await fetch('/api/customer-auth/signup', {
           body: JSON.stringify(args),
           credentials: 'include',
           headers: {
@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = useCallback<Logout>(async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/logout`, {
+      const res = await fetch('/api/customers/logout', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/me`, {
+        const res = await fetch('/api/customers/me', {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch {
         setUser(null)
-        throw new Error('An error occurred while fetching your account.')
+        setStatus(undefined)
       }
     }
 
@@ -182,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const forgotPassword = useCallback<ForgotPassword>(async (args) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customer-auth/password-reset`, {
+      const res = await fetch('/api/customer-auth/password-reset', {
         body: JSON.stringify(args),
         credentials: 'include',
         headers: {
@@ -212,7 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = useCallback<ResetPassword>(async (args) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/customer-auth/password-reset`, {
+      const res = await fetch('/api/customer-auth/password-reset', {
         body: JSON.stringify(args),
         credentials: 'include',
         headers: {

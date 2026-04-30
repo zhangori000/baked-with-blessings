@@ -61,6 +61,17 @@ export const Customers: CollectionConfig = {
       },
     },
     {
+      name: 'stripeCustomerID',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Stripe Customer ID used to link this Payload customer to Stripe payments.',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'orders',
       type: 'join',
       collection: 'orders',
@@ -74,7 +85,14 @@ export const Customers: CollectionConfig = {
       name: 'cart',
       type: 'join',
       collection: 'carts',
+      defaultLimit: 1,
+      defaultSort: '-createdAt',
       on: 'customer',
+      where: {
+        purchasedAt: {
+          exists: false,
+        },
+      },
       admin: {
         allowCreate: false,
         defaultColumns: ['id', 'createdAt', 'total', 'currency', 'items'],

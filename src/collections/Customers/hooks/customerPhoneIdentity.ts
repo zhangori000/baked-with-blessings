@@ -4,6 +4,7 @@ import { isAdminUser, isCustomerUser } from '@/access/utilities'
 import { normalizePhoneNumber } from '@/utilities/phone'
 
 export const ALLOW_CUSTOMER_PHONE_IDENTITY_WRITE = 'allowCustomerPhoneIdentityWrite'
+export const ALLOW_CUSTOMER_STRIPE_CUSTOMER_ID_WRITE = 'allowCustomerStripeCustomerIDWrite'
 export const VERIFIED_PHONE_CONTEXT_KEY = 'verifiedCustomerPhoneAt'
 
 const phoneValidationError = (req: { t?: unknown }) =>
@@ -88,6 +89,7 @@ export const restrictCustomerIdentityChanges = ({
     id?: number | string
     phone?: null | string
     phoneVerifiedAt?: null | string
+    stripeCustomerID?: null | string
     username?: null | string
   }
   req: {
@@ -103,7 +105,7 @@ export const restrictCustomerIdentityChanges = ({
     return data
   }
 
-  if (isAdminUser(req.user) || req.context?.[ALLOW_CUSTOMER_PHONE_IDENTITY_WRITE]) {
+  if (isAdminUser(req.user)) {
     return data
   }
 
@@ -112,7 +114,12 @@ export const restrictCustomerIdentityChanges = ({
     ('username' in data && data.username !== originalDoc.username) ||
     ('phoneVerifiedAt' in data && data.phoneVerifiedAt !== originalDoc.phoneVerifiedAt)
 
-  if (identityTouched && isCustomerUser(req.user) && req.user?.id === originalDoc.id) {
+  if (
+    identityTouched &&
+    !req.context?.[ALLOW_CUSTOMER_PHONE_IDENTITY_WRITE] &&
+    isCustomerUser(req.user) &&
+    req.user?.id === originalDoc.id
+  ) {
     throw new ValidationError(
       {
         collection: 'customers',
@@ -120,6 +127,24 @@ export const restrictCustomerIdentityChanges = ({
           {
             message: 'Use the phone verification flow to change your phone number.',
             path: 'phone',
+          },
+        ],
+      },
+      req.t as never,
+    )
+  }
+
+  const stripeCustomerIDTouched =
+    'stripeCustomerID' in data && data.stripeCustomerID !== originalDoc.stripeCustomerID
+
+  if (stripeCustomerIDTouched && !req.context?.[ALLOW_CUSTOMER_STRIPE_CUSTOMER_ID_WRITE]) {
+    throw new ValidationError(
+      {
+        collection: 'customers',
+        errors: [
+          {
+            message: 'Stripe customer linkage is managed by the payment system.',
+            path: 'stripeCustomerID',
           },
         ],
       },

@@ -961,13 +961,6 @@ const createSpawnedFlower = ({
   }
 }
 
-const createSpawnedFlowerCluster = (
-  sceneryTone: MenuSceneryTone,
-  kind: 'hero' | 'panel',
-): SpawnedFlower[] => {
-  return [createSpawnedFlower({ kind, sceneryTone }), createSpawnedFlower({ kind, sceneryTone })]
-}
-
 const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'panel') => {
   const leftRange: [number, number] = kind === 'hero' ? [8, 92] : [6, 94]
 
@@ -1177,7 +1170,7 @@ function SceneryChooserPopover({
         className="cateringSceneryChooserTail"
         style={anchorX != null ? { left: `calc(${anchorX}px - 1.35rem)` } : undefined}
       />
-      <div className="cateringSceneryChooserRail">
+      <div aria-label="Choose scenery" className="cateringSceneryChooserRail" role="group">
         {menuSceneryTones.map((tone) => {
           const isActive = tone === activeTone
 
@@ -1258,12 +1251,7 @@ export function MenuHero({
   }
 
   const spawnFlower = () => {
-    setSpawnedFlowers((current) => [
-      ...current,
-      ...(spawnedAccentLabelByScenery[sceneryTone] === 'Spawn a flower'
-        ? createSpawnedFlowerCluster(sceneryTone, 'hero')
-        : [createSpawnedFlower({ kind: 'hero', sceneryTone })]),
-    ])
+    setSpawnedFlowers((current) => [...current, createSpawnedFlower({ kind: 'hero', sceneryTone })])
   }
 
   return (
@@ -1437,7 +1425,8 @@ export function PersuasionGardenPanel({
   styles,
   summary,
 }: PersuasionGardenPanelProps) {
-  const SHUTTER_PHASE_MS = 240
+  const PANEL_WIPE_MS = 560
+  const PANEL_SETTLE_MS = 820
   const flowerSeedCount = useResponsiveFlowerSeedCount()
   const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
@@ -1507,9 +1496,7 @@ export function PersuasionGardenPanel({
   const spawnFlower = () => {
     setSpawnedFlowers((current) => [
       ...current,
-      ...(spawnedAccentLabelByScenery[sceneryTone] === 'Spawn a flower'
-        ? createSpawnedFlowerCluster(sceneryTone, 'panel')
-        : [createSpawnedFlower({ kind: 'panel', sceneryTone })]),
+      createSpawnedFlower({ kind: 'panel', sceneryTone }),
     ])
   }
 
@@ -1546,8 +1533,8 @@ export function PersuasionGardenPanel({
         setPanelTransition('idle')
         setTransitionGhostFace(null)
         transitionTimeoutRef.current = null
-      }, SHUTTER_PHASE_MS)
-    }, SHUTTER_PHASE_MS)
+      }, PANEL_SETTLE_MS)
+    }, PANEL_WIPE_MS)
   }
 
   const markGalleryImageLoaded = (imageKey: string) => {
@@ -1563,7 +1550,6 @@ export function PersuasionGardenPanel({
   }
 
   const isGalleryFace = panelFace === 'gallery'
-  const isPanelTransitioning = panelTransition !== 'idle'
   const showDetailsFace = !isGalleryFace || transitionGhostFace === 'details'
   const showDetailsAsGhost = isGalleryFace && transitionGhostFace === 'details'
   const showGalleryFace = isGalleryFace || transitionGhostFace === 'gallery'
@@ -1631,7 +1617,12 @@ export function PersuasionGardenPanel({
             <div
               className={cn(
                 'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]',
-                (isPanelTransitioning || showDetailsAsGhost) && 'cateringPanelForegroundHidden',
+                (panelTransition === 'closing' || showDetailsAsGhost) &&
+                  'cateringPanelForegroundHidden',
+                panelTransition === 'opening' &&
+                  !isGalleryFace &&
+                  !showDetailsAsGhost &&
+                  'cateringPanelForegroundEntering',
                 classNames?.foreground,
               )}
               style={styles?.foreground}
@@ -1873,6 +1864,10 @@ export function PersuasionGardenPanel({
               className={cn(
                 'cateringGalleryContent h-full',
                 panelTransition === 'closing' && 'cateringGalleryContentTransitioning',
+                panelTransition === 'opening' &&
+                  isGalleryFace &&
+                  !showGalleryAsGhost &&
+                  'cateringGalleryContentEntering',
                 classNames?.galleryContent,
               )}
               style={styles?.galleryContent}
@@ -1995,7 +1990,7 @@ export function PersuasionGardenPanel({
                 classNames?.transitionLine,
               )}
               style={{
-                ['--catering-tear-duration' as string]: `${SHUTTER_PHASE_MS}ms`,
+                ['--catering-tear-duration' as string]: `${PANEL_WIPE_MS}ms`,
                 ...styles?.transitionLine,
               }}
             />

@@ -3,6 +3,9 @@
 }
 
 .blogContentBand {
+  --bakery-page-fg: #171510;
+  --bakery-page-muted: rgba(23, 21, 16, 0.62);
+
   background: #fff8f2;
   color: #171510;
   margin-top: -1px;

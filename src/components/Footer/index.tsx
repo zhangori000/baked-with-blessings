@@ -1,7 +1,5 @@
 import { FooterClient } from '@/components/Footer/FooterClient'
 import { getCachedGlobal } from '@/utilities/getGlobals'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 
 const { COMPANY_NAME, SITE_NAME } = process.env
 
@@ -83,16 +81,16 @@ const isUnavailableFooterLink = (linkProps: Record<string, unknown>) => {
   )
 }
 
+const isHiddenFooterLink = (linkProps: Record<string, unknown>) => {
+  const label = getFooterLinkLabel(linkProps).toLowerCase()
+
+  return label === 'menu' || isUnavailableFooterLink(linkProps)
+}
+
 export async function Footer() {
-  const payload = await getPayload({ config: configPromise })
   const [footer, brandDocument] = await Promise.all([
     getCachedGlobal('footer', 1)(),
-    payload
-      .findGlobal({
-        depth: 1,
-        slug: 'brand' as any,
-      })
-      .catch(() => null),
+    getCachedGlobal('brand', 1)().catch(() => null),
   ])
 
   const brand = buildFooterBrand(brandDocument as BrandGlobalDocument | null)
@@ -102,7 +100,7 @@ export async function Footer() {
     const linkProps =
       item.link && typeof item.link === 'object' ? (item.link as Record<string, unknown>) : {}
 
-    return !isUnavailableFooterLink(linkProps)
+    return !isHiddenFooterLink(linkProps)
   })
 
   return (

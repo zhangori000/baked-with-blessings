@@ -68,7 +68,7 @@ export default async function BlogPage() {
           <BlogSceneryHero
             eyebrow="Baked with Blessings"
             initialSceneryTone={initialSceneryTone}
-            summary="Compact essays and notes from the bakery about school, business, community, and what is being learned along the way."
+            summary="This page is experimental."
             title="Blog"
           />
         </div>

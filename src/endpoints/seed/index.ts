@@ -1,6 +1,7 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
 import { seedBlogPosts } from './blog-posts'
+import { ensureBlessingsNetworkStarterContent } from '@/features/blessings-network/services/networkData'
 import { importCateringMedia } from './catering-media'
 import { seedCateringProducts } from './catering-products'
 import { importCookieMedia } from './cookie-media'
@@ -87,5 +88,9 @@ export const seed = async ({
 
   await seedBlogPosts({ payload, req })
 
-  payload.logger.info('Seeded cookie, catering, and blog content successfully!')
+  payload.logger.info('- Seeding Community Advice starter content...')
+
+  await ensureBlessingsNetworkStarterContent(payload)
+
+  payload.logger.info('Seeded cookie, catering, blog, and Community Advice content successfully!')
 }

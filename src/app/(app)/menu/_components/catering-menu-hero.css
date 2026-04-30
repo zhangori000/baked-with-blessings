@@ -271,8 +271,8 @@
 
 .cateringSceneryChooser {
   margin-top: 1.15rem;
-  max-width: none;
-  width: min(calc(100vw - 2rem), 38rem);
+  max-width: min(100%, calc(100vw - 2rem), 34rem);
+  width: min(100%, calc(100vw - 2rem), 34rem);
 }
 
 .cateringSceneryChooserBubble {
@@ -302,11 +302,31 @@
 
 .cateringSceneryChooserRail {
   border-radius: 0.78rem;
-  display: grid;
+  display: flex;
   gap: 0.42rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  overflow: visible;
-  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  padding: 0 0 0.24rem;
+  scroll-padding-inline: 0.1rem;
+  scroll-snap-type: x proximity;
+  scrollbar-color: rgba(23, 58, 99, 0.34) rgba(255, 255, 255, 0.58);
+  scrollbar-width: thin;
+  touch-action: pan-x;
+}
+
+.cateringSceneryChooserRail::-webkit-scrollbar {
+  height: 0.42rem;
+}
+
+.cateringSceneryChooserRail::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.58);
+  border-radius: 999px;
+}
+
+.cateringSceneryChooserRail::-webkit-scrollbar-thumb {
+  background: rgba(23, 58, 99, 0.28);
+  border-radius: 999px;
 }
 
 .cateringSceneryChoice {
@@ -314,11 +334,13 @@
   border: 2px solid rgba(18, 18, 18, 0.12);
   border-radius: 0.78rem;
   display: flex;
+  flex: 0 0 clamp(10.75rem, 31vw, 12rem);
   flex-direction: column;
   gap: 0.12rem;
   justify-content: center;
   min-height: 3.35rem;
   padding: 0.64rem 0.72rem;
+  scroll-snap-align: start;
   text-align: left;
   transition:
     transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -455,7 +477,8 @@
   }
 
   .cateringSceneryChooser {
-    width: min(calc(100vw - 1rem), 26rem);
+    max-width: min(100%, calc(100vw - 1rem), 26rem);
+    width: min(100%, calc(100vw - 1rem), 26rem);
   }
 
   .cateringSceneryChooserBubble {
@@ -464,11 +487,11 @@
 
   .cateringSceneryChooserRail {
     gap: 0.36rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0;
+    padding-bottom: 0.22rem;
   }
 
   .cateringSceneryChoice {
+    flex-basis: 10.25rem;
     min-height: 3.15rem;
     padding: 0.52rem 0.6rem;
   }

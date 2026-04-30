@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: Args) {
           <BlogSceneryHero
             eyebrow={heroEyebrow || 'Baked with Blessings'}
             initialSceneryTone={initialSceneryTone}
-            summary={post.excerpt}
+            summary="This page is experimental."
             title={post.title}
           />
         </div>

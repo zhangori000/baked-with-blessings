@@ -26,6 +26,12 @@ import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
 import { PhoneVerificationStarts } from '@/collections/PhoneVerificationStarts'
 import {
+  BlessingsNetworkAnswers,
+  BlessingsNetworkOwners,
+  BlessingsNetworkOwnerPosts,
+  BlessingsNetworkQuestions,
+} from '@/features/blessings-network/collections'
+import {
   AwarenessMarks,
   DiscussionEdges,
   DiscussionNodes,
@@ -79,6 +85,10 @@ export default buildConfig({
     DiscussionEdges,
     AwarenessMarks,
     Reviews,
+    BlessingsNetworkOwners,
+    BlessingsNetworkQuestions,
+    BlessingsNetworkAnswers,
+    BlessingsNetworkOwnerPosts,
     Pages,
     Posts,
     Categories,

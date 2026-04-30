@@ -116,16 +116,17 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
     <Dialog>
       <SceneSurface
         as="footer"
-        className="relative min-h-[26rem] overflow-hidden px-3 pb-4 pt-10 sm:px-4 sm:pb-5 sm:pt-12 md:min-h-[24rem] md:px-6 md:pb-6 md:pt-14"
+        className="relative min-h-[34rem] overflow-hidden px-3 pb-4 pt-10 sm:min-h-[32rem] sm:px-4 sm:pb-5 sm:pt-12 md:min-h-[29rem] md:px-6 md:pb-6 md:pt-14"
         variant="footer"
       >
         <CartSceneShell
           className="absolute inset-0 !overflow-hidden"
           contentClassName="relative z-[1] min-h-full"
+          hideCompactFlowers
           hideSheep
           variant="compact"
         >
-          <div className="relative z-[1] mx-auto grid h-full max-w-[1320px] content-stretch">
+          <div className="relative z-[1] mx-auto grid h-full max-w-[1320px] box-border content-stretch px-4 pb-5 pt-4 sm:px-5 sm:pb-6 sm:pt-5 md:px-6 md:pb-7 md:pt-6">
             <BakeryCard
               className="grid border px-4 pb-4 pt-7 sm:px-5 sm:pb-5 sm:pt-8 md:px-6 md:py-6"
               radius="lg"

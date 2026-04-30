@@ -4,7 +4,9 @@ import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import Image from 'next/image'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import {
+  type AnimationEvent,
   type CSSProperties,
+  type Ref,
   type ReactNode,
   useEffect,
   useLayoutEffect,
@@ -625,12 +627,111 @@ const resolveCookieBodyImageSrc = (poster: CookiePosterAsset | null | undefined)
 
   return poster.bodyFallbackSrc
 }
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updatePreference = () => {
+      setPrefersReducedMotion(mediaQuery.matches)
+    }
+
+    updatePreference()
+    mediaQuery.addEventListener('change', updatePreference)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updatePreference)
+    }
+  }, [])
+
+  return prefersReducedMotion
+}
+
+type HomeCookieJumpRigPhase = 'active' | 'incoming' | 'outgoing'
+
+type HomeCookieJumpRigProps = {
+  direction?: -1 | 1
+  durationSeconds: number
+  isReducedMotion: boolean
+  onJumpComplete?: () => void
+  phase: HomeCookieJumpRigPhase
+  poster: CookiePosterAsset
+  shellRef?: Ref<HTMLDivElement>
+  style: CSSProperties
+}
+
+function HomeCookieJumpRig({
+  direction = 1,
+  durationSeconds,
+  isReducedMotion,
+  onJumpComplete,
+  phase,
+  poster,
+  shellRef,
+  style,
+}: HomeCookieJumpRigProps) {
+  const isIncoming = phase === 'incoming'
+  const transitionVariant = direction === 1 ? 'next' : 'prev'
+  const shellClassName = [
+    'homeCookieRigShell',
+    `homeCookieRigShell--${phase}`,
+    phase !== 'active' ? `homeCookieRigShell--${transitionVariant}` : null,
+    isReducedMotion ? 'homeCookieRigShell--reduced' : null,
+    'absolute',
+    'left-1/2',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const shellStyle = {
+    ...style,
+    ['--jump-duration' as string]: `${durationSeconds}s`,
+  } as CSSProperties
+  const handleAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
+    if (
+      !isIncoming ||
+      (!event.animationName.startsWith('homeCookieJumpIn') &&
+        event.animationName !== 'homeCookieReducedJumpIn')
+    ) {
+      return
+    }
+
+    onJumpComplete?.()
+  }
+
+  return (
+    <div
+      className={shellClassName}
+      onAnimationEnd={handleAnimationEnd}
+      ref={shellRef}
+      style={shellStyle}
+    >
+      <span aria-hidden="true" className="homeCookieJumpShadow" />
+      <div className="homeCookieJumpArc">
+        <div className="homeCookieJumpBody">
+          <CookieSheepRig
+            priority
+            bodyFallbackSrc={poster.bodyFallbackSrc}
+            className="top-1/2 bottom-auto -translate-y-1/2"
+            image={poster.image}
+            title={poster.title}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
 export function HomeCookieCarousel({
   initialSceneryTone = 'classic',
   posters,
   sceneVariant = 'grassland',
 }: HomeCookieCarouselProps) {
   const { addItem, isLoading: cartIsLoading } = useCart()
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [activeIndex, setActiveIndex] = useState(0)
   const [cartPromptState, setCartPromptState] = useState<{
     phase: 'added' | 'idle' | 'loading' | 'open'
@@ -660,15 +761,15 @@ export function HomeCookieCarousel({
   const preloadedCookieBodySrcsRef = useRef<Set<string>>(new Set())
   const rigShellRef = useRef<HTMLDivElement | null>(null)
   const sceneFrameRef = useRef<HTMLDivElement | null>(null)
-  const timeoutRef = useRef<number | null>(null)
+  const transitionFallbackTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
     return () => {
       if (addedStateTimeoutRef.current != null) {
         window.clearTimeout(addedStateTimeoutRef.current)
       }
-      if (timeoutRef.current != null) {
-        window.clearTimeout(timeoutRef.current)
+      if (transitionFallbackTimeoutRef.current != null) {
+        window.clearTimeout(transitionFallbackTimeoutRef.current)
       }
     }
   }, [])
@@ -893,7 +994,6 @@ export function HomeCookieCarousel({
 
   const activePoster = posters[activeIndex]
   const outgoingPoster = transition ? posters[transition.outgoingIndex] : null
-  const transitionVariant = transition?.direction === 1 ? 'next' : 'prev'
   const rigTop = cookieCenterPx != null ? `${cookieCenterPx}px` : `calc(54% - ${sceneLiftPx}px)`
   const hasMultiplePosters = posters.length > 1
   const previousMountedPoster = hasMultiplePosters
@@ -935,11 +1035,41 @@ export function HomeCookieCarousel({
     typeof window !== 'undefined' && window.innerWidth < 640
       ? MOBILE_JUMP_DURATION_MS
       : JUMP_DURATION_MS
+  const jumpDurationSeconds = (prefersReducedMotion ? 140 : getJumpDurationMs()) / 1000
+
+  const beginCarouselTransition = (direction: -1 | 1) => {
+    const currentIndex = activeIndexRef.current
+    const nextIndex = wrapIndex(currentIndex + direction, posters.length)
+
+    if (transitionFallbackTimeoutRef.current != null) {
+      window.clearTimeout(transitionFallbackTimeoutRef.current)
+    }
+
+    isTransitioningRef.current = true
+    setTransition({
+      direction,
+      outgoingIndex: currentIndex,
+    })
+    activeIndexRef.current = nextIndex
+    setActiveIndex(nextIndex)
+
+    transitionFallbackTimeoutRef.current = window.setTimeout(
+      () => {
+        transitionFallbackTimeoutRef.current = null
+        finishTransition()
+      },
+      Math.ceil(jumpDurationSeconds * 1000) + 160,
+    )
+  }
 
   const finishTransition = () => {
+    if (transitionFallbackTimeoutRef.current != null) {
+      window.clearTimeout(transitionFallbackTimeoutRef.current)
+      transitionFallbackTimeoutRef.current = null
+    }
+
     setTransition(null)
     isTransitioningRef.current = false
-    timeoutRef.current = null
 
     const queuedDirection = pendingDirectionRef.current
 
@@ -950,18 +1080,7 @@ export function HomeCookieCarousel({
     pendingDirectionRef.current = null
 
     window.requestAnimationFrame(() => {
-      const currentIndex = activeIndexRef.current
-      const nextIndex = wrapIndex(currentIndex + queuedDirection, posters.length)
-
-      isTransitioningRef.current = true
-      setTransition({
-        direction: queuedDirection,
-        outgoingIndex: currentIndex,
-      })
-      activeIndexRef.current = nextIndex
-      setActiveIndex(nextIndex)
-
-      timeoutRef.current = window.setTimeout(finishTransition, getJumpDurationMs())
+      beginCarouselTransition(queuedDirection)
     })
   }
 
@@ -992,24 +1111,8 @@ export function HomeCookieCarousel({
       return
     }
 
-    if (timeoutRef.current != null) {
-      window.clearTimeout(timeoutRef.current)
-    }
-
     setInfoPhase('hidden')
-
-    const currentIndex = activeIndexRef.current
-    const nextIndex = wrapIndex(currentIndex + direction, posters.length)
-
-    isTransitioningRef.current = true
-    setTransition({
-      direction,
-      outgoingIndex: currentIndex,
-    })
-    activeIndexRef.current = nextIndex
-    setActiveIndex(nextIndex)
-
-    timeoutRef.current = window.setTimeout(finishTransition, getJumpDurationMs())
+    beginCarouselTransition(direction)
   }
 
   const handleOpenCartPrompt = () => {
@@ -1322,47 +1425,38 @@ export function HomeCookieCarousel({
 
             {transition && outgoingPoster ? (
               <>
-                <div
-                  className={`homeCookieRigShell homeCookieRigShell--outgoing homeCookieRigShell--${transitionVariant} absolute left-1/2`}
+                <HomeCookieJumpRig
+                  key={`outgoing-${transition.outgoingIndex}-${transition.direction}`}
+                  direction={transition.direction}
+                  durationSeconds={jumpDurationSeconds}
+                  isReducedMotion={Boolean(prefersReducedMotion)}
+                  phase="outgoing"
+                  poster={outgoingPoster}
                   style={{ top: rigTop }}
-                >
-                  <CookieSheepRig
-                    priority
-                    bodyFallbackSrc={outgoingPoster.bodyFallbackSrc}
-                    className="top-1/2 bottom-auto -translate-y-1/2"
-                    image={outgoingPoster.image}
-                    title={outgoingPoster.title}
-                  />
-                </div>
+                />
 
-                <div
-                  className={`homeCookieRigShell homeCookieRigShell--incoming homeCookieRigShell--${transitionVariant} absolute left-1/2`}
-                  ref={rigShellRef}
+                <HomeCookieJumpRig
+                  key={`incoming-${activeIndex}-${transition.direction}`}
+                  direction={transition.direction}
+                  durationSeconds={jumpDurationSeconds}
+                  isReducedMotion={Boolean(prefersReducedMotion)}
+                  onJumpComplete={finishTransition}
+                  phase="incoming"
+                  poster={activePoster}
+                  shellRef={rigShellRef}
                   style={{ top: rigTop }}
-                >
-                  <CookieSheepRig
-                    priority
-                    bodyFallbackSrc={activePoster.bodyFallbackSrc}
-                    className="top-1/2 bottom-auto -translate-y-1/2"
-                    image={activePoster.image}
-                    title={activePoster.title}
-                  />
-                </div>
+                />
               </>
             ) : (
-              <div
-                className="homeCookieRigShell homeCookieRigShell--active absolute left-1/2"
-                ref={rigShellRef}
+              <HomeCookieJumpRig
+                key={`active-${activeIndex}`}
+                durationSeconds={jumpDurationSeconds}
+                isReducedMotion={Boolean(prefersReducedMotion)}
+                phase="active"
+                poster={activePoster}
+                shellRef={rigShellRef}
                 style={{ top: rigTop }}
-              >
-                <CookieSheepRig
-                  priority
-                  bodyFallbackSrc={activePoster.bodyFallbackSrc}
-                  className="top-1/2 bottom-auto -translate-y-1/2"
-                  image={activePoster.image}
-                  title={activePoster.title}
-                />
-              </div>
+              />
             )}
 
             {sceneVariant === 'scenery' && infoPhase !== 'hidden' ? (
@@ -1773,6 +1867,7 @@ export function HomeCookieCarousel({
         .homeCookieRigShell {
           height: var(--cookie-size);
           opacity: 1;
+          pointer-events: none;
           transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
           will-change: transform, opacity;
           width: var(--cookie-size);
@@ -1823,6 +1918,53 @@ export function HomeCookieCarousel({
 
         .homeCookieRigShell--incoming.homeCookieRigShell--prev {
           animation: homeCookieJumpInFromLeft var(--jump-duration, ${JUMP_DURATION_MS}ms) linear both;
+        }
+
+        .homeCookieRigShell--reduced.homeCookieRigShell--outgoing {
+          animation-name: homeCookieReducedJumpOut;
+        }
+
+        .homeCookieRigShell--reduced.homeCookieRigShell--incoming {
+          animation-name: homeCookieReducedJumpIn;
+        }
+
+        .homeCookieJumpShadow {
+          background:
+            radial-gradient(
+              ellipse at center,
+              rgba(50, 37, 20, 0.32) 0%,
+              rgba(50, 37, 20, 0.18) 48%,
+              rgba(50, 37, 20, 0) 72%
+            );
+          border-radius: 999px;
+          bottom: -4%;
+          display: block;
+          filter: blur(4px);
+          height: 12%;
+          left: 21%;
+          pointer-events: none;
+          position: absolute;
+          transform-origin: center;
+          width: 58%;
+          will-change: opacity, transform;
+          z-index: 0;
+        }
+
+        .homeCookieJumpArc,
+        .homeCookieJumpBody {
+          inset: 0;
+          pointer-events: none;
+          position: absolute;
+          transform-origin: center bottom;
+          will-change: transform;
+        }
+
+        .homeCookieJumpArc {
+          z-index: 1;
+        }
+
+        .homeCookieJumpBody {
+          z-index: 2;
         }
 
         .homeCookieShowcase .cookieSheepBodyImage {
@@ -1941,6 +2083,16 @@ export function HomeCookieCarousel({
           70%  { opacity: 1; transform: translate3d(calc(-50% - 17.4vw), calc(-50% - 6.72rem), 0) rotate(-6deg) scale(0.96); }
           85%  { opacity: 1; transform: translate3d(calc(-50% - 8.7vw), calc(-50% - 4.08rem), 0) rotate(-3deg) scale(0.98); }
           100% { opacity: 1; transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1); }
+        }
+
+        @keyframes homeCookieReducedJumpOut {
+          0%   { opacity: 1; transform: translate3d(-50%, -50%, 0); }
+          100% { opacity: 0; transform: translate3d(-50%, -50%, 0); }
+        }
+
+        @keyframes homeCookieReducedJumpIn {
+          0%   { opacity: 0; transform: translate3d(-50%, -50%, 0); }
+          100% { opacity: 1; transform: translate3d(-50%, -50%, 0); }
         }
 
         .homeCookieMeadowClip {
@@ -2448,7 +2600,6 @@ export function HomeCookieCarousel({
             --control-gap: 0.9rem;
             --control-size: clamp(2.78rem, 11.2vw, 3.25rem);
             --cookie-size: clamp(10.5rem, min(46vw, 21svh), 12.35rem);
-            --jump-duration: ${MOBILE_JUMP_DURATION_MS}ms;
             --copy-bottom: clamp(0.85rem, 2.4vh, 1.35rem);
             --copy-width: min(calc(100vw - 2.4rem), 18.75rem);
             --cta-font-size: 0.86rem;

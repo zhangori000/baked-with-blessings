@@ -80,6 +80,10 @@ export interface Config {
     'discussion-edges': DiscussionEdge;
     'awareness-marks': AwarenessMark;
     reviews: Review;
+    'blessings-network-owners': BlessingsNetworkOwner;
+    'blessings-network-questions': BlessingsNetworkQuestion;
+    'blessings-network-answers': BlessingsNetworkAnswer;
+    'blessings-network-owner-posts': BlessingsNetworkOwnerPost;
     pages: Page;
     posts: Post;
     categories: Category;
@@ -120,6 +124,10 @@ export interface Config {
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
     'awareness-marks': AwarenessMarksSelect<false> | AwarenessMarksSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'blessings-network-owners': BlessingsNetworkOwnersSelect<false> | BlessingsNetworkOwnersSelect<true>;
+    'blessings-network-questions': BlessingsNetworkQuestionsSelect<false> | BlessingsNetworkQuestionsSelect<true>;
+    'blessings-network-answers': BlessingsNetworkAnswersSelect<false> | BlessingsNetworkAnswersSelect<true>;
+    'blessings-network-owner-posts': BlessingsNetworkOwnerPostsSelect<false> | BlessingsNetworkOwnerPostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
@@ -258,6 +266,10 @@ export interface Customer {
    */
   phone?: string | null;
   phoneVerifiedAt?: string | null;
+  /**
+   * Stripe Customer ID used to link this Payload customer to Stripe payments.
+   */
+  stripeCustomerID?: string | null;
   orders?: {
     docs?: (number | Order)[];
     hasNextPage?: boolean;
@@ -1689,6 +1701,154 @@ export interface Review {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owners".
+ */
+export interface BlessingsNetworkOwner {
+  id: number;
+  tenantId: string;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  ownerName: string;
+  title: string;
+  businessName: string;
+  /**
+   * Short public label, for example cafe, bakery, catering, coffee, or retail.
+   */
+  businessType?: string | null;
+  location: string;
+  /**
+   * Public website link.
+   */
+  websiteUrl?: string | null;
+  /**
+   * Public LinkedIn profile or company link.
+   */
+  linkedinUrl?: string | null;
+  /**
+   * Brief public description of what the business sells or serves.
+   */
+  description: string;
+  /**
+   * Longer public owner/business bio shown in the Learn more modal.
+   */
+  bio?: string | null;
+  /**
+   * Private. Used only if the site owner needs to verify the submission.
+   */
+  contactEmail?: string | null;
+  /**
+   * Lower numbers appear first in the owner showcase.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private note for verification, edits, or declined submissions.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-questions".
+ */
+export interface BlessingsNetworkQuestion {
+  id: number;
+  tenantId: string;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  title: string;
+  body: string;
+  category: string;
+  questionStatus: 'seeking_advice' | 'answered' | 'archived';
+  /**
+   * Public asker name shown in the admin for context.
+   */
+  askedByName: string;
+  /**
+   * Lower numbers appear first on the page.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private note for edits, sourcing, or follow-up.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-answers".
+ */
+export interface BlessingsNetworkAnswer {
+  id: number;
+  tenantId: string;
+  question: number | BlessingsNetworkQuestion;
+  owner: number | BlessingsNetworkOwner;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  answer: string;
+  /**
+   * Short public summary of the most useful lesson in this reply.
+   */
+  practicalTakeaway?: string | null;
+  /**
+   * Lower numbers appear first under a question.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private verification email from the reply form.
+   */
+  submittedByEmail?: string | null;
+  /**
+   * Stable key used to make public answer submission retries idempotent.
+   */
+  submissionKey?: string | null;
+  publishedAt?: string | null;
+  /**
+   * Private note for verification, edits, or declined submissions.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owner-posts".
+ */
+export interface BlessingsNetworkOwnerPost {
+  id: number;
+  tenantId: string;
+  owner: number | BlessingsNetworkOwner;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  title: string;
+  /**
+   * Short public grouping, for example leases, equipment, staffing, or pricing.
+   */
+  topic?: string | null;
+  body: string;
+  /**
+   * Short public summary of the most useful lesson in this owner insight.
+   */
+  practicalTakeaway?: string | null;
+  /**
+   * Lower numbers appear first in Owner Insights.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private verification email from the owner insight form.
+   */
+  submittedByEmail?: string | null;
+  /**
+   * Stable key used to make owner insight submission retries idempotent.
+   */
+  submissionKey?: string | null;
+  publishedAt?: string | null;
+  /**
+   * Private note for verification, edits, or declined submissions.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
@@ -1755,6 +1915,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-owners';
+        value: number | BlessingsNetworkOwner;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-questions';
+        value: number | BlessingsNetworkQuestion;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-answers';
+        value: number | BlessingsNetworkAnswer;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-owner-posts';
+        value: number | BlessingsNetworkOwnerPost;
       } | null)
     | ({
         relationTo: 'pages';
@@ -1888,6 +2064,7 @@ export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
   phoneVerifiedAt?: T;
+  stripeCustomerID?: T;
   orders?: T;
   cart?: T;
   addresses?: T;
@@ -2021,6 +2198,84 @@ export interface ReviewsSelect<T extends boolean = true> {
         detail?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owners_select".
+ */
+export interface BlessingsNetworkOwnersSelect<T extends boolean = true> {
+  tenantId?: T;
+  publicStatus?: T;
+  ownerName?: T;
+  title?: T;
+  businessName?: T;
+  businessType?: T;
+  location?: T;
+  websiteUrl?: T;
+  linkedinUrl?: T;
+  description?: T;
+  bio?: T;
+  contactEmail?: T;
+  displayOrder?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-questions_select".
+ */
+export interface BlessingsNetworkQuestionsSelect<T extends boolean = true> {
+  tenantId?: T;
+  publicStatus?: T;
+  title?: T;
+  body?: T;
+  category?: T;
+  questionStatus?: T;
+  askedByName?: T;
+  displayOrder?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-answers_select".
+ */
+export interface BlessingsNetworkAnswersSelect<T extends boolean = true> {
+  tenantId?: T;
+  question?: T;
+  owner?: T;
+  publicStatus?: T;
+  answer?: T;
+  practicalTakeaway?: T;
+  displayOrder?: T;
+  submittedByEmail?: T;
+  submissionKey?: T;
+  publishedAt?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owner-posts_select".
+ */
+export interface BlessingsNetworkOwnerPostsSelect<T extends boolean = true> {
+  tenantId?: T;
+  owner?: T;
+  publicStatus?: T;
+  title?: T;
+  topic?: T;
+  body?: T;
+  practicalTakeaway?: T;
+  displayOrder?: T;
+  submittedByEmail?: T;
+  submissionKey?: T;
+  publishedAt?: T;
+  moderationNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }

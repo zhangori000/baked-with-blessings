@@ -513,6 +513,76 @@
     background: rgba(255, 255, 255, 0.96) !important;
   }
 
+  body:has(.accountSceneryRoute) {
+    background: #fff8ed !important;
+  }
+
+  body:has(.accountSceneryRoute) main {
+    background: #fff8ed !important;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeader {
+    --site-header-text: #17341f;
+    background: transparent !important;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderViewport {
+    overflow: visible;
+    background: transparent !important;
+    background-image: none !important;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderViewport::before {
+    content: none;
+    display: none;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderViewport::after {
+    content: none;
+    display: none;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderShell {
+    position: relative;
+    z-index: 1;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderBrand.has-logo {
+    align-items: center;
+    border: 1px solid rgba(255, 250, 236, 0.62);
+    border-radius: 18px;
+    background: rgba(255, 250, 236, 0.78);
+    box-shadow:
+      0 12px 24px rgba(15, 27, 16, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.52);
+    display: inline-flex;
+    justify-content: center;
+    justify-self: start;
+    padding: 0.22rem 0.42rem;
+    width: max-content;
+    backdrop-filter: blur(6px);
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderBrandLogo {
+    height: clamp(3rem, 4.2vw, 4.15rem);
+    max-height: none;
+    max-width: clamp(7.15rem, 10.6vw, 8.45rem);
+    width: auto;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderBrand,
+  body:has(.accountSceneryRoute) .siteHeaderActionButton,
+  body:has(.accountSceneryRoute) .siteHeaderMobileIconButton,
+  body:has(.accountSceneryRoute) .siteHeaderMobileBagButton,
+  body:has(.accountSceneryRoute) .siteHeaderMobileBagCount {
+    color: #17341f !important;
+    text-shadow: none !important;
+  }
+
+  body:has(.accountSceneryRoute) .siteHeaderBannerList {
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+
   button,
   input,
   textarea,
@@ -2049,6 +2119,984 @@ body:has(.routeLoadingSurface) .siteHeader,
 body:has(.routeLoadingSurface) .siteHeaderViewport {
   background: var(--route-loading-background, #eef8ef) !important;
   background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) {
+  background: var(--route-loading-background, #fff8f2) !important;
+}
+
+body:has(.accountSceneryRoute) main {
+  background: var(--route-loading-background, #fff8f2) !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeader {
+  --site-header-text: var(--route-loading-banner-color, #17341f);
+  background: transparent !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderViewport {
+  overflow: visible !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderViewport::before,
+body:has(.accountSceneryRoute) .siteHeaderViewport::after {
+  content: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderBrand,
+body:has(.accountSceneryRoute) .siteHeaderActionButton,
+body:has(.accountSceneryRoute) .siteHeaderMobileIconButton,
+body:has(.accountSceneryRoute) .siteHeaderMobileBagButton,
+body:has(.accountSceneryRoute) .siteHeaderMobileBagCount {
+  color: var(--route-loading-banner-color, #17341f) !important;
+  text-shadow: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderBrand.has-logo {
+  align-items: center;
+  border: 1px solid rgba(255, 250, 236, 0.62);
+  border-radius: 18px;
+  background: var(--route-loading-banner-bg, rgba(255, 253, 246, 0.78)) !important;
+  box-shadow:
+    0 12px 24px rgba(15, 27, 16, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52);
+  display: inline-flex;
+  justify-content: center;
+  justify-self: start;
+  padding: 0.22rem 0.42rem;
+  width: max-content;
+  backdrop-filter: blur(6px);
+}
+
+body:has(.accountSceneryRoute) .siteHeaderBrandLogo {
+  height: clamp(3rem, 4.2vw, 4.15rem);
+  max-height: none;
+  max-width: clamp(7.15rem, 10.6vw, 8.45rem);
+  width: auto;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderBannerList {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.accountSceneryRoute {
+  --account-header-underlap: 7.6rem;
+  margin-top: calc(var(--account-header-underlap) * -1);
+  min-height: 100svh;
+  background: var(--route-loading-background, #fff8f2);
+}
+
+.accountSceneryBanner {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(18rem, 38vh, 27rem);
+  overflow: hidden;
+  padding-top: var(--account-header-underlap);
+  background: var(--route-loading-background, #d8ecfb);
+}
+
+.accountSceneryBannerSky,
+.accountSceneryBannerMeadow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  object-fit: cover;
+}
+
+.accountSceneryBannerMeadow {
+  top: auto !important;
+  bottom: -0.18rem !important;
+  height: clamp(6.75rem, 14vh, 9.5rem) !important;
+  object-position: center bottom;
+  z-index: 2;
+}
+
+.accountSceneryBanner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(
+    --route-loading-overlay,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(245, 239, 218, 0.16))
+  );
+  pointer-events: none;
+}
+
+.accountSceneryBannerImage {
+  position: absolute;
+  pointer-events: none;
+}
+
+.accountSceneryBannerImage > img {
+  object-fit: contain;
+}
+
+.accountSceneryBannerCloud {
+  animation: cateringCloudBob 9.6s ease-in-out infinite;
+  height: 7rem;
+  opacity: 0.95;
+  z-index: 2;
+}
+
+.accountSceneryBannerCloudSpawned {
+  height: 7.5rem;
+}
+
+.accountSceneryBannerPiece {
+  height: 12rem;
+  z-index: 3;
+}
+
+.accountSceneryBannerFlowerRail {
+  position: absolute;
+  inset-inline: 0;
+  bottom: clamp(0.65rem, 2vh, 1.3rem);
+  z-index: 4;
+  height: 0;
+  pointer-events: none;
+}
+
+.accountSceneryBannerFlower {
+  position: absolute;
+  left: var(--account-flower-left);
+  bottom: 0;
+  width: 2.1rem;
+  transform: translateX(-50%) scale(var(--account-flower-scale, 1));
+  transform-origin: center bottom;
+}
+
+.accountSceneryBannerWildflower {
+  width: 1.35rem;
+}
+
+.accountSceneryBannerFlowerSpawned {
+  width: 2rem;
+}
+
+.accountSceneryBannerControls,
+.accountSceneryBannerPicker {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.accountSceneryBannerControls {
+  left: max(1rem, calc((100vw - var(--breakpoint-2xl)) / 2 + 1rem));
+  bottom: clamp(1.1rem, 3vh, 2rem);
+}
+
+.accountSceneryBannerPicker {
+  right: max(1rem, calc((100vw - var(--breakpoint-2xl)) / 2 + 1rem));
+  bottom: clamp(1.1rem, 3vh, 2rem);
+  justify-content: flex-end;
+  max-width: min(36rem, calc(100vw - 2rem));
+}
+
+.accountSceneryBannerButton,
+.accountSceneryBannerChoice {
+  min-height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(25, 57, 95, 0.16);
+  background: var(--route-loading-banner-bg, rgba(255, 253, 246, 0.9));
+  padding: 0.48rem 0.88rem;
+  color: var(--route-loading-banner-color, #17341f);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow:
+    0 12px 24px rgba(23, 21, 16, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.56);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.accountSceneryBannerButton:hover,
+.accountSceneryBannerChoice:hover,
+.accountSceneryBannerChoice[aria-pressed='true'] {
+  border-color: rgba(25, 57, 95, 0.3);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--account-scene-aura, rgba(255, 220, 124, 0.82)) 38%, white 62%),
+      rgba(255, 253, 246, 0.94)
+    );
+  transform: translateY(-1px);
+}
+
+.accountSceneryBannerButtonStrong {
+  background: #17341f;
+  color: #fffaf0;
+}
+
+.accountSceneryShell {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(1.25rem, 3.5vw, 2.5rem);
+  padding-inline: max(1rem, env(safe-area-inset-left));
+  color: #364016;
+}
+
+.accountSideNav {
+  position: sticky;
+  top: 7rem;
+  align-self: flex-start;
+  border-radius: 1.4rem;
+  border: 1px solid rgba(94, 77, 38, 0.12);
+  background: rgba(255, 248, 232, 0.78);
+  padding: 0.7rem;
+  box-shadow: 0 18px 40px rgba(63, 53, 31, 0.08);
+}
+
+.accountSideNavButton {
+  width: 100%;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+  text-decoration: none !important;
+}
+
+.accountSideNavLink {
+  display: flex;
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.72rem 0.9rem;
+  color: rgba(54, 64, 22, 0.74);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none !important;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.accountSideNavLink:hover,
+.accountSideNavLink-active {
+  background: rgba(255, 253, 246, 0.92);
+  color: #17341f;
+  transform: translateX(2px);
+}
+
+.accountSideNavRule {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid rgba(94, 77, 38, 0.14);
+}
+
+.accountSettingsCard {
+  border: 1px solid rgba(94, 77, 38, 0.14);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 238, 165, 0.22), transparent 30%),
+    rgba(255, 250, 239, 0.96);
+  box-shadow: 0 22px 70px rgba(63, 53, 31, 0.12);
+}
+
+.accountSettingsHeading {
+  margin-bottom: 2rem;
+}
+
+.accountSettingsEyebrow {
+  margin-bottom: 0.65rem;
+  color: #839240;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.accountSettingsTitle {
+  margin: 0;
+  color: #3f4815;
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+  line-height: 0.9;
+}
+
+.accountSettingsSectionTitle {
+  margin-bottom: 1rem;
+  color: #3f4815;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.accountSettingsLead {
+  margin-bottom: 2rem;
+  max-width: 52rem;
+  color: rgba(54, 64, 22, 0.78);
+}
+
+.accountSettingsForm {
+  max-width: 46rem;
+}
+
+.accountSettingsFormIntro {
+  margin-bottom: 1.8rem;
+  max-width: 42rem;
+  color: rgba(54, 64, 22, 0.72);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.65;
+}
+
+.accountSettingsInlineButton {
+  display: inline !important;
+  height: auto !important;
+  padding: 0 !important;
+  color: #54621f !important;
+  font: inherit !important;
+  text-decoration: underline !important;
+}
+
+.accountSettingsFields {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.8rem;
+}
+
+.accountSettingsLabel {
+  margin-bottom: 0.5rem;
+  color: #6f7f2f;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.accountSettingsInput {
+  min-height: 3.2rem;
+  border-radius: 1rem;
+  border-color: rgba(94, 77, 38, 0.18) !important;
+  background: rgba(255, 253, 246, 0.92) !important;
+  padding-inline: 1rem;
+  color: #28310f !important;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 10px 24px rgba(63, 53, 31, 0.06);
+}
+
+.accountSettingsInput:focus-visible {
+  border-color: #7f9233 !important;
+  box-shadow:
+    0 0 0 3px rgba(126, 161, 47, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.accountSettingsInput:disabled {
+  background: rgba(231, 226, 212, 0.88) !important;
+  color: rgba(54, 64, 22, 0.6) !important;
+  opacity: 1;
+}
+
+.accountSettingsSubmit {
+  min-height: 3rem;
+  border-radius: 999px;
+  background: #17341f !important;
+  padding-inline: 1.35rem;
+  color: #fffaf0 !important;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.accountSettingsSubmit:disabled {
+  background: #c6d7a7 !important;
+  color: rgba(54, 64, 22, 0.58) !important;
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .accountSceneryRoute {
+    --account-header-underlap: 5.35rem;
+  }
+
+  .accountSceneryBanner {
+    min-height: 19rem;
+  }
+
+  .accountSceneryBannerControls,
+  .accountSceneryBannerPicker {
+    left: 1rem;
+    right: 1rem;
+    justify-content: flex-start;
+  }
+
+  .accountSceneryBannerControls {
+    bottom: 4.8rem;
+  }
+
+  .accountSceneryBannerPicker {
+    bottom: 1rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.2rem;
+  }
+
+  .accountSceneryBannerChoice {
+    flex: 0 0 auto;
+  }
+
+  .accountSceneryShell {
+    margin-top: 1rem;
+  }
+
+  .accountSettingsCard {
+    border-radius: 1.4rem;
+  }
+}
+
+body:has(.accountSceneryRoute) {
+  background: #fff8ed !important;
+}
+
+body:has(.accountSceneryRoute) main {
+  background: #fff8ed !important;
+}
+
+body:has(.accountSceneryRoute) .viewportFlowerField {
+  display: none;
+}
+
+body:has(.accountSceneryRoute) .siteHeader,
+body:has(.accountSceneryRoute) .siteHeaderViewport {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderViewport::before,
+body:has(.accountSceneryRoute) .siteHeaderViewport::after {
+  display: none !important;
+}
+
+html[data-menu-scene='moonlit'] body:has(.accountSceneryRoute) .siteHeaderBrand,
+html[data-menu-scene='moonlit'] body:has(.accountSceneryRoute) .siteHeaderActionButton,
+html[data-menu-scene='moonlit'] body:has(.accountSceneryRoute) .siteHeaderMobileIconButton,
+html[data-menu-scene='moonlit'] body:has(.accountSceneryRoute) .siteHeaderMobileBagButton,
+html[data-menu-scene='moonlit'] body:has(.accountSceneryRoute) .siteHeaderMobileBagCount,
+html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderBrand,
+html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderActionButton,
+html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderMobileIconButton,
+html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderMobileBagButton,
+html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderMobileBagCount {
+  color: #fff7c9 !important;
+  text-shadow: 0 10px 22px rgba(6, 18, 48, 0.38) !important;
+}
+
+html[data-menu-scene='moonlit'] body:has(.accountSceneryRoute) .siteHeaderBannerList,
+html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderBannerList {
+  background: rgba(255, 253, 246, 0.94) !important;
+}
+
+.accountSceneryRoute {
+  overflow: clip;
+  background: #fff8ed;
+}
+
+.accountSceneryBanner {
+  min-height: clamp(22rem, 34vh, 30rem);
+  contain: paint;
+}
+
+.accountSceneryBanner::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 4;
+  height: 5.5rem;
+  background: linear-gradient(180deg, rgba(255, 248, 237, 0), #fff8ed 92%);
+  pointer-events: none;
+}
+
+.accountSceneryBannerMeadow {
+  height: clamp(7.25rem, 14vh, 10rem) !important;
+  bottom: -0.2rem !important;
+}
+
+.accountSceneryBannerControls,
+.accountSceneryBannerPicker {
+  bottom: clamp(1.25rem, 3vh, 2rem);
+}
+
+.accountSceneryBannerTitleCard {
+  position: absolute;
+  left: max(1rem, calc((100vw - var(--breakpoint-2xl)) / 2 + 1rem));
+  bottom: clamp(5rem, 10vh, 7.25rem);
+  z-index: 5;
+  width: min(48rem, calc(100vw - 2rem));
+  border: 1px solid rgba(255, 250, 236, 0.56);
+  border-radius: 1.7rem;
+  background: rgba(255, 250, 236, 0.86);
+  padding: clamp(1.1rem, 2vw, 1.55rem);
+  color: #3f4815;
+  box-shadow:
+    0 18px 44px rgba(15, 27, 16, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.accountSceneryBannerEyebrow {
+  margin-bottom: 0.42rem;
+  color: #839240;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.accountSceneryBannerTitle {
+  color: #3f4815;
+  font-family: var(--font-catering-serif), 'Iowan Old Style', 'Palatino Linotype', serif;
+  font-size: clamp(2.6rem, 6vw, 4.75rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+}
+
+.accountSceneryBannerSummary {
+  margin-top: 0.65rem;
+  max-width: 38rem;
+  color: rgba(54, 64, 22, 0.82);
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+html[data-menu-scene='moonlit'] .accountSceneryBannerTitleCard,
+html[data-menu-scene='fairy-castle'] .accountSceneryBannerTitleCard {
+  background: rgba(255, 250, 236, 0.9);
+}
+
+.accountSceneryBannerCloud {
+  max-width: min(26vw, 22rem);
+}
+
+.accountSceneryShell {
+  margin-top: 0;
+  padding-top: clamp(1.75rem, 3.5vw, 3rem);
+  background:
+    linear-gradient(180deg, #fff8ed 0%, #fff5ec 58%, #fff8ed 100%);
+}
+
+.accountSideNav {
+  background: rgba(255, 250, 238, 0.96);
+  border-color: rgba(94, 77, 38, 0.2);
+  box-shadow:
+    0 20px 46px rgba(63, 53, 31, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.accountSideNavLink {
+  color: rgba(43, 54, 16, 0.82);
+}
+
+.accountSideNavLink:hover,
+.accountSideNavLink-active {
+  background: #fffefa;
+  color: #17341f;
+}
+
+.accountSettingsCard {
+  border-color: rgba(94, 77, 38, 0.18);
+  border-radius: 1.65rem;
+  background: rgba(255, 253, 246, 0.92);
+  box-shadow:
+    0 18px 46px rgba(63, 53, 31, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+.accountSettingsTitle {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.accountSettingsForm {
+  max-width: 52rem;
+}
+
+@media (max-width: 767px) {
+  .accountSceneryBanner {
+    min-height: 30rem;
+  }
+
+  .accountSceneryBannerTitleCard {
+    bottom: 8.75rem;
+  }
+
+  .accountSceneryBannerControls {
+    bottom: 5.5rem;
+  }
+
+  .accountSceneryBannerPicker {
+    bottom: 1.35rem;
+  }
+}
+
+body:has(.accountSceneryRoute) .siteHeader {
+  left: 0 !important;
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+}
+
+.accountSceneryRoute {
+  margin-top: 0 !important;
+  background: #fff8ed !important;
+}
+
+.accountSceneryBanner {
+  min-height: clamp(21rem, 32vh, 28rem) !important;
+}
+
+.accountSceneryBanner::before {
+  height: 4.6rem !important;
+}
+
+.accountSceneryBannerMeadow {
+  height: clamp(6.5rem, 12vh, 8.8rem) !important;
+}
+
+.accountSceneryBannerTitleCard {
+  bottom: clamp(5.2rem, 10vh, 6.8rem) !important;
+  width: min(46rem, calc(100vw - 2rem)) !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--route-loading-banner-color, #3f4815) !important;
+  padding: 0 !important;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.58),
+    0 12px 28px rgba(17, 44, 75, 0.18);
+}
+
+.accountSceneryBannerEyebrow,
+.accountSceneryBannerTitle,
+.accountSceneryBannerSummary {
+  color: currentColor !important;
+}
+
+.accountSceneryBannerEyebrow {
+  opacity: 0.72;
+}
+
+html[data-menu-scene='moonlit'] .accountSceneryBannerTitleCard,
+html[data-menu-scene='fairy-castle'] .accountSceneryBannerTitleCard {
+  color: #fff7c9 !important;
+  text-shadow: 0 12px 28px rgba(6, 18, 48, 0.42) !important;
+}
+
+.accountSceneryBannerControls {
+  bottom: clamp(1.25rem, 3vh, 2rem) !important;
+}
+
+.accountSceneryBannerPicker {
+  left: max(1rem, calc((100vw - var(--breakpoint-2xl)) / 2 + 1rem)) !important;
+  right: auto !important;
+  bottom: clamp(4.4rem, 7vh, 5.6rem) !important;
+  justify-content: flex-start !important;
+  max-width: min(36rem, calc(100vw - 2rem)) !important;
+  border: 1px solid rgba(25, 57, 95, 0.14);
+  border-radius: 1.08rem;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 0.5rem;
+  box-shadow:
+    0 18px 38px rgba(23, 21, 16, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.accountSceneryBannerPicker::after {
+  content: '';
+  position: absolute;
+  left: 16.2rem;
+  bottom: -0.78rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid rgba(25, 57, 95, 0.14);
+  border-right: 1px solid rgba(25, 57, 95, 0.14);
+  transform: rotate(45deg);
+}
+
+.accountSceneryBannerChoice {
+  color: #173a63 !important;
+}
+
+.accountSceneryShell {
+  background: #fff8ed !important;
+}
+
+.accountSettingsCard {
+  border-color: rgba(94, 77, 38, 0.18) !important;
+  border-radius: 1.35rem !important;
+  background: rgba(255, 253, 246, 0.86) !important;
+  box-shadow:
+    0 16px 34px rgba(63, 53, 31, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+.accountOrderItem {
+  border: 1px solid rgba(94, 77, 38, 0.16) !important;
+  background: rgba(255, 253, 246, 0.94) !important;
+  color: #364016 !important;
+  box-shadow:
+    0 14px 34px rgba(63, 53, 31, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+.accountOrderItemID {
+  color: rgba(111, 127, 47, 0.92) !important;
+}
+
+.accountOrderItemDate {
+  color: #364016 !important;
+  font-weight: 850;
+}
+
+.accountOrderItemMeta {
+  color: rgba(67, 83, 28, 0.82) !important;
+  font-weight: 750;
+}
+
+.accountOrderItemButton {
+  border-color: rgba(23, 52, 31, 0.18) !important;
+  background: #17341f !important;
+  color: #fffaf0 !important;
+}
+
+@media (max-width: 767px) {
+  .accountSceneryBanner {
+    min-height: 29rem !important;
+  }
+
+  .accountSceneryBannerTitleCard {
+    bottom: 9.15rem !important;
+  }
+
+  .accountSceneryBannerControls {
+    bottom: 5.5rem !important;
+  }
+
+  .accountSceneryBannerPicker {
+    bottom: 8.5rem !important;
+  }
+}
+
+/* Account routes use the real menu hero component, but at page-header scale. */
+.accountSceneryRoute {
+  --account-page-bg: #fff8ed;
+  background: var(--account-page-bg) !important;
+  overflow: clip;
+}
+
+body:has(.accountSceneryRoute) main {
+  background: var(--account-page-bg) !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeader {
+  left: 0 !important;
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  z-index: 60 !important;
+  background: transparent !important;
+}
+
+html body:has(.accountSceneryRoute) .siteHeader {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderViewport {
+  background: transparent !important;
+  background-image: none !important;
+  overflow: visible !important;
+  padding-bottom: 0.35rem !important;
+  padding-top: 0.75rem !important;
+  pointer-events: none !important;
+}
+
+html body:has(.accountSceneryRoute) .siteHeader .siteHeaderViewport {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html body:has(.accountSceneryRoute) main {
+  background: var(--account-page-bg, #fff8ed) !important;
+  background-color: var(--account-page-bg, #fff8ed) !important;
+  background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderViewport::before,
+body:has(.accountSceneryRoute) .siteHeaderViewport::after {
+  content: none !important;
+  display: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderShell {
+  pointer-events: auto !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderShellRow {
+  min-height: clamp(4.4rem, 7vw, 5.7rem) !important;
+}
+
+.accountSceneryBannerHost {
+  --catering-header-underlap: clamp(7.5rem, 10.5vw, 9.5rem);
+  --catering-hero-meadow-height: clamp(6.25rem, 10vh, 8.1rem);
+  position: relative;
+  z-index: 0;
+}
+
+.accountSceneryBannerHost::after {
+  content: none;
+}
+
+.accountSceneryLoadingPill {
+  position: absolute;
+  left: max(1rem, calc((100vw - var(--breakpoint-2xl)) / 2 + 1rem));
+  bottom: calc(var(--catering-hero-meadow-height) + 1.1rem);
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  border: 1px solid rgba(23, 52, 31, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 253, 246, 0.92);
+  padding: 0.48rem 0.9rem;
+  color: #17341f;
+  font-family: var(--font-rounded-display);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow:
+    0 14px 30px rgba(17, 44, 75, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+  animation: accountSceneryLoadingPillIn 180ms ease both;
+}
+
+.accountSceneryLoadingSpinner {
+  display: inline-block;
+  width: 0.82rem;
+  height: 0.82rem;
+  border: 2px solid rgba(23, 52, 31, 0.22);
+  border-top-color: #17341f;
+  border-radius: 999px;
+  animation: accountSceneryLoadingSpin 720ms linear infinite;
+}
+
+.accountSceneryBannerHost .cateringHeroBand {
+  min-height: clamp(24rem, 36vh, 30rem) !important;
+}
+
+.accountSceneryBannerHost .cateringHeroContent {
+  min-height: clamp(24rem, 36vh, 30rem) !important;
+  padding-top: calc(var(--catering-header-underlap) + clamp(0.75rem, 1.4vw, 1.15rem)) !important;
+  padding-bottom: calc(var(--catering-hero-meadow-height) + clamp(0.85rem, 1.8vw, 1.4rem)) !important;
+}
+
+.accountSceneryBannerHost .cateringHeroCopy {
+  max-width: min(48rem, calc(100vw - 2rem));
+}
+
+.accountSceneryBannerHost .cateringMenuHeroDisplay {
+  font-size: clamp(3.25rem, 7.4vw, 5.45rem);
+  max-width: 11ch;
+}
+
+.accountSceneryBannerHost .cateringHeroSummary {
+  max-width: min(47rem, calc(100vw - 2rem));
+  font-size: clamp(0.98rem, 1.55vw, 1.18rem);
+  line-height: 1.38;
+}
+
+.accountSceneryBannerHost .cateringActionRow {
+  margin-top: 0.2rem;
+}
+
+.accountSceneryBannerHost .cateringSceneryChooser {
+  max-width: min(43rem, calc(100vw - 2rem));
+}
+
+.accountSceneryShell {
+  margin-top: 0 !important;
+  padding-top: clamp(1.6rem, 3vw, 2.6rem) !important;
+  background: var(--account-page-bg) !important;
+}
+
+.accountSideNav {
+  border: 1px solid rgba(94, 77, 38, 0.18) !important;
+  background: rgba(255, 253, 246, 0.9) !important;
+  color: #364016 !important;
+  box-shadow:
+    0 16px 38px rgba(63, 53, 31, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+}
+
+.accountSideNavLink {
+  color: rgba(54, 64, 22, 0.82) !important;
+}
+
+.accountSideNavLink-active {
+  background: #fffdf6 !important;
+  color: #17341f !important;
+}
+
+.accountSettingsCard {
+  border-color: rgba(94, 77, 38, 0.15) !important;
+  background: rgba(255, 253, 246, 0.94) !important;
+}
+
+@media (max-width: 767px) {
+  .accountSceneryBannerHost {
+    --catering-header-underlap: 5.45rem;
+    --catering-hero-meadow-height: 6.3rem;
+  }
+
+  .accountSceneryBannerHost .cateringHeroBand,
+  .accountSceneryBannerHost .cateringHeroContent {
+    min-height: 30rem !important;
+  }
+
+  .accountSceneryBannerHost .cateringHeroContent {
+    padding-top: 6rem !important;
+  }
+
+  .accountSceneryBannerHost .cateringMenuHeroDisplay {
+    font-size: clamp(3rem, 16vw, 4.55rem);
+  }
+}
+
+@keyframes accountSceneryLoadingPillIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes accountSceneryLoadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sceneryLoadingShell {

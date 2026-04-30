@@ -50,17 +50,20 @@ export default async function AccountPage() {
 
   return (
     <>
-      <BakeryPageSurface spacing="lg" width="full">
-        <BakeryPageTitle className="mb-8">Account settings</BakeryPageTitle>
+      <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
+        <div className="accountSettingsHeading">
+          <p className="accountSettingsEyebrow">Customer account</p>
+          <BakeryPageTitle className="accountSettingsTitle">Profile details</BakeryPageTitle>
+        </div>
         <AccountForm />
       </BakeryPageSurface>
 
-      <BakeryPageSurface spacing="lg" width="full">
-        <BakeryPageTitle as="h2" className="mb-8">
+      <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
+        <BakeryPageTitle as="h2" className="accountSettingsSectionTitle">
           Recent Orders
         </BakeryPageTitle>
 
-        <BakeryPageLead className="mb-8">
+        <BakeryPageLead className="accountSettingsLead">
           These are the most recent orders you have placed. Each order is associated with a payment.
           As you place more orders, they will appear in your orders list.
         </BakeryPageLead>

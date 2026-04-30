@@ -63,7 +63,12 @@ export const ProductItem: React.FC<Props> = ({
       >
         <div className="relative h-full w-full">
           {image && typeof image !== 'string' && (
-            <Media className="" fill imgClassName="rounded-lg object-cover" resource={image} />
+            <Media
+              className="relative h-full w-full"
+              fill
+              imgClassName="rounded-lg object-cover"
+              resource={image}
+            />
           )}
         </div>
       </BakeryCard>

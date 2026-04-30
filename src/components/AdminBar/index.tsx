@@ -54,13 +54,14 @@ export const AdminBar: React.FC<{
       <div className="container">
         <PayloadAdminBar
           {...adminBarProps}
+          authCollectionSlug="admins"
           className="py-2 text-white"
           classNames={{
             controls: 'font-medium text-white',
             logo: 'text-white',
             user: 'text-white',
           }}
-          cmsURL={process.env.NEXT_PUBLIC_SERVER_URL}
+          cmsURL=""
           collectionLabels={{
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore - todo fix, not sure why this is erroring

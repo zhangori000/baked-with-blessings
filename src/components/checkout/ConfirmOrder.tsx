@@ -1,12 +1,14 @@
 'use client'
 
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { useCart, usePayments } from '@payloadcms/plugin-ecommerce/client/react'
+import { ECOMMERCE_SESSION_RESET_EVENT } from '@/providers/Ecommerce'
+import { useCart, useEcommerce, usePayments } from '@payloadcms/plugin-ecommerce/client/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
 export const ConfirmOrder: React.FC = () => {
   const { confirmOrder } = usePayments()
+  const { clearSession } = useEcommerce()
   const { cart } = useCart()
 
   const searchParams = useSearchParams()
@@ -43,7 +45,11 @@ export const ConfirmOrder: React.FC = () => {
             }
 
             const queryString = queryParams.toString()
-            router.push(`/orders/${result.orderID}${queryString ? `?${queryString}` : ''}`)
+            const redirectUrl = `/orders/${result.orderID}${queryString ? `?${queryString}` : ''}`
+
+            clearSession()
+            window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
+            window.location.assign(redirectUrl)
           }
         })
       }
@@ -51,7 +57,7 @@ export const ConfirmOrder: React.FC = () => {
       // If no payment intent ID is found, redirect to the home
       router.push('/')
     }
-  }, [cart, confirmOrder, router, searchParams])
+  }, [cart, clearSession, confirmOrder, router, searchParams])
 
   return (
     <div className="text-center w-full flex flex-col items-center justify-start gap-4">

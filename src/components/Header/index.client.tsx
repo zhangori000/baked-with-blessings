@@ -16,6 +16,7 @@ import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import {
+  blessingsNetworkHref,
   blogHref,
   discussionBoardHref,
   menuHref,
@@ -28,6 +29,7 @@ import {
   BookOpenText,
   ChevronDown,
   ClipboardCheck,
+  Handshake,
   MessageSquareText,
   PanelsTopLeft,
   ShoppingBag,
@@ -83,6 +85,9 @@ const headerClassNames = {
 const getActiveAppLabel = (pathname: string) => {
   if (pathname === blogHref || pathname.startsWith(`${blogHref}/`)) return 'Blog'
   if (pathname === reviewsHref || pathname.startsWith(`${reviewsHref}/`)) return 'Reviews'
+  if (pathname === blessingsNetworkHref || pathname.startsWith(`${blessingsNetworkHref}/`)) {
+    return 'Community Advice'
+  }
   if (pathname === discussionBoardHref || pathname.startsWith(`${discussionBoardHref}/`)) {
     return 'Discussion Board'
   }
@@ -153,6 +158,7 @@ export function HeaderClient({ brand, header }: Props) {
     router.prefetch(rotatingCookieFlavorsHref)
     router.prefetch(blogHref)
     router.prefetch(discussionBoardHref)
+    router.prefetch(blessingsNetworkHref)
     router.prefetch(reviewsHref)
   }, [router])
 
@@ -449,6 +455,28 @@ export function HeaderClient({ brand, header }: Props) {
                       <span className="siteHeaderAppDescription">
                         Open questions, replies, support paths, and challenges in one structured
                         board.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </BakeryCard>
+
+                  <BakeryCard
+                    as={Link}
+                    className="siteHeaderAppCard"
+                    href={blessingsNetworkHref}
+                    onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <Handshake className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Community advice</span>
+                      <span className="siteHeaderAppTitle">Community Advice</span>
+                      <span className="siteHeaderAppDescription">
+                        Practical owner advice paired with public business profiles and links.
                       </span>
                     </span>
                     <ArrowRight className="siteHeaderAppArrow h-4 w-4" />

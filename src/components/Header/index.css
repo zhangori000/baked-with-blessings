@@ -431,6 +431,37 @@
 .siteHeaderMobilePanelCards {
   display: grid;
   gap: 0.55rem;
+  max-height: min(74dvh, 39rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: rgb(23 52 31 / 34%) transparent;
+  scrollbar-width: thin;
+}
+
+.siteHeaderMobileAppScroller {
+  display: grid;
+  gap: 0.55rem;
+  max-height: min(42dvh, 20.5rem);
+  overflow-y: auto;
+  padding-right: 0.14rem;
+  scrollbar-color: rgb(23 52 31 / 42%) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.siteHeaderMobileAppScroller::-webkit-scrollbar {
+  width: 0.62rem;
+}
+
+.siteHeaderMobileAppScroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.siteHeaderMobileAppScroller::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgb(23 52 31 / 36%);
+  background-clip: padding-box;
 }
 
 .siteHeaderMobileCard {
@@ -1666,4 +1697,17 @@ body:has(.routeLoadingSurface) .siteHeader,
 body:has(.routeLoadingSurface) .siteHeaderViewport {
   background: var(--route-loading-background, #eef8ef) !important;
   background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeader,
+body:has(.accountSceneryRoute) .siteHeaderViewport {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderViewport::before,
+body:has(.accountSceneryRoute) .siteHeaderViewport::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
 }

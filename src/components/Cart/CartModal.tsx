@@ -30,8 +30,10 @@ import { useForm, useWatch } from 'react-hook-form'
 import { DeleteItemButton } from './DeleteItemButton'
 import { EditItemQuantityButton } from './EditItemQuantityButton'
 import { OpenCartButton } from './OpenCart'
+import { CartModalPayment } from './CartModalPayment'
 import { Product, Variant } from '@/payload-types'
 import { useAuth } from '@/providers/Auth'
+import { ECOMMERCE_SESSION_RESET_EVENT } from '@/providers/Ecommerce'
 
 type CartPanel = 'cart' | 'auth' | 'login' | 'signup' | 'checkout' | 'complete'
 
@@ -212,7 +214,12 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                   Back to cart
                 </BakeryAction>
 
-                <CartPaymentPlaceholder />
+                <CartModalPayment
+                  onOrderComplete={(order) => {
+                    setCompleteOrder(order)
+                    showPanel('complete')
+                  }}
+                />
               </div>
             ) : panel === 'complete' && completeOrder ? (
               <CartCompletePanel order={completeOrder} onClose={() => setIsOpen(false)} />
@@ -425,7 +432,8 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           .cartSceneSky,
           .cartSceneMeadow,
           .cartSceneCloud,
-          .cartScenePiece {
+          .cartScenePiece,
+          .cartSceneFlower {
             pointer-events: none;
             position: absolute;
           }
@@ -447,6 +455,26 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           .cartScenePiece {
             transform-origin: center bottom;
             z-index: 1;
+          }
+
+          .cartSceneFlower {
+            bottom: 0.42rem;
+            height: auto;
+            transform-origin: center bottom;
+            width: 1.65rem;
+            z-index: 2;
+          }
+
+          .cartSceneFlowerWild {
+            width: 1.38rem;
+          }
+
+          .cartSceneShell[data-variant='compact'] .cartSceneCloud {
+            opacity: 0.68;
+          }
+
+          .cartSceneShell[data-variant='compact'][data-scene='classic'] .cartSceneCloud {
+            filter: drop-shadow(0 7px 12px rgba(52, 95, 132, 0.08));
           }
 
           .cartSceneMeadow {
@@ -601,35 +629,6 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
         `}</style>
       </SheetContent>
     </Sheet>
-  )
-}
-
-function CartPaymentPlaceholder() {
-  return (
-    <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
-      <div className="space-y-2">
-        <p className="text-2xl font-medium tracking-[-0.04em]">Payment</p>
-        <p className="text-sm leading-6 text-black/60">
-          This is the in-cart payment step. Stripe is intentionally paused here while the modal UI
-          flow is refined.
-        </p>
-      </div>
-
-      <BakeryCard
-        className="mt-5 border-dashed border-black/15 bg-[#fffefa] px-4 py-8 text-center"
-        radius="sm"
-        spacing="none"
-        tone="outline"
-      >
-        <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-black/45">
-          Payment element placeholder
-        </p>
-      </BakeryCard>
-
-      <BakeryAction block className="mt-5" disabled type="button" variant="primary">
-        Initiate payment
-      </BakeryAction>
-    </BakeryCard>
   )
 }
 
@@ -1030,6 +1029,10 @@ function CartSignupPanel({
 
 function CartCompletePanel({ onClose, order }: { onClose: () => void; order: CompleteOrder }) {
   const orderHref = `/orders/${order.orderID}${order.accessToken ? `?accessToken=${order.accessToken}` : ''}`
+  const finishOrderFlow = () => {
+    window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
+    onClose()
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
@@ -1045,7 +1048,7 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
         <div className="space-y-2">
           <p className="text-3xl font-medium tracking-[-0.05em]">Order received.</p>
           <p className="text-sm leading-6 text-black/60">
-            Payment went through and the cart has been cleared.
+            Payment went through and a fresh cart will be started.
           </p>
         </div>
 
@@ -1055,7 +1058,7 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
             block
             className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
             href={orderHref}
-            onClick={onClose}
+            onClick={finishOrderFlow}
             size="md"
             variant="primary"
           >
@@ -1064,7 +1067,7 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
           <BakeryAction
             block
             className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
-            onClick={onClose}
+            onClick={finishOrderFlow}
             size="md"
             type="button"
             variant="secondary"

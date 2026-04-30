@@ -1,5 +1,6 @@
 import type { Header } from '@/payload-types'
 import {
+  blessingsNetworkHref,
   blogHref,
   discussionBoardHref,
   menuHref,
@@ -117,6 +118,14 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
         },
         {
           description:
+            'Read practical business advice from food and cafe owners while discovering the businesses behind each answer.',
+          eyebrow: 'Community advice',
+          href: blessingsNetworkHref,
+          title: 'Open Community Advice',
+          tone: 'light',
+        },
+        {
+          description:
             'Read public reviews, see what changed in response, and submit a text review.',
           eyebrow: 'Review transparency',
           href: reviewsHref,
@@ -134,6 +143,11 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           description: 'Go to the discussion board.',
           href: discussionBoardHref,
           label: 'Open discussion board',
+        },
+        {
+          description: 'Go to Community Advice.',
+          href: blessingsNetworkHref,
+          label: 'Open Community Advice',
         },
         {
           description: 'Go to public reviews.',
@@ -197,6 +211,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, discussionBoardHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, blessingsNetworkHref)) {
     return item.id === 'more'
   }
 

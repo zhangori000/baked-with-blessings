@@ -4,6 +4,7 @@ import { CollectionSlug, Plugin } from 'payload'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
+import type { ProductsValidation } from '@payloadcms/plugin-ecommerce/types'
 
 import type { Page, Post, Product } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -19,6 +20,7 @@ import {
   extendCollectionItemsWithBatchSelections,
   trayAwareCartItemMatcher,
 } from '@/plugins/ecommerce/trayBuilder'
+import { preventPurchasedCartItemChanges } from '@/plugins/ecommerce/cartLifecycle'
 import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
@@ -135,6 +137,20 @@ const generateURL: GenerateURL<Product | Page | Post> = ({ collectionConfig, doc
   return doc.slug === 'home' ? url : `${url}/${doc.slug}`
 }
 
+const validateMadeToOrderPricing: ProductsValidation = ({ currency, product, variant }) => {
+  if (!currency) {
+    throw new Error('Currency must be provided for product validation.')
+  }
+
+  const priceField = `priceIn${currency.toUpperCase()}`
+  const pricedItem = variant || product
+  const price = (pricedItem as unknown as Record<string, unknown> | undefined)?.[priceField]
+
+  if (typeof price !== 'number' || price <= 0) {
+    throw new Error('Product or variant is missing a valid price.')
+  }
+}
+
 export const plugins: Plugin[] = [
   seoPlugin({
     generateTitle,
@@ -230,6 +246,10 @@ export const plugins: Plugin[] = [
         }),
         hooks: {
           ...defaultCollection.hooks,
+          beforeChange: [
+            ...(defaultCollection.hooks?.beforeChange ?? []),
+            preventPurchasedCartItemChanges,
+          ],
           beforeValidate: [
             ...(defaultCollection.hooks?.beforeValidate ?? []),
             createTrayBuilderValidationHook(),
@@ -300,6 +320,7 @@ export const plugins: Plugin[] = [
     },
     products: {
       productsCollectionOverride: ProductsCollection,
+      validation: validateMadeToOrderPricing,
     },
     transactions: {
       transactionsCollectionOverride: ({ defaultCollection }) => ({
