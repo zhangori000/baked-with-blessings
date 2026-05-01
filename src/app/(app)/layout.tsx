@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 
-import { AdminBar } from '@/components/AdminBar'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
@@ -74,7 +73,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Providers>
           <ViewportFlowers />
           <div className="siteFrame">
-            <AdminBar />
             <LivePreviewListener />
 
             <Header />

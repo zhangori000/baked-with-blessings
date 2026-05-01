@@ -191,14 +191,12 @@ export function HeaderClient({ brand, header }: Props) {
 
   const accountLinks = useMemo(() => {
     if (user) return ['/account', '/orders', '/account/addresses']
-    if (adminSessionUser) return ['/admin']
     return []
-  }, [adminSessionUser, user])
+  }, [user])
   const activeAppLabel = getActiveAppLabel(pathname)
 
   const accountLabels = {
     '/account': user ? 'Account settings' : 'Log in',
-    '/admin': 'Dashboard',
     '/orders': user ? 'Orders' : 'Create account',
     '/account/addresses': 'Addresses',
     '/login': 'Log in',
@@ -418,11 +416,15 @@ export function HeaderClient({ brand, header }: Props) {
         })
 
         if (adminLoginResponse.ok) {
+          const data = (await adminLoginResponse.json().catch(() => null)) as AdminMeResponse | null
           setCustomerLoginIdentifier('')
           setCustomerLoginPassword('')
           setShowCustomerLoginPassword(false)
+          setAdminSessionUser(data?.user ?? { email: identifier.toLowerCase() })
           setActivePanel(null)
-          window.location.assign('/admin')
+          announce('Owner account signed in.')
+          toast.success('Signed in.')
+          router.refresh()
           return
         }
       }
@@ -682,6 +684,7 @@ export function HeaderClient({ brand, header }: Props) {
 
       if (adminSessionUser) {
         const adminLogoutResponse = await fetch('/api/admins/logout', {
+          body: JSON.stringify({}),
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
