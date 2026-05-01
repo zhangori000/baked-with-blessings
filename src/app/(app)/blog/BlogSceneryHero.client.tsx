@@ -38,13 +38,11 @@ export function BlogSceneryHero({
       return
     }
 
-    preloadSceneryAssets(nextSceneryTone)
-
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setSceneryTone(nextSceneryTone)
     })
-
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   return (
@@ -52,7 +50,6 @@ export function BlogSceneryHero({
       eyebrow={eyebrow}
       isSceneryPickerOpen={isSceneryPickerOpen}
       isSceneChanging={isSceneChanging}
-      key={sceneryTone}
       onSelectScenery={handleSelectScenery}
       onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
       sceneryTone={sceneryTone}

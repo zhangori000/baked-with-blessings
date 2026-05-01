@@ -221,11 +221,11 @@ export function DiscussionBoardClient({
   const handleSelectHeroScenery = (nextSceneryTone: MenuSceneryTone) => {
     if (nextSceneryTone === heroSceneryTone) return
 
-    preloadSceneryAssets(nextSceneryTone)
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   useEffect(() => {
@@ -530,7 +530,6 @@ export function DiscussionBoardClient({
           eyebrow="Public reasoning"
           isSceneryPickerOpen={isSceneryPickerOpen}
           isSceneChanging={false}
-          key={heroSceneryTone}
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}

@@ -28,13 +28,11 @@ export function ContactSceneryHero({ initialSceneryTone = 'dawn' }: ContactScene
   const handleSelectScenery = (nextSceneryTone: MenuSceneryTone) => {
     if (isSceneChanging || nextSceneryTone === sceneryTone) return
 
-    preloadSceneryAssets(nextSceneryTone)
-
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setSceneryTone(nextSceneryTone)
     })
-
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   return (
@@ -42,7 +40,6 @@ export function ContactSceneryHero({ initialSceneryTone = 'dawn' }: ContactScene
       eyebrow="Baked with Blessings"
       isSceneryPickerOpen={isSceneryPickerOpen}
       isSceneChanging={isSceneChanging}
-      key={sceneryTone}
       onSelectScenery={handleSelectScenery}
       onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
       sceneryTone={sceneryTone}

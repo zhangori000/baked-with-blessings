@@ -3,6 +3,7 @@
 import type { SceneTone } from '@/components/scenery/menuHeroScenery'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { RichText } from '@/components/RichText'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
 import { Lock } from 'lucide-react'
@@ -11,6 +12,7 @@ import Image from 'next/image'
 import React, { useState } from 'react'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { toast } from 'sonner'
 
 import type { CookiePosterAsset } from './cookiePosterData'
@@ -435,9 +437,9 @@ function CookiePosterIngredientNote({
   poster: CookiePosterAsset
 }) {
   const dialogId = `${poster.slug}-ingredient-note`
-  const hasIngredients = poster.ingredients.length > 0
+  const hasInfoBody = Boolean(poster.receiptBody?.root)
 
-  if (!hasIngredients) {
+  if (!hasInfoBody) {
     return null
   }
 
@@ -487,23 +489,12 @@ function CookiePosterIngredientNote({
 
           <div className="cookiePosterIngredientPin" aria-hidden="true" />
 
-          <p className="cookiePosterIngredientEyebrow">For {poster.title}</p>
-          <h4 className="cookiePosterIngredientTitle">{poster.ingredientsNoteTitle}</h4>
-          <p className="cookiePosterIngredientIntro">{poster.ingredientsIntro}</p>
-
-          <ul className="cookiePosterIngredientList">
-            {poster.ingredients.map((ingredient) => (
-              <li
-                className="cookiePosterIngredientRow"
-                key={`${ingredient.name}-${ingredient.detail ?? ''}`}
-              >
-                <span className="cookiePosterIngredientName">{ingredient.name}</span>
-                {ingredient.detail ? (
-                  <span className="cookiePosterIngredientDetail">{ingredient.detail}</span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+          <RichText
+            className="cookiePosterInfoRichText"
+            data={poster.receiptBody as SerializedEditorState}
+            enableGutter={false}
+            enableProse={false}
+          />
         </BakeryCard>
       ) : null}
     </>
@@ -1128,77 +1119,32 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
           z-index: 2;
         }
 
-        .cookiePosterIngredientEyebrow,
-        .cookiePosterIngredientTitle,
-        .cookiePosterIngredientIntro,
-        .cookiePosterIngredientList {
+        .cookiePosterInfoRichText {
           position: relative;
           z-index: 1;
         }
 
-        .cookiePosterIngredientEyebrow {
-          color: rgba(121, 88, 42, 0.78);
-          font-family: var(--font-rounded-display);
-          font-size: 0.7rem;
-          letter-spacing: 0.08em;
-          margin-bottom: 0.3rem;
-          margin-top: 0.55rem;
-          text-transform: uppercase;
-        }
-
-        .cookiePosterIngredientTitle {
+        .cookiePosterInfoRichText h3,
+        .cookiePosterInfoRichText h4 {
           color: #5d4119;
           font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
           font-size: 1.18rem;
           line-height: 1.05;
-          margin: 0;
+          margin: 0.35rem 0 0.45rem;
         }
 
-        .cookiePosterIngredientIntro {
+        .cookiePosterInfoRichText p {
           color: rgba(88, 64, 32, 0.78);
           font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
           font-size: 0.87rem;
           line-height: 1.35;
-          margin-bottom: 0.55rem;
-          margin-top: 0.45rem;
+          margin: 0.45rem 0 0;
           padding-right: 1rem;
         }
 
-        .cookiePosterIngredientList {
-          display: grid;
-          gap: 0.32rem;
-          list-style: none;
-          margin: 0;
-          padding: 0;
-        }
-
-        .cookiePosterIngredientRow {
-          align-items: baseline;
+        .cookiePosterInfoRichText strong {
           color: #4f3818;
-          display: grid;
-          gap: 0.05rem;
-          padding-left: 0.95rem;
-          position: relative;
-        }
-
-        .cookiePosterIngredientRow::before {
-          color: rgba(126, 92, 42, 0.9);
-          content: '•';
-          left: 0.2rem;
-          position: absolute;
-          top: 0;
-        }
-
-        .cookiePosterIngredientName {
-          font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
-          font-size: 0.92rem;
-          line-height: 1.2;
-        }
-
-        .cookiePosterIngredientDetail {
-          color: rgba(92, 67, 31, 0.68);
-          font-size: 0.72rem;
-          line-height: 1.2;
+          font-weight: 800;
         }
 
         .cookieSheepBodyImage {

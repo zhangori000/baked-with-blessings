@@ -9,6 +9,7 @@ import React from 'react'
 import type { Props as MediaProps } from '../types'
 
 import { cssVariables } from '@/cssVariables'
+import { isPayloadMediaFileURL } from '@/utilities/resolveMediaDisplayURL'
 
 const { breakpoints } = cssVariables
 const sameOriginServerURL = process.env.NEXT_PUBLIC_SERVER_URL?.replace(/\/$/, '')
@@ -26,6 +27,16 @@ const normalizeImageSrc = (value: string) => {
   }
 
   return `/${value.replace(/^\/+/, '')}`
+}
+
+const resolveResourceImage = (resource: Exclude<MediaProps['resource'], string | number | undefined>) => {
+  return (
+    resource.sizes?.tablet ??
+    resource.sizes?.poster ??
+    resource.sizes?.card ??
+    resource.sizes?.thumbnail ??
+    null
+  )
 }
 
 export const Image: React.FC<MediaProps> = (props) => {
@@ -62,13 +73,16 @@ export const Image: React.FC<MediaProps> = (props) => {
       url,
       width: fullWidth,
     } = resource
+    const sizedImage = resolveResourceImage(resource)
 
-    width = widthFromProps ?? fullWidth
-    height = heightFromProps ?? fullHeight
+    width = widthFromProps ?? sizedImage?.width ?? fullWidth
+    height = heightFromProps ?? sizedImage?.height ?? fullHeight
     alt = altFromResource
 
-    src = normalizeImageSrc(url || '')
+    src = normalizeImageSrc(sizedImage?.url || url || '')
   }
+
+  const shouldBypassOptimizer = typeof src === 'string' && isPayloadMediaFileURL(src)
 
   // NOTE: this is used by the browser to determine which image to download at different screen sizes
   const sizes = sizeFromProps
@@ -94,7 +108,7 @@ export const Image: React.FC<MediaProps> = (props) => {
       quality={90}
       sizes={sizes}
       src={src}
-      unoptimized={unoptimized}
+      unoptimized={unoptimized || shouldBypassOptimizer}
       width={!fill ? width || widthFromProps : undefined}
     />
   )

@@ -1,6 +1,7 @@
 import type { File, Payload } from 'payload'
 
 import { REVIEW_TENANT_ID } from '@/features/reviews/types'
+import { getServerSideURL } from '@/utilities/getURL'
 
 type LoosePayload = Payload & {
   create: (args: unknown) => Promise<Record<string, unknown>>
@@ -24,6 +25,20 @@ const getRating = (value: FormDataEntryValue | null) => {
   return Math.max(1, Math.min(5, Math.round(rating * 2) / 2))
 }
 
+const escapeHTML = (value: unknown) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+const getReviewNotificationEmail = () =>
+  process.env.REVIEW_NOTIFICATION_TO?.trim() ||
+  process.env.CONTACT_NOTIFICATION_TO?.trim() ||
+  process.env.ORDER_NOTIFICATION_TO?.trim() ||
+  ''
+
 const toPayloadFile = async (file: globalThis.File): Promise<File> => {
   const data = Buffer.from(await file.arrayBuffer())
 
@@ -33,6 +48,82 @@ const toPayloadFile = async (file: globalThis.File): Promise<File> => {
     name: file.name || 'review-photo',
     size: data.byteLength,
   }
+}
+
+const sendOwnerReviewNotification = async ({
+  payload,
+  review,
+}: {
+  payload: Payload
+  review: Record<string, unknown>
+}) => {
+  const to = getReviewNotificationEmail()
+
+  if (!to) {
+    payload.logger.warn(
+      'REVIEW_NOTIFICATION_TO, CONTACT_NOTIFICATION_TO, and ORDER_NOTIFICATION_TO are not configured; skipping review notification.',
+    )
+    return
+  }
+
+  const companyName =
+    process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
+  const serverURL = getServerSideURL()
+  const reviewID = review.id
+  const adminURL = `${serverURL}/admin/collections/reviews/${reviewID}`
+  const submittedAt =
+    typeof review.createdAt === 'string'
+      ? new Date(review.createdAt).toLocaleString('en-US')
+      : new Date().toLocaleString('en-US')
+  const customerName = typeof review.customerName === 'string' ? review.customerName : 'Bakery guest'
+  const customerEmail = typeof review.customerEmail === 'string' ? review.customerEmail : ''
+  const title = typeof review.title === 'string' ? review.title : 'Untitled review'
+  const body = typeof review.body === 'string' ? review.body : ''
+  const visitContext = typeof review.visitContext === 'string' ? review.visitContext : ''
+  const reviewTone = review.reviewTone === 'suggestion' ? 'Suggestion' : 'Loved it'
+  const rating = typeof review.rating === 'number' ? review.rating : 'Not recorded'
+  const subject = `New ${companyName} review awaiting approval - ${title}`
+
+  const text = [
+    `New review awaiting approval for ${companyName}`,
+    '',
+    `Title: ${title}`,
+    `Rating: ${rating}`,
+    `Tone: ${reviewTone}`,
+    `Customer: ${customerName}`,
+    customerEmail ? `Customer email: ${customerEmail}` : null,
+    visitContext ? `Visit context: ${visitContext}` : null,
+    `Submitted: ${submittedAt}`,
+    '',
+    'Review',
+    body,
+    '',
+    `Review in Payload admin: ${adminURL}`,
+  ]
+    .filter((line): line is string => typeof line === 'string')
+    .join('\n')
+
+  const html = `
+    <h1>New review awaiting approval</h1>
+    <p><strong>Title:</strong> ${escapeHTML(title)}</p>
+    <p><strong>Rating:</strong> ${escapeHTML(rating)}</p>
+    <p><strong>Tone:</strong> ${escapeHTML(reviewTone)}</p>
+    <p><strong>Customer:</strong> ${escapeHTML(customerName)}</p>
+    ${customerEmail ? `<p><strong>Customer email:</strong> ${escapeHTML(customerEmail)}</p>` : ''}
+    ${visitContext ? `<p><strong>Visit context:</strong> ${escapeHTML(visitContext)}</p>` : ''}
+    <p><strong>Submitted:</strong> ${escapeHTML(submittedAt)}</p>
+    <h2>Review</h2>
+    <p>${escapeHTML(body).replace(/\n/g, '<br />')}</p>
+    <p><a href="${escapeHTML(adminURL)}">Open this review in Payload admin</a></p>
+  `
+
+  await payload.sendEmail({
+    html,
+    replyTo: customerEmail || undefined,
+    subject,
+    text,
+    to,
+  })
 }
 
 export const createReviewSubmission = async ({
@@ -116,6 +207,15 @@ export const createReviewSubmission = async ({
     },
     overrideAccess: true,
   })
+
+  try {
+    await sendOwnerReviewNotification({
+      payload,
+      review,
+    })
+  } catch (error) {
+    payload.logger.error({ err: error, reviewID: review.id }, 'Owner review notification failed')
+  }
 
   return {
     id: review.id,

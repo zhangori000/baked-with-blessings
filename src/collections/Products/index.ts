@@ -288,18 +288,22 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 },
                 {
                   name: 'ingredientsNoteTitle',
+                  label: 'Legacy Ingredient Popup Title',
                   type: 'text',
                   admin: {
+                    hidden: true,
                     description:
-                      'Notebook-style heading shown inside the ingredient popup, for example Baker Notes.',
+                      'Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.',
                   },
                 },
                 {
                   name: 'ingredientsIntro',
+                  label: 'Legacy Ingredient Popup Intro',
                   type: 'textarea',
                   admin: {
+                    hidden: true,
                     description:
-                      'Optional handwritten-style intro sentence above the ingredients list in the popup.',
+                      'Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.',
                   },
                 },
                 {
@@ -378,10 +382,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 },
                 {
                   name: 'ingredients',
+                  label: 'Legacy Ingredient Rows',
                   type: 'array',
                   admin: {
+                    hidden: true,
                     description:
-                      'Ingredients or cookie components that should appear inside the popup note.',
+                      'Deprecated. Use Info Dialog Text instead; the old row layout could collide on narrow cards.',
                     initCollapsed: true,
                   },
                   fields: [

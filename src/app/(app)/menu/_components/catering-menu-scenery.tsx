@@ -26,6 +26,7 @@ import type { MenuSceneryTone } from './catering-menu-types'
 type SpawnedCloud = {
   id: number
   left: string
+  sceneryTone: MenuSceneryTone
   src: string
   top: string
   width: string
@@ -36,6 +37,7 @@ type SpawnedFlower = {
   bottom?: string
   id: number
   left: string
+  sceneryTone?: MenuSceneryTone
   scale: number
 }
 
@@ -799,16 +801,55 @@ const collectSceneryAssetSources = (sceneryTone: MenuSceneryTone) => [
   ...(panelPiecesByScenery[sceneryTone] ?? []).map((piece) => piece.src),
 ]
 
+type IdlePreloadWindow = Window & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number
+}
+
+const preloadedSceneryAssets = new Set<string>()
+
+const scheduleSceneryPreload = (callback: () => void) => {
+  const requestIdleCallback = (window as IdlePreloadWindow).requestIdleCallback
+
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(callback, { timeout: 800 })
+    return
+  }
+
+  window.setTimeout(callback, 0)
+}
+
 export const preloadSceneryAssets = (sceneryTone: MenuSceneryTone) => {
   if (typeof window === 'undefined') {
     return
   }
 
-  for (const source of new Set(collectSceneryAssetSources(sceneryTone).filter(Boolean))) {
-    const image = new window.Image()
-    image.decoding = 'async'
-    image.src = source
+  const sources = Array.from(new Set(collectSceneryAssetSources(sceneryTone).filter(Boolean))).filter(
+    (source) => !preloadedSceneryAssets.has(source),
+  )
+
+  if (sources.length === 0) {
+    return
   }
+
+  for (const source of sources) {
+    preloadedSceneryAssets.add(source)
+  }
+
+  const preloadBatch = (startIndex = 0) => {
+    scheduleSceneryPreload(() => {
+      for (const source of sources.slice(startIndex, startIndex + 4)) {
+        const image = new window.Image()
+        image.decoding = 'async'
+        image.src = source
+      }
+
+      if (startIndex + 4 < sources.length) {
+        preloadBatch(startIndex + 4)
+      }
+    })
+  }
+
+  preloadBatch()
 }
 
 const buildFlowerMotionStyle = (
@@ -858,6 +899,7 @@ const createSpawnedCloud = (
   return {
     id: Date.now() + Math.random(),
     left,
+    sceneryTone,
     src: design.src,
     top,
     width: `${randomBetween(design.minWidth, design.maxWidth).toFixed(2)}rem`,
@@ -935,6 +977,7 @@ const createSpawnedFlower = ({
     bottom: `${randomBetween(minBottom, maxBottom).toFixed(2)}%`,
     id: Date.now() + Math.random(),
     left: `${(leftOverride ?? randomBetween(minLeft, maxLeft)).toFixed(2)}%`,
+    sceneryTone,
     scale: Number((scaleOverride ?? randomBetween(minScale, maxScale)).toFixed(2)),
   }
 }
@@ -1185,11 +1228,16 @@ export function MenuHero({
   const flowerSeedCount = useResponsiveFlowerSeedCount()
   const seededAccentCount = seededAccentCountByScenery[sceneryTone] === 0 ? 0 : flowerSeedCount
   const [spawnedClouds, setSpawnedClouds] = useState<SpawnedCloud[]>([])
-  const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>(() =>
-    buildSeededFlowers(sceneryTone, 'hero', seededAccentCount),
+  const [spawnedFlowers, setSpawnedFlowers] = useState<SpawnedFlower[]>([])
+  const seededHeroAccents = useMemo(
+    () => buildSeededFlowers(sceneryTone, 'hero', seededAccentCount),
+    [sceneryTone, seededAccentCount],
   )
-  const anchoredHeroAccents = spawnedFlowers.filter((flower) => !flower.bottom)
-  const floatingHeroAccents = spawnedFlowers.filter((flower) => flower.bottom)
+  const activeSpawnedClouds = spawnedClouds.filter((cloud) => cloud.sceneryTone === sceneryTone)
+  const activeSpawnedFlowers = spawnedFlowers.filter((flower) => flower.sceneryTone === sceneryTone)
+  const heroAccents = [...seededHeroAccents, ...activeSpawnedFlowers]
+  const anchoredHeroAccents = heroAccents.filter((flower) => !flower.bottom)
+  const floatingHeroAccents = heroAccents.filter((flower) => flower.bottom)
   const sceneClouds = heroCloudsByScenery[sceneryTone] ?? heroCloudsByScenery.dawn
   const heroCritters = heroCrittersByScenery[sceneryTone] ?? heroCrittersByScenery.dawn
   const heroPieces = heroPiecesByScenery[sceneryTone] ?? heroPiecesByScenery.dawn
@@ -1338,7 +1386,7 @@ export function MenuHero({
           style={cloud.style}
         />
       ))}
-      {spawnedClouds.map((cloud) => (
+      {activeSpawnedClouds.map((cloud) => (
         <DecorativeSceneImage
           className="cateringHeroCloud"
           key={cloud.id}

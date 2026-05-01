@@ -78,11 +78,11 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'dawn' }: Prop
   const handleSelectHeroScenery = (nextSceneryTone: MenuSceneryTone) => {
     if (nextSceneryTone === heroSceneryTone) return
 
-    preloadSceneryAssets(nextSceneryTone)
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   const submitReview = async (event: FormEvent<HTMLFormElement>) => {
@@ -132,7 +132,6 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'dawn' }: Prop
           eyebrow="Review transparency"
           isSceneryPickerOpen={isSceneryPickerOpen}
           isSceneChanging={false}
-          key={heroSceneryTone}
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}

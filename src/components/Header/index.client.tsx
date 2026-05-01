@@ -24,7 +24,10 @@ import {
   reviewsHref,
   rotatingCookieFlavorsHref,
 } from '@/utilities/routes'
-import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
+import {
+  isPayloadMediaFileURL,
+  resolveMediaDisplayURL,
+} from '@/utilities/resolveMediaDisplayURL'
 import {
   ArrowRight,
   BookOpenText,
@@ -708,7 +711,17 @@ export function HeaderClient({ brand, header }: Props) {
       setAccountAuthMode('login')
       setShowCustomerLoginPassword(false)
       setActivePanel(null)
+      announce('You have successfully signed out.')
+      toast.success("You've successfully signed out.")
       router.refresh()
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'We could not sign you out. Please try again.'
+
+      announce('Sign out failed.')
+      toast.error(message)
     } finally {
       setIsLoggingOut(false)
     }
@@ -1385,6 +1398,7 @@ export function HeaderClient({ brand, header }: Props) {
                                         quality={95}
                                         sizes="192px"
                                         src={resolvedImageSrc}
+                                        unoptimized={isPayloadMediaFileURL(resolvedImageSrc)}
                                       />
                                     ) : null}
                                   </div>

@@ -159,11 +159,11 @@ export function BlessingsNetworkClient({ initialData, initialSceneryTone = 'dawn
   const handleSelectHeroScenery = (nextSceneryTone: MenuSceneryTone) => {
     if (nextSceneryTone === heroSceneryTone) return
 
-    preloadSceneryAssets(nextSceneryTone)
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   const openAnswerForm = (questionId: string) => {
@@ -324,7 +324,6 @@ export function BlessingsNetworkClient({ initialData, initialSceneryTone = 'dawn
           eyebrow="Owner-powered advice"
           isSceneryPickerOpen={isSceneryPickerOpen}
           isSceneChanging={false}
-          key={heroSceneryTone}
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}

@@ -11,7 +11,10 @@ import { bakeryPrimitiveTokens } from '@/design-system/bakery/tokens'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { menuHref } from '@/utilities/routes'
-import { resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
+import {
+  isPayloadMediaFileURL,
+  resolveMediaDisplayURL,
+} from '@/utilities/resolveMediaDisplayURL'
 import {
   Sheet,
   SheetClose,
@@ -299,6 +302,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                                   quality={95}
                                   sizes="(min-width: 640px) 192px, 160px"
                                   src={resolvedImageSrc}
+                                  unoptimized={isPayloadMediaFileURL(resolvedImageSrc)}
                                 />
                               ) : null}
                             </div>
