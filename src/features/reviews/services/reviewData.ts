@@ -4,6 +4,7 @@ import {
   REVIEW_TENANT_ID,
   type PublicReview,
   type PublicReviewPhoto,
+  type PublicReviewSocial,
   type ReviewResponseStatus,
   type ReviewTone,
   type ReviewsPageData,
@@ -21,7 +22,6 @@ type StarterReview = {
   createdAtOffsetDays: number
   customerName: string
   publicStatus: 'published'
-  rating: number
   reviewTone: ReviewTone
   responseStatus: ReviewResponseStatus
   title: string
@@ -78,6 +78,66 @@ const isPublicReviewPhoto = (value: PublicReviewPhoto | null): value is PublicRe
 const toReviewRecord = (doc: unknown): Record<string, unknown> =>
   doc && typeof doc === 'object' ? (doc as Record<string, unknown>) : {}
 
+const getPublicSocials = (review: Record<string, unknown>): PublicReviewSocial[] => {
+  const instagramHandle =
+    typeof review.instagramHandle === 'string' ? review.instagramHandle.trim() : ''
+  const linkedinUrl = typeof review.linkedinUrl === 'string' ? review.linkedinUrl.trim() : ''
+  const discordUsername =
+    typeof review.discordUsername === 'string' ? review.discordUsername.trim() : ''
+  const leagueUsername =
+    typeof review.leagueUsername === 'string' ? review.leagueUsername.trim() : ''
+  const nintendoId = typeof review.nintendoId === 'string' ? review.nintendoId.trim() : ''
+  const ptcgId = typeof review.ptcgId === 'string' ? review.ptcgId.trim() : ''
+  const otherContact = typeof review.otherContact === 'string' ? review.otherContact.trim() : ''
+
+  return [
+    instagramHandle && review.instagramHandlePublic
+      ? {
+          href: `https://www.instagram.com/${instagramHandle.replace(/^@+/, '')}`,
+          label: 'Instagram',
+          value: instagramHandle,
+        }
+      : null,
+    linkedinUrl && review.linkedinUrlPublic
+      ? {
+          href: linkedinUrl,
+          label: 'LinkedIn',
+          value: linkedinUrl.replace(/^https?:\/\//i, ''),
+        }
+      : null,
+    discordUsername && review.discordUsernamePublic
+      ? {
+          label: 'Discord',
+          value: discordUsername,
+        }
+      : null,
+    leagueUsername && review.leagueUsernamePublic
+      ? {
+          label: 'League',
+          value: leagueUsername,
+        }
+      : null,
+    nintendoId && review.nintendoIdPublic
+      ? {
+          label: 'Nintendo ID',
+          value: nintendoId,
+        }
+      : null,
+    ptcgId && review.ptcgIdPublic
+      ? {
+          label: 'PTCG ID',
+          value: ptcgId,
+        }
+      : null,
+    otherContact && review.otherContactPublic
+      ? {
+          label: 'Other',
+          value: otherContact,
+        }
+      : null,
+  ].filter((social): social is PublicReviewSocial => Boolean(social))
+}
+
 export const serializeReview = (doc: unknown): PublicReview => {
   const review = toReviewRecord(doc)
 
@@ -107,7 +167,7 @@ export const serializeReview = (doc: unknown): PublicReview => {
     photos: Array.isArray(review.photos)
       ? review.photos.map(getPhoto).filter(isPublicReviewPhoto)
       : [],
-    rating: typeof review.rating === 'number' ? review.rating : 5,
+    publicSocials: getPublicSocials(review),
     reviewTone: review.reviewTone === 'suggestion' ? 'suggestion' : ('loved_it' as ReviewTone),
     responseStatus:
       typeof review.responseStatus === 'string'
@@ -125,7 +185,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 1,
     customerName: 'Marisol P.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'The tray made the table feel special',
@@ -137,7 +196,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 2,
     customerName: 'Anonymous guest',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Everyone asked about the lemon cookies',
@@ -148,7 +206,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 3,
     customerName: 'Jordan K.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Office order was organized and easy',
@@ -160,7 +217,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 4,
     customerName: 'Nadia R.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Loved the rotating cookie box',
@@ -171,7 +227,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 5,
     customerName: 'Priya S.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Packed perfectly for our event',
@@ -182,7 +237,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 6,
     customerName: 'Eli M.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Clear communication and a beautiful tray',
@@ -193,7 +247,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 7,
     customerName: 'Anonymous guest',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Fresh cookies that disappeared fast',
@@ -204,7 +257,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 8,
     customerName: 'Camila T.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Mini cookies were perfect for kids',
@@ -215,7 +267,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 9,
     customerName: 'Samira A.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Helpful descriptions and careful labels',
@@ -226,7 +277,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 10,
     customerName: 'Victor L.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Polished but still personal',
@@ -237,7 +287,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 11,
     customerName: 'Rachel B.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Sweet without being too much',
@@ -248,7 +297,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 12,
     customerName: 'Anonymous guest',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Fast and friendly pickup',
@@ -259,7 +307,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 13,
     customerName: 'Danielle C.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Best oatmeal cookie texture',
@@ -270,7 +317,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 14,
     customerName: 'Jonah W.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'The box felt thoughtful',
@@ -281,7 +327,6 @@ const starterReviews: StarterReview[] = [
     createdAtOffsetDays: 15,
     customerName: 'Mei H.',
     publicStatus: 'published',
-    rating: 5,
     reviewTone: 'loved_it',
     responseStatus: 'closed',
     title: 'Great variety for sharing',
@@ -334,7 +379,6 @@ export const ensureStarterReviews = async (payload: Payload) => {
       customerName: starterReview.customerName,
       fairnessNote: null,
       publicStatus: starterReview.publicStatus,
-      rating: starterReview.rating,
       reviewTone: starterReview.reviewTone,
       responseStatus: starterReview.responseStatus,
       tenantId: REVIEW_TENANT_ID,
@@ -396,13 +440,10 @@ export const getReviewsPageData = async (payload: Payload): Promise<ReviewsPageD
   })
 
   const reviews = result.docs.map(serializeReview)
-  const ratingTotal = reviews.reduce((total, review) => total + review.rating, 0)
-  const averageRating = reviews.length ? ratingTotal / reviews.length : 0
 
   return {
     reviews,
     stats: {
-      averageRating,
       changedCount: reviews.filter((review) => review.responseStatus === 'changed').length,
       publishedCount: reviews.length,
       stoodFirmCount: reviews.filter((review) => review.responseStatus === 'stood_firm').length,

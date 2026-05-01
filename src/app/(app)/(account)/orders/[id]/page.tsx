@@ -103,6 +103,10 @@ export default async function Order({ params, searchParams }: PageProps) {
         customerEmail: true,
         customer: true,
         status: true,
+        manualPaymentHandle: true,
+        manualPaymentMethod: true,
+        manualPaymentReportedAt: true,
+        manualPaymentStatus: true,
         createdAt: true,
         updatedAt: true,
         shippingAddress: true,
@@ -136,9 +140,12 @@ export default async function Order({ params, searchParams }: PageProps) {
   }
 
   const hasShippingAddress = hasAddressContent(order.shippingAddress)
+  const isVenmoOrder = order.manualPaymentMethod === 'venmo'
   const itemCount =
-    order.items?.reduce((total, item) => total + (typeof item.quantity === 'number' ? item.quantity : 0), 0) ??
-    0
+    order.items?.reduce(
+      (total, item) => total + (typeof item.quantity === 'number' ? item.quantity : 0),
+      0,
+    ) ?? 0
 
   return (
     <div className="space-y-6">
@@ -194,11 +201,14 @@ export default async function Order({ params, searchParams }: PageProps) {
             <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="font-serif text-4xl leading-none tracking-[-0.04em] text-[#4a421d] sm:text-5xl">
-                  Order received.
+                  {isVenmoOrder ? 'Venmo order recorded.' : 'Order received.'}
                 </h2>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5f5632] sm:text-base">
-                  Payment went through. We saved this order and marked it as processing so the
-                  bakery can prepare it.
+                  {isVenmoOrder
+                    ? `We saved this order after you reported a Venmo payment to ${
+                        order.manualPaymentHandle || '@bakedwithblessings'
+                      }. The bakery will verify the payment and contact you through your account contact method.`
+                    : 'Payment went through. We saved this order and marked it as processing so the bakery can prepare it.'}
                 </p>
               </div>
               <span className="w-fit rounded-full bg-[#f7e7b6] px-3 py-1.5 font-mono text-xs font-bold tracking-[0.16em] text-[#4a421d] uppercase">
@@ -230,7 +240,9 @@ export default async function Order({ params, searchParams }: PageProps) {
             <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Total
             </p>
-            {order.amount && <Price className="text-lg font-semibold text-[#43451e]" amount={order.amount} />}
+            {order.amount && (
+              <Price className="text-lg font-semibold text-[#43451e]" amount={order.amount} />
+            )}
           </section>
 
           {order.status && (
@@ -241,6 +253,20 @@ export default async function Order({ params, searchParams }: PageProps) {
               <OrderStatus className="text-sm" status={order.status} />
             </section>
           )}
+
+          {isVenmoOrder ? (
+            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
+              <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
+                Payment
+              </p>
+              <p className="text-sm leading-6 text-[#4b421d]">
+                Venmo reported to {order.manualPaymentHandle || '@bakedwithblessings'}.
+                {order.manualPaymentStatus === 'verified'
+                  ? ' The bakery has marked this payment as verified.'
+                  : ' This still needs manual verification by the bakery before it is treated as paid.'}
+              </p>
+            </section>
+          ) : null}
         </div>
 
         {order.items && (
@@ -301,8 +327,8 @@ export default async function Order({ params, searchParams }: PageProps) {
             </>
           ) : (
             <p className="max-w-2xl rounded-2xl border border-dashed border-[#d8c9a5] bg-[#fff8e8] p-4 text-sm leading-6 text-[#5f5632]">
-              No delivery address was collected for this order. Treat this as a pickup or
-              manually coordinated order unless delivery is added later.
+              No delivery address was collected for this order. Treat this as a pickup or manually
+              coordinated order unless delivery is added later.
             </p>
           )}
         </section>

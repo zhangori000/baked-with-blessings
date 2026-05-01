@@ -6,6 +6,9 @@ import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMe
 import { BakeryAction, BakeryCard, BakeryPageShell, BakeryPressable } from '@/design-system/bakery'
 import type { PublicReview, ReviewsPageData } from '@/features/reviews/types'
 import {
+  AtSign,
+  ChevronDown,
+  ChevronUp,
   ClipboardCheck,
   Heart,
   Lightbulb,
@@ -94,7 +97,6 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'dawn' }: Prop
 
     const form = event.currentTarget
     const formData = new FormData(form)
-    formData.set('rating', '5')
 
     try {
       const response = await fetch('/api/reviews', {
@@ -109,7 +111,7 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'dawn' }: Prop
       }
 
       form.reset()
-      setNotice('Review submitted. It will appear publicly after review.')
+      setNotice('Review submitted. It is now public, and the owner can unpublish it if needed.')
       setIsComposerOpen(false)
       startPageRefresh(() => {
         router.refresh()
@@ -171,8 +173,8 @@ export function ReviewsClient({ initialData, initialSceneryTone = 'dawn' }: Prop
           </div>
           <p>
             The secure version should attach the reward to a logged-in customer account after a
-            moderated review is accepted. To prevent abuse, the coupon should be single-use, limited
-            to one reward per week, and capped at 8 total review rewards per account.
+            public review is received. To prevent abuse, the coupon should be single-use, limited to
+            one reward per week, and capped at 8 total review rewards per account.
           </p>
         </BakeryCard>
 
@@ -239,6 +241,8 @@ function ReviewForm({
   notice: string | null
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }) {
+  const [isContactOpen, setIsContactOpen] = useState(false)
+
   return (
     <form className="reviewsForm" data-submitting={isSubmitting} onSubmit={onSubmit}>
       <div className="reviewsFormGarden" aria-hidden="true">
@@ -280,6 +284,11 @@ function ReviewForm({
       </fieldset>
 
       <label>
+        Name <span>optional</span>
+        <input name="customerName" placeholder="Bakery guest" />
+      </label>
+
+      <label>
         Title <span>required</span>
         <input name="title" placeholder="Short summary" required />
       </label>
@@ -288,6 +297,119 @@ function ReviewForm({
         Review <span>required</span>
         <textarea name="body" placeholder="Tell us what happened." required rows={5} />
       </label>
+
+      <div className="reviewsContactDisclosure">
+        <BakeryPressable
+          aria-controls="reviews-contact-fields"
+          aria-expanded={isContactOpen}
+          className="reviewsContactToggle"
+          onClick={() => setIsContactOpen((current) => !current)}
+          type="button"
+        >
+          <span>
+            <AtSign aria-hidden="true" className="h-4 w-4" />
+            Attach socials/contact
+          </span>
+          {isContactOpen ? (
+            <ChevronUp aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <ChevronDown aria-hidden="true" className="h-4 w-4" />
+          )}
+        </BakeryPressable>
+
+        {isContactOpen ? (
+          <div className="reviewsContactFields" id="reviews-contact-fields">
+            <label>
+              Email <span>optional, private</span>
+              <input name="customerEmail" placeholder="you@example.com" type="email" />
+            </label>
+            <div className="reviewsContactField">
+              <label htmlFor="review-instagram">
+                Instagram <span>optional</span>
+              </label>
+              <input id="review-instagram" name="instagramHandle" placeholder="@yourhandle" />
+              <label className="reviewsVisibilityToggle" htmlFor="review-instagram-public">
+                <input id="review-instagram-public" name="instagramHandlePublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+            <div className="reviewsContactField">
+              <label htmlFor="review-linkedin">
+                LinkedIn <span>optional</span>
+              </label>
+              <input
+                id="review-linkedin"
+                name="linkedinUrl"
+                placeholder="https://www.linkedin.com/in/..."
+                type="url"
+              />
+              <label className="reviewsVisibilityToggle" htmlFor="review-linkedin-public">
+                <input id="review-linkedin-public" name="linkedinUrlPublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+            <div className="reviewsContactField">
+              <label htmlFor="review-discord">
+                Discord <span>optional</span>
+              </label>
+              <input id="review-discord" name="discordUsername" placeholder="yourname" />
+              <label className="reviewsVisibilityToggle" htmlFor="review-discord-public">
+                <input id="review-discord-public" name="discordUsernamePublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+            <div className="reviewsContactField">
+              <label htmlFor="review-league">
+                League username <span>optional</span>
+              </label>
+              <input id="review-league" name="leagueUsername" placeholder="Summoner or Riot ID" />
+              <label className="reviewsVisibilityToggle" htmlFor="review-league-public">
+                <input id="review-league-public" name="leagueUsernamePublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+            <div className="reviewsContactField">
+              <label htmlFor="review-nintendo">
+                Nintendo ID <span>optional</span>
+              </label>
+              <input
+                id="review-nintendo"
+                name="nintendoId"
+                placeholder="Nintendo ID or friend code"
+              />
+              <label className="reviewsVisibilityToggle" htmlFor="review-nintendo-public">
+                <input id="review-nintendo-public" name="nintendoIdPublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+            <div className="reviewsContactField">
+              <label htmlFor="review-ptcg">
+                PTCG ID <span>optional</span>
+              </label>
+              <input id="review-ptcg" name="ptcgId" placeholder="PTCG ID" />
+              <label className="reviewsVisibilityToggle" htmlFor="review-ptcg-public">
+                <input id="review-ptcg-public" name="ptcgIdPublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+            <div className="reviewsContactField">
+              <label htmlFor="review-other-contact">
+                Other contact <span>optional</span>
+              </label>
+              <textarea
+                id="review-other-contact"
+                name="otherContact"
+                placeholder="Anything else the bakery can use to reach you."
+                rows={3}
+              />
+              <label className="reviewsVisibilityToggle" htmlFor="review-other-contact-public">
+                <input id="review-other-contact-public" name="otherContactPublic" type="checkbox" />
+                <span>Show on public review</span>
+              </label>
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       {notice ? <p className="reviewsNotice">{notice}</p> : null}
 
@@ -331,6 +453,32 @@ function ReviewCard({ review }: { review: PublicReview }) {
         </div>
 
         <p className="reviewBody">{review.body}</p>
+
+        {review.publicSocials.length ? (
+          <div className="reviewPublicSocials" aria-label="Public reviewer links">
+            {review.publicSocials.map((social) =>
+              social.href ? (
+                <a
+                  className="reviewPublicSocial"
+                  href={social.href}
+                  key={`${social.label}-${social.value}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <AtSign aria-hidden="true" className="h-3.5 w-3.5" />
+                  <span>{social.label}</span>
+                  <strong>{social.value}</strong>
+                </a>
+              ) : (
+                <span className="reviewPublicSocial" key={`${social.label}-${social.value}`}>
+                  <AtSign aria-hidden="true" className="h-3.5 w-3.5" />
+                  <span>{social.label}</span>
+                  <strong>{social.value}</strong>
+                </span>
+              ),
+            )}
+          </div>
+        ) : null}
 
         {isExpanded && review.photos.length ? (
           <div className="reviewPhotos">

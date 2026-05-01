@@ -10,21 +10,33 @@ type LoosePayload = Payload & {
 
 const MAX_PHOTOS = 4
 const MAX_PHOTO_SIZE = 6 * 1024 * 1024
+const MAX_OTHER_CONTACT_LENGTH = 800
 const ALLOW_PUBLIC_REVIEW_PHOTO_UPLOADS = false
 
-const cleanText = (value: FormDataEntryValue | null, fallback = '') => {
-  return typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : fallback
+const cleanText = (value: FormDataEntryValue | null, fallback = '', maxLength = 240) => {
+  const text = typeof value === 'string' ? value : fallback
+  return text.replace(/\s+/g, ' ').trim().slice(0, maxLength)
 }
 
 const cleanLongText = (value: FormDataEntryValue | null) => {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-const getRating = (value: FormDataEntryValue | null) => {
-  const rating = Number(typeof value === 'string' ? value : 0)
-  if (!Number.isFinite(rating)) return 0
-  return Math.max(1, Math.min(5, Math.round(rating * 2) / 2))
+const cleanOptionalUrl = (value: FormDataEntryValue | null) => {
+  const text = cleanText(value, '', 500)
+  if (!text) return ''
+  return /^https?:\/\//i.test(text) ? text : `https://${text}`
 }
+
+const cleanInstagramHandle = (value: FormDataEntryValue | null) => {
+  const text = cleanText(value, '', 80)
+  if (!text) return ''
+  return text.startsWith('@') ? text : `@${text.replace(/^@+/, '')}`
+}
+
+const cleanOptionalSocialID = (value: FormDataEntryValue | null) => cleanText(value, '', 120)
+
+const cleanCheckbox = (value: FormDataEntryValue | null) => value === 'on' || value === 'true'
 
 const escapeHTML = (value: unknown) =>
   String(value ?? '')
@@ -80,21 +92,47 @@ const sendOwnerReviewNotification = async ({
   const customerName =
     typeof review.customerName === 'string' ? review.customerName : 'Bakery guest'
   const customerEmail = typeof review.customerEmail === 'string' ? review.customerEmail : ''
+  const instagramHandle =
+    typeof review.instagramHandle === 'string' ? review.instagramHandle.trim() : ''
+  const linkedinUrl = typeof review.linkedinUrl === 'string' ? review.linkedinUrl.trim() : ''
+  const discordUsername =
+    typeof review.discordUsername === 'string' ? review.discordUsername.trim() : ''
+  const leagueUsername =
+    typeof review.leagueUsername === 'string' ? review.leagueUsername.trim() : ''
+  const nintendoId = typeof review.nintendoId === 'string' ? review.nintendoId.trim() : ''
+  const ptcgId = typeof review.ptcgId === 'string' ? review.ptcgId.trim() : ''
+  const otherContact = typeof review.otherContact === 'string' ? review.otherContact.trim() : ''
+  const instagramVisibility = review.instagramHandlePublic ? 'public' : 'private'
+  const linkedinVisibility = review.linkedinUrlPublic ? 'public' : 'private'
+  const discordVisibility = review.discordUsernamePublic ? 'public' : 'private'
+  const leagueVisibility = review.leagueUsernamePublic ? 'public' : 'private'
+  const nintendoVisibility = review.nintendoIdPublic ? 'public' : 'private'
+  const ptcgVisibility = review.ptcgIdPublic ? 'public' : 'private'
+  const otherContactVisibility = review.otherContactPublic ? 'public' : 'private'
   const title = typeof review.title === 'string' ? review.title : 'Untitled review'
   const body = typeof review.body === 'string' ? review.body : ''
   const visitContext = typeof review.visitContext === 'string' ? review.visitContext : ''
   const reviewTone = review.reviewTone === 'suggestion' ? 'Suggestion' : 'Loved it'
-  const rating = typeof review.rating === 'number' ? review.rating : 'Not recorded'
-  const subject = `New ${companyName} review awaiting approval - ${title}`
+  const subject = `New published ${companyName} review - ${title}`
+
+  const contactLines = [
+    customerEmail ? `Customer email: ${customerEmail}` : null,
+    instagramHandle ? `Instagram (${instagramVisibility}): ${instagramHandle}` : null,
+    linkedinUrl ? `LinkedIn (${linkedinVisibility}): ${linkedinUrl}` : null,
+    discordUsername ? `Discord (${discordVisibility}): ${discordUsername}` : null,
+    leagueUsername ? `League (${leagueVisibility}): ${leagueUsername}` : null,
+    nintendoId ? `Nintendo ID (${nintendoVisibility}): ${nintendoId}` : null,
+    ptcgId ? `PTCG ID (${ptcgVisibility}): ${ptcgId}` : null,
+    otherContact ? `Other contact (${otherContactVisibility}): ${otherContact}` : null,
+  ].filter((line): line is string => typeof line === 'string')
 
   const text = [
-    `New review awaiting approval for ${companyName}`,
+    `New published review for ${companyName}`,
     '',
     `Title: ${title}`,
-    `Rating: ${rating}`,
     `Tone: ${reviewTone}`,
     `Customer: ${customerName}`,
-    customerEmail ? `Customer email: ${customerEmail}` : null,
+    ...contactLines,
     visitContext ? `Visit context: ${visitContext}` : null,
     `Submitted: ${submittedAt}`,
     '',
@@ -107,12 +145,18 @@ const sendOwnerReviewNotification = async ({
     .join('\n')
 
   const html = `
-    <h1>New review awaiting approval</h1>
+    <h1>New published review</h1>
     <p><strong>Title:</strong> ${escapeHTML(title)}</p>
-    <p><strong>Rating:</strong> ${escapeHTML(rating)}</p>
     <p><strong>Tone:</strong> ${escapeHTML(reviewTone)}</p>
     <p><strong>Customer:</strong> ${escapeHTML(customerName)}</p>
     ${customerEmail ? `<p><strong>Customer email:</strong> ${escapeHTML(customerEmail)}</p>` : ''}
+    ${instagramHandle ? `<p><strong>Instagram (${escapeHTML(instagramVisibility)}):</strong> ${escapeHTML(instagramHandle)}</p>` : ''}
+    ${linkedinUrl ? `<p><strong>LinkedIn (${escapeHTML(linkedinVisibility)}):</strong> ${escapeHTML(linkedinUrl)}</p>` : ''}
+    ${discordUsername ? `<p><strong>Discord (${escapeHTML(discordVisibility)}):</strong> ${escapeHTML(discordUsername)}</p>` : ''}
+    ${leagueUsername ? `<p><strong>League (${escapeHTML(leagueVisibility)}):</strong> ${escapeHTML(leagueUsername)}</p>` : ''}
+    ${nintendoId ? `<p><strong>Nintendo ID (${escapeHTML(nintendoVisibility)}):</strong> ${escapeHTML(nintendoId)}</p>` : ''}
+    ${ptcgId ? `<p><strong>PTCG ID (${escapeHTML(ptcgVisibility)}):</strong> ${escapeHTML(ptcgId)}</p>` : ''}
+    ${otherContact ? `<p><strong>Other contact (${escapeHTML(otherContactVisibility)}):</strong> ${escapeHTML(otherContact).replace(/\n/g, '<br />')}</p>` : ''}
     ${visitContext ? `<p><strong>Visit context:</strong> ${escapeHTML(visitContext)}</p>` : ''}
     <p><strong>Submitted:</strong> ${escapeHTML(submittedAt)}</p>
     <h2>Review</h2>
@@ -136,27 +180,45 @@ export const createReviewSubmission = async ({
   formData: FormData
   payload: Payload
 }) => {
-  const customerName = cleanText(formData.get('customerName'), 'Bakery guest')
+  const customerName = cleanText(formData.get('customerName')) || 'Bakery guest'
   const customerEmail = cleanText(formData.get('customerEmail'))
+  const instagramHandle = cleanInstagramHandle(formData.get('instagramHandle'))
+  const instagramHandlePublic = Boolean(
+    instagramHandle && cleanCheckbox(formData.get('instagramHandlePublic')),
+  )
+  const linkedinUrl = cleanOptionalUrl(formData.get('linkedinUrl'))
+  const linkedinUrlPublic = Boolean(linkedinUrl && cleanCheckbox(formData.get('linkedinUrlPublic')))
+  const discordUsername = cleanOptionalSocialID(formData.get('discordUsername'))
+  const discordUsernamePublic = Boolean(
+    discordUsername && cleanCheckbox(formData.get('discordUsernamePublic')),
+  )
+  const leagueUsername = cleanOptionalSocialID(formData.get('leagueUsername'))
+  const leagueUsernamePublic = Boolean(
+    leagueUsername && cleanCheckbox(formData.get('leagueUsernamePublic')),
+  )
+  const nintendoId = cleanOptionalSocialID(formData.get('nintendoId'))
+  const nintendoIdPublic = Boolean(nintendoId && cleanCheckbox(formData.get('nintendoIdPublic')))
+  const ptcgId = cleanOptionalSocialID(formData.get('ptcgId'))
+  const ptcgIdPublic = Boolean(ptcgId && cleanCheckbox(formData.get('ptcgIdPublic')))
+  const otherContact = cleanLongText(formData.get('otherContact')).slice(
+    0,
+    MAX_OTHER_CONTACT_LENGTH,
+  )
+  const otherContactPublic = Boolean(
+    otherContact && cleanCheckbox(formData.get('otherContactPublic')),
+  )
   const title = cleanText(formData.get('title'))
   const body = cleanLongText(formData.get('body'))
   const visitContext = cleanText(formData.get('visitContext'))
   const reviewTone =
     cleanText(formData.get('reviewTone')) === 'suggestion' ? 'suggestion' : 'loved_it'
-  const rating = getRating(formData.get('rating'))
 
-  if (!title || title.length < 3) {
-    throw Object.assign(new Error('Please add a short review title.'), { status: 400 })
+  if (!title) {
+    throw Object.assign(new Error('Please add a review title.'), { status: 400 })
   }
 
-  if (!body || body.length < 12) {
-    throw Object.assign(new Error('Please write a little more detail in the review.'), {
-      status: 400,
-    })
-  }
-
-  if (!rating) {
-    throw Object.assign(new Error('Please choose a rating from 1 to 5.'), { status: 400 })
+  if (!body) {
+    throw Object.assign(new Error('Please write your review.'), { status: 400 })
   }
 
   const photoFiles = formData
@@ -200,9 +262,22 @@ export const createReviewSubmission = async ({
       body,
       customerEmail: customerEmail || undefined,
       customerName,
+      instagramHandle: instagramHandle || undefined,
+      instagramHandlePublic,
+      linkedinUrl: linkedinUrl || undefined,
+      linkedinUrlPublic,
+      discordUsername: discordUsername || undefined,
+      discordUsernamePublic,
+      leagueUsername: leagueUsername || undefined,
+      leagueUsernamePublic,
+      nintendoId: nintendoId || undefined,
+      nintendoIdPublic,
+      ptcgId: ptcgId || undefined,
+      ptcgIdPublic,
+      otherContact: otherContact || undefined,
+      otherContactPublic,
       photos: photoIds,
-      publicStatus: 'under_review',
-      rating,
+      publicStatus: 'published',
       reviewTone,
       responseStatus: 'listening',
       tenantId: REVIEW_TENANT_ID,

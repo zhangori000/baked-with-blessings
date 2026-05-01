@@ -7,7 +7,9 @@ import { getServerSideURL } from '@/utilities/getURL'
 export const SKIP_OWNER_ORDER_NOTIFICATION = 'skipOwnerOrderNotification'
 
 type OrderWithOwnerNotification = Order & {
+  manualPaymentMethod?: null | string
   ownerNotificationSentAt?: null | string
+  stripePaymentIntentID?: null | string
 }
 
 type SendOwnerOrderNotificationArgs = {
@@ -159,15 +161,30 @@ export const sendOwnerOrderNotification = async ({
   const addressLines = getAddressLines(order)
   const itemLines = getItemLines(order)
   const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString('en-US') : 'Unknown'
-  const subject = `New ${companyName} order #${order.id} - ${total}`
+  const isManualVenmoOrder = order.manualPaymentMethod === 'venmo'
+  const paymentLines = isManualVenmoOrder
+    ? [
+        'Payment method: Venmo',
+        `Venmo handle shown to customer: ${order.manualPaymentHandle || '@bakedwithblessings'}`,
+        `Manual payment status: ${order.manualPaymentStatus || 'reported_sent'}`,
+        `Customer clicked sent at: ${
+          order.manualPaymentReportedAt
+            ? new Date(order.manualPaymentReportedAt).toLocaleString('en-US')
+            : 'Not recorded'
+        }`,
+        'Important: verify the Venmo payment manually before treating this as paid.',
+      ]
+    : [`Stripe PaymentIntent: ${order.stripePaymentIntentID || 'Not recorded'}`]
+  const subjectPrefix = isManualVenmoOrder ? 'Venmo order reported' : 'New order'
+  const subject = `${companyName} ${subjectPrefix.toLowerCase()} #${order.id} - ${total}`
 
   const text = [
-    `New order #${order.id}`,
+    `${subjectPrefix} #${order.id}`,
     '',
     `Total: ${total}`,
     `Status: ${order.status || 'unknown'}`,
     `Created: ${createdAt}`,
-    `Stripe PaymentIntent: ${order.stripePaymentIntentID || 'Not recorded'}`,
+    ...paymentLines,
     '',
     'Customer contact',
     ...contactLines,
@@ -182,11 +199,12 @@ export const sendOwnerOrderNotification = async ({
   ].join('\n')
 
   const html = `
-    <h1>New order #${escapeHTML(order.id)}</h1>
+    <h1>${escapeHTML(subjectPrefix)} #${escapeHTML(order.id)}</h1>
     <p><strong>Total:</strong> ${escapeHTML(total)}</p>
     <p><strong>Status:</strong> ${escapeHTML(order.status || 'unknown')}</p>
     <p><strong>Created:</strong> ${escapeHTML(createdAt)}</p>
-    <p><strong>Stripe PaymentIntent:</strong> ${escapeHTML(order.stripePaymentIntentID || 'Not recorded')}</p>
+    <h2>Payment</h2>
+    ${getHTMLList(paymentLines)}
 
     <h2>Customer contact</h2>
     ${getHTMLList(contactLines)}
@@ -222,7 +240,10 @@ export const sendOwnerOrderNotificationAfterChange: CollectionAfterChangeHook = 
 
   const order = doc as OrderWithOwnerNotification
 
-  if (order.ownerNotificationSentAt || !order.stripePaymentIntentID) {
+  if (
+    order.ownerNotificationSentAt ||
+    (!order.stripePaymentIntentID && !order.manualPaymentMethod)
+  ) {
     return doc
   }
 

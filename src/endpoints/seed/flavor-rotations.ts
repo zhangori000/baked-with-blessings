@@ -30,7 +30,7 @@ export const seedFlavorRotation = async ({
       individualFlavorSlots: 3,
       individualFlavors: initialMonthlyFlavors,
       lockedDescription:
-        'This flavor is outside the current rotation, but you can still order it in batches of 10, mini or regular size, from the menu.',
+        'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
       lockedLabel: 'Catering only this month',
       menuLinkLabel: 'View menu',
       monthlyFlavorLabel: "This month's flavor",

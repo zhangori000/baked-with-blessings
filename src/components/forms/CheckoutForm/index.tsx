@@ -204,6 +204,47 @@ export const CheckoutForm: React.FC<Props> = ({
   const [isConfirmingOrder, setIsConfirmingOrder] = React.useState(false)
   const { clearSession } = useEcommerce()
   const { confirmOrder } = usePayments()
+  const billingCity = billingAddress?.city || undefined
+  const billingCountry = billingAddress?.country || undefined
+  const billingLine1 = billingAddress?.addressLine1 || undefined
+  const billingLine2 = billingAddress?.addressLine2 || undefined
+  const billingPhone = billingAddress?.phone || customerPhone || undefined
+  const billingPostalCode = billingAddress?.postalCode || undefined
+  const billingState = billingAddress?.state || undefined
+
+  const paymentElementOptions = React.useMemo(
+    () => ({
+      defaultValues: {
+        billingDetails: {
+          address: {
+            city: billingCity,
+            country: billingCountry,
+            line1: billingLine1,
+            line2: billingLine2,
+            postal_code: billingPostalCode,
+            state: billingState,
+          },
+          email: customerEmail || undefined,
+          phone: billingPhone,
+        },
+      },
+      layout: {
+        defaultCollapsed: false,
+        type: 'tabs' as const,
+      },
+      paymentMethodOrder: ['card', 'link'],
+    }),
+    [
+      billingCity,
+      billingCountry,
+      billingLine1,
+      billingLine2,
+      billingPhone,
+      billingPostalCode,
+      billingState,
+      customerEmail,
+    ],
+  )
 
   const stopLoading = () => {
     setIsLoading(false)
@@ -247,14 +288,14 @@ export const CheckoutForm: React.FC<Props> = ({
           payment_method_data: {
             billing_details: {
               email: customerEmail || undefined,
-              phone: billingAddress?.phone || customerPhone || undefined,
+              phone: billingPhone,
               address: {
-                line1: billingAddress?.addressLine1,
-                line2: billingAddress?.addressLine2,
-                city: billingAddress?.city,
-                state: billingAddress?.state,
-                postal_code: billingAddress?.postalCode,
-                country: billingAddress?.country,
+                city: billingCity,
+                country: billingCountry,
+                line1: billingLine1,
+                line2: billingLine2,
+                postal_code: billingPostalCode,
+                state: billingState,
               },
             },
           },
@@ -313,11 +354,24 @@ export const CheckoutForm: React.FC<Props> = ({
             }
           }
         } catch (err) {
-          console.log({ err })
           const msg = err instanceof Error ? err.message : 'Something went wrong.'
           setError(`Error while confirming order: ${msg}`)
           stopLoading()
         }
+        return
+      }
+
+      if (paymentIntent?.status === 'processing') {
+        setError(
+          'Stripe is still processing this payment. Keep this cart open for a moment; if your card is charged, do not submit a second payment.',
+        )
+        stopLoading()
+        return
+      }
+
+      if (paymentIntent?.status === 'requires_action') {
+        setError('Stripe needs one more verification step. Complete it in the Stripe panel above.')
+        stopLoading()
         return
       }
 
@@ -342,7 +396,13 @@ export const CheckoutForm: React.FC<Props> = ({
               : 'pointer-events-none absolute inset-0 opacity-0'
           }
         >
-          <PaymentElement onReady={() => setIsPaymentElementReady(true)} />
+          <p className="mb-3 text-sm leading-6 text-black/60">
+            Choose Card in the Stripe panel if Link opens first or asks for a text code.
+          </p>
+          <PaymentElement
+            onReady={() => setIsPaymentElementReady(true)}
+            options={paymentElementOptions}
+          />
         </div>
       </div>
       <div className="mt-8 flex gap-4">
@@ -351,7 +411,11 @@ export const CheckoutForm: React.FC<Props> = ({
           type="submit"
           variant="default"
         >
-          {isLoading ? (isConfirmingOrder ? 'Creating order...' : 'Confirming payment...') : 'Pay now'}
+          {isLoading
+            ? isConfirmingOrder
+              ? 'Creating order...'
+              : 'Confirming payment...'
+            : 'Pay now'}
         </Button>
       </div>
     </form>

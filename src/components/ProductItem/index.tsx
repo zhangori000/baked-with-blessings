@@ -72,11 +72,11 @@ export const ProductItem: React.FC<Props> = ({
           )}
         </div>
       </BakeryCard>
-      <div className="flex grow justify-between items-center">
+      <div className="flex grow items-center justify-between gap-4 text-[#4b421d]">
         <div className="flex flex-col gap-1">
-          <p className="font-medium text-lg">{title}</p>
+          <p className="text-lg font-semibold leading-6 text-[#4b421d]">{title}</p>
           {variant && (
-            <p className="text-sm font-mono text-primary/50 tracking-widest">
+            <p className="font-mono text-sm font-bold tracking-widest text-[#6f7a38]">
               {variant.options
                 ?.map((option) => {
                   if (typeof option === 'object') return option.label
@@ -93,9 +93,9 @@ export const ProductItem: React.FC<Props> = ({
 
         {itemPrice && quantity && (
           <div className="text-right">
-            <p className="font-medium text-lg">Subtotal</p>
+            <p className="text-lg font-semibold text-[#4b421d]">Subtotal</p>
             <Price
-              className="font-mono text-primary/50 text-sm"
+              className="font-mono text-sm font-bold text-[#6f7a38]"
               amount={itemPrice * quantity}
               currencyCode={currencyCode}
             />
