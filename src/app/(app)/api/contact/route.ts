@@ -1,4 +1,5 @@
 import config from '@/payload.config'
+import { getFirstConfiguredEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getPayload } from 'payload'
 
@@ -39,7 +40,10 @@ const escapeHTML = (value: unknown) =>
     .replace(/'/g, '&#39;')
 
 const getOwnerContactEmail = () =>
-  process.env.CONTACT_NOTIFICATION_TO?.trim() || process.env.ORDER_NOTIFICATION_TO?.trim() || ''
+  getFirstConfiguredEmailRecipients(
+    process.env.CONTACT_NOTIFICATION_TO,
+    process.env.ORDER_NOTIFICATION_TO,
+  )
 
 export const POST = async (request: Request) => {
   const payload = await getPayload({ config })
@@ -59,7 +63,7 @@ export const POST = async (request: Request) => {
     const message = cleanMultilineText(input.message, 3000)
     const ownerEmail = getOwnerContactEmail()
 
-    if (!ownerEmail) {
+    if (!ownerEmail.length) {
       throw new ContactSubmissionError(
         'The contact email is not configured yet. Set CONTACT_NOTIFICATION_TO or ORDER_NOTIFICATION_TO.',
         503,

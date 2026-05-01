@@ -711,7 +711,7 @@ const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly Landsca
 
 const persuasionSheep = [{ left: '89%', src: '/catering/decor/sheep-grin.svg' }] as const
 
-const buildPersuasionHeading = () => 'Honest persuasion...'
+const buildPersuasionHeading = () => 'Random notes you can read...'
 
 const buildPersuasionCopy = (_product: Partial<Product>, summary: string) => {
   if (summary.trim()) {
@@ -823,9 +823,9 @@ export const preloadSceneryAssets = (sceneryTone: MenuSceneryTone) => {
     return
   }
 
-  const sources = Array.from(new Set(collectSceneryAssetSources(sceneryTone).filter(Boolean))).filter(
-    (source) => !preloadedSceneryAssets.has(source),
-  )
+  const sources = Array.from(
+    new Set(collectSceneryAssetSources(sceneryTone).filter(Boolean)),
+  ).filter((source) => !preloadedSceneryAssets.has(source))
 
   if (sources.length === 0) {
     return

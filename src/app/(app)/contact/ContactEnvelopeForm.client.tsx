@@ -43,6 +43,25 @@ const emptyFormValues: ContactFormValues = {
 }
 
 const instagramHref = 'https://www.instagram.com/_bakedwithblessings/'
+const tiktokHref = 'https://www.tiktok.com/@bakedwithblessings'
+
+const linkedInLinks = [
+  {
+    href: 'https://www.linkedin.com/in/kayla-luo338/',
+    label: 'Kayla Luo',
+    meta: 'Co-owner',
+  },
+  {
+    href: 'https://www.linkedin.com/in/angieluo338/',
+    label: 'Angie Luo',
+    meta: 'Co-owner',
+  },
+  {
+    href: 'https://www.linkedin.com/in/zhangori000/',
+    label: 'Orien Zhang',
+    meta: 'Developer',
+  },
+]
 
 function TikTokIcon(props: React.ComponentProps<'svg'>) {
   return (
@@ -234,7 +253,7 @@ export function ContactEnvelopeForm({ initialSceneryTone = 'dawn' }: ContactEnve
 
             <a
               className="contactOptionCard contactOptionCard-tiktok"
-              href="https://www.tiktok.com/"
+              href={tiktokHref}
               rel="noreferrer"
               target="_blank"
             >
@@ -243,30 +262,33 @@ export function ContactEnvelopeForm({ initialSceneryTone = 'dawn' }: ContactEnve
               </span>
               <span className="contactOptionCopy">
                 <span className="contactOptionLabel">TikTok</span>
-                <span className="contactOptionMeta">Short updates</span>
+                <span className="contactOptionMeta">@bakedwithblessings</span>
               </span>
               <span className="contactOptionAction" aria-hidden="true">
                 <ExternalLink size={15} />
               </span>
             </a>
 
-            <a
-              className="contactOptionCard contactOptionCard-linkedin"
-              href="https://www.linkedin.com/"
-              rel="noreferrer"
-              target="_blank"
-            >
-              <span className="contactOptionIcon" aria-hidden="true">
-                <Linkedin size={22} />
-              </span>
-              <span className="contactOptionCopy">
-                <span className="contactOptionLabel">LinkedIn</span>
-                <span className="contactOptionMeta">Business updates</span>
-              </span>
-              <span className="contactOptionAction" aria-hidden="true">
-                <ExternalLink size={15} />
-              </span>
-            </a>
+            {linkedInLinks.map(({ href, label, meta }) => (
+              <a
+                className="contactOptionCard contactOptionCard-linkedin"
+                href={href}
+                key={href}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <span className="contactOptionIcon" aria-hidden="true">
+                  <Linkedin size={22} />
+                </span>
+                <span className="contactOptionCopy">
+                  <span className="contactOptionLabel">{label}</span>
+                  <span className="contactOptionMeta">{meta}</span>
+                </span>
+                <span className="contactOptionAction" aria-hidden="true">
+                  <ExternalLink size={15} />
+                </span>
+              </a>
+            ))}
 
             <BakeryPressable
               className="contactOptionCard contactOptionCard-mailbox"

@@ -28,6 +28,22 @@ type FooterClientProps = {
 }
 
 const instagramHref = 'https://www.instagram.com/_bakedwithblessings/'
+const tiktokHref = 'https://www.tiktok.com/@bakedwithblessings'
+
+const linkedInLinks = [
+  {
+    href: 'https://www.linkedin.com/in/kayla-luo338/',
+    label: 'Kayla',
+  },
+  {
+    href: 'https://www.linkedin.com/in/angieluo338/',
+    label: 'Angie',
+  },
+  {
+    href: 'https://www.linkedin.com/in/zhangori000/',
+    label: 'Developer',
+  },
+]
 
 const getFooterLinkLabel = (linkProps: Record<string, unknown>) =>
   typeof linkProps.label === 'string' ? linkProps.label.trim() : ''
@@ -86,20 +102,19 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
 
   const socialLinks = [
     {
-      href: 'https://www.linkedin.com/',
-      icon: Linkedin,
-      label: 'LinkedIn',
-    },
-    {
       href: instagramHref,
       icon: Instagram,
       label: 'Instagram',
     },
     {
-      href: 'https://www.tiktok.com/',
+      href: tiktokHref,
       icon: TikTokIcon,
       label: 'TikTok',
     },
+    ...linkedInLinks.map((link) => ({
+      ...link,
+      icon: Linkedin,
+    })),
   ]
 
   return (
