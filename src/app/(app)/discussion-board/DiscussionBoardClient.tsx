@@ -188,7 +188,7 @@ const getVisibleEdgeGroups = (edges: DiscussionBoardEdge[]) => {
 export function DiscussionBoardClient({
   initialData,
   initialFocusedNodeId,
-  initialSceneryTone = 'classic',
+  initialSceneryTone = 'dawn',
   initialTopicId,
 }: Props) {
   const router = useRouter()

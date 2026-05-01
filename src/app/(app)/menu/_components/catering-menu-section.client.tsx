@@ -461,7 +461,7 @@ function CateringMenuRow({
 }
 
 export function CateringMenuSection({
-  initialSceneryTone = 'classic',
+  initialSceneryTone = 'dawn',
   products,
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
@@ -1662,8 +1662,55 @@ export function CateringMenuSection({
             object-position: 28% top;
           }
 
+          .cateringPersuasionFrame {
+            --catering-persuasion-panel-min-height: 37rem;
+          }
+
+          .cateringPersuasionFrame[data-has-gallery='true'] {
+            --catering-persuasion-panel-min-height: 39rem;
+          }
+
           .cateringPersuasionPanel {
             padding-inline: 1rem;
+          }
+
+          .cateringPanelForeground {
+            padding-bottom: 10.8rem;
+          }
+
+          .cateringPanelActionRow {
+            display: grid !important;
+            gap: 0.5rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 100%;
+            width: 100%;
+          }
+
+          .cateringPanelActionRow .cateringActionButtonWrap {
+            display: flex;
+            flex: none;
+            min-width: 0;
+            width: 100%;
+          }
+
+          .cateringPanelActionRow .cateringActionButtonWrap > .cateringSpawnButton {
+            font-size: clamp(0.72rem, 3vw, 0.8rem);
+            letter-spacing: 0;
+            min-height: 2.5rem;
+            padding-inline: 0.54rem;
+            white-space: nowrap;
+            width: 100%;
+          }
+
+          .cateringPanelActionRow .cateringPhotosButton {
+            gap: 0.32rem;
+            padding: 0.48rem 0.54rem 0.5rem;
+          }
+
+          .cateringPanelActionRow .cateringPhotosButtonIcon {
+            height: 1.08rem;
+            transform: translateY(-0.16rem);
+            width: 1.34rem;
           }
 
           .cateringPersuasionFlower {
@@ -1708,6 +1755,31 @@ export function CateringMenuSection({
 
           .cateringPortionInline {
             font-size: 0.76rem;
+          }
+        }
+
+        @media (max-width: 430px) {
+          .cateringPersuasionFrame {
+            --catering-persuasion-panel-min-height: 38.25rem;
+          }
+
+          .cateringPersuasionFrame[data-has-gallery='true'] {
+            --catering-persuasion-panel-min-height: 40.25rem;
+          }
+
+          .cateringPersuasionHeading {
+            font-size: clamp(1.5rem, 6.2vw, 1.82rem);
+            letter-spacing: 0;
+            line-height: 1.04;
+          }
+
+          .cateringPersuasionBody :is(p, li) {
+            font-size: 0.9rem;
+            line-height: 1.62;
+          }
+
+          .cateringPanelForeground {
+            padding-bottom: 11rem;
           }
         }
       `}</style>

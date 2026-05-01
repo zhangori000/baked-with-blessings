@@ -634,6 +634,43 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             }
           }
 
+          @media (max-width: 639px), (max-height: 760px) {
+            .cartModalHeaderScene {
+              height: clamp(5.25rem, 16svh, 6.75rem);
+              min-height: clamp(5.25rem, 16svh, 6.75rem);
+            }
+
+            .cartModalHeaderTitle {
+              font-size: clamp(1.75rem, 8vw, 2.35rem);
+            }
+
+            .cartAuthPanelSurface {
+              padding: 1rem !important;
+            }
+
+            .cartAuthPanelSurface.space-y-5 > :not([hidden]) ~ :not([hidden]) {
+              --tw-space-y-reverse: 0;
+              margin-bottom: calc(0.85rem * var(--tw-space-y-reverse));
+              margin-top: calc(0.85rem * calc(1 - var(--tw-space-y-reverse)));
+            }
+
+            .cartAuthInput {
+              font-size: 0.9rem;
+              min-height: 2.35rem;
+            }
+
+            .cartAuthLabel {
+              font-size: 0.62rem;
+            }
+
+            .cartAuthSubmitButton {
+              bottom: max(0.3rem, env(safe-area-inset-bottom));
+              min-height: 2.75rem;
+              position: sticky;
+              z-index: 8;
+            }
+          }
+
           @keyframes cartSceneCloudBob {
             0%,
             100% {
@@ -860,7 +897,7 @@ function CartLoginPanel({
 
         <BakeryAction
           block
-          className="cartAuthPrimaryButton h-11 w-full rounded-full"
+          className="cartAuthPrimaryButton cartAuthSubmitButton h-11 w-full rounded-full"
           disabled={isSubmitting}
           size="md"
           type="submit"
@@ -1112,7 +1149,7 @@ function CartSignupPanel({
 
         <BakeryAction
           block
-          className="cartAuthPrimaryButton h-11 w-full rounded-full"
+          className="cartAuthPrimaryButton cartAuthSubmitButton h-11 w-full rounded-full"
           disabled={isSubmitting}
           size="md"
           type="submit"

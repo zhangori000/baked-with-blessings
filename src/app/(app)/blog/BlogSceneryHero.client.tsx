@@ -19,7 +19,7 @@ type BlogSceneryHeroProps = {
 
 export function BlogSceneryHero({
   eyebrow,
-  initialSceneryTone = 'classic',
+  initialSceneryTone = 'dawn',
   summary,
   title,
 }: BlogSceneryHeroProps) {

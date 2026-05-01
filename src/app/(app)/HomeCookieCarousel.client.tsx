@@ -260,7 +260,7 @@ const buildShowcaseFlowerStyleFromSeed = (
   })
 }
 
-const buildSeededShowcaseFlowers = (sceneTone: SceneTone = 'classic'): ShowcaseSceneFlower[] => {
+const buildSeededShowcaseFlowers = (sceneTone: SceneTone = 'dawn'): ShowcaseSceneFlower[] => {
   return buildSeededMenuSceneAccents(sceneTone).map((accent) => ({
     id: `seed-${sceneTone}-${accent.id}`,
     src: accent.asset,
@@ -728,7 +728,7 @@ function HomeCookieJumpRig({
   )
 }
 export function HomeCookieCarousel({
-  initialSceneryTone = 'classic',
+  initialSceneryTone = 'dawn',
   posters,
   sceneVariant = 'grassland',
 }: HomeCookieCarouselProps) {
@@ -764,6 +764,28 @@ export function HomeCookieCarousel({
   const rigShellRef = useRef<HTMLDivElement | null>(null)
   const sceneFrameRef = useRef<HTMLDivElement | null>(null)
   const transitionFallbackTimeoutRef = useRef<number | null>(null)
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const root = document.documentElement
+    const updateViewportHeight = () => {
+      const visualHeight = window.visualViewport?.height ?? window.innerHeight
+      root.style.setProperty('--home-cookie-viewport-height', `${visualHeight}px`)
+    }
+
+    updateViewportHeight()
+    window.addEventListener('resize', updateViewportHeight)
+    window.visualViewport?.addEventListener('resize', updateViewportHeight)
+    window.visualViewport?.addEventListener('scroll', updateViewportHeight)
+
+    return () => {
+      window.removeEventListener('resize', updateViewportHeight)
+      window.visualViewport?.removeEventListener('resize', updateViewportHeight)
+      window.visualViewport?.removeEventListener('scroll', updateViewportHeight)
+      root.style.removeProperty('--home-cookie-viewport-height')
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -1739,7 +1761,8 @@ export function HomeCookieCarousel({
           background: linear-gradient(to bottom, var(--showcase-sky) 55%, #4a7a3b 100%);
           box-sizing: border-box;
           color: var(--showcase-ink);
-          height: 100svh;
+          height: var(--home-cookie-viewport-height, 100svh);
+          min-height: var(--home-cookie-viewport-height, 100svh);
           overflow: hidden;
         }
 
@@ -1858,7 +1881,7 @@ export function HomeCookieCarousel({
           pointer-events: auto;
           position: absolute;
           right: clamp(0.85rem, 3vw, 2.2rem);
-          top: calc(var(--home-header-underlap) + clamp(0.25rem, 1vw, 0.65rem));
+          top: calc(var(--home-header-underlap) + clamp(0rem, 0.5vw, 0.4rem));
           z-index: 92;
         }
 
@@ -2373,10 +2396,12 @@ export function HomeCookieCarousel({
           font-size: 1rem;
           font-weight: 650;
           line-height: 1.34;
+          margin-right: 2.35rem;
           min-height: 0;
           overflow-y: auto;
-          padding-right: 2rem;
+          padding-right: 0.65rem;
           position: relative;
+          scrollbar-gutter: stable;
           z-index: 1;
         }
 
@@ -2406,6 +2431,7 @@ export function HomeCookieCarousel({
           height: 1.7rem;
           justify-content: center;
           position: absolute;
+          pointer-events: auto;
           right: 0.7rem;
           top: 0.62rem;
           transition:
@@ -2416,7 +2442,7 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieCartPromptClose.homeCookieInfoPromptClose {
-          z-index: 3;
+          z-index: 6;
         }
 
         .homeCookieCartPromptClose:hover,
@@ -2718,7 +2744,7 @@ export function HomeCookieCarousel({
             left: 1.4rem;
             max-width: none;
             right: 1.4rem;
-            top: calc(var(--home-header-underlap) + 0.82rem);
+            top: calc(var(--home-header-underlap) - 1.15rem);
           }
 
           .homeCookieSceneButton {
@@ -2733,6 +2759,25 @@ export function HomeCookieCarousel({
 
           .homeCookieInfoDock--floating {
             display: block;
+          }
+        }
+
+        @media (min-width: 640px) and (max-width: 1040px),
+          (min-width: 640px) and (max-height: 760px) {
+          .homeCookieSceneActions {
+            gap: 0.5rem;
+            top: calc(var(--home-header-underlap) - 1.65rem);
+          }
+
+          .homeCookieSceneButton {
+            font-size: 0.78rem;
+            min-height: 2rem;
+            padding: 0.42rem 0.76rem;
+          }
+
+          .homeCookieInfoButton {
+            min-height: 1.95rem;
+            padding: 0.4rem 0.78rem;
           }
         }
 
@@ -2759,7 +2804,7 @@ export function HomeCookieCarousel({
             left: 1.4rem;
             max-width: none;
             right: 1.4rem;
-            top: calc(var(--home-header-underlap) + 0.82rem);
+            top: calc(var(--home-header-underlap) - 0.45rem);
           }
 
           .homeCookieSceneButton {
@@ -2784,6 +2829,15 @@ export function HomeCookieCarousel({
             font-size: 0.72rem;
             min-height: 1.68rem;
             padding: 0.34rem 0.7rem;
+          }
+
+          .homeCookieInfoPrompt {
+            width: min(31rem, calc(100vw - 1.2rem));
+          }
+
+          .homeCookieInfoPromptBody {
+            margin-right: 2rem;
+            padding-right: 0.5rem;
           }
 
           .homeCookieSceneCloud {

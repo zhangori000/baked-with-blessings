@@ -55,7 +55,7 @@ function TikTokIcon(props: React.ComponentProps<'svg'>) {
   )
 }
 
-export function ContactEnvelopeForm({ initialSceneryTone = 'classic' }: ContactEnvelopeFormProps) {
+export function ContactEnvelopeForm({ initialSceneryTone = 'dawn' }: ContactEnvelopeFormProps) {
   const { announce } = useBakeryAnnouncer()
   const [sceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)

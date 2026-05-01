@@ -66,7 +66,7 @@ const getGoogleMapsSearchUrl = (location: string) => {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
 }
 
-export function BlessingsNetworkClient({ initialData, initialSceneryTone = 'classic' }: Props) {
+export function BlessingsNetworkClient({ initialData, initialSceneryTone = 'dawn' }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<NetworkTab>('questions')
   const [selectedOwnerId, setSelectedOwnerId] = useState<string | null>(null)

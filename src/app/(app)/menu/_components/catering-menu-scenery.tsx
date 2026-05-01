@@ -1525,16 +1525,19 @@ export function PersuasionGardenPanel({
   const isPaintingToDetails = panelTransition === 'to-details'
   const showDetailsFace = !isGalleryFace || isPanelTransitioning
   const showGalleryFace = hasGallery && (isGalleryFace || isPanelTransitioning)
+  const panelMinHeight = hasGallery ? '34rem' : '30rem'
+  const panelMinHeightValue = `var(--catering-persuasion-panel-min-height, ${panelMinHeight})`
 
   return (
     <div
+      data-has-gallery={hasGallery ? 'true' : 'false'}
       data-scene={sceneryTone}
       data-panel-transition={panelTransition}
-      className={cn('relative [perspective:2200px]', classNames?.root)}
+      className={cn('cateringPersuasionFrame relative [perspective:2200px]', classNames?.root)}
       style={
         {
-          minHeight: hasGallery ? '34rem' : '30rem',
-          ['--catering-panel-transition-distance' as string]: hasGallery ? '34rem' : '30rem',
+          minHeight: panelMinHeightValue,
+          ['--catering-panel-transition-distance' as string]: panelMinHeightValue,
           ['--catering-tear-duration' as string]: `${PANEL_WIPE_MS}ms`,
           ['--catering-scene-charge' as string]: `var(--scene-action-aura, ${sceneButtonAuraByScenery[sceneryTone]})`,
           ['--catering-panel-fill' as string]: `var(--scene-panel-fill, ${panelBackgroundByScenery[sceneryTone]})`,
@@ -1544,7 +1547,7 @@ export function PersuasionGardenPanel({
     >
       <div
         className={cn('relative h-full overflow-hidden rounded-[1.45rem]', classNames?.viewport)}
-        style={{ minHeight: hasGallery ? '34rem' : '30rem', ...styles?.viewport }}
+        style={{ minHeight: panelMinHeightValue, ...styles?.viewport }}
       >
         {showDetailsFace ? (
           <BakeryCard

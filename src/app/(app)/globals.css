@@ -243,6 +243,12 @@
     overflow-y: auto;
   }
 
+  @supports (height: 100dvh) {
+    :root {
+      --home-cookie-viewport-height: 100dvh;
+    }
+  }
+
   h1,
   h2,
   h3,
@@ -269,7 +275,8 @@
   main:has(.home-page-placeholder) {
     display: flex;
     flex-direction: column;
-    min-height: 100svh;
+    height: var(--home-cookie-viewport-height, 100svh);
+    min-height: var(--home-cookie-viewport-height, 100svh);
     overflow: hidden;
   }
 
@@ -279,6 +286,21 @@
 
   main:has(.home-page-placeholder) + footer {
     display: none;
+  }
+
+  html:has(.home-page-placeholder),
+  body:has(.home-page-placeholder) {
+    height: var(--home-cookie-viewport-height, 100svh);
+    min-height: var(--home-cookie-viewport-height, 100svh);
+    overflow: hidden;
+    overscroll-behavior-y: none;
+  }
+
+  body:has(.home-page-placeholder) .bakeryThemeRoot,
+  body:has(.home-page-placeholder) .siteFrame {
+    height: var(--home-cookie-viewport-height, 100svh);
+    min-height: var(--home-cookie-viewport-height, 100svh);
+    overflow: hidden;
   }
 
   body:has(.home-page-placeholder) .viewportFlowerField {
@@ -306,7 +328,7 @@
   }
 
   body:has(.home-page-placeholder) .siteFrame {
-    min-height: 100svh;
+    min-height: var(--home-cookie-viewport-height, 100svh);
   }
 
   body:has(.homeCookieScene-moonlit) .siteHeader,

@@ -60,7 +60,7 @@ const getResponseFlowerSrc = (review: PublicReview) => {
   return responseFlowerSources[seed % responseFlowerSources.length] || responseFlowerSources[0]
 }
 
-export function ReviewsClient({ initialData, initialSceneryTone = 'classic' }: Props) {
+export function ReviewsClient({ initialData, initialSceneryTone = 'dawn' }: Props) {
   const router = useRouter()
   const [notice, setNotice] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)

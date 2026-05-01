@@ -124,6 +124,11 @@ const optionalSensitiveRules: EnvRule[] = [
     placeholders: commonPlaceholders,
     sensitiveOnVercel: true,
   },
+  {
+    key: 'RESEND_FROM_EMAIL',
+    note: 'Verified sender address used for outbound email.',
+    placeholders: [...commonPlaceholders, ...localOnlyValues],
+  },
 ]
 
 const errors: string[] = []
@@ -177,6 +182,17 @@ for (const rule of optionalSensitiveRules) {
   if (rule.minLength && value.length < rule.minLength) {
     report(`${rule.key} is configured but shorter than ${rule.minLength} characters.`)
   }
+}
+
+const resendApiKey = getEnvValue('RESEND_API_KEY')
+const resendFromEmail = getEnvValue('RESEND_FROM_EMAIL')
+
+if (resendApiKey && !resendFromEmail) {
+  report('RESEND_FROM_EMAIL is required when RESEND_API_KEY is configured. Payload email falls back without both values.')
+}
+
+if (resendFromEmail && !resendApiKey) {
+  report('RESEND_API_KEY is required when RESEND_FROM_EMAIL is configured. Payload email falls back without both values.')
 }
 
 const allowedPublicEnv = new Set([

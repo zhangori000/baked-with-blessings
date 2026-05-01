@@ -14,7 +14,7 @@ type ContactSceneryHeroProps = {
   initialSceneryTone?: MenuSceneryTone
 }
 
-export function ContactSceneryHero({ initialSceneryTone = 'classic' }: ContactSceneryHeroProps) {
+export function ContactSceneryHero({ initialSceneryTone = 'dawn' }: ContactSceneryHeroProps) {
   const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
   const isSceneChanging = false

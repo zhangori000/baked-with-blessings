@@ -1,4 +1,4 @@
-export const defaultMenuScene = 'classic'
+export const defaultMenuScene = 'dawn'
 
 export const menuSceneLoadingTokens = {
   blossom: {

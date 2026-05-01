@@ -47,7 +47,7 @@ const writeSceneToneCookie = (sceneTone: SceneTone) => {
   )}; Max-Age=${persistentMenuSceneCookieMaxAge}; Path=/; SameSite=Lax`
 }
 
-export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
+export const usePersistentMenuSceneTone = (fallback: SceneTone = 'dawn') => {
   const [sceneTone, setSceneTone] = useState<SceneTone>(fallback)
 
   const syncSceneTone = useCallback((nextTone: SceneTone) => {

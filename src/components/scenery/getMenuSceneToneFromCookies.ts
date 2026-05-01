@@ -8,7 +8,7 @@ const isSceneTone = (value: string): value is SceneTone =>
   menuSceneTones.includes(value as SceneTone)
 
 export const getMenuSceneToneFromCookies = async (
-  fallback: SceneTone = 'classic',
+  fallback: SceneTone = 'dawn',
 ): Promise<SceneTone> => {
   const cookieStore = await cookies()
   const storedTone = cookieStore.get(persistentMenuSceneStorageKey)?.value

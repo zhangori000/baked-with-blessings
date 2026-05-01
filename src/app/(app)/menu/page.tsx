@@ -1,6 +1,7 @@
 import configPromise from '@payload-config'
 import type { Product } from '@/payload-types'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
 import { measureServerStep } from '@/utilities/devTiming'
 import { Cormorant_Garamond } from 'next/font/google'
 import { getPayload } from 'payload'
@@ -16,11 +17,12 @@ const cateringSerif = Cormorant_Garamond({
   weight: ['500', '600', '700'],
 })
 
-export const metadata = {
+export const metadata = buildStaticMetadata({
   description:
     'Browse the catering menu with transparent pricing, expandable item notes, and tray builders for cookies and mini cookies.',
+  path: '/menu',
   title: 'Catering Menu',
-}
+})
 
 const cateringProductSelect = {
   categories: true,
