@@ -5,6 +5,7 @@ import type { CollectionAuthUser } from '@/access/utilities'
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
 
 import { buildCustomerLoginData } from '@/utilities/phone'
+import { toast } from 'sonner'
 
 type StorefrontCustomer = CollectionAuthUser & {
   email?: null | string
@@ -89,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (errors) throw new Error(errors[0].message)
         setUser(user)
         setStatus('loggedIn')
+        toast.success('Signed in. Welcome back.')
         return user as StorefrontCustomer
       }
 
