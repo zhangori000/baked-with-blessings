@@ -85,7 +85,9 @@ const createFallbackReceiptBody = (title: string, chips: string[]): CookieInfoRi
       {
         children: [
           createTextNode('Allergy: ', true),
-          createTextNode('baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.'),
+          createTextNode(
+            'baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.',
+          ),
         ],
         direction: 'ltr',
         format: '',
@@ -168,7 +170,8 @@ const resolvePosterIngredients = (product: Partial<Product>, meta: CookiePosterM
           name: ingredient.name.trim(),
         }
       })
-      .filter((ingredient): ingredient is NonNullable<typeof ingredient> => Boolean(ingredient)) ?? []
+      .filter((ingredient): ingredient is NonNullable<typeof ingredient> => Boolean(ingredient)) ??
+    []
 
   return ingredients.length > 0 ? ingredients : meta.ingredients
 }
@@ -176,10 +179,10 @@ const resolvePosterIngredients = (product: Partial<Product>, meta: CookiePosterM
 const hasReceiptBody = (value: unknown): value is CookieInfoRichText =>
   Boolean(
     value &&
-      typeof value === 'object' &&
-      'root' in value &&
-      value.root &&
-      typeof value.root === 'object',
+    typeof value === 'object' &&
+    'root' in value &&
+    value.root &&
+    typeof value.root === 'object',
   )
 
 const resolvePosterText = ({
@@ -209,7 +212,8 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['BROWN BUTTER', 'FUDGY', 'CHOCOLATE'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['BROWN BUTTER', 'FUDGY', 'CHOCOLATE']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BROOKIE',
     labelTone: '#f2e35b',
@@ -224,11 +228,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['OREO', 'CREAM CHEESE', 'WHITE CHOC'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['OREO', 'CREAM CHEESE', 'WHITE CHOC']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'OREO CHEESECAKE',
     labelTone: '#f08e94',
-    receiptBody: createFallbackReceiptBody('Oreo Cheesecake', ['OREO', 'CREAM CHEESE', 'WHITE CHOC']),
+    receiptBody: createFallbackReceiptBody('Oreo Cheesecake', [
+      'OREO',
+      'CREAM CHEESE',
+      'WHITE CHOC',
+    ]),
     slug: 'oreo-cheesecake',
     subtitle: 'Creamy Oreo center',
     summary: 'Cheesecake filling layered into a brown butter Oreo cookie.',
@@ -239,11 +248,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['APPLE PIE', 'CINNAMON', 'CARAMEL'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['APPLE PIE', 'CINNAMON', 'CARAMEL']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'APPLE SNICKERDOODLE',
     labelTone: '#f6c58f',
-    receiptBody: createFallbackReceiptBody('Apple Snickerdoodle', ['APPLE PIE', 'CINNAMON', 'CARAMEL']),
+    receiptBody: createFallbackReceiptBody('Apple Snickerdoodle', [
+      'APPLE PIE',
+      'CINNAMON',
+      'CARAMEL',
+    ]),
     slug: 'apple-snickerdoodle',
     subtitle: 'Apple pie meets snickerdoodle',
     summary: 'Warm cinnamon sugar with apple pie filling and caramel glaze.',
@@ -254,7 +268,8 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['GRAHAM', 'MARSHMALLOW', 'CHOCOLATE'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['GRAHAM', 'MARSHMALLOW', 'CHOCOLATE']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: "S'MORES",
     labelTone: '#f3deb0',
@@ -269,11 +284,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['BANANA', 'WALNUT', 'CHOC CHIP'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['BANANA', 'WALNUT', 'CHOC CHIP']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BANANA WALNUT',
     labelTone: '#d8ea94',
-    receiptBody: createFallbackReceiptBody('Banana Choc-Chip Walnut', ['BANANA', 'WALNUT', 'CHOC CHIP']),
+    receiptBody: createFallbackReceiptBody('Banana Choc-Chip Walnut', [
+      'BANANA',
+      'WALNUT',
+      'CHOC CHIP',
+    ]),
     slug: 'banana-choc-chip-walnut',
     subtitle: 'Banana bread cookie',
     summary: 'Toasted walnut crunch and melty chocolate tucked into banana dough.',
@@ -284,7 +304,8 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['CINNAMON', 'BROWN SUGAR', 'ICING'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['CINNAMON', 'BROWN SUGAR', 'ICING']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'CINNAMON ROLL',
     labelTone: '#f0d6a8',
@@ -299,7 +320,8 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['BISCOFF', 'COOKIE BUTTER', 'SPICE'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['BISCOFF', 'COOKIE BUTTER', 'SPICE']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BISCOFF',
     labelTone: '#f0c589',
@@ -314,7 +336,8 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['BANANA', 'CRUMBLE', 'BROWN SUGAR'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['BANANA', 'CRUMBLE', 'BROWN SUGAR']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BANANA CRUMBLE',
     labelTone: '#e6d98a',
@@ -329,11 +352,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['PEANUT BUTTER', 'CHOCOLATE', 'BROWN BUTTER'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['PEANUT BUTTER', 'CHOCOLATE', 'BROWN BUTTER']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'PEANUT BUTTER CUP',
     labelTone: '#f2c66c',
-    receiptBody: createFallbackReceiptBody('Peanut Butter Cup', ['PEANUT BUTTER', 'CHOCOLATE', 'BROWN BUTTER']),
+    receiptBody: createFallbackReceiptBody('Peanut Butter Cup', [
+      'PEANUT BUTTER',
+      'CHOCOLATE',
+      'BROWN BUTTER',
+    ]),
     slug: 'peanut-butter-cup',
     subtitle: 'Chocolate peanut butter cookie',
     summary: 'Chocolate dough loaded with peanut butter cup pieces and brown butter richness.',
@@ -344,11 +372,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['PISTACHIO', 'KATAIFI', 'CHOCOLATE'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['PISTACHIO', 'KATAIFI', 'CHOCOLATE']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'DUBAI CHOCOLATE',
     labelTone: '#d7d28a',
-    receiptBody: createFallbackReceiptBody('Dubai Chocolate', ['PISTACHIO', 'KATAIFI', 'CHOCOLATE']),
+    receiptBody: createFallbackReceiptBody('Dubai Chocolate', [
+      'PISTACHIO',
+      'KATAIFI',
+      'CHOCOLATE',
+    ]),
     slug: 'dubai-chocolate',
     subtitle: 'Pistachio chocolate cookie',
     summary: 'A rich chocolate cookie layered with pistachio notes and crunchy texture.',
@@ -359,7 +392,8 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['SALTED', 'CARAMEL', 'CRUNCH'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['SALTED', 'CARAMEL', 'CRUNCH']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'SALTED CARAMEL',
     labelTone: '#f0c073',
@@ -374,11 +408,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['STRAWBERRY', 'CHEESECAKE', 'GRAHAM'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['STRAWBERRY', 'CHEESECAKE', 'GRAHAM']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'STRAWBERRY CHEESECAKE',
     labelTone: '#f3adb4',
-    receiptBody: createFallbackReceiptBody('Strawberry Cheesecake', ['STRAWBERRY', 'CHEESECAKE', 'GRAHAM']),
+    receiptBody: createFallbackReceiptBody('Strawberry Cheesecake', [
+      'STRAWBERRY',
+      'CHEESECAKE',
+      'GRAHAM',
+    ]),
     slug: 'strawberry-cheesecake',
     subtitle: 'Berry cheesecake cookie',
     summary: 'Strawberry sweetness and cheesecake richness with a graham-style finish.',
@@ -389,11 +428,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['STRAWBERRY', 'MATCHA', 'WHITE CHOC'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['STRAWBERRY', 'MATCHA', 'WHITE CHOC']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'STRAWBERRY MATCHA',
     labelTone: '#d7efaa',
-    receiptBody: createFallbackReceiptBody('Strawberry Matcha', ['STRAWBERRY', 'MATCHA', 'WHITE CHOC']),
+    receiptBody: createFallbackReceiptBody('Strawberry Matcha', [
+      'STRAWBERRY',
+      'MATCHA',
+      'WHITE CHOC',
+    ]),
     slug: 'strawberry-matcha',
     subtitle: 'Matcha berry swirl',
     summary: 'Fresh strawberry notes layered with matcha flavor in a bright soft cookie.',
@@ -404,11 +448,16 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     chips: ['STRAWBERRY', 'MATCHA', 'MARBLE'],
     infoButtonLabel: defaultInfoButtonLabel,
     ingredients: toFallbackIngredients(['STRAWBERRY', 'MATCHA', 'MARBLE']),
-    ingredientsIntro: 'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
+    ingredientsIntro:
+      'Little bakery note: the admin can replace this with the real ingredient list in Payload.',
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'MATCHA MARBLE',
     labelTone: '#d8efc3',
-    receiptBody: createFallbackReceiptBody('Strawberry Matcha Marble', ['STRAWBERRY', 'MATCHA', 'MARBLE']),
+    receiptBody: createFallbackReceiptBody('Strawberry Matcha Marble', [
+      'STRAWBERRY',
+      'MATCHA',
+      'MARBLE',
+    ]),
     slug: 'strawberry-matcha-marble',
     subtitle: 'Marbled berry matcha cookie',
     summary: 'A marbled cookie with strawberry brightness and matcha depth baked together.',
@@ -475,7 +524,7 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
     }),
     isMonthlyFlavor: true,
     lockedDescription:
-      'This flavor is outside the current rotation, but you can still order it in batches of 10 from the menu.',
+      'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
     lockedLabel: 'Catering only this month',
     menuHref: '/menu',
     menuLinkLabel: 'View menu',

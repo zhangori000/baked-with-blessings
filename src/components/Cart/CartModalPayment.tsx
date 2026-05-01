@@ -4,10 +4,11 @@ import { CheckoutForm } from '@/components/forms/CheckoutForm'
 import { Message } from '@/components/Message'
 import { BakeryAction, BakeryCard } from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
+import { ECOMMERCE_SESSION_RESET_EVENT } from '@/providers/Ecommerce'
 import { cssVariables } from '@/cssVariables'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
-import { usePayments } from '@payloadcms/plugin-ecommerce/client/react'
+import { useCart, useEcommerce, usePayments } from '@payloadcms/plugin-ecommerce/client/react'
 import React, { useCallback, useMemo, useState } from 'react'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
@@ -15,6 +16,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 type CompleteOrder = {
   accessToken?: string
   orderID: number | string
+  paymentMethod?: 'stripe' | 'venmo'
 }
 
 type Props = {
@@ -206,11 +208,15 @@ function PaymentGardenLoader() {
 
 export function CartModalPayment({ onOrderComplete }: Props) {
   const { user } = useAuth()
+  const { cart } = useCart()
+  const { clearSession } = useEcommerce()
   const { initiatePayment } = usePayments()
   const [clientSecret, setClientSecret] = useState<null | string>(null)
   const [error, setError] = useState<null | string>(null)
   const [isInitiating, setIsInitiating] = useState(false)
   const [isProcessingPayment, setProcessingPayment] = useState(false)
+  const [isSubmittingVenmo, setIsSubmittingVenmo] = useState(false)
+  const [showVenmoInstructions, setShowVenmoInstructions] = useState(false)
 
   const customerEmail = typeof user?.email === 'string' ? user.email : ''
   const customerPhone = typeof user?.phone === 'string' ? user.phone : ''
@@ -246,6 +252,61 @@ export function CartModalPayment({ onOrderComplete }: Props) {
       setIsInitiating(false)
     }
   }, [canStartPayment, initiatePayment])
+
+  const markVenmoSent = useCallback(async () => {
+    if (!canStartPayment) {
+      setError('Log in with an email or phone number before reporting a Venmo payment.')
+      return
+    }
+
+    if (!cart?.id) {
+      setError('Your cart is still loading. Try again in a moment.')
+      return
+    }
+
+    try {
+      setError(null)
+      setIsSubmittingVenmo(true)
+
+      const response = await fetch('/api/payments/venmo/mark-sent', {
+        body: JSON.stringify({
+          cartID: cart.id,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+      const responseData = (await response.json()) as {
+        accessToken?: string
+        error?: string
+        message?: string
+        orderID?: number | string
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Could not record the Venmo payment report.')
+      }
+
+      if (!responseData.orderID) {
+        throw new Error('The Venmo order response did not include an order ID.')
+      }
+
+      clearSession()
+      window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
+      onOrderComplete({
+        accessToken: responseData.accessToken,
+        orderID: responseData.orderID,
+        paymentMethod: 'venmo',
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Could not record the Venmo payment report.'
+      setError(message)
+    } finally {
+      setIsSubmittingVenmo(false)
+    }
+  }, [canStartPayment, cart?.id, clearSession, onOrderComplete])
 
   const elementsOptions = useMemo(
     () => ({
@@ -342,6 +403,66 @@ export function CartModalPayment({ onOrderComplete }: Props) {
           >
             {isInitiating ? 'Starting secure payment' : 'Start secure payment'}
           </BakeryAction>
+
+          <div className="my-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-black/35">
+            <span className="h-px flex-1 bg-black/10" />
+            <span>or</span>
+            <span className="h-px flex-1 bg-black/10" />
+          </div>
+
+          <div className="overflow-hidden rounded-[14px] border border-[#e4d7bd] bg-[#fff8e8] p-4 text-[#3f351f]">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#1f3d24]">
+                  Venmo instead
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
+                  Use this only after sending the cart total to @bakedwithblessings.
+                </p>
+              </div>
+              <BakeryAction
+                className="max-w-full shrink-0 whitespace-normal rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold leading-tight text-[#1f3d24] transition [white-space:normal] hover:border-black/20 hover:bg-[#f8edd2] sm:max-w-[11rem]"
+                onClick={() => setShowVenmoInstructions((current) => !current)}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                Pay with Venmo
+              </BakeryAction>
+            </div>
+
+            {showVenmoInstructions ? (
+              <div className="mt-4 rounded-[12px] border border-[#d7c69f] bg-white/80 p-4">
+                <p className="text-sm leading-6 text-[#4f4429]">
+                  Send the cart total to{' '}
+                  <a
+                    className="font-bold underline decoration-[#9c7a31]/50 underline-offset-4"
+                    href="https://venmo.com/u/bakedwithblessings"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    @bakedwithblessings
+                  </a>
+                  . Add your account name or order note in Venmo if you can.
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#6b5835]">
+                  This records the order, but it does not verify the payment automatically. Once the
+                  bakery sees the Venmo payment, they will contact you through the email or phone on
+                  your account and update the order manually.
+                </p>
+                <BakeryAction
+                  block
+                  className="mt-4"
+                  disabled={isSubmittingVenmo || !canStartPayment}
+                  onClick={markVenmoSent}
+                  type="button"
+                  variant="primary"
+                >
+                  {isSubmittingVenmo ? 'Recording Venmo order' : 'I sent it through Venmo'}
+                </BakeryAction>
+              </div>
+            ) : null}
+          </div>
         </>
       ) : (
         <div className="mt-5">

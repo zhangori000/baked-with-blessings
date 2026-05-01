@@ -18,7 +18,7 @@ export const Reviews: CollectionConfig = {
     update: adminOnly,
   },
   admin: {
-    defaultColumns: ['title', 'rating', 'publicStatus', 'responseStatus', 'createdAt'],
+    defaultColumns: ['title', 'publicStatus', 'responseStatus', 'createdAt'],
     group: 'Review System',
     useAsTitle: 'title',
   },
@@ -44,6 +44,125 @@ export const Reviews: CollectionConfig = {
       },
     },
     {
+      name: 'instagramHandle',
+      type: 'text',
+      admin: {
+        description: 'Optional Instagram handle from the public review form.',
+      },
+      label: 'Instagram handle',
+    },
+    {
+      name: 'instagramHandlePublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show the Instagram handle on the public review.',
+      },
+      label: 'Show Instagram publicly',
+    },
+    {
+      name: 'linkedinUrl',
+      type: 'text',
+      admin: {
+        description: 'Optional LinkedIn URL from the public review form.',
+      },
+      label: 'LinkedIn URL',
+    },
+    {
+      name: 'linkedinUrlPublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show the LinkedIn URL on the public review.',
+      },
+      label: 'Show LinkedIn publicly',
+    },
+    {
+      name: 'discordUsername',
+      type: 'text',
+      admin: {
+        description: 'Optional Discord username from the public review form.',
+      },
+      label: 'Discord username',
+    },
+    {
+      name: 'discordUsernamePublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show the Discord username on the public review.',
+      },
+      label: 'Show Discord publicly',
+    },
+    {
+      name: 'leagueUsername',
+      type: 'text',
+      admin: {
+        description: 'Optional League username from the public review form.',
+      },
+      label: 'League username',
+    },
+    {
+      name: 'leagueUsernamePublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show the League username on the public review.',
+      },
+      label: 'Show League publicly',
+    },
+    {
+      name: 'nintendoId',
+      type: 'text',
+      admin: {
+        description: 'Optional Nintendo ID from the public review form.',
+      },
+      label: 'Nintendo ID',
+    },
+    {
+      name: 'nintendoIdPublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show the Nintendo ID on the public review.',
+      },
+      label: 'Show Nintendo ID publicly',
+    },
+    {
+      name: 'ptcgId',
+      type: 'text',
+      admin: {
+        description: 'Optional PTCG ID from the public review form.',
+      },
+      label: 'PTCG ID',
+    },
+    {
+      name: 'ptcgIdPublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show the PTCG ID on the public review.',
+      },
+      label: 'Show PTCG ID publicly',
+    },
+    {
+      name: 'otherContact',
+      type: 'textarea',
+      admin: {
+        description: 'Optional extra contact details from the public review form.',
+      },
+      label: 'Other contact',
+    },
+    {
+      name: 'otherContactPublic',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Show other contact details on the public review.',
+      },
+      label: 'Show other contact publicly',
+    },
+    {
       name: 'reviewTone',
       type: 'select',
       defaultValue: 'loved_it',
@@ -51,16 +170,6 @@ export const Reviews: CollectionConfig = {
         { label: 'Loved it', value: 'loved_it' },
         { label: 'I have a suggestion', value: 'suggestion' },
       ],
-      required: true,
-    },
-    {
-      name: 'rating',
-      type: 'number',
-      admin: {
-        description: '1 to 5 rating. Half-step values like 4.5 are allowed.',
-      },
-      max: 5,
-      min: 1,
       required: true,
     },
     {
@@ -89,7 +198,7 @@ export const Reviews: CollectionConfig = {
     {
       name: 'publicStatus',
       type: 'select',
-      defaultValue: 'under_review',
+      defaultValue: 'published',
       index: true,
       options: reviewStatuses.map((value) => ({ label: value, value })),
       required: true,

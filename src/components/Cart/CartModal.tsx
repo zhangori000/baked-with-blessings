@@ -11,10 +11,7 @@ import { bakeryPrimitiveTokens } from '@/design-system/bakery/tokens'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { menuHref } from '@/utilities/routes'
-import {
-  isPayloadMediaFileURL,
-  resolveMediaDisplayURL,
-} from '@/utilities/resolveMediaDisplayURL'
+import { isPayloadMediaFileURL, resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
   Sheet,
   SheetClose,
@@ -44,6 +41,7 @@ type CartPanel = 'cart' | 'auth' | 'login' | 'signup' | 'checkout' | 'complete'
 type CompleteOrder = {
   accessToken?: string
   orderID: number | string
+  paymentMethod?: 'stripe' | 'venmo'
 }
 
 export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean }) {
@@ -88,6 +86,16 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
     setPaintKey((current) => current + 1)
   }
 
+  const shouldProtectCheckoutPanel = panel === 'checkout' || panel === 'complete'
+  const handleDismissAttempt = (event: Event) => {
+    if (shouldProtectCheckoutPanel) {
+      event.preventDefault()
+      return
+    }
+
+    setIsOpen(false)
+  }
+
   const totalQuantity = useMemo(() => {
     if (!cart || !cart.items || !cart.items.length) return undefined
     return cart.items.reduce((quantity, item) => (item.quantity || 0) + quantity, 0)
@@ -111,9 +119,9 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
         className="cartModalContent !top-1/2 !left-1/2 !right-auto !bottom-auto !h-[calc(100dvh-8px)] !w-[calc(100vw-8px)] !-translate-x-1/2 !-translate-y-1/2 sm:!top-3 sm:!bottom-auto sm:!left-auto sm:!right-3 sm:!h-[calc(100dvh-1.5rem)] sm:!max-h-[calc(100dvh-1.5rem)] sm:!min-h-0 sm:!w-[min(560px,calc(100vw-24px))] sm:!translate-x-0 sm:!translate-y-0 border border-black/12 rounded-[12px] bg-[#fffefa] p-0 text-black shadow-[0_28px_80px_rgba(31,36,24,0.22)]"
         hideClose
         motion="modal"
-        onEscapeKeyDown={() => setIsOpen(false)}
-        onInteractOutside={() => setIsOpen(false)}
-        onPointerDownOutside={() => setIsOpen(false)}
+        onEscapeKeyDown={handleDismissAttempt}
+        onInteractOutside={handleDismissAttempt}
+        onPointerDownOutside={handleDismissAttempt}
         overlayClassName="bg-[rgba(244,240,232,0.26)]"
         side="top"
       >
@@ -222,6 +230,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                 <CartModalPayment
                   onOrderComplete={(order) => {
                     setCompleteOrder(order)
+                    setIsOpen(true)
                     showPanel('complete')
                   }}
                 />
@@ -952,20 +961,21 @@ function CartSignupPanel({
   const verificationCode = useWatch({ control, defaultValue: '', name: 'verificationCode' })
   const isEmailVerification = verificationMode === 'email'
   const isPhoneVerification = verificationMode === 'phone'
-  const verificationRecipient = verificationMode === 'phone'
-    ? maskedPhone || phone
-    : maskedEmail || email || 'your contact method'
+  const verificationRecipient =
+    verificationMode === 'phone'
+      ? maskedPhone || phone
+      : maskedEmail || email || 'your contact method'
   const emailRegistration = register('email', {
     validate: (value) =>
       !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
   })
   const phoneRegistration = register('phone')
   const verificationCodeRegistration = register('verificationCode', {
-    required: isPhoneVerification || isEmailVerification
-      ? `Enter the 6-digit code sent to ${verificationRecipient}.`
-      : 'Enter the 6-digit verification code.',
-    validate: (value) =>
-      /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
+    required:
+      isPhoneVerification || isEmailVerification
+        ? `Enter the 6-digit code sent to ${verificationRecipient}.`
+        : 'Enter the 6-digit verification code.',
+    validate: (value) => /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
   })
 
   return (
@@ -1143,10 +1153,7 @@ function CartSignupPanel({
           {phone.trim() && !verificationMode && !verificationCode.trim() ? (
             <p>Enter the code sent to your phone to finish account creation.</p>
           ) : null}
-          {email.trim() &&
-          !phone.trim() &&
-          !verificationMode &&
-          !verificationCode.trim() ? (
+          {email.trim() && !phone.trim() && !verificationMode && !verificationCode.trim() ? (
             <p>Enter the code sent to your email to finish account creation.</p>
           ) : null}
         </div>
@@ -1174,6 +1181,7 @@ function CartSignupPanel({
 
 function CartCompletePanel({ onClose, order }: { onClose: () => void; order: CompleteOrder }) {
   const orderHref = `/orders/${order.orderID}${order.accessToken ? `?accessToken=${order.accessToken}` : ''}`
+  const isVenmoOrder = order.paymentMethod === 'venmo'
   const finishOrderFlow = () => {
     window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
     onClose()
@@ -1193,7 +1201,9 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
         <div className="space-y-2">
           <p className="text-3xl font-medium tracking-[-0.05em]">Order received.</p>
           <p className="text-sm leading-6 text-black/60">
-            Payment went through and a fresh cart will be started.
+            {isVenmoOrder
+              ? 'We recorded your Venmo report. The bakery will verify the payment to @bakedwithblessings and contact you through your account contact method.'
+              : 'Payment went through and a fresh cart will be started.'}
           </p>
         </div>
 

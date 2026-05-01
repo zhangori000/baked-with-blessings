@@ -298,6 +298,7 @@ export const plugins: Plugin[] = [
             'customerEmail',
             'guestContactValue',
             'amount',
+            'manualPaymentMethod',
             'ownerNotificationSentAt',
             'createdAt',
           ],
@@ -339,6 +340,77 @@ export const plugins: Plugin[] = [
               },
               description:
                 'Set automatically after the new-order email is sent to the business owner.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'manualPaymentMethod',
+            type: 'select',
+            admin: {
+              description:
+                'Manual payment method reported by the customer. This does not mean payment has been verified.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+            options: [
+              {
+                label: 'Venmo',
+                value: 'venmo',
+              },
+            ],
+          },
+          {
+            name: 'manualPaymentStatus',
+            type: 'select',
+            admin: {
+              description:
+                'Manual payment verification status. Update this after checking the external payment account.',
+              position: 'sidebar',
+            },
+            options: [
+              {
+                label: 'Reported sent',
+                value: 'reported_sent',
+              },
+              {
+                label: 'Verified',
+                value: 'verified',
+              },
+              {
+                label: 'Rejected',
+                value: 'rejected',
+              },
+            ],
+          },
+          {
+            name: 'manualPaymentHandle',
+            type: 'text',
+            admin: {
+              description: 'External account handle the customer was instructed to pay.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'manualPaymentReportedAt',
+            type: 'date',
+            admin: {
+              date: {
+                pickerAppearance: 'dayAndTime',
+              },
+              description: 'When the customer clicked that the manual payment was sent.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
+          {
+            name: 'manualPaymentReference',
+            type: 'text',
+            unique: true,
+            index: true,
+            admin: {
+              description: 'Internal idempotency reference for manual payment order creation.',
               position: 'sidebar',
               readOnly: true,
             },

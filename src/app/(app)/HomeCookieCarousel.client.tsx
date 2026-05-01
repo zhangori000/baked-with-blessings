@@ -1629,7 +1629,9 @@ export function HomeCookieCarousel({
                   >
                     <BakeryPressable
                       aria-label={
-                        activePosterIsCateringOnly ? 'Close catering details' : 'Close add to cart prompt'
+                        activePosterIsCateringOnly
+                          ? 'Close catering details'
+                          : 'Close add to cart prompt'
                       }
                       className="homeCookieCartPromptClose"
                       disabled={activePosterPromptPhase === 'loading'}
@@ -1650,7 +1652,7 @@ export function HomeCookieCarousel({
                     {activePosterIsCateringOnly ? (
                       <p className="homeCookieCartPromptSubtext">
                         {activePoster.lockedDescription ??
-                          'This flavor is outside the current rotation, but you can still order it in batches of 10, mini or regular size, from the menu.'}
+                          'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'}
                       </p>
                     ) : null}
                     {activePosterPromptPhase === 'open' ? (
@@ -1738,9 +1740,7 @@ export function HomeCookieCarousel({
             <span
               className={`homeCookieAmount${activePosterIsCateringOnly ? ' homeCookieAmount--locked' : ''}`}
             >
-              {activePosterIsCateringOnly
-                ? 'Catering only - tap for details'
-                : activePoster.amount}
+              {activePosterIsCateringOnly ? 'Catering only - tap for details' : activePoster.amount}
             </span>
           </div>
         </div>
