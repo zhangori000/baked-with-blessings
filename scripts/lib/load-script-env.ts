@@ -28,7 +28,7 @@ const preferHostedDatabaseURLForVercelEnvRun = () => {
     return
   }
 
-  if (!isLocalDatabaseURL(process.env.DATABASE_URL)) {
+  if (process.env.DATABASE_URL && !isLocalDatabaseURL(process.env.DATABASE_URL)) {
     return
   }
 

@@ -376,8 +376,13 @@ export const ensureStarterReviews = async (payload: Payload) => {
   }
 }
 
+const shouldAutoSeedDemoReviews = () =>
+  process.env.BWB_AUTO_SEED_DEMO_CONTENT === 'true' || process.env.VERCEL_ENV !== 'production'
+
 export const getReviewsPageData = async (payload: Payload): Promise<ReviewsPageData> => {
-  await ensureStarterReviews(payload)
+  if (shouldAutoSeedDemoReviews()) {
+    await ensureStarterReviews(payload)
+  }
 
   const result = await (payload as LoosePayload).find({
     collection: 'reviews',

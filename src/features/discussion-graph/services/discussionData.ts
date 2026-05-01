@@ -852,11 +852,16 @@ export const ensureI94ExampleReplies = async (payload: Payload) => {
   }
 }
 
+const shouldAutoSeedDemoDiscussion = () =>
+  process.env.BWB_AUTO_SEED_DEMO_CONTENT === 'true' || process.env.VERCEL_ENV !== 'production'
+
 export const getDiscussionTreeData = async (payload: Payload): Promise<DiscussionTreeData> => {
-  await ensureStarterDiscussionTopics(payload)
-  await deleteRemovedStarterTopics(payload)
-  await syncStarterDiscussionTopics(payload)
-  await ensureI94ExampleReplies(payload)
+  if (shouldAutoSeedDemoDiscussion()) {
+    await ensureStarterDiscussionTopics(payload)
+    await deleteRemovedStarterTopics(payload)
+    await syncStarterDiscussionTopics(payload)
+    await ensureI94ExampleReplies(payload)
+  }
 
   const [nodeResult, edgeResult] = await Promise.all([
     payload.find({
