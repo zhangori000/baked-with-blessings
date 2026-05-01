@@ -79,6 +79,10 @@ Remove-Item Env:\BOOTSTRAP_TEST_CUSTOMER_PASSWORD
 
 The test customer login identifier defaults to `test.customer@baked-with-blessings.invalid`. If you type the wrong password, the script will create or update the Preview customer with that wrong password. Nothing is permanently broken: update the Vercel env var to the intended password if needed, then rerun the command with the same intended password to reset the customer.
 
+### Production deployment guide
+
+For the current Baked with Blessings Vercel production flow, use [Production Deployment Setup](./documentation/getting-started/production-deployment.md). It covers the required Vercel env vars, Neon Production database setup, the temporary Stripe test-mode launch path, migrations, admin bootstrap, and `seed:prod`.
+
 ## How it works
 
 The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
@@ -401,6 +405,8 @@ export default buildConfig({
 ```
 
 ### Vercel environment security
+
+For the full production deployment checklist, see [Production Deployment Setup](./documentation/getting-started/production-deployment.md).
 
 Before creating or promoting a production deployment, run:
 
