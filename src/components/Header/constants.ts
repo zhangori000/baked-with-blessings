@@ -131,7 +131,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
       cards: [
         {
           description:
-            'Read compact notes and essays from the bakery about school, business, community, and what is being learned along the way.',
+            'Read or draft something while your order is coming together — notes about school, business, community, and the bakery. Limit testing this one, just for fun.',
           eyebrow: 'Writing',
           href: blogHref,
           title: 'Read the blog',
@@ -139,7 +139,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
         },
         {
           description:
-            'Browse the current discussion prompts and open a tree view for replies, questions, support, and challenges.',
+            'Drop a question, weigh in, or just lurk while you wait — structured questions, claims, support, and replies. Limit testing this one, just for fun.',
           eyebrow: 'Public reasoning',
           href: discussionBoardHref,
           title: 'Open discussion board',
@@ -147,7 +147,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
         },
         {
           description:
-            'Read practical business advice from food and cafe owners while discovering the businesses behind each answer.',
+            'Browse practical advice from food and cafe owners while you wait — and discover the businesses behind each answer. Limit testing this one, just for fun.',
           eyebrow: 'Community advice',
           href: blessingsNetworkHref,
           title: 'Open Community Advice',

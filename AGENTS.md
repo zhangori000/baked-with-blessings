@@ -43,6 +43,19 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 - To validate typescript correctness after modifying code run `tsc --noEmit`
 - Generate import maps after creating or modifying components.
 
+### Schema Changes & Migrations
+
+This project runs Postgres in three independent databases (local Docker with `push: true`, Neon preview, Neon prod). Vercel does NOT auto-run `pnpm payload migrate` on builds. The full workflow is documented in `README.md` under "Working with Postgres" and "Schema change workflow"; read that section before proposing schema work.
+
+When you add, remove, rename, or retype a Payload field/collection/global:
+
+1. State that a migration is required and that `pnpm sync-db:preview` + `pnpm sync-db:prod` will need to run after the deploy. Do not assume the build pipeline handles it.
+2. After running `pnpm payload migrate:create`, **read the generated `.ts`** before recommending a commit. On a freshly-pushed local DB it commonly over-includes (it regenerates "everything not yet tracked in `payload_migrations`") — trim it to only the SQL describing the actual change, rename the file with a descriptive `_add_<thing>.ts` suffix, update `src/migrations/index.ts`, and delete the matching auto-generated `.json` snapshot.
+3. Never silently propose `--force-accept-warning` on a destructive migrate run. Renames, drops, and risky type changes need a human at the prompts of `migrate:create`. Once the migration file is committed, `pnpm payload migrate` is non-interactive and that is the right place to lean on automation.
+4. Between push and `sync-db:preview` running, the preview deploy is technically broken (new code, old schema). This is a known early-development gap; do not auto-suggest wiring `migrate:vercel` into `prebuild` until the schema stops churning.
+
+For editor-controlled hero copy on hardcoded route pages (e.g., `/blog`, `/discussion-board`), prefer the **Global + bootstrap script** pattern already used by `BlogPageContent` and `DiscussionBoardContent`: a `src/globals/<Name>.ts` file exporting both the `GlobalConfig` and a `*_DEFAULTS` constant, plus an entry in `scripts/bootstrap-page-content.ts` that fills empty fields only (idempotent, never overwrites editor edits).
+
 ### Documentation Style
 
 - Prefer long, succinct paragraphs for explanations and learning notes instead of overly fragmented bullets or excessive whitespace.

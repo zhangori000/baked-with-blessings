@@ -303,31 +303,97 @@ Postgres and other SQL-based databases follow a strict schema for managing your 
 
 Note that often times when making big schema changes you can run the risk of losing data if you're not manually migrating it.
 
-#### Local development
+#### Three databases, one shared codebase
 
-Ideally we recommend running a local copy of your database so that schema updates are as fast as possible. By default the Postgres adapter has `push: true` for development environments. This will let you add, modify and remove fields and collections without needing to run any data migrations.
+| Environment | Database | Schema sync mechanism |
+|---|---|---|
+| **Local** (your laptop) | Docker Postgres (`pnpm db:up`) | `push: true` — Payload auto-syncs schema on every dev restart. No migrations needed. |
+| **Preview** (Neon) | Neon DB linked to Vercel preview | Migrations only — must be run manually with `pnpm sync-db:preview`. |
+| **Production** (Neon) | Neon DB linked to Vercel prod | Migrations only — must be run manually with `pnpm sync-db:prod`. |
 
-If your database is pointed to production you will want to set `push: false` otherwise you will risk losing data or having your migrations out of sync.
+Each database is independent. Migration files in `src/migrations/` are the **shared source of truth** that lets you bring a non-local DB up to the schema your code expects.
 
-#### Migrations
+#### Schema change workflow
 
-[Migrations](https://payloadcms.com/docs/database/migrations) are essentially SQL code versions that keeps track of your schema. When deploy with Postgres you will need to make sure you create and then run your migrations.
+Whenever you add, remove, or rename a Payload field/collection/global, follow these four steps:
 
-Locally create a migration
+```bash
+# 1. Locally: Payload auto-pushes the schema change while `pnpm dev` is running.
+#    Test the change in admin UI / on the page until you're happy.
+
+# 2. Generate a migration file that captures the change for non-local DBs:
+pnpm payload migrate:create
+#    READ the generated file in src/migrations/ before committing.
+#    On a freshly-pushed local DB it may include "everything" — trim it
+#    down to only the new statements that describe your change. (See the
+#    "migrate:create can over-include" note below.)
+
+# 3. Commit + push. Wait for the Vercel preview build to go green.
+
+# 4. Sync the non-local databases. These run `payload migrate` AND the
+#    page-content bootstrap idempotently, in one step:
+pnpm sync-db:preview
+#    verify the change on the preview URL, then:
+pnpm sync-db:prod
+```
+
+> **Known gap (early dev only):** between steps 3 and 4, the preview deploy is technically broken — new code expects the new schema but the Neon DB hasn't been migrated yet. Once the schema stabilizes, wire `migrate:vercel` into the `prebuild` step so it auto-runs on Vercel deploys. Don't do that yet — the interactive prompts during destructive changes still need a human (see `--force-accept-warning` discussion below).
+
+#### Authoring a migration locally
 
 ```bash
 pnpm payload migrate:create
 ```
 
-This creates the migration files you will need to push alongside with your new configuration.
+This compares your code's schema against the existing migration files (and the local DB's `payload_migrations` table) and writes a new file under `src/migrations/`. Always read it before committing.
 
-On the server after building and before running `pnpm start` you will want to run your migrations
+##### `migrate:create` can over-include
+
+The local Docker DB uses `push: true`, which means its tables are in sync with code, but the `payload_migrations` table is **never updated** there. As a result, `migrate:create` may regenerate "everything not yet tracked" — sometimes thousands of lines describing tables that Neon already has.
+
+When this happens:
+
+1. **Hand-edit the generated `.ts`** to keep only the SQL that describes your real change. Match the convention used by existing migrations like `20260430_030000_add_flavor_rotations.ts`.
+2. **Rename the file** to a descriptive `_add_<thing>.ts` suffix (e.g., `20260501_212728_add_page_content_globals.ts`).
+3. **Update `src/migrations/index.ts`** to point at the renamed file.
+4. **Delete the matching auto-generated `.json` snapshot** if it appeared.
+
+For purely additive changes (a new field, a new global), the part you keep is usually a single `CREATE TABLE` or `ALTER TABLE ADD COLUMN` plus the matching `DROP` in `down()`.
+
+#### Applying migrations to Neon
 
 ```bash
 pnpm payload migrate
 ```
 
-This command will check for any migrations that have not yet been run and try to run them and it will keep a record of migrations that have been run in the database.
+This walks `src/migrations/` and applies anything not yet recorded in the target DB's `payload_migrations` table. To target preview or production, use the wrapper scripts:
+
+```bash
+pnpm sync-db:preview     # vercel env run -e preview -- (migrate + bootstrap page content)
+pnpm sync-db:prod        # vercel env run -e production -- (migrate + bootstrap page content)
+```
+
+Those wrappers rely on `vercel login` + `vercel link` having been run once. They use `vercel env run` to inject the right Neon connection string for the chosen environment, so no manual copy-paste of secrets is needed.
+
+##### Sensitive env var caveat
+
+`vercel env run` cannot pull variables marked **Sensitive** in the Vercel dashboard. This project's `payload.config.ts` falls back from `DATABASE_URL` → `NEON_POSTGRES_URL` → `NEON_DATABASE_URL`, so even if production's `DATABASE_URL` is Sensitive, the script still works because `NEON_DATABASE_URL` is pullable. If both are Sensitive, you'll need to either downgrade one in the Vercel UI, or paste a connection string directly:
+
+```bash
+DATABASE_URL='postgresql://neondb_owner:...' pnpm payload migrate
+```
+
+(Single quotes recommended so the shell doesn't choke on special characters in the password.)
+
+##### `--force-accept-warning` is dangerous
+
+Some destructive schema diffs (renames, dropped columns, type changes that can lose data) trigger an interactive Y/N prompt. **Do not blindly add `--force-accept-warning` to automated migrate runs** — picking the wrong default can drop production data silently. The right pattern is to answer the prompts when generating the migration locally (`migrate:create`), inspect the resulting SQL, then commit. Once the file is committed, `pnpm payload migrate` is non-interactive because all decisions are baked into the file.
+
+#### Page-content globals (`pnpm bootstrap:page-content`)
+
+The hero copy on `/blog` and `/discussion-board` is editable from `/admin → Globals → Blog Page Content / Discussion Board Content`. The first time a fresh DB has these tables (after `migrate`), the rows are empty. `pnpm bootstrap:page-content` populates them with the defaults defined in `src/globals/BlogPageContent.ts` and `src/globals/DiscussionBoardContent.ts`.
+
+The script is idempotent: it only fills empty fields, never overwrites editor-set values. Safe to re-run.
 
 ### Docker
 
@@ -349,7 +415,7 @@ The seed script will also create a demo user for demonstration purposes only:
   - Email: `customer@example.com`
   - Password: `password`
 
-> NOTICE: seeding the database is destructive because it drops your current database to populate a fresh one from the seed template. Only run this command if you are starting a new project or can afford to lose your current data.
+> **NOTICE: `pnpm seed` is destructive.** It drops the current database and re-imports cookies, products, posts, media, etc. from scratch. Only run it on a fresh project or one whose data you can afford to lose. The hand-editable hero copy on `/blog` and `/discussion-board` is **not** wiped by `pnpm seed` — it lives in two separate globals and is bootstrapped by `pnpm bootstrap:page-content`, which is idempotent and safe to re-run. For prod-safe content top-ups, use `pnpm seed:prod` (calls `seedProduction`, additive only).
 
 ## Production
 

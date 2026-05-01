@@ -1,5 +1,6 @@
 import { getDiscussionTreeData } from '@/features/discussion-graph/services/discussionData'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { DISCUSSION_BOARD_CONTENT_DEFAULTS } from '@/globals/DiscussionBoardContent'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
 import { getPayload } from 'payload'
@@ -32,12 +33,22 @@ type Props = {
 async function DiscussionBoardPageContent({ searchParams }: Props) {
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config })
-  const data = await getDiscussionTreeData(payload)
-  const params = await searchParams
+  const [data, pageContent, params] = await Promise.all([
+    getDiscussionTreeData(payload),
+    payload.findGlobal({ slug: 'discussion-board-content', depth: 0 }),
+    searchParams,
+  ])
+
+  const heroEyebrow = pageContent.eyebrow?.trim() || DISCUSSION_BOARD_CONTENT_DEFAULTS.eyebrow
+  const heroTitle = pageContent.title?.trim() || DISCUSSION_BOARD_CONTENT_DEFAULTS.title
+  const heroSummary = pageContent.summary?.trim() || DISCUSSION_BOARD_CONTENT_DEFAULTS.summary
 
   return (
     <div className={discussionSerif.variable}>
       <DiscussionBoardClient
+        heroEyebrow={heroEyebrow}
+        heroSummary={heroSummary}
+        heroTitle={heroTitle}
         initialData={data}
         initialFocusedNodeId={params?.node}
         initialSceneryTone={initialSceneryTone}
