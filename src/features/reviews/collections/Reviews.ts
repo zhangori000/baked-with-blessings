@@ -101,8 +101,6 @@ export const Reviews: CollectionConfig = {
         components: {
           Field: '@/components/admin/reviews/ReviewModerationActions#ReviewModerationActions',
         },
-        description:
-          'Use these controls to publish this review to the public site or hide it from public view.',
         position: 'sidebar',
       },
       // No data is stored; this field is only for quick moderation from within Payload admin.
