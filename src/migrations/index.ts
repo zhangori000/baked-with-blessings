@@ -4,6 +4,8 @@ import * as migration_20260430_000000_add_blessings_network from './20260430_000
 import * as migration_20260430_010000_add_blessings_network_owner_posts from './20260430_010000_add_blessings_network_owner_posts'
 import * as migration_20260430_020000_add_order_owner_notification_sent_at from './20260430_020000_add_order_owner_notification_sent_at'
 import * as migration_20260430_030000_add_flavor_rotations from './20260430_030000_add_flavor_rotations'
+import * as migration_20260430_040000_add_product_poster_receipt_fields from './20260430_040000_add_product_poster_receipt_fields'
+import * as migration_20260430_050000_add_email_verification_starts from './20260430_050000_add_email_verification_starts'
 
 export const migrations = [
   {
@@ -35,5 +37,15 @@ export const migrations = [
     up: migration_20260430_030000_add_flavor_rotations.up,
     down: migration_20260430_030000_add_flavor_rotations.down,
     name: '20260430_030000_add_flavor_rotations',
+  },
+  {
+    up: migration_20260430_040000_add_product_poster_receipt_fields.up,
+    down: migration_20260430_040000_add_product_poster_receipt_fields.down,
+    name: '20260430_040000_add_product_poster_receipt_fields',
+  },
+  {
+    up: migration_20260430_050000_add_email_verification_starts.up,
+    down: migration_20260430_050000_add_email_verification_starts.down,
+    name: '20260430_050000_add_email_verification_starts',
   },
 ]
