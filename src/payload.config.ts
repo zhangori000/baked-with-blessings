@@ -44,6 +44,7 @@ import { Brand } from '@/globals/Brand'
 import { DiscussionBoardContent } from '@/globals/DiscussionBoardContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
+import { resolveDatabaseURL } from '@/utilities/resolveDatabaseURL'
 import { plugins } from './plugins'
 
 const filename = fileURLToPath(import.meta.url)
@@ -65,8 +66,7 @@ const emailAdapter =
         defaultFromName: resendFromName,
       })
     : undefined
-const databaseURL =
-  process.env.DATABASE_URL || process.env.NEON_POSTGRES_URL || process.env.NEON_DATABASE_URL || ''
+const databaseURL = resolveDatabaseURL()
 
 export default buildConfig({
   admin: {
