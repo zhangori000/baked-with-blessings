@@ -60,7 +60,7 @@
   bottom: clamp(1.25rem, 5vw, 2.6rem);
   display: grid;
   gap: 0.82rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   inset-inline: clamp(1rem, 4vw, 2rem);
   position: absolute;
   z-index: 4;

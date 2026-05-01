@@ -1,6 +1,7 @@
 import type { File, Payload } from 'payload'
 
 import { REVIEW_TENANT_ID } from '@/features/reviews/types'
+import { getFirstConfiguredEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type LoosePayload = Payload & {
@@ -34,10 +35,11 @@ const escapeHTML = (value: unknown) =>
     .replace(/'/g, '&#39;')
 
 const getReviewNotificationEmail = () =>
-  process.env.REVIEW_NOTIFICATION_TO?.trim() ||
-  process.env.CONTACT_NOTIFICATION_TO?.trim() ||
-  process.env.ORDER_NOTIFICATION_TO?.trim() ||
-  ''
+  getFirstConfiguredEmailRecipients(
+    process.env.REVIEW_NOTIFICATION_TO,
+    process.env.CONTACT_NOTIFICATION_TO,
+    process.env.ORDER_NOTIFICATION_TO,
+  )
 
 const toPayloadFile = async (file: globalThis.File): Promise<File> => {
   const data = Buffer.from(await file.arrayBuffer())
@@ -59,7 +61,7 @@ const sendOwnerReviewNotification = async ({
 }) => {
   const to = getReviewNotificationEmail()
 
-  if (!to) {
+  if (!to.length) {
     payload.logger.warn(
       'REVIEW_NOTIFICATION_TO, CONTACT_NOTIFICATION_TO, and ORDER_NOTIFICATION_TO are not configured; skipping review notification.',
     )
@@ -75,7 +77,8 @@ const sendOwnerReviewNotification = async ({
     typeof review.createdAt === 'string'
       ? new Date(review.createdAt).toLocaleString('en-US')
       : new Date().toLocaleString('en-US')
-  const customerName = typeof review.customerName === 'string' ? review.customerName : 'Bakery guest'
+  const customerName =
+    typeof review.customerName === 'string' ? review.customerName : 'Bakery guest'
   const customerEmail = typeof review.customerEmail === 'string' ? review.customerEmail : ''
   const title = typeof review.title === 'string' ? review.title : 'Untitled review'
   const body = typeof review.body === 'string' ? review.body : ''
@@ -138,7 +141,8 @@ export const createReviewSubmission = async ({
   const title = cleanText(formData.get('title'))
   const body = cleanLongText(formData.get('body'))
   const visitContext = cleanText(formData.get('visitContext'))
-  const reviewTone = cleanText(formData.get('reviewTone')) === 'suggestion' ? 'suggestion' : 'loved_it'
+  const reviewTone =
+    cleanText(formData.get('reviewTone')) === 'suggestion' ? 'suggestion' : 'loved_it'
   const rating = getRating(formData.get('rating'))
 
   if (!title || title.length < 3) {

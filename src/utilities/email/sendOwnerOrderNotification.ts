@@ -1,6 +1,7 @@
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 
 import type { Order, Product, Variant } from '@/payload-types'
+import { parseEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
 export const SKIP_OWNER_ORDER_NOTIFICATION = 'skipOwnerOrderNotification'
@@ -140,9 +141,9 @@ export const sendOwnerOrderNotification = async ({
   order,
   payload,
 }: SendOwnerOrderNotificationArgs) => {
-  const to = process.env.ORDER_NOTIFICATION_TO?.trim()
+  const to = parseEmailRecipients(process.env.ORDER_NOTIFICATION_TO)
 
-  if (!to) {
+  if (!to.length) {
     payload.logger.warn(
       'ORDER_NOTIFICATION_TO is not configured; skipping owner order notification.',
     )
