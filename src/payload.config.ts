@@ -63,6 +63,8 @@ const emailAdapter =
         defaultFromName: resendFromName,
       })
     : undefined
+const databaseURL =
+  process.env.DATABASE_URL || process.env.NEON_POSTGRES_URL || process.env.NEON_DATABASE_URL || ''
 
 export default buildConfig({
   admin: {
@@ -101,7 +103,7 @@ export default buildConfig({
   db: postgresAdapter({
     migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
-      connectionString: process.env.DATABASE_URL || '',
+      connectionString: databaseURL,
     },
     push: process.env.NODE_ENV !== 'production' && !process.env.VERCEL,
   }),

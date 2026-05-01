@@ -14,6 +14,7 @@ type EnvRule = {
 
 const deploymentEnv = process.env.VERCEL_ENV || 'local'
 const strict = deploymentEnv === 'production' || process.env.CHECK_ENV_SECURITY_STRICT === 'true'
+const allowTestStripeInProduction = process.env.ALLOW_TEST_STRIPE_IN_PRODUCTION === 'true'
 
 const commonPlaceholders = [/^$/, /^change-me$/i, /^changeme$/i, /replace-with/i, /example/i]
 const localOnlyValues = [/localhost/i, /127\.0\.0\.1/i]
@@ -147,6 +148,10 @@ const report = (message: string) => {
   }
 }
 
+const warn = (message: string) => {
+  warnings.push(message)
+}
+
 for (const rule of requiredProductionRules) {
   const value = getEnvValue(rule.key)
 
@@ -166,6 +171,19 @@ for (const rule of requiredProductionRules) {
   }
 
   if (strict && rule.productionPrefix && !value.startsWith(rule.productionPrefix)) {
+    const isStripeKey =
+      rule.key === 'STRIPE_SECRET_KEY' || rule.key === 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'
+    const isStripeTestKey =
+      (rule.key === 'STRIPE_SECRET_KEY' && value.startsWith('sk_test_')) ||
+      (rule.key === 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY' && value.startsWith('pk_test_'))
+
+    if (allowTestStripeInProduction && isStripeKey && isStripeTestKey) {
+      warnings.push(
+        `${rule.key} is using a Stripe test-mode value in production because ALLOW_TEST_STRIPE_IN_PRODUCTION=true. Replace it with ${rule.productionPrefix} before accepting real payments.`,
+      )
+      continue
+    }
+
     errors.push(`${rule.key} should use a ${rule.productionPrefix} production value in production.`)
   }
 }
@@ -176,11 +194,11 @@ for (const rule of optionalSensitiveRules) {
   if (!value) continue
 
   if (hasPlaceholderValue(value, rule)) {
-    report(`${rule.key} is configured but still looks like a placeholder. ${rule.note}`)
+    warn(`${rule.key} is configured but still looks like a placeholder. ${rule.note}`)
   }
 
   if (rule.minLength && value.length < rule.minLength) {
-    report(`${rule.key} is configured but shorter than ${rule.minLength} characters.`)
+    warn(`${rule.key} is configured but shorter than ${rule.minLength} characters.`)
   }
 }
 
@@ -199,6 +217,8 @@ const allowedPublicEnv = new Set([
   'NEXT_PUBLIC_DEFAULT_PHONE_COUNTRY',
   'NEXT_PUBLIC_SERVER_URL',
   'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+  'NEXT_PUBLIC_VERCEL_GIT_COMMIT_AUTHOR_LOGIN',
+  'NEXT_PUBLIC_VERCEL_GIT_COMMIT_AUTHOR_NAME',
 ])
 
 const publicSecretLikeKeys = Object.keys(process.env)
