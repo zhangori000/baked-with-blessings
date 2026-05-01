@@ -8,6 +8,7 @@ import {
   BakerySectionHeader,
 } from '@/design-system/bakery'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { BLOG_PAGE_CONTENT_DEFAULTS } from '@/globals/BlogPageContent'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import { getPayload } from 'payload'
 import { ArrowRight } from 'lucide-react'
@@ -46,30 +47,37 @@ export default async function BlogPage() {
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config: configPromise })
 
-  const posts = await payload.find({
-    collection: 'posts',
-    draft: false,
-    limit: 100,
-    overrideAccess: false,
-    pagination: false,
-    select: postsSelect,
-    sort: '-publishedOn',
-    where: {
-      _status: {
-        equals: 'published',
+  const [posts, pageContent] = await Promise.all([
+    payload.find({
+      collection: 'posts',
+      draft: false,
+      limit: 100,
+      overrideAccess: false,
+      pagination: false,
+      select: postsSelect,
+      sort: '-publishedOn',
+      where: {
+        _status: {
+          equals: 'published',
+        },
       },
-    },
-  })
+    }),
+    payload.findGlobal({ slug: 'blog-page-content', depth: 0 }),
+  ])
+
+  const heroEyebrow = pageContent.eyebrow?.trim() || BLOG_PAGE_CONTENT_DEFAULTS.eyebrow
+  const heroTitle = pageContent.title?.trim() || BLOG_PAGE_CONTENT_DEFAULTS.title
+  const heroSummary = pageContent.summary?.trim() || BLOG_PAGE_CONTENT_DEFAULTS.summary
 
   return (
     <div className={`blogTypography ${blogHeroSerif.variable}`}>
       <div className="cateringMenuExperience" style={{ fontFamily: 'var(--font-rounded-body)' }}>
         <div className="blogHero">
           <BlogSceneryHero
-            eyebrow="Baked with Blessings"
+            eyebrow={heroEyebrow}
             initialSceneryTone={initialSceneryTone}
-            summary="This page is experimental."
-            title="Blog"
+            summary={heroSummary}
+            title={heroTitle}
           />
         </div>
 

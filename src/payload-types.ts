@@ -161,11 +161,15 @@ export interface Config {
     brand: Brand;
     header: Header;
     footer: Footer;
+    'blog-page-content': BlogPageContent;
+    'discussion-board-content': DiscussionBoardContent;
   };
   globalsSelect: {
     brand: BrandSelect<false> | BrandSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'blog-page-content': BlogPageContentSelect<false> | BlogPageContentSelect<true>;
+    'discussion-board-content': DiscussionBoardContentSelect<false> | DiscussionBoardContentSelect<true>;
   };
   locale: null;
   widgets: {
@@ -473,11 +477,11 @@ export interface Product {
      */
     infoButtonLabel?: string | null;
     /**
-     * Notebook-style heading shown inside the ingredient popup, for example Baker Notes.
+     * Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.
      */
     ingredientsNoteTitle?: string | null;
     /**
-     * Optional handwritten-style intro sentence above the ingredients list in the popup.
+     * Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.
      */
     ingredientsIntro?: string | null;
     /**
@@ -514,7 +518,7 @@ export interface Product {
         }[]
       | null;
     /**
-     * Ingredients or cookie components that should appear inside the popup note.
+     * Deprecated. Use Info Dialog Text instead; the old row layout could collide on narrow cards.
      */
     ingredients?:
       | {
@@ -3234,6 +3238,52 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * Hero copy shown at the top of /blog. Edit here to change what visitors read while they wait, without a code change.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-page-content".
+ */
+export interface BlogPageContent {
+  id: number;
+  /**
+   * Small uppercase label above the title (1–4 words).
+   */
+  eyebrow?: string | null;
+  /**
+   * Large headline shown in the hero.
+   */
+  title?: string | null;
+  /**
+   * Short paragraph below the title that sets expectations for the page (what it is for, that it is experimental, etc.).
+   */
+  summary?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Hero copy shown at the top of /discussion-board. Edit here to change what visitors read while they wait, without a code change.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discussion-board-content".
+ */
+export interface DiscussionBoardContent {
+  id: number;
+  /**
+   * Small uppercase label above the title (1–4 words).
+   */
+  eyebrow?: string | null;
+  /**
+   * Large headline shown in the hero.
+   */
+  title?: string | null;
+  /**
+   * Short paragraph below the title that sets expectations for the page (what it is for, that it is experimental, etc.).
+   */
+  summary?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand_select".
  */
@@ -3289,6 +3339,30 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-page-content_select".
+ */
+export interface BlogPageContentSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discussion-board-content_select".
+ */
+export interface DiscussionBoardContentSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  summary?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

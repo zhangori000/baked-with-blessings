@@ -39,6 +39,9 @@ import {
 import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 
 type Props = {
+  heroEyebrow: string
+  heroSummary: string
+  heroTitle: string
   initialData: DiscussionTreeData
   initialFocusedNodeId?: string
   initialSceneryTone?: MenuSceneryTone
@@ -186,6 +189,9 @@ const getVisibleEdgeGroups = (edges: DiscussionBoardEdge[]) => {
 }
 
 export function DiscussionBoardClient({
+  heroEyebrow,
+  heroSummary,
+  heroTitle,
   initialData,
   initialFocusedNodeId,
   initialSceneryTone = 'dawn',
@@ -527,14 +533,14 @@ export function DiscussionBoardClient({
     >
       <div className="cateringMenuExperience discussionHeroExperience">
         <MenuHero
-          eyebrow="Public reasoning"
+          eyebrow={heroEyebrow}
           isSceneryPickerOpen={isSceneryPickerOpen}
           isSceneChanging={false}
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}
-          summary="This page is experimental."
-          title="Discussion Board"
+          summary={heroSummary}
+          title={heroTitle}
         />
       </div>
 

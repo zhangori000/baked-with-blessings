@@ -39,7 +39,9 @@ import {
   DiscussionNodes,
 } from '@/features/discussion-graph/collections'
 import { Reviews } from '@/features/reviews/collections/index'
+import { BlogPageContent } from '@/globals/BlogPageContent'
 import { Brand } from '@/globals/Brand'
+import { DiscussionBoardContent } from '@/globals/DiscussionBoardContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { plugins } from './plugins'
@@ -144,7 +146,7 @@ export default buildConfig({
   }),
   email: emailAdapter,
   endpoints: [],
-  globals: [Brand, Header, Footer],
+  globals: [Brand, Header, Footer, BlogPageContent, DiscussionBoardContent],
   plugins: [
     vercelBlobStorage({
       collections: {
