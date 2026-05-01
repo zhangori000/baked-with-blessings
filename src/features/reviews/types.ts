@@ -30,6 +30,12 @@ export type PublicReviewAction = {
   detail: string
 }
 
+export type PublicReviewSocial = {
+  href?: string
+  label: string
+  value: string
+}
+
 export type PublicReview = {
   actionLog: PublicReviewAction[]
   businessResponse?: string
@@ -39,7 +45,7 @@ export type PublicReview = {
   fairnessNote?: string
   id: string
   photos: PublicReviewPhoto[]
-  rating: number
+  publicSocials: PublicReviewSocial[]
   reviewTone: ReviewTone
   responseStatus: ReviewResponseStatus
   title: string
@@ -50,7 +56,6 @@ export type PublicReview = {
 export type ReviewsPageData = {
   reviews: PublicReview[]
   stats: {
-    averageRating: number
     changedCount: number
     publishedCount: number
     stoodFirmCount: number

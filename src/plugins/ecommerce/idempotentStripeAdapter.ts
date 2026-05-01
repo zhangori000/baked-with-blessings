@@ -377,11 +377,11 @@ const isReusablePaymentIntentStatus = (status: Stripe.PaymentIntent.Status) =>
 const isStripePaymentIntent = (value: unknown): value is Stripe.PaymentIntent =>
   Boolean(
     value &&
-      typeof value === 'object' &&
-      'id' in value &&
-      typeof (value as { id?: unknown }).id === 'string' &&
-      'object' in value &&
-      (value as { object?: unknown }).object === 'payment_intent',
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof (value as { id?: unknown }).id === 'string' &&
+    'object' in value &&
+    (value as { object?: unknown }).object === 'payment_intent',
   )
 
 export const finalizeOrderFromPaymentIntent = async ({
@@ -394,6 +394,11 @@ export const finalizeOrderFromPaymentIntent = async ({
   stripe,
   transactionsSlug,
 }: FinalizeOrderFromPaymentIntentArgs): Promise<FinalizeOrderFromPaymentIntentResult> => {
+  req.payload.logger.info({
+    msg: 'stripe.finalize.start',
+    paymentIntentID,
+  })
+
   const existingOrder = await findOrderByPaymentIntentID({
     ordersSlug,
     paymentIntentID,
@@ -401,6 +406,12 @@ export const finalizeOrderFromPaymentIntent = async ({
   })
 
   if (existingOrder?.id) {
+    req.payload.logger.info({
+      msg: 'stripe.finalize.existing_order',
+      orderID: existingOrder.id,
+      paymentIntentID,
+    })
+
     return {
       created: false,
       order: existingOrder,
@@ -425,6 +436,13 @@ export const finalizeOrderFromPaymentIntent = async ({
             overrideAccess: true,
             req,
           })) as OrderLike)
+
+    req.payload.logger.info({
+      msg: 'stripe.finalize.existing_transaction_order',
+      orderID: existingOrderID,
+      paymentIntentID,
+      transactionID: transaction.id,
+    })
 
     return {
       created: false,
@@ -529,6 +547,14 @@ export const finalizeOrderFromPaymentIntent = async ({
     req,
   })
 
+  req.payload.logger.info({
+    cartID,
+    msg: 'stripe.finalize.created_order',
+    orderID: order.id,
+    paymentIntentID,
+    transactionID: transaction.id,
+  })
+
   return {
     created: true,
     order,
@@ -554,7 +580,14 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
           return
         }
 
-        await finalizeOrderFromPaymentIntent({
+        req.payload.logger.info({
+          eventID: event.id,
+          msg: 'stripe.webhook.payment_intent_succeeded.received',
+          paymentIntentID: paymentIntent.id,
+          status: paymentIntent.status,
+        })
+
+        const result = await finalizeOrderFromPaymentIntent({
           cartsSlug: 'carts' as CollectionSlug,
           ordersSlug: 'orders' as CollectionSlug,
           paymentIntent,
@@ -562,6 +595,15 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
           req,
           stripe,
           transactionsSlug: 'transactions' as CollectionSlug,
+        })
+
+        req.payload.logger.info({
+          created: result.created,
+          eventID: event.id,
+          msg: 'stripe.webhook.payment_intent_succeeded.finalized',
+          orderID: result.order.id,
+          paymentIntentID: paymentIntent.id,
+          transactionID: result.transactionID,
         })
 
         await existingPaymentIntentSucceededWebhook?.({ event, req, stripe })
@@ -609,6 +651,15 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
       if (!paymentCustomer) {
         throw new Error('A customer account or email is required to make a purchase.')
       }
+
+      payload.logger.info({
+        amount,
+        cartID: cart.id,
+        currency,
+        hasPayloadCustomer: Boolean(paymentCustomer.id),
+        itemCount: cart.items.length,
+        msg: 'stripe.initiate.start',
+      })
 
       try {
         const { stripe, stripeCustomerID } = await ensureStripeCustomer({
@@ -723,6 +774,16 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
             req: initiateArgs.req,
           })
 
+          payload.logger.info({
+            amount: reusablePaymentIntent.amount,
+            cartID: cart.id,
+            currency: reusablePaymentIntent.currency,
+            msg: 'stripe.initiate.reused_payment_intent',
+            paymentIntentID: reusablePaymentIntent.id,
+            status: reusablePaymentIntent.status,
+            transactionID: existingTransaction.id,
+          })
+
           return {
             clientSecret: reusablePaymentIntent.client_secret || '',
             message: 'Payment resumed successfully',
@@ -771,6 +832,16 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
           req: initiateArgs.req,
         })
 
+        payload.logger.info({
+          amount: paymentIntent.amount,
+          cartID: cart.id,
+          currency: paymentIntent.currency,
+          msg: 'stripe.initiate.created_payment_intent',
+          paymentIntentID: paymentIntent.id,
+          status: paymentIntent.status,
+          transactionID: transaction.id,
+        })
+
         return {
           clientSecret: paymentIntent.client_secret || '',
           message: 'Payment initiated successfully',
@@ -779,6 +850,7 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
         }
       } catch (error) {
         payload.logger.error({
+          cartID: cart.id,
           err: error,
           msg: 'Error initiating payment with Stripe',
         })
@@ -794,6 +866,11 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
 
       if (paymentIntentID) {
         const stripe = createStripeClient(args)
+        confirmArgs.req.payload.logger.info({
+          msg: 'stripe.confirm.start',
+          paymentIntentID,
+        })
+
         const { created, order, transactionID } = await finalizeOrderFromPaymentIntent({
           cartsSlug,
           customerEmail: confirmArgs.data.customerEmail,
@@ -802,6 +879,14 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
           req: confirmArgs.req,
           stripe,
           transactionsSlug,
+        })
+
+        confirmArgs.req.payload.logger.info({
+          created,
+          msg: 'stripe.confirm.done',
+          orderID: order.id,
+          paymentIntentID,
+          transactionID,
         })
 
         const response = {

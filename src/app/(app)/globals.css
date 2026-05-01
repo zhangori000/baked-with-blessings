@@ -2345,12 +2345,11 @@ body:has(.accountSceneryRoute) .siteHeaderBannerList {
 .accountSceneryBannerChoice:hover,
 .accountSceneryBannerChoice[aria-pressed='true'] {
   border-color: rgba(25, 57, 95, 0.3);
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--account-scene-aura, rgba(255, 220, 124, 0.82)) 38%, white 62%),
-      rgba(255, 253, 246, 0.94)
-    );
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--account-scene-aura, rgba(255, 220, 124, 0.82)) 38%, white 62%),
+    rgba(255, 253, 246, 0.94)
+  );
   transform: translateY(-1px);
 }
 
@@ -2706,8 +2705,7 @@ html[data-menu-scene='fairy-castle'] .accountSceneryBannerTitleCard {
 .accountSceneryShell {
   margin-top: 0;
   padding-top: clamp(1.75rem, 3.5vw, 3rem);
-  background:
-    linear-gradient(180deg, #fff8ed 0%, #fff5ec 58%, #fff8ed 100%);
+  background: linear-gradient(180deg, #fff8ed 0%, #fff5ec 58%, #fff8ed 100%);
 }
 
 .accountSideNav {
@@ -3028,7 +3026,9 @@ body:has(.accountSceneryRoute) .siteHeaderShellRow {
 .accountSceneryBannerHost .cateringHeroContent {
   min-height: clamp(24rem, 36vh, 30rem) !important;
   padding-top: calc(var(--catering-header-underlap) + clamp(0.75rem, 1.4vw, 1.15rem)) !important;
-  padding-bottom: calc(var(--catering-hero-meadow-height) + clamp(0.85rem, 1.8vw, 1.4rem)) !important;
+  padding-bottom: calc(
+    var(--catering-hero-meadow-height) + clamp(0.85rem, 1.8vw, 1.4rem)
+  ) !important;
 }
 
 .accountSceneryBannerHost .cateringHeroCopy {
@@ -3299,4 +3299,21 @@ html[data-menu-scene='under-tree'] body:has(.routeLoadingSurface) .siteHeaderVie
     padding: 0.5rem 0.72rem;
     font-size: 0.72rem;
   }
+}
+
+body:has(.accountSceneryRoute) .siteHeaderActionButton,
+body:has(.accountSceneryRoute) .siteHeaderMobileIconButton,
+body:has(.accountSceneryRoute) .siteHeaderMobileBagButton,
+body:has(.accountSceneryRoute) .siteHeaderMobileBagCount {
+  border-color: rgb(255 250 226 / 32%) !important;
+  background: rgb(8 20 47 / 22%) !important;
+  color: #fff7cf !important;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 52%) !important;
+}
+
+body:has(.accountSceneryRoute) .siteHeaderActionButton:hover,
+body:has(.accountSceneryRoute) .siteHeaderMobileIconButton:hover,
+body:has(.accountSceneryRoute) .siteHeaderMobileBagButton:hover {
+  border-color: rgb(255 250 226 / 46%) !important;
+  background: rgb(8 20 47 / 34%) !important;
 }

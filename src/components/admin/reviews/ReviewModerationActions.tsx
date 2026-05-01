@@ -11,8 +11,7 @@ type SelectFieldState<T> = {
 
 export const ReviewModerationActions: React.FC = () => {
   const { id } = useDocumentInfo()
-  const reviewID =
-    typeof id === 'number' ? id.toString() : typeof id === 'string' ? id : null
+  const reviewID = typeof id === 'number' ? id.toString() : typeof id === 'string' ? id : null
 
   const {
     config: {
@@ -54,8 +53,8 @@ export const ReviewModerationActions: React.FC = () => {
 
         toast.success(
           nextStatus === 'published'
-            ? 'Review approved. It will now be visible on the public reviews page.'
-            : 'Review rejected.',
+            ? 'Review published. It is visible on the public reviews page.'
+            : 'Review unpublished.',
         )
         window.location.reload()
       } catch (error) {
@@ -93,7 +92,7 @@ export const ReviewModerationActions: React.FC = () => {
           size="small"
           type="button"
         >
-          Approve (show publicly)
+          Publish
         </Button>
         <Button
           buttonStyle={currentStatus === 'declined' ? 'secondary' : 'secondary'}
@@ -104,7 +103,7 @@ export const ReviewModerationActions: React.FC = () => {
           size="small"
           type="button"
         >
-          Reject (hide)
+          Unpublish
         </Button>
       </div>
       <p style={{ marginTop: '0.5rem', opacity: 0.75, fontSize: '0.875rem' }}>

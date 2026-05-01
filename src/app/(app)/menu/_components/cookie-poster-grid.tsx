@@ -249,7 +249,7 @@ function CookiePosterRailCard({
           <p className="cookiePosterLockedDescription px-1">
             <span>{poster.lockedLabel ?? 'Catering only this month'}.</span>{' '}
             {poster.lockedDescription ??
-              'Available in batches of 10, mini or regular size, on the menu.'}
+              'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'}
           </p>
         ) : null}
 

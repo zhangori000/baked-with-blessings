@@ -374,6 +374,26 @@ export interface Order {
    */
   ownerNotificationSentAt?: string | null;
   /**
+   * Manual payment method reported by the customer. This does not mean payment has been verified.
+   */
+  manualPaymentMethod?: 'venmo' | null;
+  /**
+   * Manual payment verification status. Update this after checking the external payment account.
+   */
+  manualPaymentStatus?: ('reported_sent' | 'verified' | 'rejected') | null;
+  /**
+   * External account handle the customer was instructed to pay.
+   */
+  manualPaymentHandle?: string | null;
+  /**
+   * When the customer clicked that the manual payment was sent.
+   */
+  manualPaymentReportedAt?: string | null;
+  /**
+   * Internal idempotency reference for manual payment order creation.
+   */
+  manualPaymentReference?: string | null;
+  /**
    * Stripe PaymentIntent used as the checkout idempotency key.
    */
   stripePaymentIntentID?: string | null;
@@ -1673,11 +1693,63 @@ export interface Review {
    * Private. Used only if the bakery needs to follow up.
    */
   customerEmail?: string | null;
-  reviewTone: 'loved_it' | 'suggestion';
   /**
-   * 1 to 5 rating. Half-step values like 4.5 are allowed.
+   * Optional Instagram handle from the public review form.
    */
-  rating: number;
+  instagramHandle?: string | null;
+  /**
+   * Show the Instagram handle on the public review.
+   */
+  instagramHandlePublic?: boolean | null;
+  /**
+   * Optional LinkedIn URL from the public review form.
+   */
+  linkedinUrl?: string | null;
+  /**
+   * Show the LinkedIn URL on the public review.
+   */
+  linkedinUrlPublic?: boolean | null;
+  /**
+   * Optional Discord username from the public review form.
+   */
+  discordUsername?: string | null;
+  /**
+   * Show the Discord username on the public review.
+   */
+  discordUsernamePublic?: boolean | null;
+  /**
+   * Optional League username from the public review form.
+   */
+  leagueUsername?: string | null;
+  /**
+   * Show the League username on the public review.
+   */
+  leagueUsernamePublic?: boolean | null;
+  /**
+   * Optional Nintendo ID from the public review form.
+   */
+  nintendoId?: string | null;
+  /**
+   * Show the Nintendo ID on the public review.
+   */
+  nintendoIdPublic?: boolean | null;
+  /**
+   * Optional PTCG ID from the public review form.
+   */
+  ptcgId?: string | null;
+  /**
+   * Show the PTCG ID on the public review.
+   */
+  ptcgIdPublic?: boolean | null;
+  /**
+   * Optional extra contact details from the public review form.
+   */
+  otherContact?: string | null;
+  /**
+   * Show other contact details on the public review.
+   */
+  otherContactPublic?: boolean | null;
+  reviewTone: 'loved_it' | 'suggestion';
   title: string;
   body: string;
   /**
@@ -2288,8 +2360,21 @@ export interface ReviewsSelect<T extends boolean = true> {
   tenantId?: T;
   customerName?: T;
   customerEmail?: T;
+  instagramHandle?: T;
+  instagramHandlePublic?: T;
+  linkedinUrl?: T;
+  linkedinUrlPublic?: T;
+  discordUsername?: T;
+  discordUsernamePublic?: T;
+  leagueUsername?: T;
+  leagueUsernamePublic?: T;
+  nintendoId?: T;
+  nintendoIdPublic?: T;
+  ptcgId?: T;
+  ptcgIdPublic?: T;
+  otherContact?: T;
+  otherContactPublic?: T;
   reviewTone?: T;
-  rating?: T;
   title?: T;
   body?: T;
   visitContext?: T;
@@ -3050,6 +3135,11 @@ export interface OrdersSelect<T extends boolean = true> {
   guestContactValue?: T;
   accessToken?: T;
   ownerNotificationSentAt?: T;
+  manualPaymentMethod?: T;
+  manualPaymentStatus?: T;
+  manualPaymentHandle?: T;
+  manualPaymentReportedAt?: T;
+  manualPaymentReference?: T;
   stripePaymentIntentID?: T;
   updatedAt?: T;
   createdAt?: T;

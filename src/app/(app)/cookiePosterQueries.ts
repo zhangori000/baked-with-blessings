@@ -97,7 +97,7 @@ const applyRotationAvailability = ({
         isMonthlyFlavor,
         lockedDescription:
           activeRotation.lockedDescription?.trim() ||
-          'This flavor is outside the current rotation, but you can still order it in batches of 10 from the menu.',
+          'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
         lockedLabel: activeRotation.lockedLabel?.trim() || 'Catering only this month',
         menuHref,
         menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View menu',
@@ -109,7 +109,9 @@ const applyRotationAvailability = ({
     })
     .sort((left, right) => {
       const leftOrder =
-        typeof left.productId === 'number' ? monthlyFlavorOrder.get(String(left.productId)) : undefined
+        typeof left.productId === 'number'
+          ? monthlyFlavorOrder.get(String(left.productId))
+          : undefined
       const rightOrder =
         typeof right.productId === 'number'
           ? monthlyFlavorOrder.get(String(right.productId))
@@ -170,5 +172,7 @@ export const queryHomeCookiePosters = async () => {
     posters,
   })
 
-  return postersWithAvailability.length > 0 ? postersWithAvailability : buildFallbackHomeCookiePosters()
+  return postersWithAvailability.length > 0
+    ? postersWithAvailability
+    : buildFallbackHomeCookiePosters()
 }
