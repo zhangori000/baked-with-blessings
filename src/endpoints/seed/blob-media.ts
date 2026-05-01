@@ -8,11 +8,12 @@ const getSeedBlobToken = () => process.env.BLOB_READ_WRITE_TOKEN?.trim()
 const isBlobForSeedFilename = ({ filename, pathname }: { filename: string; pathname: string }) => {
   const seedFile = path.posix.parse(filename)
   const blobName = path.posix.basename(decodeURIComponent(pathname))
-
-  return (
-    blobName === filename ||
-    (blobName.startsWith(`${seedFile.name}-`) && blobName.endsWith(seedFile.ext))
+  const blobFile = path.posix.parse(blobName)
+  const generatedVariantPattern = new RegExp(
+    `^${seedFile.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d+x\\d+$`,
   )
+
+  return blobName === filename || generatedVariantPattern.test(blobFile.name)
 }
 
 export const clearSeedMediaBlobs = async ({
