@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { BakeryPageShell, BakeryPageSurface } from '@/design-system/bakery'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 import { FindOrderForm } from '@/components/forms/FindOrderForm'
@@ -14,9 +15,11 @@ export default async function FindOrderPage() {
   const user = await getAuthenticatedCustomer(payload, headers)
 
   return (
-    <div className="container py-16">
-      <FindOrderForm initialEmail={user?.email || undefined} />
-    </div>
+    <BakeryPageShell as="main" spacing="lg" width="narrow">
+      <BakeryPageSurface spacing="lg">
+        <FindOrderForm initialEmail={user?.email || undefined} />
+      </BakeryPageSurface>
+    </BakeryPageShell>
   )
 }
 

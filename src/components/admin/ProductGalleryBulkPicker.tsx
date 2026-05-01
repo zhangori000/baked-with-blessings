@@ -2,6 +2,7 @@
 
 import type { FormState } from 'payload'
 
+import { BakeryPressable } from '@/design-system/bakery'
 import { Button, toast, useConfig, useForm, useFormFields } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
@@ -194,7 +195,7 @@ export const ProductGalleryBulkPicker: React.FC = () => {
             const isAlreadyInGallery = existingGalleryIDs.has(doc.id)
 
             return (
-              <button
+              <BakeryPressable
                 className={[
                   `${baseClass}__tile`,
                   isSelected && `${baseClass}__tile--selected`,
@@ -215,12 +216,18 @@ export const ProductGalleryBulkPicker: React.FC = () => {
                   ) : null}
                 </span>
                 <span className={`${baseClass}__meta`}>
-                  <span className={`${baseClass}__filename`}>{doc.filename ?? `Media ${doc.id}`}</span>
+                  <span className={`${baseClass}__filename`}>
+                    {doc.filename ?? `Media ${doc.id}`}
+                  </span>
                   <span className={`${baseClass}__state`}>
-                    {isAlreadyInGallery ? 'Already in gallery' : isSelected ? 'Selected' : 'Click to select'}
+                    {isAlreadyInGallery
+                      ? 'Already in gallery'
+                      : isSelected
+                        ? 'Selected'
+                        : 'Click to select'}
                   </span>
                 </span>
-              </button>
+              </BakeryPressable>
             )
           })}
         </div>

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 
+import { BakeryPageShell, BakeryPageSurface } from '@/design-system/bakery'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
-import React, { Fragment } from 'react'
+import React from 'react'
 import { ConfirmOrder } from '@/components/checkout/ConfirmOrder'
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
@@ -11,14 +12,14 @@ export default async function ConfirmOrderPage({
 }: {
   searchParams: SearchParams
 }) {
-  const searchParams = await searchParamsPromise
-
-  const paymentIntent = searchParams.paymentId
+  await searchParamsPromise
 
   return (
-    <div className="container min-h-[90vh] flex py-12">
-      <ConfirmOrder />
-    </div>
+    <BakeryPageShell as="main" className="min-h-[90vh] flex" spacing="lg" width="container">
+      <BakeryPageSurface className="flex" spacing="lg" width="full">
+        <ConfirmOrder />
+      </BakeryPageSurface>
+    </BakeryPageShell>
   )
 }
 

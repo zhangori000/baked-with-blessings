@@ -3,17 +3,27 @@
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import React, { startTransition, useEffect, useState } from 'react'
 
-import { MenuHero, menuSceneryTones, preloadSceneryAssets } from '../menu/_components/catering-menu-scenery'
+import {
+  MenuHero,
+  menuSceneryTones,
+  preloadSceneryAssets,
+} from '../menu/_components/catering-menu-scenery'
 import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 
 type BlogSceneryHeroProps = {
   eyebrow: string
+  initialSceneryTone?: MenuSceneryTone
   summary: string
   title: string
 }
 
-export function BlogSceneryHero({ eyebrow, summary, title }: BlogSceneryHeroProps) {
-  const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone('classic')
+export function BlogSceneryHero({
+  eyebrow,
+  initialSceneryTone = 'dawn',
+  summary,
+  title,
+}: BlogSceneryHeroProps) {
+  const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
   const isSceneChanging = false
 
@@ -28,13 +38,11 @@ export function BlogSceneryHero({ eyebrow, summary, title }: BlogSceneryHeroProp
       return
     }
 
-    preloadSceneryAssets(nextSceneryTone)
-
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setSceneryTone(nextSceneryTone)
     })
-
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   return (
@@ -42,7 +50,6 @@ export function BlogSceneryHero({ eyebrow, summary, title }: BlogSceneryHeroProp
       eyebrow={eyebrow}
       isSceneryPickerOpen={isSceneryPickerOpen}
       isSceneChanging={isSceneChanging}
-      key={sceneryTone}
       onSelectScenery={handleSelectScenery}
       onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
       sceneryTone={sceneryTone}

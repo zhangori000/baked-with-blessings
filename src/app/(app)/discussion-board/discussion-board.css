@@ -644,6 +644,7 @@
 }
 
 .discussionNodeUtilityRow {
+  align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -1127,6 +1128,116 @@
   top: 1rem;
   width: auto;
   z-index: 50;
+}
+
+@media (max-width: 759px) {
+  .discussionBoardPage.is-graph-view .discussionBoardShell {
+    gap: 0.9rem;
+    padding-inline: max(0.7rem, env(safe-area-inset-left));
+  }
+
+  .discussionBoardPage.is-graph-view .discussionGraphHeader {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionTree {
+    gap: 0.85rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionTreeNode {
+    gap: 0.55rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionNodeCard {
+    background: rgba(255, 253, 246, 0.34);
+    border: 1px solid rgba(67, 92, 37, 0.14);
+    border-radius: 0.45rem;
+    box-shadow: none;
+    gap: 0.55rem;
+    padding: 0.7rem 0.72rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionNodeCard.is-focused,
+  .discussionBoardPage.is-graph-view .discussionNodeCard[data-node-type='question'] {
+    background: rgba(255, 253, 246, 0.42);
+    border-color: rgba(67, 92, 37, 0.18);
+    box-shadow: none;
+  }
+
+  .discussionBoardPage.is-graph-view
+    .discussionChildren
+    > .discussionTreeNode
+    > .discussionNodeCard {
+    padding-top: 1.55rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionNodeUtilityRow {
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionNodeActionPanel {
+    flex: 0 1 auto;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionNodeContent {
+    gap: 0.48rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionContentBlock,
+  .discussionBoardPage.is-graph-view .discussionContentBlock[data-block-type='claim'],
+  .discussionBoardPage.is-graph-view .discussionContentBlock[data-block-type='evidence'],
+  .discussionBoardPage.is-graph-view .discussionContentBlock[data-block-type='uncertainty'] {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionEdgeGroups {
+    gap: 0.7rem;
+    margin-left: 0;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionEdgeLabel {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    margin-left: 0.95rem;
+    padding: 0;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionEdgeCount {
+    background: transparent;
+    border: 0;
+    padding-inline: 0;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionChildren {
+    gap: 0.8rem;
+    padding-left: 1.55rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionChildren::before {
+    left: 0.48rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionChildren > .discussionTreeNode::before {
+    left: -1.06rem;
+    width: 1.05rem;
+  }
+
+  .discussionBoardPage.is-graph-view .discussionChildren > .discussionTreeNode::after {
+    background: rgba(255, 253, 246, 0.86);
+    border: 1px solid rgba(67, 92, 37, 0.16);
+    left: 0.62rem;
+    padding: 0.14rem 0.28rem;
+    top: 0.34rem;
+  }
 }
 
 @media (min-width: 760px) {

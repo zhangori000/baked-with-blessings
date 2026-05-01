@@ -4,7 +4,10 @@ import {
   DISCUSSION_VISITOR_COOKIE,
   getDiscussionVisitor,
 } from '@/features/discussion-graph/services/discussionIdentity'
-import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
+import {
+  finalizeOrderFromPaymentIntent,
+  idempotentStripeAdapter,
+} from '@/plugins/ecommerce/idempotentStripeAdapter'
 import {
   PHONE_VERIFICATION_START_WINDOW_MS,
   createPhoneVerificationStartKey,
@@ -100,5 +103,93 @@ describe('idempotency helpers', () => {
     })
     expect(result.transactionID).toBeUndefined()
     expect(findByID).not.toHaveBeenCalled()
+  })
+
+  it('finalizes a succeeded Stripe PaymentIntent from the transaction snapshot', async () => {
+    const transaction = {
+      cart: 8,
+      customer: 12,
+      id: 15,
+      items: [
+        {
+          product: 3,
+          quantity: 2,
+        },
+      ],
+      status: 'pending',
+    }
+    const order = {
+      accessToken: 'order-token',
+      id: 21,
+    }
+    const find = vi
+      .fn()
+      .mockResolvedValueOnce({ docs: [] })
+      .mockResolvedValueOnce({ docs: [transaction] })
+    const create = vi.fn().mockResolvedValue(order)
+    const update = vi.fn().mockResolvedValue({})
+
+    const result = await finalizeOrderFromPaymentIntent({
+      cartsSlug: 'carts',
+      ordersSlug: 'orders',
+      paymentIntent: {
+        amount: 10500,
+        currency: 'usd',
+        id: 'pi_succeeded',
+        metadata: {
+          cartID: '8',
+        },
+        object: 'payment_intent',
+        status: 'succeeded',
+      } as never,
+      paymentIntentID: 'pi_succeeded',
+      req: {
+        payload: {
+          create,
+          find,
+          update,
+        },
+      } as never,
+      stripe: {} as never,
+      transactionsSlug: 'transactions',
+    })
+
+    expect(result).toMatchObject({
+      created: true,
+      order,
+      transactionID: 15,
+    })
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'orders',
+        data: expect.objectContaining({
+          amount: 10500,
+          customer: 12,
+          items: transaction.items,
+          status: 'processing',
+          stripePaymentIntentID: 'pi_succeeded',
+          transactions: [15],
+        }),
+      }),
+    )
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'carts',
+        data: expect.objectContaining({
+          purchasedAt: expect.any(String),
+        }),
+        id: '8',
+      }),
+    )
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'transactions',
+        data: {
+          order: 21,
+          status: 'succeeded',
+        },
+        id: 15,
+      }),
+    )
   })
 })

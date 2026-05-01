@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { BakeryCard, BakeryPressable } from '@/design-system/bakery'
 
 type Props = {
   product: Partial<Product>
@@ -110,8 +111,22 @@ const ProductCardFrame = ({
   )
 
   return (
-    <article className="group flex h-full flex-col rounded-[12px] border border-transparent bg-transparent p-2 transition-colors duration-300 hover:bg-[#f1e9dd]">
-      <div className="relative overflow-hidden rounded-[10px] bg-[#f7f2ea]">{media}</div>
+    <BakeryCard
+      as="article"
+      className="group flex h-full flex-col border border-transparent bg-transparent p-2 transition-colors duration-300 hover:bg-[#f1e9dd]"
+      interactive
+      radius="md"
+      spacing="none"
+      tone="transparent"
+    >
+      <BakeryCard
+        className="relative overflow-hidden bg-[#f7f2ea]"
+        radius="md"
+        spacing="none"
+        tone="transparent"
+      >
+        {media}
+      </BakeryCard>
 
       <div className="flex flex-1 flex-col gap-1.5 px-2 pb-2 pt-4">
         <h3
@@ -131,7 +146,7 @@ const ProductCardFrame = ({
           <p className="line-clamp-2 text-sm leading-5 text-[#6b5947]">{description}</p>
         ) : null}
       </div>
-    </article>
+    </BakeryCard>
   )
 }
 
@@ -164,13 +179,13 @@ export const ProductGridItem: React.FC<Props> = ({
     return (
       <Dialog>
         <DialogTrigger asChild>
-          <button
+          <BakeryPressable
             aria-label={`Open details for ${title}`}
             className="flex h-full w-full cursor-pointer text-left"
             type="button"
           >
             {card}
-          </button>
+          </BakeryPressable>
         </DialogTrigger>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -179,7 +194,12 @@ export const ProductGridItem: React.FC<Props> = ({
           </DialogHeader>
           <div className="space-y-4">
             {image ? (
-              <div className="overflow-hidden rounded-[18px] bg-[#f3ede3]">
+              <BakeryCard
+                className="overflow-hidden bg-[#f3ede3]"
+                radius="lg"
+                spacing="none"
+                tone="transparent"
+              >
                 <Media
                   className="relative aspect-square"
                   height={360}
@@ -187,7 +207,7 @@ export const ProductGridItem: React.FC<Props> = ({
                   resource={image}
                   width={360}
                 />
-              </div>
+              </BakeryCard>
             ) : null}
             {description ? <p className="text-sm text-[#6b5947]">{description}</p> : null}
           </div>

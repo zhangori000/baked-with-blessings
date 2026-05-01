@@ -1,32 +1,45 @@
 .cateringMenuHeroDisplay {
+  color: var(--scene-hero-title, var(--scene-text, #20391f));
   font-family: var(--font-catering-serif), 'Iowan Old Style', 'Palatino Linotype', serif;
+  font-size: clamp(3.85rem, 8.8vw, 6.25rem);
   font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.86;
+  max-width: 10ch;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.48),
-    0 12px 28px rgba(17, 44, 75, 0.18);
+    0 1px 0 rgba(255, 255, 255, 0.62),
+    0 10px 26px rgba(17, 44, 75, 0.2);
+  text-wrap: balance;
 }
 
 .cateringMenuEyebrow {
   color: rgba(25, 57, 95, 0.76);
   font-family: var(--font-rounded-display);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: clamp(0.74rem, 1.1vw, 0.86rem);
+  font-weight: 850;
   letter-spacing: 0.22em;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.72),
+    0 6px 16px rgba(17, 44, 75, 0.14);
   text-transform: uppercase;
 }
 
 .cateringHeroEyebrow {
-  color: rgba(11, 38, 68, 0.92);
+  color: var(--scene-hero-muted, var(--scene-muted-text, rgba(11, 38, 68, 0.92)));
 }
 
 .cateringHeroSummary {
-  color: rgba(10, 32, 55, 0.96);
+  color: var(--scene-hero-text, var(--scene-text, rgba(10, 32, 55, 0.96)));
   font-family: var(--font-rounded-display);
-  font-weight: 760;
+  font-size: clamp(1.08rem, 2.25vw, 1.3rem);
+  font-weight: 860;
   letter-spacing: -0.015em;
+  line-height: 1.62;
+  max-width: min(var(--scene-hero-copy-max-width, 38rem), calc(100vw - 2rem));
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.48),
-    0 8px 20px rgba(17, 44, 75, 0.14);
+    0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 20px rgba(17, 44, 75, 0.18);
+  text-wrap: balance;
 }
 
 .cateringMenuExperience {
@@ -115,7 +128,7 @@
 }
 
 .cateringHeroFlowerRail {
-  bottom: var(--catering-hero-flower-seam, 0.5rem);
+  bottom: var(--catering-hero-flower-seam, var(--scene-flower-seam, 0.5rem));
   height: 0;
   inset-inline: 0;
   overflow: visible;
@@ -153,9 +166,17 @@
   background:
     linear-gradient(
         90deg,
-        color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 68%, white 32%)
+        color-mix(
+            in srgb,
+            var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 68%,
+            white 32%
+          )
           0%,
-        color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 82%, white 18%)
+        color-mix(
+            in srgb,
+            var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 82%,
+            white 18%
+          )
           100%
       )
       no-repeat,
@@ -171,6 +192,7 @@
   font-family: var(--font-rounded-display);
   font-size: 0.86rem;
   font-weight: 700;
+  justify-content: center;
   letter-spacing: -0.01em;
   min-height: 2.25rem;
   overflow: hidden;
@@ -189,7 +211,12 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 28%, white 72%) 52%,
+    color-mix(
+        in srgb,
+        var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 28%,
+        white 72%
+      )
+      52%,
     transparent 100%
   );
   border-radius: inherit;
@@ -212,19 +239,40 @@
 .cateringSpawnButtonCharging {
   border-color: rgba(25, 57, 95, 0.24);
   box-shadow: 0 10px 22px
-    color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 38%, transparent);
+    color-mix(
+      in srgb,
+      var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 38%,
+      transparent
+    );
 }
 
 .cateringActionButtonWrap {
   display: inline-flex;
+  flex: 0 1 var(--catering-action-button-width, 10.35rem);
+  max-width: 100%;
   overflow: visible;
   position: relative;
 }
 
+.cateringActionButtonWrap > .cateringSpawnButton {
+  width: 100%;
+}
+
+.cateringActionRow {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cateringPanelActionRow .cateringActionButtonWrap > .cateringSpawnButton {
+  min-height: 2.72rem;
+}
+
 .cateringSceneryChooser {
   margin-top: 1.15rem;
-  max-width: none;
-  width: min(calc(100vw - 2rem), 38rem);
+  max-width: min(100%, calc(100vw - 2rem), 34rem);
+  width: min(100%, calc(100vw - 2rem), 34rem);
 }
 
 .cateringSceneryChooserBubble {
@@ -254,11 +302,31 @@
 
 .cateringSceneryChooserRail {
   border-radius: 0.78rem;
-  display: grid;
+  display: flex;
   gap: 0.42rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  overflow: visible;
-  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  padding: 0 0 0.24rem;
+  scroll-padding-inline: 0.1rem;
+  scroll-snap-type: x proximity;
+  scrollbar-color: rgba(23, 58, 99, 0.34) rgba(255, 255, 255, 0.58);
+  scrollbar-width: thin;
+  touch-action: pan-x;
+}
+
+.cateringSceneryChooserRail::-webkit-scrollbar {
+  height: 0.42rem;
+}
+
+.cateringSceneryChooserRail::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.58);
+  border-radius: 999px;
+}
+
+.cateringSceneryChooserRail::-webkit-scrollbar-thumb {
+  background: rgba(23, 58, 99, 0.28);
+  border-radius: 999px;
 }
 
 .cateringSceneryChoice {
@@ -266,11 +334,13 @@
   border: 2px solid rgba(18, 18, 18, 0.12);
   border-radius: 0.78rem;
   display: flex;
+  flex: 0 0 clamp(10.75rem, 31vw, 12rem);
   flex-direction: column;
   gap: 0.12rem;
   justify-content: center;
   min-height: 3.35rem;
   padding: 0.64rem 0.72rem;
+  scroll-snap-align: start;
   text-align: left;
   transition:
     transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -293,7 +363,12 @@
 .cateringSceneryChoiceActive {
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 22%, white 78%) 0%,
+    color-mix(
+        in srgb,
+        var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 22%,
+        white 78%
+      )
+      0%,
     #ffffff 100%
   );
   border-color: rgba(18, 18, 18, 0.35);
@@ -363,18 +438,22 @@
 
 .cateringScene-fairy-castle .cateringMenuHeroDisplay {
   text-shadow:
-    0 2px 0 rgba(236, 247, 255, 0.78),
-    0 12px 28px rgba(236, 247, 255, 0.58);
+    0 1px 0 rgba(255, 245, 210, 0.7),
+    0 8px 22px rgba(11, 15, 24, 0.24);
 }
 
 .cateringScene-fairy-castle .cateringHeroSummary,
 .cateringScene-fairy-castle .cateringHeroEyebrow {
   text-shadow:
-    0 1px 0 rgba(236, 247, 255, 0.86),
-    0 8px 18px rgba(236, 247, 255, 0.58);
+    0 1px 0 rgba(255, 245, 210, 0.82),
+    0 5px 18px rgba(11, 15, 24, 0.22);
 }
 
-.cateringScene-moonlit .cateringMenuHeroDisplay,
+.cateringScene-moonlit .cateringMenuHeroDisplay {
+  color: var(--scene-hero-title, #eef6ff);
+  text-shadow: 0 12px 22px rgba(5, 10, 28, 0.24);
+}
+
 .cateringScene-moonlit .cateringHeroSummary,
 .cateringScene-moonlit .cateringHeroEyebrow {
   color: #eef6ff;
@@ -398,7 +477,8 @@
   }
 
   .cateringSceneryChooser {
-    width: min(calc(100vw - 1rem), 26rem);
+    max-width: min(100%, calc(100vw - 1rem), 26rem);
+    width: min(100%, calc(100vw - 1rem), 26rem);
   }
 
   .cateringSceneryChooserBubble {
@@ -407,11 +487,11 @@
 
   .cateringSceneryChooserRail {
     gap: 0.36rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0;
+    padding-bottom: 0.22rem;
   }
 
   .cateringSceneryChoice {
+    flex-basis: 10.25rem;
     min-height: 3.15rem;
     padding: 0.52rem 0.6rem;
   }
@@ -425,6 +505,22 @@
 
   .cateringHeroBand {
     --catering-hero-meadow-height: 6.4rem;
+  }
+
+  .cateringHeroCopy {
+    max-width: min(21rem, calc(100vw - 2.25rem));
+  }
+
+  .cateringMenuHeroDisplay {
+    font-size: clamp(3.35rem, 17vw, 4.75rem);
+    line-height: 0.88;
+    max-width: 8.8ch;
+  }
+
+  .cateringHeroSummary {
+    font-size: clamp(1.04rem, 4.15vw, 1.18rem);
+    line-height: 1.58;
+    max-width: min(19rem, calc(100vw - 2.25rem));
   }
 
   .cateringHeroBand.cateringScene-under-tree {

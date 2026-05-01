@@ -1,0 +1,1063 @@
+.blessingsNetworkPage {
+  --blessings-cream: #fffdf6;
+  --blessings-paper: #fff8f2;
+  --blessings-ink: #122014;
+  --blessings-forest: #244f2d;
+  --blessings-moss: #62743c;
+  --blessings-rose: #8d4f62;
+  --blessings-honey: #b9862e;
+  --blessings-blue: #254763;
+  --blessings-border: rgba(36, 79, 45, 0.18);
+  --bakery-color-action-bg: var(--blessings-forest);
+  --bakery-color-action-fg: var(--blessings-cream);
+  --foreground: var(--blessings-ink);
+  --primary-foreground: var(--blessings-cream);
+  --scene-action-aura: rgba(36, 79, 45, 0.24);
+  --sheep-grass-deep: var(--blessings-forest);
+
+  min-height: 100vh;
+  background: var(--blessings-paper);
+  color: var(--blessings-ink);
+  overflow-x: clip;
+}
+
+.blessingsNetworkPage *,
+.blessingsNetworkPage *::before,
+.blessingsNetworkPage *::after {
+  box-sizing: border-box;
+}
+
+.blessingsNetworkPage button,
+.blessingsNetworkPage a {
+  cursor: pointer;
+}
+
+.blessingsNetworkShell {
+  display: grid;
+  gap: 1.4rem;
+  max-width: 100%;
+  min-width: 0;
+  padding-top: 1.4rem;
+  padding-bottom: 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.blessingsNetworkShell::before {
+  content: '';
+  position: absolute;
+  inset: -1px auto 0 50%;
+  z-index: -1;
+  width: 100vw;
+  pointer-events: none;
+  background: linear-gradient(180deg, #eef7e8 0%, var(--blessings-paper) 18rem);
+  transform: translateX(-50%);
+}
+
+.blessingsNetworkStats {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.blessingsNetworkStat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--blessings-border);
+  background: rgba(255, 253, 246, 0.94);
+  padding: 0.9rem;
+}
+
+.blessingsNetworkStatIcon {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #e9efdc;
+  color: var(--blessings-forest);
+}
+
+.blessingsNetworkStat strong {
+  display: block;
+  color: var(--blessings-blue);
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.blessingsNetworkStat span span {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(18, 32, 20, 0.74);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.blessingsQuestionsSection,
+.blessingsOwnerPostsSection,
+.blessingsOwnerDirectorySection,
+.blessingsNetworkWorkspace {
+  display: grid;
+  gap: 1rem;
+}
+
+.blessingsWorkspaceTop,
+.blessingsExplorerHeader {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.blessingsSectionHeader {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 48rem;
+}
+
+.blessingsEyebrow {
+  margin: 0;
+  color: var(--blessings-rose);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.blessingsSectionHeader h2,
+.blessingsOwnerModalHeader h2,
+.blessingsAnswerFormHeader h2 {
+  margin: 0;
+  color: var(--blessings-ink);
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.blessingsSectionHeader p:last-child,
+.blessingsAnswerFormHeader p:not(.blessingsEyebrow),
+.blessingsOwnerModalHeader p:not(.blessingsEyebrow),
+.blessingsOwnerModalDescription,
+.blessingsOwnerModalBio {
+  margin: 0;
+  color: rgba(18, 32, 20, 0.76);
+  line-height: 1.55;
+}
+
+.blessingsNetworkWorkspace {
+  border-top: 1px solid rgba(36, 79, 45, 0.14);
+  padding-top: 1rem;
+  scroll-margin-top: 6rem;
+}
+
+.blessingsNetworkTabs {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.blessingsNetworkTab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  min-height: 2.8rem;
+  border: 1px solid rgba(36, 79, 45, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 253, 246, 0.88);
+  color: var(--blessings-forest);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+}
+
+.blessingsNetworkTab[data-active='true'] {
+  background: var(--blessings-forest);
+  color: var(--blessings-cream);
+}
+
+.blessingsNetworkTabLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  min-width: 0;
+}
+
+.blessingsNetworkTabCount {
+  display: inline-flex;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(36, 79, 45, 0.1);
+  color: currentColor;
+  font-size: 0.72rem;
+}
+
+.blessingsNetworkTab[data-active='true'] .blessingsNetworkTabCount {
+  background: rgba(255, 253, 246, 0.18);
+}
+
+.blessingsTabsBlock {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.blessingsTabsTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: rgba(18, 32, 20, 0.66);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.blessingsTabHelpButton {
+  display: inline-flex;
+  width: 2.35rem;
+  height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 999px;
+  background: #eef4e6;
+  color: var(--blessings-forest);
+  box-shadow: 0 10px 22px rgba(36, 79, 45, 0.1);
+}
+
+.blessingsTabHelpButton:hover,
+.blessingsTabHelpButton:focus-visible {
+  background: var(--blessings-forest);
+  color: var(--blessings-cream);
+}
+
+.blessingsExplorerControls {
+  display: grid;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.blessingsSearchControl,
+.blessingsSelectControl {
+  display: grid;
+  gap: 0.35rem;
+  color: rgba(18, 32, 20, 0.68);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.blessingsSearchInputWrap {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 253, 246, 0.95);
+  color: var(--blessings-forest);
+  padding: 0 0.75rem;
+}
+
+.blessingsSearchInputWrap input,
+.blessingsSelectControl select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--blessings-ink);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  outline: none;
+  text-transform: none;
+}
+
+.blessingsSelectControl select {
+  min-height: 2.7rem;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 253, 246, 0.95);
+  padding: 0 0.75rem;
+}
+
+.blessingsSearchInputWrap:focus-within,
+.blessingsSelectControl select:focus {
+  border-color: var(--blessings-forest);
+  box-shadow: 0 0 0 3px rgba(36, 79, 45, 0.14);
+}
+
+.blessingsAnswerOwner button,
+.blessingsOwnerModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.blessingsOwnerAvatar,
+.blessingsAnswerAvatar,
+.blessingsOwnerModalAvatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--blessings-forest);
+  color: var(--blessings-cream);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.blessingsOwnerAvatar {
+  width: 3.25rem;
+  height: 3.25rem;
+  font-size: 1rem;
+}
+
+.blessingsOwnerName,
+.blessingsOwnerTitle,
+.blessingsQuestionMeta,
+.blessingsQuestionCard h3,
+.blessingsQuestionCard p,
+.blessingsAnswerBody,
+.blessingsAnswerTakeaway,
+.blessingsNoAnswers,
+.blessingsAnswersCollapsed {
+  margin: 0;
+}
+
+.blessingsOwnerName {
+  color: var(--blessings-ink);
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.blessingsOwnerTitle {
+  margin-top: 0.2rem;
+  color: rgba(18, 32, 20, 0.68);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.blessingsOwnerModalLinks,
+.blessingsAnswerFormActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.blessingsOwnerPostList,
+.blessingsOwnerDirectory {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.blessingsOwnerPostCard {
+  display: grid;
+  gap: 0.8rem;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  background: rgba(255, 253, 246, 0.95);
+  padding: 1rem;
+  box-shadow: 0 18px 42px rgba(69, 43, 18, 0.08);
+}
+
+.blessingsOwnerPostMain {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.blessingsOwnerPostMain h3,
+.blessingsOwnerPostMain p {
+  margin: 0;
+}
+
+.blessingsOwnerPostMain h3 {
+  color: var(--blessings-blue);
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1.12;
+}
+
+.blessingsOwnerPostMain p {
+  color: rgba(18, 32, 20, 0.84);
+  line-height: 1.58;
+}
+
+.blessingsOwnerPostByline button,
+.blessingsOwnerRowIdentity,
+.blessingsOwnerRowActions,
+.blessingsOwnerRowDetails {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.blessingsOwnerPostByline button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.blessingsOwnerPostByline strong,
+.blessingsOwnerPostByline span span {
+  display: block;
+}
+
+.blessingsOwnerPostByline strong {
+  color: var(--blessings-ink);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.blessingsOwnerPostByline span span {
+  margin-top: 0.12rem;
+  color: rgba(18, 32, 20, 0.68);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.blessingsOwnerRow {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 253, 246, 0.95);
+  padding: 0.85rem;
+  box-shadow: 0 14px 34px rgba(69, 43, 18, 0.07);
+}
+
+.blessingsOwnerRowDetails,
+.blessingsOwnerRowActions {
+  flex-wrap: wrap;
+}
+
+.blessingsOwnerLocationTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.blessingsOwnerTypePill,
+.blessingsOwnerLocationText,
+.blessingsLocationToolButton,
+.blessingsLocationToolLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  border: 1px solid rgba(36, 79, 45, 0.14);
+  border-radius: 999px;
+  background: #f5efe3;
+  padding: 0.28rem 0.65rem;
+  color: rgba(18, 32, 20, 0.78);
+  font-size: 0.76rem;
+  font-weight: 850;
+  line-height: 1.15;
+  text-decoration: none;
+}
+
+.blessingsOwnerLocationText {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.blessingsLocationToolButton,
+.blessingsLocationToolLink {
+  border-color: rgba(36, 79, 45, 0.18);
+  background: #eef4e6;
+  color: var(--blessings-forest);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.blessingsLocationToolLink {
+  background: #f7f1e8;
+  color: var(--blessings-blue);
+}
+
+.blessingsOwnerRowActions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.1rem;
+  border: 1px solid rgba(36, 79, 45, 0.16);
+  border-radius: 999px;
+  background: #f7f1e8;
+  padding: 0.35rem 0.65rem;
+  color: var(--blessings-forest);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.blessingsEmptyState {
+  margin: 0;
+  border: 1px dashed rgba(36, 79, 45, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 253, 246, 0.72);
+  color: rgba(18, 32, 20, 0.68);
+  font-weight: 800;
+  padding: 0.85rem;
+}
+
+.blessingsQuestionList {
+  display: grid;
+  gap: 1rem;
+}
+
+.blessingsQuestionThread {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.blessingsQuestionCard {
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  background: rgba(255, 253, 246, 0.95);
+  padding: 1rem;
+  box-shadow: 0 18px 42px rgba(69, 43, 18, 0.08);
+}
+
+.blessingsQuestionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  color: rgba(18, 32, 20, 0.68);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.blessingsQuestionMeta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  border: 1px solid rgba(36, 79, 45, 0.14);
+  border-radius: 999px;
+  background: #f5efe3;
+  padding: 0.22rem 0.55rem;
+}
+
+.blessingsQuestionMain {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.9rem;
+}
+
+.blessingsQuestionCard h3 {
+  color: var(--blessings-blue);
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.blessingsQuestionCard p {
+  margin-top: 0.55rem;
+  color: rgba(18, 32, 20, 0.82);
+  line-height: 1.58;
+}
+
+.blessingsQuestionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.blessingsQuestionReplyButton,
+.blessingsQuestionRepliesToggle {
+  justify-self: start;
+}
+
+.blessingsAnswerList {
+  display: grid;
+  gap: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+.blessingsAnswerCard {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid rgba(141, 79, 98, 0.18);
+  border-left: 5px solid var(--blessings-rose);
+  border-radius: 8px;
+  background: rgba(255, 249, 243, 0.96);
+  padding: 0.95rem;
+  box-shadow: 0 14px 34px rgba(69, 43, 18, 0.07);
+}
+
+.blessingsAnswerOwner {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.blessingsAnswerOwner button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.blessingsAnswerOwner button strong,
+.blessingsAnswerOwner button span span {
+  display: block;
+}
+
+.blessingsAnswerOwner button strong {
+  color: var(--blessings-ink);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.blessingsAnswerOwner button span span {
+  margin-top: 0.1rem;
+  color: rgba(18, 32, 20, 0.68);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.blessingsAnswerAvatar {
+  width: 2.45rem;
+  height: 2.45rem;
+  font-size: 0.78rem;
+}
+
+.blessingsAnswerDate {
+  color: rgba(18, 32, 20, 0.58);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.blessingsAnswerBody {
+  color: rgba(18, 32, 20, 0.86);
+  line-height: 1.6;
+}
+
+.blessingsAnswerTakeaway {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  border-radius: 8px;
+  background: #eef4e6;
+  color: #20391f;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.45;
+  padding: 0.65rem 0.7rem;
+}
+
+.blessingsAnswerTakeaway svg {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  color: var(--blessings-forest);
+}
+
+.blessingsNoAnswers {
+  border: 1px dashed rgba(36, 79, 45, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 253, 246, 0.72);
+  color: rgba(18, 32, 20, 0.68);
+  font-weight: 800;
+  padding: 0.85rem;
+}
+
+.blessingsAnswersCollapsed {
+  display: flex;
+  align-items: center;
+  min-height: 2.6rem;
+  border: 1px dashed rgba(141, 79, 98, 0.26);
+  border-radius: 8px;
+  background: rgba(255, 249, 243, 0.82);
+  color: rgba(18, 32, 20, 0.68);
+  font-size: 0.86rem;
+  font-weight: 850;
+  padding: 0.7rem 0.85rem 0.7rem 1.2rem;
+}
+
+.blessingsNetworkNotice,
+.blessingsNetworkPending {
+  position: fixed;
+  left: 50%;
+  z-index: 90;
+  margin: 0;
+  transform: translateX(-50%);
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 253, 246, 0.96);
+  box-shadow: 0 18px 44px rgba(15, 24, 12, 0.16);
+  color: var(--blessings-forest);
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 0.7rem 0.95rem;
+}
+
+.blessingsNetworkNotice {
+  bottom: 1rem;
+  max-width: min(36rem, calc(100vw - 1.5rem));
+  text-align: center;
+}
+
+.blessingsNetworkPending {
+  top: 6rem;
+}
+
+.blessingsComposeButton {
+  position: fixed;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  z-index: 70;
+  border: 1px solid rgba(255, 253, 246, 0.28);
+  box-shadow: 0 18px 40px rgba(15, 24, 12, 0.24);
+}
+
+.blessingsComposeButton:hover,
+.blessingsComposeButton:focus-visible {
+  background: #17341f;
+}
+
+.blessingsModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: grid;
+  align-items: end;
+  background: rgba(15, 24, 12, 0.34);
+  padding: 0.75rem;
+}
+
+.blessingsOwnerModal,
+.blessingsAnswerModal {
+  position: relative;
+  width: 100%;
+  max-height: min(88dvh, 44rem);
+  margin-inline: auto;
+  overflow-y: auto;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  background: var(--blessings-cream);
+  box-shadow: 0 24px 62px rgba(15, 24, 12, 0.22);
+  scrollbar-color: var(--blessings-forest) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.blessingsOwnerModal {
+  display: grid;
+  gap: 1rem;
+  max-width: 36rem;
+  padding: 1rem;
+}
+
+.blessingsTabHelpModal {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 32rem);
+  margin-inline: auto;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  background: var(--blessings-cream);
+  padding: 1rem;
+  box-shadow: 0 24px 62px rgba(15, 24, 12, 0.22);
+}
+
+.blessingsAnswerModal {
+  max-width: 42rem;
+}
+
+.blessingsOwnerModal::-webkit-scrollbar,
+.blessingsAnswerModal::-webkit-scrollbar {
+  width: 0.78rem;
+}
+
+.blessingsOwnerModal::-webkit-scrollbar-track,
+.blessingsAnswerModal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blessingsOwnerModal::-webkit-scrollbar-thumb,
+.blessingsAnswerModal::-webkit-scrollbar-thumb {
+  border: 0.2rem solid transparent;
+  border-radius: 999px;
+  background: var(--blessings-forest);
+  background-clip: content-box;
+}
+
+.blessingsModalClose {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 4;
+  display: inline-flex;
+  width: 2.35rem;
+  height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(36, 25, 15, 0.16);
+  border-radius: 999px;
+  background: #fffdf6;
+  color: var(--blessings-ink);
+}
+
+.blessingsOwnerModalHeader {
+  padding-right: 2.75rem;
+}
+
+.blessingsTabHelpHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  padding-right: 2.75rem;
+}
+
+.blessingsTabHelpHeader h2,
+.blessingsTabHelpItem h3 {
+  margin: 0;
+  color: var(--blessings-ink);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.blessingsTabHelpHeader h2 {
+  font-size: 1.35rem;
+}
+
+.blessingsTabHelpHeader p:not(.blessingsEyebrow),
+.blessingsTabHelpItem p {
+  margin: 0.25rem 0 0;
+  color: rgba(18, 32, 20, 0.74);
+  line-height: 1.5;
+}
+
+.blessingsTabHelpIcon,
+.blessingsTabHelpItemIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eef4e6;
+  color: var(--blessings-forest);
+}
+
+.blessingsTabHelpIcon {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+.blessingsTabHelpList {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.blessingsTabHelpItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  border: 1px solid rgba(36, 79, 45, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 248, 242, 0.82);
+  padding: 0.75rem;
+}
+
+.blessingsTabHelpItemIcon {
+  width: 2rem;
+  height: 2rem;
+  margin-top: 0.05rem;
+}
+
+.blessingsTabHelpItem h3 {
+  font-size: 0.95rem;
+}
+
+.blessingsOwnerModalAvatar {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.2rem;
+}
+
+.blessingsOwnerModalFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.blessingsOwnerModalDescription {
+  color: var(--blessings-ink);
+  font-weight: 850;
+}
+
+.blessingsAnswerForm {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+}
+
+.blessingsAnswerForm[data-submitting='true'] {
+  cursor: wait;
+}
+
+.blessingsAnswerFormHeader {
+  display: grid;
+  gap: 0.35rem;
+  padding-right: 2.75rem;
+}
+
+.blessingsFormGrid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.blessingsAnswerForm label {
+  display: grid;
+  gap: 0.35rem;
+  color: #231c14;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.blessingsAnswerForm label span {
+  color: rgba(35, 28, 20, 0.58);
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: none;
+}
+
+.blessingsAnswerForm input,
+.blessingsAnswerForm textarea {
+  width: 100%;
+  border: 1px solid rgba(36, 79, 45, 0.18);
+  border-radius: 8px;
+  background: #fffdf8;
+  color: var(--blessings-ink);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  padding: 0.72rem 0.78rem;
+  text-transform: none;
+}
+
+.blessingsAnswerForm textarea {
+  resize: vertical;
+}
+
+.blessingsAnswerForm input:focus,
+.blessingsAnswerForm textarea:focus {
+  border-color: var(--blessings-forest);
+  box-shadow: 0 0 0 3px rgba(36, 79, 45, 0.14);
+  outline: none;
+}
+
+.blessingsFormNotice {
+  margin: 0;
+  border-radius: 8px;
+  background: #eef4e6;
+  color: var(--blessings-forest);
+  font-weight: 850;
+  line-height: 1.45;
+  padding: 0.7rem;
+}
+
+.blessingsAnswerFormActions {
+  justify-content: flex-end;
+  padding-top: 0.2rem;
+}
+
+@media (min-width: 620px) {
+  .blessingsNetworkStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blessingsFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blessingsAnswerOwner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+
+@media (min-width: 760px) {
+  .blessingsNetworkShell {
+    gap: 1.75rem;
+    padding-top: 2rem;
+  }
+
+  .blessingsSectionHeader h2 {
+    font-size: 1.85rem;
+  }
+
+  .blessingsNetworkTabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .blessingsExplorerControls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .blessingsOwnerDirectoryControls {
+    grid-template-columns: minmax(0, 1.2fr) minmax(11rem, 0.7fr);
+  }
+
+  .blessingsOwnerPostCard {
+    grid-template-columns: minmax(0, 1.1fr) minmax(14rem, 0.9fr);
+    align-items: start;
+  }
+
+  .blessingsOwnerPostCard .blessingsQuestionMeta,
+  .blessingsOwnerPostByline {
+    grid-column: 1 / -1;
+  }
+
+  .blessingsOwnerRow {
+    grid-template-columns: minmax(13rem, 0.85fr) minmax(14rem, 1.15fr) auto;
+    align-items: center;
+  }
+
+  .blessingsQuestionMain {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .blessingsQuestionCard h3 {
+    font-size: 1.7rem;
+  }
+
+  .blessingsModalOverlay {
+    align-items: center;
+  }
+}
+
+@media (min-width: 1080px) {
+  .blessingsNetworkStats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -2,6 +2,7 @@ import type { Order } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+import { BakeryPageSurface } from '@/design-system/bakery'
 
 import { OrderItem } from '@/components/OrderItem'
 import { headers as getHeaders } from 'next/headers'
@@ -9,6 +10,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
 export default async function Orders() {
   const headers = await getHeaders()
@@ -18,7 +20,12 @@ export default async function Orders() {
   let orders: Order[] | null = null
 
   if (!user) {
-    redirect(`/login?warning=${encodeURIComponent('Please login to access your orders.')}`)
+    redirect(
+      buildCustomerLoginHref({
+        redirect: '/orders',
+        warning: 'Please login to access your orders.',
+      }),
+    )
   }
 
   try {
@@ -40,8 +47,7 @@ export default async function Orders() {
 
   return (
     <>
-      <div className="border p-8 rounded-lg bg-primary-foreground w-full">
-        <h1 className="text-3xl font-medium mb-8">Orders</h1>
+      <BakeryPageSurface spacing="lg" width="full">
         {(!orders || !Array.isArray(orders) || orders?.length === 0) && (
           <p className="">You have no orders.</p>
         )}
@@ -55,7 +61,7 @@ export default async function Orders() {
             ))}
           </ul>
         )}
-      </div>
+      </BakeryPageSurface>
     </>
   )
 }

@@ -4,6 +4,7 @@ import type { Page, Post, Product } from '../payload-types'
 
 import { getServerSideURL } from './getURL'
 import { mergeOpenGraph } from './mergeOpenGraph'
+import { defaultSocialImage, siteDescription, siteName } from './siteMetadata'
 
 type MetaDoc = Page | Post | Product | null | undefined
 
@@ -22,11 +23,8 @@ export const generateMeta = async (args: {
   const { doc, pathname } = args || {}
   const excerpt =
     doc && 'excerpt' in doc && typeof doc.excerpt === 'string' ? doc.excerpt : undefined
-  const title = doc?.meta?.title || doc?.title || 'Baked with Blessings'
-  const description =
-    doc?.meta?.description ||
-    excerpt ||
-    'Baked with Blessings is a bakery and cafe sharing cookies, catering, and notes from the business.'
+  const title = doc?.meta?.title || doc?.title || siteName
+  const description = doc?.meta?.description || excerpt || siteDescription
   const canonicalPath = pathname ?? (doc?.slug ? (doc.slug === 'home' ? '/' : `/${doc.slug}`) : '/')
   const canonicalURL = buildAbsoluteURL(canonicalPath)
 
@@ -52,7 +50,7 @@ export const generateMeta = async (args: {
               url: ogImage,
             },
           ]
-        : undefined,
+        : [defaultSocialImage],
       title,
       url: canonicalURL,
     }),
@@ -60,7 +58,7 @@ export const generateMeta = async (args: {
     twitter: {
       card: 'summary_large_image',
       description,
-      images: ogImage ? [ogImage] : undefined,
+      images: ogImage ? [ogImage] : [defaultSocialImage.url],
       title,
     },
   }

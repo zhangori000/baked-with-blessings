@@ -1,19 +1,17 @@
 import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 
-import { AdminBar } from '@/components/AdminBar'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { InitMenuScene } from '@/components/scenery/InitMenuScene'
 import { ViewportFlowers } from '@/components/ViewportFlowers'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { getServerSideURL } from '@/utilities/getURL'
+import { defaultSocialImage, siteDescription, siteName } from '@/utilities/siteMetadata'
 import { Rubik } from 'next/font/google'
 import './globals.css'
-
-const siteName = 'Baked with Blessings'
-const siteDescription = 'A bakery and cafe sharing cookies, catering, and notes from the business.'
 
 export const metadata: Metadata = {
   description: siteDescription,
@@ -33,14 +31,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
   openGraph: {
     description: siteDescription,
-    images: [
-      {
-        url: '/baked-with-blessings-logo-pasture-restored.svg',
-      },
-    ],
+    images: [defaultSocialImage],
     siteName,
     title: siteName,
     type: 'website',
+    url: '/',
   },
   robots: {
     follow: true,
@@ -53,7 +48,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     description: siteDescription,
-    images: ['/baked-with-blessings-logo-pasture-restored.svg'],
+    images: [defaultSocialImage.url],
     title: siteName,
   },
 }
@@ -70,6 +65,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html className={rubik.variable} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
+        <InitMenuScene />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
         <link href="/favicon.ico" rel="alternate icon" sizes="32x32" />
       </head>
@@ -77,7 +73,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Providers>
           <ViewportFlowers />
           <div className="siteFrame">
-            <AdminBar />
             <LivePreviewListener />
 
             <Header />

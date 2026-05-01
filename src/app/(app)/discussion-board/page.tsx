@@ -1,4 +1,5 @@
 import { getDiscussionTreeData } from '@/features/discussion-graph/services/discussionData'
+import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
 import { getPayload } from 'payload'
@@ -29,6 +30,7 @@ type Props = {
 }
 
 async function DiscussionBoardPageContent({ searchParams }: Props) {
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config })
   const data = await getDiscussionTreeData(payload)
   const params = await searchParams
@@ -38,6 +40,7 @@ async function DiscussionBoardPageContent({ searchParams }: Props) {
       <DiscussionBoardClient
         initialData={data}
         initialFocusedNodeId={params?.node}
+        initialSceneryTone={initialSceneryTone}
         initialTopicId={params?.topic}
       />
     </div>

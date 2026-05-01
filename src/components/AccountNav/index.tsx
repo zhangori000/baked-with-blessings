@@ -13,14 +13,14 @@ export const AccountNav: React.FC<Props> = ({ className }) => {
   const pathname = usePathname()
 
   return (
-    <div className={clsx(className)}>
-      <ul className="flex flex-col gap-2">
+    <nav className={clsx('accountSideNav', className)} aria-label="Account sections">
+      <ul className="flex w-full flex-col gap-2">
         <li>
-          <Button asChild variant="link">
+          <Button asChild className="accountSideNavButton" variant="link">
             <Link
               href="/account"
-              className={clsx('text-primary/50 hover:text-primary hover:no-underline', {
-                'text-primary': pathname === '/account',
+              className={clsx('accountSideNavLink', {
+                'accountSideNavLink-active': pathname === '/account',
               })}
             >
               Account settings
@@ -29,11 +29,11 @@ export const AccountNav: React.FC<Props> = ({ className }) => {
         </li>
 
         <li>
-          <Button asChild variant="link">
+          <Button asChild className="accountSideNavButton" variant="link">
             <Link
               href="/account/addresses"
-              className={clsx('text-primary/50 hover:text-primary hover:no-underline', {
-                'text-primary': pathname === '/account/addresses',
+              className={clsx('accountSideNavLink', {
+                'accountSideNavLink-active': pathname === '/account/addresses',
               })}
             >
               Addresses
@@ -45,26 +45,36 @@ export const AccountNav: React.FC<Props> = ({ className }) => {
           <Button
             asChild
             variant="link"
-            className={clsx('text-primary/50 hover:text-primary hover:no-underline', {
-              'text-primary': pathname === '/orders' || pathname.includes('/orders'),
-            })}
+            className="accountSideNavButton"
           >
-            <Link href="/orders">Orders</Link>
+            <Link
+              className={clsx('accountSideNavLink', {
+                'accountSideNavLink-active': pathname === '/orders' || pathname.includes('/orders'),
+              })}
+              href="/orders"
+            >
+              Orders
+            </Link>
           </Button>
         </li>
       </ul>
 
-      <hr className="w-full border-white/5" />
+      <hr className="accountSideNavRule" />
 
       <Button
         asChild
         variant="link"
-        className={clsx('text-primary/50 hover:text-primary hover:no-underline', {
-          'text-primary': pathname === '/logout',
-        })}
+        className="accountSideNavButton"
       >
-        <Link href="/logout">Log out</Link>
+        <Link
+          className={clsx('accountSideNavLink', {
+            'accountSideNavLink-active': pathname === '/logout',
+          })}
+          href="/logout"
+        >
+          Log out
+        </Link>
       </Button>
-    </div>
+    </nav>
   )
 }

@@ -2,6 +2,7 @@ import type { Page, Post } from '@/payload-types'
 
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { cn } from '@/utilities/cn'
+import { contactHref, isContactLinkHint } from '@/utilities/routes'
 import Link from 'next/link'
 import React from 'react'
 
@@ -35,15 +36,22 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   const referencePrefix = reference?.relationTo === 'posts' ? '/blog' : ''
 
-  const href =
+  const referenceSlug =
+    typeof reference?.value === 'object' && 'slug' in reference.value ? reference.value.slug : null
+
+  const rawHref =
     type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
       ? `${referencePrefix}/${reference.value.slug}`
       : url
 
+  const isContactLink = isContactLinkHint({ href: rawHref, label, slug: referenceSlug })
+  const href = isContactLink ? contactHref : rawHref
+
   if (!href) return null
 
   const size = appearance === 'link' ? 'clear' : sizeFromProps
-  const newTabProps = newTab ? { rel: 'noopener noreferrer', target: '_blank' } : {}
+  const newTabProps =
+    newTab && !isContactLink ? { rel: 'noopener noreferrer', target: '_blank' } : {}
 
   /* Ensure we don't break any styles set by richText */
   if (appearance === 'inline') {

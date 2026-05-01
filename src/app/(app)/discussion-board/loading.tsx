@@ -6,6 +6,7 @@ export default function Loading() {
   return (
     <PageResponseSkeleton
       cardCount={6}
+      loadingLabel="Loading discussion..."
       titleWidth="w-[min(34rem,84vw)]"
       tone="discussion"
     />

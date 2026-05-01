@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 import { useRouter } from 'next/navigation'
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -47,18 +48,15 @@ export const AccountForm: React.FC = () => {
   const onSubmit = useCallback(
     async (data: FormData) => {
       if (user) {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/customers/${user.id}`,
-          {
-            // Make sure to include cookies with fetch
-            body: JSON.stringify(data),
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'PATCH',
+        const response = await fetch(`/api/customers/${user.id}`, {
+          // Make sure to include cookies with fetch
+          body: JSON.stringify(data),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        )
+          method: 'PATCH',
+        })
 
         if (response.ok) {
           const json = await response.json()
@@ -82,9 +80,10 @@ export const AccountForm: React.FC = () => {
   useEffect(() => {
     if (user === null) {
       router.push(
-        `/login?error=${encodeURIComponent(
-          'You must be logged in to view this page.',
-        )}&redirect=${encodeURIComponent('/account')}`,
+        buildCustomerLoginHref({
+          redirect: '/account',
+          warning: 'You must be logged in to view this page.',
+        }),
       )
     }
 
@@ -100,14 +99,14 @@ export const AccountForm: React.FC = () => {
   }, [user, router, reset, changePassword])
 
   return (
-    <form className="max-w-xl" onSubmit={handleSubmit(onSubmit)}>
+    <form className="accountSettingsForm" onSubmit={handleSubmit(onSubmit)}>
       {!changePassword ? (
         <Fragment>
-          <div className="prose dark:prose-invert mb-8">
-            <p className="">
+          <div className="accountSettingsFormIntro">
+            <p>
               {'Change your account details below, or '}
               <Button
-                className="px-0 text-inherit underline hover:cursor-pointer"
+                className="accountSettingsInlineButton"
                 onClick={() => setChangePassword(!changePassword)}
                 type="button"
                 variant="link"
@@ -118,27 +117,35 @@ export const AccountForm: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-col gap-8 mb-8">
+          <div className="accountSettingsFields">
             <FormItem>
-              <Label htmlFor="email" className="mb-2">
+              <Label htmlFor="email" className="accountSettingsLabel">
                 Email Address
               </Label>
-              <Input id="email" {...register('email')} type="email" />
+              <Input className="accountSettingsInput" id="email" {...register('email')} type="email" />
               {errors.email && <FormError message={errors.email.message} />}
             </FormItem>
 
             <FormItem>
-              <Label htmlFor="phone" className="mb-2">
+              <Label htmlFor="phone" className="accountSettingsLabel">
                 Verified Phone
               </Label>
-              <Input id="phone" value={user?.phone || ''} disabled readOnly type="tel" />
+              <Input
+                className="accountSettingsInput"
+                id="phone"
+                value={user?.phone || ''}
+                disabled
+                readOnly
+                type="tel"
+              />
             </FormItem>
 
             <FormItem>
-              <Label htmlFor="name" className="mb-2">
+              <Label htmlFor="name" className="accountSettingsLabel">
                 Name
               </Label>
               <Input
+                className="accountSettingsInput"
                 id="name"
                 {...register('name', { required: 'Please provide a name.' })}
                 type="text"
@@ -149,11 +156,11 @@ export const AccountForm: React.FC = () => {
         </Fragment>
       ) : (
         <Fragment>
-          <div className="prose dark:prose-invert mb-8">
+          <div className="accountSettingsFormIntro">
             <p>
               {'Change your password below, or '}
               <Button
-                className="px-0 text-inherit underline hover:cursor-pointer"
+                className="accountSettingsInlineButton"
                 onClick={() => setChangePassword(!changePassword)}
                 type="button"
                 variant="link"
@@ -164,12 +171,13 @@ export const AccountForm: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-col gap-8 mb-8">
+          <div className="accountSettingsFields">
             <FormItem>
-              <Label htmlFor="password" className="mb-2">
+              <Label htmlFor="password" className="accountSettingsLabel">
                 New password
               </Label>
               <Input
+                className="accountSettingsInput"
                 id="password"
                 {...register('password', { required: 'Please provide a new password.' })}
                 type="password"
@@ -178,10 +186,11 @@ export const AccountForm: React.FC = () => {
             </FormItem>
 
             <FormItem>
-              <Label htmlFor="passwordConfirm" className="mb-2">
+              <Label htmlFor="passwordConfirm" className="accountSettingsLabel">
                 Confirm password
               </Label>
               <Input
+                className="accountSettingsInput"
                 id="passwordConfirm"
                 {...register('passwordConfirm', {
                   required: 'Please confirm your new password.',
@@ -194,7 +203,12 @@ export const AccountForm: React.FC = () => {
           </div>
         </Fragment>
       )}
-      <Button disabled={isLoading || isSubmitting || !isDirty} type="submit" variant="default">
+      <Button
+        className="accountSettingsSubmit"
+        disabled={isLoading || isSubmitting || !isDirty}
+        type="submit"
+        variant="default"
+      >
         {isLoading || isSubmitting
           ? 'Processing'
           : changePassword

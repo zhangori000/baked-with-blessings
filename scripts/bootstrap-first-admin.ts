@@ -1,8 +1,6 @@
-import nextEnv from '@next/env'
+import { loadScriptEnv } from './lib/load-script-env'
 
-const { loadEnvConfig } = nextEnv
-
-loadEnvConfig(process.cwd())
+loadScriptEnv()
 
 import { FIRST_ADMIN_BOOTSTRAP_CONTEXT } from '../src/collections/Admins/hooks/requireExplicitFirstAdminBootstrap'
 

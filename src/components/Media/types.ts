@@ -17,6 +17,7 @@ export interface Props {
   resource?: MediaType | string | number // for Payload media
   size?: string // for NextImage only
   src?: StaticImageData // for static media
+  unoptimized?: boolean // for NextImage only
   videoClassName?: string
   width?: number
 }

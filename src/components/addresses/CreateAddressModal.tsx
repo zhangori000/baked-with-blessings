@@ -1,5 +1,5 @@
 'use client'
-import { Button } from '@/components/ui/button'
+import { BakeryAction } from '@/design-system/bakery'
 import React, { useState } from 'react'
 import {
   Dialog,
@@ -52,7 +52,9 @@ export const CreateAddressModal: React.FC<Props> = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild disabled={disabled}>
-        <Button variant={'outline'}>{buttonText}</Button>
+        <BakeryAction disabled={disabled} variant="secondary">
+          {buttonText}
+        </BakeryAction>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

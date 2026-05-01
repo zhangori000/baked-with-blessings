@@ -7,6 +7,8 @@
  */
 
 /**
+ * Business owner workflow status. Paid checkout creates orders as Processing; update this as the order is fulfilled, cancelled, or refunded.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "OrderStatus".
  */
@@ -75,13 +77,19 @@ export interface Config {
   collections: {
     admins: Admin;
     customers: Customer;
+    'email-verification-starts': EmailVerificationStart;
     'phone-verification-starts': PhoneVerificationStart;
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
     'awareness-marks': AwarenessMark;
     reviews: Review;
+    'blessings-network-owners': BlessingsNetworkOwner;
+    'blessings-network-questions': BlessingsNetworkQuestion;
+    'blessings-network-answers': BlessingsNetworkAnswer;
+    'blessings-network-owner-posts': BlessingsNetworkOwnerPost;
     pages: Page;
     posts: Post;
+    'flavor-rotations': FlavorRotation;
     categories: Category;
     media: Media;
     forms: Form;
@@ -115,13 +123,19 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    'email-verification-starts': EmailVerificationStartsSelect<false> | EmailVerificationStartsSelect<true>;
     'phone-verification-starts': PhoneVerificationStartsSelect<false> | PhoneVerificationStartsSelect<true>;
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
     'awareness-marks': AwarenessMarksSelect<false> | AwarenessMarksSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'blessings-network-owners': BlessingsNetworkOwnersSelect<false> | BlessingsNetworkOwnersSelect<true>;
+    'blessings-network-questions': BlessingsNetworkQuestionsSelect<false> | BlessingsNetworkQuestionsSelect<true>;
+    'blessings-network-answers': BlessingsNetworkAnswersSelect<false> | BlessingsNetworkAnswersSelect<true>;
+    'blessings-network-owner-posts': BlessingsNetworkOwnerPostsSelect<false> | BlessingsNetworkOwnerPostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -258,6 +272,10 @@ export interface Customer {
    */
   phone?: string | null;
   phoneVerifiedAt?: string | null;
+  /**
+   * Stripe Customer ID used to link this Payload customer to Stripe payments.
+   */
+  stripeCustomerID?: string | null;
   orders?: {
     docs?: (number | Order)[];
     hasNextPage?: boolean;
@@ -294,6 +312,8 @@ export interface Customer {
   collection: 'customers';
 }
 /**
+ * Paid customer orders. Open an order to update fulfillment status and review customer contact, items, and delivery details.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
  */
@@ -345,6 +365,10 @@ export interface Order {
    */
   guestContactValue?: string | null;
   accessToken?: string | null;
+  /**
+   * Set automatically after the new-order email is sent to the business owner.
+   */
+  ownerNotificationSentAt?: string | null;
   /**
    * Stripe PaymentIntent used as the checkout idempotency key.
    */
@@ -456,6 +480,39 @@ export interface Product {
      * Optional handwritten-style intro sentence above the ingredients list in the popup.
      */
     ingredientsIntro?: string | null;
+    /**
+     * Rich text shown in the cookie info speech bubble. Use paragraphs and bold text for flavor notes, handling notes, and allergy warnings.
+     */
+    receiptBody?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Deprecated. Kept only to preserve existing database schema; the storefront now uses Info Dialog Text.
+     */
+    receiptTitle?: string | null;
+    /**
+     * Deprecated. Kept only to preserve existing database schema; warnings should now be written directly in Info Dialog Text.
+     */
+    receiptWarnings?:
+      | {
+          tone: 'info' | 'caution' | 'danger';
+          label: string;
+          message: string;
+          id?: string | null;
+        }[]
+      | null;
     /**
      * Ingredients or cookie components that should appear inside the popup note.
      */
@@ -1453,6 +1510,22 @@ export interface Address {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-verification-starts".
+ */
+export interface EmailVerificationStart {
+  id: number;
+  key: string;
+  flow: 'signup';
+  email: string;
+  codeHash: string;
+  attempts: number;
+  consumedAt?: string | null;
+  expiresAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "phone-verification-starts".
  */
 export interface PhoneVerificationStart {
@@ -1656,6 +1729,209 @@ export interface Review {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owners".
+ */
+export interface BlessingsNetworkOwner {
+  id: number;
+  tenantId: string;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  ownerName: string;
+  title: string;
+  businessName: string;
+  /**
+   * Short public label, for example cafe, bakery, catering, coffee, or retail.
+   */
+  businessType?: string | null;
+  location: string;
+  /**
+   * Public website link.
+   */
+  websiteUrl?: string | null;
+  /**
+   * Public LinkedIn profile or company link.
+   */
+  linkedinUrl?: string | null;
+  /**
+   * Brief public description of what the business sells or serves.
+   */
+  description: string;
+  /**
+   * Longer public owner/business bio shown in the Learn more modal.
+   */
+  bio?: string | null;
+  /**
+   * Private. Used only if the site owner needs to verify the submission.
+   */
+  contactEmail?: string | null;
+  /**
+   * Lower numbers appear first in the owner showcase.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private note for verification, edits, or declined submissions.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-questions".
+ */
+export interface BlessingsNetworkQuestion {
+  id: number;
+  tenantId: string;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  title: string;
+  body: string;
+  category: string;
+  questionStatus: 'seeking_advice' | 'answered' | 'archived';
+  /**
+   * Public asker name shown in the admin for context.
+   */
+  askedByName: string;
+  /**
+   * Lower numbers appear first on the page.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private note for edits, sourcing, or follow-up.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-answers".
+ */
+export interface BlessingsNetworkAnswer {
+  id: number;
+  tenantId: string;
+  question: number | BlessingsNetworkQuestion;
+  owner: number | BlessingsNetworkOwner;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  answer: string;
+  /**
+   * Short public summary of the most useful lesson in this reply.
+   */
+  practicalTakeaway?: string | null;
+  /**
+   * Lower numbers appear first under a question.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private verification email from the reply form.
+   */
+  submittedByEmail?: string | null;
+  /**
+   * Stable key used to make public answer submission retries idempotent.
+   */
+  submissionKey?: string | null;
+  publishedAt?: string | null;
+  /**
+   * Private note for verification, edits, or declined submissions.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owner-posts".
+ */
+export interface BlessingsNetworkOwnerPost {
+  id: number;
+  tenantId: string;
+  owner: number | BlessingsNetworkOwner;
+  publicStatus: 'under_review' | 'published' | 'declined';
+  title: string;
+  /**
+   * Short public grouping, for example leases, equipment, staffing, or pricing.
+   */
+  topic?: string | null;
+  body: string;
+  /**
+   * Short public summary of the most useful lesson in this owner insight.
+   */
+  practicalTakeaway?: string | null;
+  /**
+   * Lower numbers appear first in Owner Insights.
+   */
+  displayOrder?: number | null;
+  /**
+   * Private verification email from the owner insight form.
+   */
+  submittedByEmail?: string | null;
+  /**
+   * Stable key used to make owner insight submission retries idempotent.
+   */
+  submissionKey?: string | null;
+  publishedAt?: string | null;
+  /**
+   * Private note for verification, edits, or declined submissions.
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manual storefront flavor rotations. The active rotation controls which cookie products can be ordered individually; all other cookie flavors stay visible and link customers to /menu for catering trays.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-rotations".
+ */
+export interface FlavorRotation {
+  id: number;
+  /**
+   * Internal admin title, for example "May 2026 Cookie Rotation".
+   */
+  title: string;
+  /**
+   * Only one rotation should be active. Draft and archived rotations are invisible to customers.
+   */
+  status: 'draft' | 'active' | 'archived';
+  /**
+   * This keeps the model flexible for future seasonal or special flavor lineups without changing the storefront API.
+   */
+  rotationType: 'monthly' | 'seasonal' | 'special';
+  /**
+   * Optional name for this lineup, such as "May cookie rotation" or "Spring specials". Leave blank if you do not want to name the whole lineup.
+   */
+  displayLabel?: string | null;
+  /**
+   * How many flavors can be ordered individually for this rotation. Use 3 for the normal monthly model, or raise it before selecting flavors when the owner wants 5, 6, or a larger special lineup.
+   */
+  individualFlavorSlots: number;
+  /**
+   * Choose exactly the number of cookie products set in Rotation size. These are the only cookies customers can order one at a time; every other cookie remains visible and links to /menu for catering trays.
+   */
+  individualFlavors: (number | Product)[];
+  /**
+   * Short badge text for cookies included in this rotation. The default is fine unless you want wording like "Spring special" or "Available individually".
+   */
+  monthlyFlavorLabel?: string | null;
+  /**
+   * Short label shown beside the lock icon on non-rotation cookie cards.
+   */
+  lockedLabel?: string | null;
+  /**
+   * Plain-English explanation shown for non-rotation cookies. Keep it short so it fits on small cards.
+   */
+  lockedDescription?: string | null;
+  /**
+   * CTA label for catering-only cookies. The link destination remains /menu.
+   */
+  menuLinkLabel?: string | null;
+  /**
+   * Internal notes for the business owner. Not shown on the storefront; useful for future discount or seasonal planning.
+   */
+  ownerNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
@@ -1704,6 +1980,10 @@ export interface PayloadLockedDocument {
         value: number | Customer;
       } | null)
     | ({
+        relationTo: 'email-verification-starts';
+        value: number | EmailVerificationStart;
+      } | null)
+    | ({
         relationTo: 'phone-verification-starts';
         value: number | PhoneVerificationStart;
       } | null)
@@ -1724,12 +2004,32 @@ export interface PayloadLockedDocument {
         value: number | Review;
       } | null)
     | ({
+        relationTo: 'blessings-network-owners';
+        value: number | BlessingsNetworkOwner;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-questions';
+        value: number | BlessingsNetworkQuestion;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-answers';
+        value: number | BlessingsNetworkAnswer;
+      } | null)
+    | ({
+        relationTo: 'blessings-network-owner-posts';
+        value: number | BlessingsNetworkOwnerPost;
+      } | null)
+    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'flavor-rotations';
+        value: number | FlavorRotation;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1855,6 +2155,7 @@ export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
   phoneVerifiedAt?: T;
+  stripeCustomerID?: T;
   orders?: T;
   cart?: T;
   addresses?: T;
@@ -1875,6 +2176,21 @@ export interface CustomersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-verification-starts_select".
+ */
+export interface EmailVerificationStartsSelect<T extends boolean = true> {
+  key?: T;
+  flow?: T;
+  email?: T;
+  codeHash?: T;
+  attempts?: T;
+  consumedAt?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1988,6 +2304,84 @@ export interface ReviewsSelect<T extends boolean = true> {
         detail?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owners_select".
+ */
+export interface BlessingsNetworkOwnersSelect<T extends boolean = true> {
+  tenantId?: T;
+  publicStatus?: T;
+  ownerName?: T;
+  title?: T;
+  businessName?: T;
+  businessType?: T;
+  location?: T;
+  websiteUrl?: T;
+  linkedinUrl?: T;
+  description?: T;
+  bio?: T;
+  contactEmail?: T;
+  displayOrder?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-questions_select".
+ */
+export interface BlessingsNetworkQuestionsSelect<T extends boolean = true> {
+  tenantId?: T;
+  publicStatus?: T;
+  title?: T;
+  body?: T;
+  category?: T;
+  questionStatus?: T;
+  askedByName?: T;
+  displayOrder?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-answers_select".
+ */
+export interface BlessingsNetworkAnswersSelect<T extends boolean = true> {
+  tenantId?: T;
+  question?: T;
+  owner?: T;
+  publicStatus?: T;
+  answer?: T;
+  practicalTakeaway?: T;
+  displayOrder?: T;
+  submittedByEmail?: T;
+  submissionKey?: T;
+  publishedAt?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blessings-network-owner-posts_select".
+ */
+export interface BlessingsNetworkOwnerPostsSelect<T extends boolean = true> {
+  tenantId?: T;
+  owner?: T;
+  publicStatus?: T;
+  title?: T;
+  topic?: T;
+  body?: T;
+  practicalTakeaway?: T;
+  displayOrder?: T;
+  submittedByEmail?: T;
+  submissionKey?: T;
+  publishedAt?: T;
+  moderationNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2185,6 +2579,25 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-rotations_select".
+ */
+export interface FlavorRotationsSelect<T extends boolean = true> {
+  title?: T;
+  status?: T;
+  rotationType?: T;
+  displayLabel?: T;
+  individualFlavorSlots?: T;
+  individualFlavors?: T;
+  monthlyFlavorLabel?: T;
+  lockedLabel?: T;
+  lockedDescription?: T;
+  menuLinkLabel?: T;
+  ownerNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2509,6 +2922,16 @@ export interface ProductsSelect<T extends boolean = true> {
         infoButtonLabel?: T;
         ingredientsNoteTitle?: T;
         ingredientsIntro?: T;
+        receiptBody?: T;
+        receiptTitle?: T;
+        receiptWarnings?:
+          | T
+          | {
+              tone?: T;
+              label?: T;
+              message?: T;
+              id?: T;
+            };
         ingredients?:
           | T
           | {
@@ -2622,6 +3045,7 @@ export interface OrdersSelect<T extends boolean = true> {
   guestContactMethod?: T;
   guestContactValue?: T;
   accessToken?: T;
+  ownerNotificationSentAt?: T;
   stripePaymentIntentID?: T;
   updatedAt?: T;
   createdAt?: T;

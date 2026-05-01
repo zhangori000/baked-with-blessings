@@ -1,7 +1,5 @@
 import { FooterClient } from '@/components/Footer/FooterClient'
 import { getCachedGlobal } from '@/utilities/getGlobals'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 
 const { COMPANY_NAME, SITE_NAME } = process.env
 
@@ -53,28 +51,64 @@ const buildFooterBrand = (brand: BrandGlobalDocument | null) => {
   }
 }
 
+const getFooterLinkLabel = (linkProps: Record<string, unknown>) =>
+  typeof linkProps.label === 'string' ? linkProps.label.trim() : ''
+
+const getFooterLinkHref = (linkProps: Record<string, unknown>) => {
+  if (typeof linkProps.url === 'string') return linkProps.url.trim()
+
+  const reference = linkProps.reference
+  if (!reference || typeof reference !== 'object') return ''
+
+  const referenceValue = (reference as { value?: unknown }).value
+  if (!referenceValue || typeof referenceValue !== 'object') return ''
+
+  const slug = (referenceValue as { slug?: unknown }).slug
+  return typeof slug === 'string' ? `/${slug.trim()}` : ''
+}
+
+const isUnavailableFooterLink = (linkProps: Record<string, unknown>) => {
+  const label = getFooterLinkLabel(linkProps).toLowerCase()
+  const href = getFooterLinkHref(linkProps).toLowerCase()
+
+  return (
+    label.includes('find my order') ||
+    label.includes('admin') ||
+    href.includes('find-order') ||
+    href.includes('find-my-order') ||
+    href === '/admin' ||
+    href.startsWith('/admin/')
+  )
+}
+
+const isHiddenFooterLink = (linkProps: Record<string, unknown>) => {
+  const label = getFooterLinkLabel(linkProps).toLowerCase()
+
+  return label === 'menu' || isUnavailableFooterLink(linkProps)
+}
+
 export async function Footer() {
-  const payload = await getPayload({ config: configPromise })
   const [footer, brandDocument] = await Promise.all([
     getCachedGlobal('footer', 1)(),
-    payload
-      .findGlobal({
-        depth: 1,
-        slug: 'brand' as any,
-      })
-      .catch(() => null),
+    getCachedGlobal('brand', 1)().catch(() => null),
   ])
 
   const brand = buildFooterBrand(brandDocument as BrandGlobalDocument | null)
   const currentYear = new Date().getFullYear()
   const copyrightName = COMPANY_NAME || SITE_NAME || brand.brandName
+  const footerNavItems = (footer.navItems || []).filter((item) => {
+    const linkProps =
+      item.link && typeof item.link === 'object' ? (item.link as Record<string, unknown>) : {}
+
+    return !isHiddenFooterLink(linkProps)
+  })
 
   return (
     <FooterClient
       brand={brand}
       copyrightName={copyrightName}
       currentYear={currentYear}
-      navItems={footer.navItems || []}
+      navItems={footerNavItems}
     />
   )
 }

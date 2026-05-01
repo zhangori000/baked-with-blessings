@@ -7,7 +7,7 @@
 }
 
 .line {
-  background: linear-gradient(90deg, #6f8f29 0%, #6f8f29 100%);
+  background: var(--grass-border-line, linear-gradient(90deg, #6f8f29 0%, #6f8f29 100%));
   border-radius: 999px;
   bottom: 0;
   clip-path: inset(0 0 0 0 round 999px);

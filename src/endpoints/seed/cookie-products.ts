@@ -2,9 +2,9 @@ import type { Category, Media, Product } from '@/payload-types'
 import { type Payload, type PayloadRequest, RequiredDataFromCollectionSlug } from 'payload'
 
 import { cookieCatalog, cookieCategory, type CookieSeedSpec } from './cookie-catalog'
-import { createParagraphRichText } from './richText'
+import { createParagraphRichText, createSegmentedParagraphsRichText } from './richText'
 
-const posterContentBySlug: Record<
+export const posterContentBySlug: Record<
   string,
   {
     chips: string[]
@@ -244,7 +244,41 @@ const posterContentBySlug: Record<
   },
 }
 
-const buildPosterData = (spec: CookieSeedSpec) => {
+const allergyNoteBySlug: Record<string, string> = {
+  'banana-choc-chip-walnut':
+    'Allergy: contains walnuts and is baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.',
+  'dubai-chocolate':
+    'Allergy: contains pistachio cream and is baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.',
+  'peanut-butter-cup':
+    'Allergy: contains peanut butter and peanut butter cup pieces.',
+  smores: 'Allergy: marshmallow may contain gelatin; baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.',
+}
+
+const getAllergyNote = (slug: string) =>
+  allergyNoteBySlug[slug] ??
+  'Allergy: baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.'
+
+const createCookieInfoBody = (
+  spec: CookieSeedSpec,
+  poster: (typeof posterContentBySlug)[string],
+) =>
+  createSegmentedParagraphsRichText([
+    [
+      'Soft ',
+      { bold: true, text: poster.ingredients[0]?.name ?? spec.title },
+      ' with ',
+      { bold: true, text: poster.ingredients[1]?.name ?? poster.chips[0] ?? 'bakery flavor' },
+      ' in the first bite.',
+    ],
+    [
+      'Texture: ',
+      { bold: true, text: poster.subtitle },
+      '. Best served warm.',
+    ],
+    [{ bold: true, text: 'Allergy: ' }, getAllergyNote(spec.slug).replace(/^Allergy:\s*/, '')],
+  ])
+
+export const buildPosterData = (spec: CookieSeedSpec) => {
   const poster = posterContentBySlug[spec.slug]
 
   if (!poster) {
@@ -259,6 +293,7 @@ const buildPosterData = (spec: CookieSeedSpec) => {
     ingredientsNoteTitle: poster.ingredientsNoteTitle,
     label: poster.label,
     labelTone: poster.labelTone,
+    receiptBody: createCookieInfoBody(spec, poster),
     subtitle: poster.subtitle,
     summary: poster.summary,
   }

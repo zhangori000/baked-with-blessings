@@ -1,38 +1,34 @@
 import type { Metadata } from 'next'
 
-import { RenderParams } from '@/components/RenderParams'
-import Link from 'next/link'
-import React from 'react'
-
 import { headers as getHeaders } from 'next/headers'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { LoginForm } from '@/components/forms/LoginForm'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
-export default async function Login() {
+type LoginPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
+
+const firstParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value
+
+export default async function Login({ searchParams }: LoginPageProps) {
   const headers = await getHeaders()
   const payload = await getPayload({ config: configPromise })
   const user = await getAuthenticatedCustomer(payload, headers)
+  const params = await searchParams
 
   if (user) {
     redirect(`/account?warning=${encodeURIComponent('You are already logged in.')}`)
   }
 
-  return (
-    <div className="container">
-      <div className="max-w-xl mx-auto my-12">
-        <RenderParams />
-
-        <h1 className="mb-4 text-[1.8rem]">Log in</h1>
-        <p className="mb-8">
-          {`This is where your customers will log in with an email address or phone number to manage their account, review their order history, and more. To manage staff and customers, `}
-          <Link href="/admin">login to the admin dashboard</Link>.
-        </p>
-        <LoginForm />
-      </div>
-    </div>
+  redirect(
+    buildCustomerLoginHref({
+      redirect: firstParam(params?.redirect),
+      warning: firstParam(params?.warning),
+    }),
   )
 }
 

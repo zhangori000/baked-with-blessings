@@ -3,5 +3,12 @@ import React from 'react'
 import { PageResponseSkeleton } from '@/components/PageResponseSkeleton'
 
 export default function Loading() {
-  return <PageResponseSkeleton cardCount={5} titleWidth="w-[min(22rem,72vw)]" tone="reviews" />
+  return (
+    <PageResponseSkeleton
+      cardCount={5}
+      loadingLabel="Loading reviews..."
+      titleWidth="w-[min(22rem,72vw)]"
+      tone="reviews"
+    />
+  )
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { BakeryPageSurface, BakeryPageTitle } from '@/design-system/bakery'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
@@ -8,6 +9,7 @@ import { redirect } from 'next/navigation'
 import { AddressListing } from '@/components/addresses/AddressListing'
 import { CreateAddressModal } from '@/components/addresses/CreateAddressModal'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
 export default async function AddressesPage() {
   const headers = await getHeaders()
@@ -16,21 +18,24 @@ export default async function AddressesPage() {
 
   if (!user) {
     redirect(
-      `/login?warning=${encodeURIComponent('Please login to access your account settings.')}`,
+      buildCustomerLoginHref({
+        redirect: '/account/addresses',
+        warning: 'Please login to access your account settings.',
+      }),
     )
   }
 
   return (
     <>
-      <div className="border p-8 rounded-lg bg-primary-foreground">
-        <h1 className="text-3xl font-medium mb-8">Addresses</h1>
+      <BakeryPageSurface spacing="lg" width="full">
+        <BakeryPageTitle className="mb-8">Addresses</BakeryPageTitle>
 
         <div className="mb-8">
           <AddressListing />
         </div>
 
         <CreateAddressModal />
-      </div>
+      </BakeryPageSurface>
     </>
   )
 }

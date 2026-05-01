@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { BakeryPageShell } from '@/design-system/bakery'
 import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
 import { queryHomeCookiePosters } from '../cookiePosterQueries'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
@@ -61,10 +62,16 @@ export default async function Page({ params }: Args) {
   const { hero, layout } = page
 
   return (
-    <article className="pt-16 pb-24">
+    <BakeryPageShell
+      as="article"
+      className="pt-16 pb-24"
+      spacing="none"
+      tone="transparent"
+      width="full"
+    >
       <RenderHero {...hero} />
       <RenderBlocks blocks={layout} />
-    </article>
+    </BakeryPageShell>
   )
 }
 

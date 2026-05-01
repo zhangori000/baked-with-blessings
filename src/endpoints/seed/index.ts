@@ -1,22 +1,25 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
 import { seedBlogPosts } from './blog-posts'
+import { ensureBlessingsNetworkStarterContent } from '@/features/blessings-network/services/networkData'
 import { importCateringMedia } from './catering-media'
 import { seedCateringProducts } from './catering-products'
+import { seedFlavorRotation } from './flavor-rotations'
 import { importCookieMedia } from './cookie-media'
 import { seedCookieProducts } from './cookie-products'
 import { clearLegacyMedia } from './legacy-media'
 
 const productCollectionsToReset: CollectionSlug[] = [
+  'transactions',
+  'orders',
+  'carts',
+  'addresses',
+  'flavor-rotations',
+  'variants',
   'products',
   'categories',
-  'variants',
   'variantOptions',
   'variantTypes',
-  'carts',
-  'transactions',
-  'addresses',
-  'orders',
 ]
 
 const clearProductCollections = async ({
@@ -74,6 +77,14 @@ export const seed = async ({
     req,
   })
 
+  payload.logger.info('- Seeding active flavor rotation...')
+
+  await seedFlavorRotation({
+    cookieProductsBySlug: cookieSeedResult.productsBySlug,
+    payload,
+    req,
+  })
+
   payload.logger.info('- Seeding catering products...')
 
   await seedCateringProducts({
@@ -87,5 +98,9 @@ export const seed = async ({
 
   await seedBlogPosts({ payload, req })
 
-  payload.logger.info('Seeded cookie, catering, and blog content successfully!')
+  payload.logger.info('- Seeding Community Advice starter content...')
+
+  await ensureBlessingsNetworkStarterContent(payload)
+
+  payload.logger.info('Seeded cookie, catering, blog, and Community Advice content successfully!')
 }

@@ -57,8 +57,6 @@ export function VariantSelector({ product }: { product: Product }) {
 
               const currentOptions = Array.from(optionSearchParams.values())
 
-              let isAvailableForSale = true
-
               // Find a matching variant
               if (variants) {
                 const matchingVariant = variants
@@ -78,37 +76,27 @@ export function VariantSelector({ product }: { product: Product }) {
                 if (matchingVariant) {
                   // If we found a matching variant, set the variant ID in the search params.
                   optionSearchParams.set('variant', String(matchingVariant.id))
-
-                  if (matchingVariant.inventory && matchingVariant.inventory > 0) {
-                    isAvailableForSale = true
-                  } else {
-                    isAvailableForSale = false
-                  }
                 }
               }
 
               const optionUrl = createUrl(pathname, optionSearchParams)
 
               // The option is active if it's in the url params.
-              const isActive =
-                Boolean(isAvailableForSale) &&
-                searchParams.get(optionKeyLowerCase) === String(optionID)
+              const isActive = searchParams.get(optionKeyLowerCase) === String(optionID)
 
               return (
                 <Button
                   variant={'ghost'}
-                  aria-disabled={!isAvailableForSale}
                   className={clsx('px-2', {
                     'bg-primary/5 text-primary': isActive,
                   })}
-                  disabled={!isAvailableForSale}
                   key={option.id}
                   onClick={() => {
                     router.replace(`${optionUrl}`, {
                       scroll: false,
                     })
                   }}
-                  title={`${option.label} ${!isAvailableForSale ? ' (Out of Stock)' : ''}`}
+                  title={option.label}
                 >
                   {option.label}
                 </Button>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { Button } from '@/components/ui/button'
+import { BakeryPageLead, BakeryPageSurface, BakeryPageTitle } from '@/design-system/bakery'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import Link from 'next/link'
 import { headers as getHeaders } from 'next/headers.js'
@@ -11,6 +12,7 @@ import { OrderItem } from '@/components/OrderItem'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
 export default async function AccountPage() {
   const headers = await getHeaders()
@@ -21,7 +23,10 @@ export default async function AccountPage() {
 
   if (!user) {
     redirect(
-      `/login?warning=${encodeURIComponent('Please login to access your account settings.')}`,
+      buildCustomerLoginHref({
+        redirect: '/account',
+        warning: 'Please login to access your account settings.',
+      }),
     )
   }
 
@@ -49,20 +54,23 @@ export default async function AccountPage() {
 
   return (
     <>
-      <div className="border p-8 rounded-lg bg-primary-foreground">
-        <h1 className="text-3xl font-medium mb-8">Account settings</h1>
-        <AccountForm />
-      </div>
-
-      <div className=" border p-8 rounded-lg bg-primary-foreground">
-        <h2 className="text-3xl font-medium mb-8">Recent Orders</h2>
-
-        <div className="prose dark:prose-invert mb-8">
-          <p>
-            These are the most recent orders you have placed. Each order is associated with an
-            payment. As you place more orders, they will appear in your orders list.
-          </p>
+      <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
+        <div className="accountSettingsHeading">
+          <p className="accountSettingsEyebrow">Customer account</p>
+          <BakeryPageTitle className="accountSettingsTitle">Profile details</BakeryPageTitle>
         </div>
+        <AccountForm />
+      </BakeryPageSurface>
+
+      <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
+        <BakeryPageTitle as="h2" className="accountSettingsSectionTitle">
+          Recent Orders
+        </BakeryPageTitle>
+
+        <BakeryPageLead className="accountSettingsLead">
+          These are the most recent orders you have placed. Each order is associated with a payment.
+          As you place more orders, they will appear in your orders list.
+        </BakeryPageLead>
 
         {(!orders || !Array.isArray(orders) || orders?.length === 0) && (
           <p className="mb-8">You have no orders.</p>
@@ -81,7 +89,7 @@ export default async function AccountPage() {
         <Button asChild variant="default">
           <Link href="/orders">View all orders</Link>
         </Button>
-      </div>
+      </BakeryPageSurface>
     </>
   )
 }

@@ -1,5 +1,11 @@
 import type { Media, Product } from '@/payload-types'
 
+export type CookieInfoRichText = {
+  root?: {
+    children?: Array<Record<string, unknown>>
+  }
+}
+
 export type CookiePosterMeta = {
   bodyFallbackSrc: string
   chips: string[]
@@ -12,6 +18,7 @@ export type CookiePosterMeta = {
   ingredientsNoteTitle: string
   label: string
   labelTone: string
+  receiptBody: CookieInfoRichText
   slug: string
   subtitle: string
   summary: string
@@ -20,8 +27,16 @@ export type CookiePosterMeta = {
 
 export type CookiePosterAsset = CookiePosterMeta & {
   amount: string
+  canBuyCatering?: boolean
+  canBuyIndividually?: boolean
   href: string
   image: Media | null
+  isMonthlyFlavor?: boolean
+  lockedDescription?: string
+  lockedLabel?: string
+  menuHref?: string
+  menuLinkLabel?: string
+  monthlyFlavorLabel?: string
   productId?: number
 }
 
@@ -29,6 +44,60 @@ const cookiePosterDisplayPriceInUSD = 750
 
 const defaultInfoButtonLabel = 'Info'
 const defaultIngredientsNoteTitle = 'Baker Notes'
+
+const createTextNode = (text: string, bold = false) => ({
+  detail: 0,
+  format: bold ? 1 : 0,
+  mode: 'normal' as const,
+  style: '',
+  text,
+  type: 'text' as const,
+  version: 1,
+})
+
+const createFallbackReceiptBody = (title: string, chips: string[]): CookieInfoRichText => ({
+  root: {
+    children: [
+      {
+        children: [
+          createTextNode('Soft '),
+          createTextNode(chips[0] ?? title, true),
+          createTextNode(' base with crisp edges.'),
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        textFormat: 0,
+        textStyle: '',
+        type: 'paragraph',
+        version: 1,
+      },
+      {
+        children: [createTextNode('Best served warm.')],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        textFormat: 0,
+        textStyle: '',
+        type: 'paragraph',
+        version: 1,
+      },
+      {
+        children: [
+          createTextNode('Allergy: ', true),
+          createTextNode('baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.'),
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        textFormat: 0,
+        textStyle: '',
+        type: 'paragraph',
+        version: 1,
+      },
+    ],
+  },
+})
 
 const toFallbackIngredients = (chips: string[]) =>
   chips.map((chip) => ({
@@ -104,6 +173,15 @@ const resolvePosterIngredients = (product: Partial<Product>, meta: CookiePosterM
   return ingredients.length > 0 ? ingredients : meta.ingredients
 }
 
+const hasReceiptBody = (value: unknown): value is CookieInfoRichText =>
+  Boolean(
+    value &&
+      typeof value === 'object' &&
+      'root' in value &&
+      value.root &&
+      typeof value.root === 'object',
+  )
+
 const resolvePosterText = ({
   fallback,
   product,
@@ -135,6 +213,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BROOKIE',
     labelTone: '#f2e35b',
+    receiptBody: createFallbackReceiptBody('Brookie', ['BROWN BUTTER', 'FUDGY', 'CHOCOLATE']),
     slug: 'brookie',
     subtitle: 'Brownie cookie mashup',
     summary: 'Brownie depth and chocolate chip chew packed into one oversized cookie.',
@@ -149,6 +228,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'OREO CHEESECAKE',
     labelTone: '#f08e94',
+    receiptBody: createFallbackReceiptBody('Oreo Cheesecake', ['OREO', 'CREAM CHEESE', 'WHITE CHOC']),
     slug: 'oreo-cheesecake',
     subtitle: 'Creamy Oreo center',
     summary: 'Cheesecake filling layered into a brown butter Oreo cookie.',
@@ -163,6 +243,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'APPLE SNICKERDOODLE',
     labelTone: '#f6c58f',
+    receiptBody: createFallbackReceiptBody('Apple Snickerdoodle', ['APPLE PIE', 'CINNAMON', 'CARAMEL']),
     slug: 'apple-snickerdoodle',
     subtitle: 'Apple pie meets snickerdoodle',
     summary: 'Warm cinnamon sugar with apple pie filling and caramel glaze.',
@@ -177,6 +258,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: "S'MORES",
     labelTone: '#f3deb0',
+    receiptBody: createFallbackReceiptBody("S'mores", ['GRAHAM', 'MARSHMALLOW', 'CHOCOLATE']),
     slug: 'smores',
     subtitle: 'Campfire cookie',
     summary: 'Brown butter dough packed with graham, marshmallow, and chocolate.',
@@ -191,6 +273,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BANANA WALNUT',
     labelTone: '#d8ea94',
+    receiptBody: createFallbackReceiptBody('Banana Choc-Chip Walnut', ['BANANA', 'WALNUT', 'CHOC CHIP']),
     slug: 'banana-choc-chip-walnut',
     subtitle: 'Banana bread cookie',
     summary: 'Toasted walnut crunch and melty chocolate tucked into banana dough.',
@@ -205,6 +288,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'CINNAMON ROLL',
     labelTone: '#f0d6a8',
+    receiptBody: createFallbackReceiptBody('Cinnamon Roll', ['CINNAMON', 'BROWN SUGAR', 'ICING']),
     slug: 'cinnamon-roll',
     subtitle: 'Bakery roll in cookie form',
     summary: 'Swirled brown sugar cinnamon cookie finished with brown butter icing.',
@@ -219,6 +303,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BISCOFF',
     labelTone: '#f0c589',
+    receiptBody: createFallbackReceiptBody('Biscoff', ['BISCOFF', 'COOKIE BUTTER', 'SPICE']),
     slug: 'biscoff',
     subtitle: 'Cookie butter loaded',
     summary: 'Warm spiced dough stacked with Biscoff flavor and cookie butter richness.',
@@ -233,6 +318,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'BANANA CRUMBLE',
     labelTone: '#e6d98a',
+    receiptBody: createFallbackReceiptBody('Banana Crumble', ['BANANA', 'CRUMBLE', 'BROWN SUGAR']),
     slug: 'banana-crumble',
     subtitle: 'Soft banana streusel cookie',
     summary: 'Banana-forward dough topped with crumble texture and brown sugar warmth.',
@@ -247,6 +333,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'PEANUT BUTTER CUP',
     labelTone: '#f2c66c',
+    receiptBody: createFallbackReceiptBody('Peanut Butter Cup', ['PEANUT BUTTER', 'CHOCOLATE', 'BROWN BUTTER']),
     slug: 'peanut-butter-cup',
     subtitle: 'Chocolate peanut butter cookie',
     summary: 'Chocolate dough loaded with peanut butter cup pieces and brown butter richness.',
@@ -261,6 +348,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'DUBAI CHOCOLATE',
     labelTone: '#d7d28a',
+    receiptBody: createFallbackReceiptBody('Dubai Chocolate', ['PISTACHIO', 'KATAIFI', 'CHOCOLATE']),
     slug: 'dubai-chocolate',
     subtitle: 'Pistachio chocolate cookie',
     summary: 'A rich chocolate cookie layered with pistachio notes and crunchy texture.',
@@ -275,6 +363,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'SALTED CARAMEL',
     labelTone: '#f0c073',
+    receiptBody: createFallbackReceiptBody('Salted Caramel Nest', ['SALTED', 'CARAMEL', 'CRUNCH']),
     slug: 'salted-caramel-nest',
     subtitle: 'Salted caramel nest cookie',
     summary: 'Sticky caramel depth with a salted edge and crunchy topping throughout.',
@@ -289,6 +378,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'STRAWBERRY CHEESECAKE',
     labelTone: '#f3adb4',
+    receiptBody: createFallbackReceiptBody('Strawberry Cheesecake', ['STRAWBERRY', 'CHEESECAKE', 'GRAHAM']),
     slug: 'strawberry-cheesecake',
     subtitle: 'Berry cheesecake cookie',
     summary: 'Strawberry sweetness and cheesecake richness with a graham-style finish.',
@@ -303,6 +393,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'STRAWBERRY MATCHA',
     labelTone: '#d7efaa',
+    receiptBody: createFallbackReceiptBody('Strawberry Matcha', ['STRAWBERRY', 'MATCHA', 'WHITE CHOC']),
     slug: 'strawberry-matcha',
     subtitle: 'Matcha berry swirl',
     summary: 'Fresh strawberry notes layered with matcha flavor in a bright soft cookie.',
@@ -317,6 +408,7 @@ export const cookiePosterMetas: CookiePosterMeta[] = [
     ingredientsNoteTitle: defaultIngredientsNoteTitle,
     label: 'MATCHA MARBLE',
     labelTone: '#d8efc3',
+    receiptBody: createFallbackReceiptBody('Strawberry Matcha Marble', ['STRAWBERRY', 'MATCHA', 'MARBLE']),
     slug: 'strawberry-matcha-marble',
     subtitle: 'Marbled berry matcha cookie',
     summary: 'A marbled cookie with strawberry brightness and matcha depth baked together.',
@@ -344,6 +436,8 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
   return {
     ...meta,
     amount: formatAmount(cookiePosterDisplayPriceInUSD),
+    canBuyCatering: true,
+    canBuyIndividually: true,
     href: `/cookies/${meta.slug}`,
     image: normalizeImage(product),
     infoButtonLabel: resolvePosterText({
@@ -362,6 +456,12 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
       key: 'ingredientsNoteTitle',
       product,
     }),
+    receiptBody:
+      'poster' in product &&
+      typeof product.poster === 'object' &&
+      hasReceiptBody(product.poster?.receiptBody)
+        ? product.poster.receiptBody
+        : meta.receiptBody,
     chips: resolvePosterChips(product, meta),
     label: resolvePosterText({
       fallback: meta.label,
@@ -373,6 +473,13 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
       key: 'labelTone',
       product,
     }),
+    isMonthlyFlavor: true,
+    lockedDescription:
+      'This flavor is outside the current rotation, but you can still order it in batches of 10 from the menu.',
+    lockedLabel: 'Catering only this month',
+    menuHref: '/menu',
+    menuLinkLabel: 'View menu',
+    monthlyFlavorLabel: "This month's flavor",
     productId: typeof product.id === 'number' ? product.id : undefined,
     summary: resolveSummary(product, meta),
     subtitle: resolvePosterText({

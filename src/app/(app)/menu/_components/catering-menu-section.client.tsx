@@ -8,6 +8,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import {
+  bakeryPrimitiveTokens,
+  bakerySceneThemes,
+  useBakeryAnnouncer,
+} from '@/design-system/bakery'
 import type { Product } from '@/payload-types'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { ChevronDownIcon, LoaderCircle } from 'lucide-react'
@@ -26,15 +31,24 @@ import {
   mobileSkyByScenery,
   preloadSceneryAssets,
   skyByScenery,
+  type PersuasionGardenPanelClassNames,
 } from './catering-menu-scenery'
 import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
 import { buildCookiePosterAsset } from './cookiePosterData'
 
 type CateringMenuSectionProps = {
+  initialSceneryTone?: MenuSceneryTone
   products: Partial<Product>[]
 }
 
 type SceneryPickerAnchor = 'hero' | 'panel'
+
+const menuPersuasionPanelClassNames = {
+  actionRow: 'cateringMenuPersuasionActionRow',
+  galleryFace: 'cateringMenuPersuasionGalleryFace',
+  photoBoard: 'cateringMenuPersuasionPhotoBoard',
+  root: 'cateringMenuPersuasionRoot',
+} satisfies PersuasionGardenPanelClassNames
 
 const cateringDisplayOrder = [
   'cookie-tray',
@@ -175,6 +189,7 @@ function CateringMenuRow({
   const openingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const traySummaryPulseFrameRef = useRef<number | null>(null)
   const traySummaryPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const triggerScrollFrameRef = useRef<number | null>(null)
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
   const requiredSelectionCount =
@@ -259,6 +274,9 @@ function CateringMenuRow({
       if (traySummaryPulseTimeoutRef.current) {
         clearTimeout(traySummaryPulseTimeoutRef.current)
       }
+      if (triggerScrollFrameRef.current !== null) {
+        cancelAnimationFrame(triggerScrollFrameRef.current)
+      }
     }
   }, [])
 
@@ -273,7 +291,30 @@ function CateringMenuRow({
     }, 480)
   }
 
-  const handleTriggerClick = () => {
+  const handleTriggerClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const trigger = event.currentTarget
+    const triggerTopBeforeOpen = trigger.getBoundingClientRect().top
+
+    if (triggerScrollFrameRef.current !== null) {
+      cancelAnimationFrame(triggerScrollFrameRef.current)
+    }
+
+    triggerScrollFrameRef.current = requestAnimationFrame(() => {
+      triggerScrollFrameRef.current = requestAnimationFrame(() => {
+        triggerScrollFrameRef.current = null
+
+        if (!trigger.isConnected) {
+          return
+        }
+
+        const scrollDelta = trigger.getBoundingClientRect().top - triggerTopBeforeOpen
+
+        if (Math.abs(scrollDelta) > 1) {
+          window.scrollBy({ top: scrollDelta, left: 0, behavior: 'auto' })
+        }
+      })
+    })
+
     if (openingIndicatorTimeoutRef.current) {
       clearTimeout(openingIndicatorTimeoutRef.current)
       openingIndicatorTimeoutRef.current = null
@@ -326,7 +367,7 @@ function CateringMenuRow({
 
   return (
     <AccordionItem
-      className="border-b border-[rgba(23,21,16,0.14)]"
+      className="cateringMenuAccordionItem border-b border-[rgba(23,21,16,0.14)]"
       value={product.slug ?? `row-${index}`}
     >
       <AccordionTrigger
@@ -363,7 +404,7 @@ function CateringMenuRow({
         </div>
       </AccordionTrigger>
 
-      <AccordionContent className="pt-1 pb-9">
+      <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
         {isBatchBuilder ? (
           <BatchBuilderPanel
             flavorCardCloudsForScenery={flavorCardCloudsForScenery}
@@ -375,6 +416,7 @@ function CateringMenuRow({
             onAddToCart={handleAddToCart}
             persuasionPanel={
               <PersuasionGardenPanel
+                classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
                 isSceneChanging={isSceneChanging}
                 onSelectScenery={onSelectScenery}
@@ -398,6 +440,7 @@ function CateringMenuRow({
             onAddToCart={handleAddToCart}
             persuasionPanel={
               <PersuasionGardenPanel
+                classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
                 isSceneChanging={isSceneChanging}
                 onSelectScenery={onSelectScenery}
@@ -417,9 +460,13 @@ function CateringMenuRow({
   )
 }
 
-export function CateringMenuSection({ products }: CateringMenuSectionProps) {
+export function CateringMenuSection({
+  initialSceneryTone = 'dawn',
+  products,
+}: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
-  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
+  const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
   const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
 
@@ -447,6 +494,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
     }
 
     preloadSceneryAssets(nextSceneryTone)
+    announce(`Scenery changed to ${bakerySceneThemes[nextSceneryTone]?.label ?? nextSceneryTone}.`)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
@@ -489,35 +537,9 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
       </section>
 
       <style>{`
-        .cateringMenuHeroDisplay {
-          font-family: var(--font-catering-serif), 'Iowan Old Style', 'Palatino Linotype', serif;
-          font-weight: 800;
-          text-shadow: 0 10px 24px rgba(17, 44, 75, 0.08);
-        }
-
         .cateringMenuRoundHeading {
           font-family: var(--font-rounded-display);
           font-weight: 700;
-        }
-
-        .cateringMenuEyebrow {
-          color: rgba(25, 57, 95, 0.76);
-          font-size: 0.72rem;
-          font-family: var(--font-rounded-display);
-          font-weight: 700;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-        }
-
-        .cateringHeroEyebrow {
-          color: rgba(25, 57, 95, 0.78);
-        }
-
-        .cateringHeroSummary {
-          color: rgba(25, 57, 95, 0.9);
-          font-family: var(--font-rounded-display);
-          font-weight: 700;
-          letter-spacing: -0.015em;
         }
 
         .cateringPitch :is(h1, h2, h3, h4) {
@@ -542,7 +564,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringPersuasionBody :is(p, li) {
-          color: #27496b;
+          color: var(--scene-text, #27496b);
           font-weight: 650;
         }
 
@@ -563,55 +585,75 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         .cateringPersuasionPanel {
           background: var(
             --catering-panel-fill,
-            linear-gradient(180deg, rgba(223, 239, 255, 0.92) 0%, rgba(216, 233, 246, 0.94) 100%)
+            var(
+              --scene-panel-fill,
+              linear-gradient(
+                180deg,
+                rgba(223, 239, 255, 0.92) 0%,
+                rgba(216, 233, 246, 0.94) 100%
+              )
+            )
           );
+          contain: paint;
           isolation: isolate;
         }
 
-        @property --catering-wipe-edge {
-          syntax: '<percentage>';
-          inherits: false;
-          initial-value: 0%;
+        .cateringPanelLayer {
+          backface-visibility: hidden;
+          contain: layout paint style;
+          transform: translate3d(0, 0, 0);
+        }
+
+        .cateringPanelLayerActive {
+          z-index: 2;
+        }
+
+        .cateringPanelLayerBase {
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .cateringPanelLayerPaintIn {
+          pointer-events: none;
+          z-index: 5;
+          will-change: clip-path;
+        }
+
+        .cateringPanelLayerPaintInFromTop {
+          animation: cateringPaintRevealDown
+            var(--catering-tear-duration, ${bakeryPrimitiveTokens.motion.panelPaint})
+            ${bakeryPrimitiveTokens.motion.easeStandard} both;
+          clip-path: inset(0 0 100% 0 round 1.45rem);
+        }
+
+        .cateringPanelLayerPaintInFromBottom {
+          animation: cateringPaintRevealUp
+            var(--catering-tear-duration, ${bakeryPrimitiveTokens.motion.panelPaint})
+            ${bakeryPrimitiveTokens.motion.easeStandard} both;
+          clip-path: inset(100% 0 0 0 round 1.45rem);
         }
 
         .cateringPanelForeground,
         .cateringGalleryContent {
+          backface-visibility: hidden;
+          transform: translate3d(0, 0, 0);
           transition:
-            opacity 180ms ease,
-            transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+            opacity ${bakeryPrimitiveTokens.motion.panelSwap} ${bakeryPrimitiveTokens.motion.easeEnter},
+            transform ${bakeryPrimitiveTokens.motion.panelSwap}
+              ${bakeryPrimitiveTokens.motion.easeEnter};
+          will-change: opacity, transform;
         }
 
         .cateringPanelForegroundHidden,
         .cateringGalleryContentTransitioning {
           opacity: 0;
-          transform: translateY(-0.18rem);
+          transform: translate3d(0, -0.24rem, 0) scale(0.996);
         }
 
-        .cateringPanelWipeGhost {
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            var(--catering-wipe-mask-start),
-            var(--catering-wipe-mask-end)
-          );
-          mask-image: linear-gradient(
-            to bottom,
-            var(--catering-wipe-mask-start),
-            var(--catering-wipe-mask-end)
-          );
-        }
-
-        .cateringPanelWipeGhostToPhotos {
-          --catering-wipe-mask-start: transparent 0 var(--catering-wipe-edge, 0%);
-          --catering-wipe-mask-end: #000 var(--catering-wipe-edge, 0%) 100%;
-          animation: cateringWipeToPhotos var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
-        }
-
-        .cateringPanelWipeGhostToDetails {
-          --catering-wipe-mask-start: #000 0 var(--catering-wipe-edge, 100%);
-          --catering-wipe-mask-end: transparent var(--catering-wipe-edge, 100%) 100%;
-          animation: cateringWipeToDetails var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+        .cateringPanelForegroundEntering,
+        .cateringGalleryContentEntering {
+          animation: cateringPanelContentEnter ${bakeryPrimitiveTokens.motion.panelSwap}
+            ${bakeryPrimitiveTokens.motion.easeEnter} both;
         }
 
         .cateringPersuasionSky {
@@ -661,6 +703,26 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           line-height: 1;
         }
 
+        .cateringAddToCartButton.bakerySceneButton {
+          background: #193822;
+          border-color: transparent;
+          box-shadow: none;
+          color: #fffaf0;
+        }
+
+        .cateringAddToCartButton.bakerySceneButton:hover,
+        .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          background: #102b19;
+          border-color: transparent;
+          box-shadow: none;
+          color: #fffaf0;
+        }
+
+        .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          outline: 3px solid rgba(25, 56, 34, 0.28);
+          outline-offset: 3px;
+        }
+
         .cateringPersuasionMeadow {
           bottom: -0.4rem;
           height: 100%;
@@ -702,16 +764,34 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
               90deg,
               rgba(255, 255, 255, 0) 0%,
               rgba(255, 255, 255, 0.74) 12%,
-              color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 78%, white 22%) 50%,
+              color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 78%, white 22%) 50%,
               rgba(255, 255, 255, 0.74) 88%,
               rgba(255, 255, 255, 0) 100%
-            );
-          height: 0.2rem;
+          );
+          height: 0.28rem;
           opacity: 1;
+          top: 0;
+          transform: translate3d(0, -50%, 0);
           transform-origin: center;
           box-shadow:
-            0 -0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 18%, transparent),
-            0 0.42rem 1.45rem color-mix(in srgb, var(--catering-scene-charge, rgba(255, 220, 124, 0.82)) 24%, transparent);
+            0 -0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, transparent),
+            0 0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 24%, transparent);
+          will-change: opacity, transform;
+        }
+
+        .cateringPanelTearLine::before {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 22%, rgba(255, 255, 255, 0.74)) 44%,
+            rgba(255, 255, 255, 0.48) 50%,
+            color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, rgba(255, 255, 255, 0.5)) 56%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          content: '';
+          inset: -0.95rem 0;
+          opacity: 0.58;
+          position: absolute;
         }
 
         .cateringPanelRepaintLineHidden {
@@ -719,13 +799,20 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringPanelRepaintLineToPhotos {
-          animation: cateringRepaintLineToPhotos var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+          animation: cateringRepaintLineToPhotos
+            var(--catering-tear-duration, ${bakeryPrimitiveTokens.motion.panelPaint})
+            ${bakeryPrimitiveTokens.motion.easeStandard} forwards;
         }
 
         .cateringPanelRepaintLineToDetails {
-          animation: cateringRepaintLineToDetails var(--catering-tear-duration, 280ms)
-            cubic-bezier(0.7, 0, 0.2, 1) forwards;
+          animation: cateringRepaintLineToDetails
+            var(--catering-tear-duration, ${bakeryPrimitiveTokens.motion.panelPaint})
+            ${bakeryPrimitiveTokens.motion.easeStandard} forwards;
+        }
+
+        [data-panel-transition='to-gallery'] .cateringPhotoSkeleton,
+        [data-panel-transition='to-details'] .cateringPhotoSkeleton {
+          animation: none;
         }
 
         .cateringScene-blossom .cateringPersuasionFlowerSpawned {
@@ -741,8 +828,32 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringPhotoCard {
           background: #f5efe7;
+          contain: layout paint style;
+          content-visibility: auto;
+          contain-intrinsic-size: 18rem 14rem;
           isolation: isolate;
           position: relative;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > * {
+          animation: cateringPhotoItemEnter ${bakeryPrimitiveTokens.motion.photoEnter}
+            ${bakeryPrimitiveTokens.motion.easeEnter} both;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(2) {
+          animation-delay: 50ms;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(3) {
+          animation-delay: 80ms;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(4) {
+          animation-delay: 110ms;
+        }
+
+        .cateringGalleryContentEntering .cateringPhotoBoard > div > *:nth-child(n + 5) {
+          animation-delay: 110ms;
         }
 
         .cateringPhotoCardLoading {
@@ -751,7 +862,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
         .cateringPhotoImage {
           opacity: 1;
-          transition: opacity 220ms ease;
+          transition: opacity ${bakeryPrimitiveTokens.motion.normal} ease;
         }
 
         .cateringPhotoImageLoading {
@@ -861,7 +972,7 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
         }
 
         .cateringPersuasionHeading {
-          color: #143e63;
+          color: var(--scene-text, #143e63);
           font-weight: 520;
           text-wrap: balance;
         }
@@ -1032,6 +1143,11 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           animation: cateringFlavorCardPulseRemove 260ms cubic-bezier(0.22, 1, 0.36, 1);
           border-color: rgba(171, 90, 61, 0.32);
           box-shadow: 0 16px 32px rgba(171, 90, 61, 0.12);
+        }
+
+        .cateringMenuAccordionItem,
+        .cateringMenuAccordionContent {
+          overflow-anchor: none;
         }
 
         .cateringRowTrigger[data-state='open'] {
@@ -1385,47 +1501,105 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
           }
         }
 
-        @keyframes cateringWipeToPhotos {
+        @keyframes cateringPanelContentEnter {
           0% {
-            --catering-wipe-edge: 0%;
+            opacity: 0;
+            transform: translate3d(0, 0.28rem, 0) scale(0.996);
+          }
+
+          58% {
+            opacity: 1;
           }
 
           100% {
-            --catering-wipe-edge: 100%;
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
           }
         }
 
-        @keyframes cateringWipeToDetails {
+        @keyframes cateringPhotoItemEnter {
           0% {
-            --catering-wipe-edge: 100%;
+            opacity: 0;
+            transform: translate3d(0, 0.38rem, 0) scale(0.992);
+          }
+
+          65% {
+            opacity: 1;
           }
 
           100% {
-            --catering-wipe-edge: 0%;
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+        }
+
+        @keyframes cateringPaintRevealDown {
+          0% {
+            clip-path: inset(0 0 100% 0 round 1.45rem);
+          }
+
+          100% {
+            clip-path: inset(0 0 0 0 round 1.45rem);
+          }
+        }
+
+        @keyframes cateringPaintRevealUp {
+          0% {
+            clip-path: inset(100% 0 0 0 round 1.45rem);
+          }
+
+          100% {
+            clip-path: inset(0 0 0 0 round 1.45rem);
           }
         }
 
         @keyframes cateringRepaintLineToPhotos {
           0% {
+            opacity: 0.68;
+            transform: translate3d(0, -50%, 0) scaleY(0.72);
+          }
+
+          16% {
             opacity: 0.96;
-            top: 0%;
+          }
+
+          82% {
+            opacity: 0.94;
           }
 
           100% {
-            opacity: 0.96;
-            top: 100%;
+            opacity: 0.74;
+            transform: translate3d(
+              0,
+              var(--catering-panel-transition-distance, var(--scene-panel-min-height, 34rem)),
+              0
+            )
+              scaleY(0.86);
           }
         }
 
         @keyframes cateringRepaintLineToDetails {
           0% {
+            opacity: 0.74;
+            transform: translate3d(
+              0,
+              var(--catering-panel-transition-distance, var(--scene-panel-min-height, 34rem)),
+              0
+            )
+              scaleY(0.86);
+          }
+
+          18% {
             opacity: 0.96;
-            top: 100%;
+          }
+
+          84% {
+            opacity: 0.94;
           }
 
           100% {
-            opacity: 0.96;
-            top: 0%;
+            opacity: 0.68;
+            transform: translate3d(0, -50%, 0) scaleY(0.72);
           }
         }
 
@@ -1437,6 +1611,25 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           50% {
             transform: translate3d(0.9rem, -0.32rem, 0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .cateringPanelForeground,
+          .cateringGalleryContent,
+          .cateringPhotoImage {
+            transition-duration: 1ms !important;
+          }
+
+          .cateringPanelLayerPaintInFromTop,
+          .cateringPanelLayerPaintInFromBottom,
+          .cateringPanelRepaintLineToPhotos,
+          .cateringPanelRepaintLineToDetails,
+          .cateringPanelForegroundEntering,
+          .cateringGalleryContentEntering,
+          .cateringGalleryContentEntering .cateringPhotoBoard > div > * {
+            animation-delay: 0ms !important;
+            animation-duration: 1ms !important;
           }
         }
 
@@ -1469,8 +1662,55 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
             object-position: 28% top;
           }
 
+          .cateringPersuasionFrame {
+            --catering-persuasion-panel-min-height: 37rem;
+          }
+
+          .cateringPersuasionFrame[data-has-gallery='true'] {
+            --catering-persuasion-panel-min-height: 39rem;
+          }
+
           .cateringPersuasionPanel {
             padding-inline: 1rem;
+          }
+
+          .cateringPanelForeground {
+            padding-bottom: 10.8rem;
+          }
+
+          .cateringPanelActionRow {
+            display: grid !important;
+            gap: 0.5rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 100%;
+            width: 100%;
+          }
+
+          .cateringPanelActionRow .cateringActionButtonWrap {
+            display: flex;
+            flex: none;
+            min-width: 0;
+            width: 100%;
+          }
+
+          .cateringPanelActionRow .cateringActionButtonWrap > .cateringSpawnButton {
+            font-size: clamp(0.72rem, 3vw, 0.8rem);
+            letter-spacing: 0;
+            min-height: 2.5rem;
+            padding-inline: 0.54rem;
+            white-space: nowrap;
+            width: 100%;
+          }
+
+          .cateringPanelActionRow .cateringPhotosButton {
+            gap: 0.32rem;
+            padding: 0.48rem 0.54rem 0.5rem;
+          }
+
+          .cateringPanelActionRow .cateringPhotosButtonIcon {
+            height: 1.08rem;
+            transform: translateY(-0.16rem);
+            width: 1.34rem;
           }
 
           .cateringPersuasionFlower {
@@ -1515,6 +1755,31 @@ export function CateringMenuSection({ products }: CateringMenuSectionProps) {
 
           .cateringPortionInline {
             font-size: 0.76rem;
+          }
+        }
+
+        @media (max-width: 430px) {
+          .cateringPersuasionFrame {
+            --catering-persuasion-panel-min-height: 38.25rem;
+          }
+
+          .cateringPersuasionFrame[data-has-gallery='true'] {
+            --catering-persuasion-panel-min-height: 40.25rem;
+          }
+
+          .cateringPersuasionHeading {
+            font-size: clamp(1.5rem, 6.2vw, 1.82rem);
+            letter-spacing: 0;
+            line-height: 1.04;
+          }
+
+          .cateringPersuasionBody :is(p, li) {
+            font-size: 0.9rem;
+            line-height: 1.62;
+          }
+
+          .cateringPanelForeground {
+            padding-bottom: 11rem;
           }
         }
       `}</style>

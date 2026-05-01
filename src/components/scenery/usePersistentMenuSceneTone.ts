@@ -3,54 +3,52 @@
 import {
   useCallback,
   useEffect,
-  useSyncExternalStore,
+  useLayoutEffect,
+  useState,
   type Dispatch,
   type SetStateAction,
 } from 'react'
 
 import { menuSceneTones, persistentMenuSceneStorageKey, type SceneTone } from './menuHeroScenery'
+import { defaultMenuScene, menuSceneLoadingTokens } from './menuSceneLoadingTokens'
 
 const isSceneTone = (value: string): value is SceneTone =>
   menuSceneTones.includes(value as SceneTone)
 
 const persistentMenuSceneChangeEvent = 'baked-with-blessings-menu-scene-change'
+const persistentMenuSceneCookieMaxAge = 60 * 60 * 24 * 365
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
-const readStoredSceneTone = (fallback: SceneTone): SceneTone => {
-  if (typeof window === 'undefined') {
-    return fallback
+const applyDocumentSceneTone = (sceneTone: SceneTone) => {
+  if (typeof document === 'undefined') {
+    return
   }
 
-  const storedTone = window.localStorage.getItem(persistentMenuSceneStorageKey)
+  const tokens = menuSceneLoadingTokens[sceneTone] ?? menuSceneLoadingTokens[defaultMenuScene]
+  const root = document.documentElement
 
-  return storedTone && isSceneTone(storedTone) ? storedTone : fallback
+  root.setAttribute('data-menu-scene', sceneTone)
+  root.style.setProperty('--route-loading-background', tokens.background)
+  root.style.setProperty('--route-loading-sky', tokens.sky)
+  root.style.setProperty('--route-loading-sky-mobile', tokens.skyMobile)
+  root.style.setProperty('--route-loading-meadow', tokens.meadow)
+  root.style.setProperty('--route-loading-overlay', tokens.overlay)
+  root.style.setProperty('--route-loading-banner-bg', tokens.bannerBackground)
+  root.style.setProperty('--route-loading-banner-color', tokens.bannerColor)
 }
 
-const subscribeToSceneTone = (onStoreChange: () => void) => {
-  if (typeof window === 'undefined') {
-    return () => undefined
+const writeSceneToneCookie = (sceneTone: SceneTone) => {
+  if (typeof document === 'undefined') {
+    return
   }
 
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === persistentMenuSceneStorageKey) {
-      onStoreChange()
-    }
-  }
-
-  window.addEventListener('storage', handleStorage)
-  window.addEventListener(persistentMenuSceneChangeEvent, onStoreChange)
-
-  return () => {
-    window.removeEventListener('storage', handleStorage)
-    window.removeEventListener(persistentMenuSceneChangeEvent, onStoreChange)
-  }
+  document.cookie = `${persistentMenuSceneStorageKey}=${encodeURIComponent(
+    sceneTone,
+  )}; Max-Age=${persistentMenuSceneCookieMaxAge}; Path=/; SameSite=Lax`
 }
 
-export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
-  const sceneTone = useSyncExternalStore(
-    subscribeToSceneTone,
-    () => readStoredSceneTone(fallback),
-    () => fallback,
-  )
+export const usePersistentMenuSceneTone = (fallback: SceneTone = 'dawn') => {
+  const [sceneTone, setSceneTone] = useState<SceneTone>(fallback)
 
   const syncSceneTone = useCallback((nextTone: SceneTone) => {
     if (typeof window === 'undefined') {
@@ -58,6 +56,9 @@ export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
     }
 
     window.localStorage.setItem(persistentMenuSceneStorageKey, nextTone)
+    applyDocumentSceneTone(nextTone)
+    writeSceneToneCookie(nextTone)
+    setSceneTone(nextTone)
     window.dispatchEvent(
       new CustomEvent(persistentMenuSceneChangeEvent, {
         detail: { sceneTone: nextTone },
@@ -65,18 +66,38 @@ export const usePersistentMenuSceneTone = (fallback: SceneTone = 'classic') => {
     )
   }, [])
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (typeof window === 'undefined') {
       return
     }
 
-    if (!isSceneTone(window.localStorage.getItem(persistentMenuSceneStorageKey) ?? '')) {
-      window.localStorage.setItem(persistentMenuSceneStorageKey, fallback)
-      window.dispatchEvent(
-        new CustomEvent(persistentMenuSceneChangeEvent, {
-          detail: { sceneTone: fallback },
-        }),
-      )
+    const syncFromStorage = () => {
+      const storedValue = window.localStorage.getItem(persistentMenuSceneStorageKey)
+      const storedTone = storedValue && isSceneTone(storedValue) ? storedValue : null
+      const nextTone = storedTone ?? fallback
+
+      if (!storedTone) {
+        window.localStorage.setItem(persistentMenuSceneStorageKey, nextTone)
+      }
+
+      applyDocumentSceneTone(nextTone)
+      writeSceneToneCookie(nextTone)
+      setSceneTone(nextTone)
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === persistentMenuSceneStorageKey) {
+        syncFromStorage()
+      }
+    }
+
+    syncFromStorage()
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener(persistentMenuSceneChangeEvent, syncFromStorage)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener(persistentMenuSceneChangeEvent, syncFromStorage)
     }
   }, [fallback])
 

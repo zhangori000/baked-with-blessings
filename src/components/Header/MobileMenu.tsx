@@ -1,13 +1,24 @@
 'use client'
 
+import {
+  BakeryAction,
+  BakeryCard,
+  BakeryPressable,
+  bakeryMediaQueries,
+  useBakeryAnnouncer,
+  useBakeryMediaQuery,
+} from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
-import { MenuIcon, ShoppingBag, X } from 'lucide-react'
+import { MenuIcon, ShoppingBag, UserRound, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 type Props = {
+  accountButtonLabel: string
   cartQuantity: number
+  isAccountOpen: boolean
+  onOpenAccount: () => void
   onOpenCart: () => void
   items: Array<{
     id: string
@@ -33,8 +44,17 @@ type MobileFlowerTone = 'orange' | 'plum' | 'rose' | 'sage' | 'sunflower'
 const mainCardFlowerTones: MobileFlowerTone[] = ['orange', 'sage']
 const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
 
-export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
+export function MobileMenu({
+  accountButtonLabel,
+  cartQuantity,
+  isAccountOpen,
+  items,
+  onOpenAccount,
+  onOpenCart,
+}: Props) {
   const pathname = usePathname()
+  const { announce } = useBakeryAnnouncer()
+  const isTabletUp = useBakeryMediaQuery(bakeryMediaQueries.tabletUp)
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const mainItems = items.filter((item) => item.kind !== 'apps')
@@ -44,15 +64,8 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
   })
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsOpen(false)
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    if (isTabletUp) closeMenu()
+  }, [isTabletUp])
 
   useEffect(() => {
     closeMenu()
@@ -65,6 +78,7 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
       if (!menuRef.current || !event.target) return
       if (menuRef.current.contains(event.target as Node)) return
       setIsOpen(false)
+      announce('Mobile navigation closed.')
     }
 
     window.addEventListener('mousedown', onPointerDown)
@@ -74,7 +88,7 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
       window.removeEventListener('mousedown', onPointerDown)
       window.removeEventListener('touchstart', onPointerDown)
     }
-  }, [isOpen])
+  }, [announce, isOpen])
 
   const renderCard = ({
     description,
@@ -91,42 +105,69 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
     title: string
     tone: MobileFlowerTone
   }) => (
-    <article className="siteHeaderMobileCard" data-flower-tone={tone} key={key}>
+    <BakeryCard
+      as="article"
+      className="siteHeaderMobileCard"
+      data-flower-tone={tone}
+      key={key}
+      radius="lg"
+      spacing="none"
+      tone="transparent"
+    >
       <div className="siteHeaderMobileCardCopy">
         <p className="siteHeaderMobileCardEyebrow">{eyebrow}</p>
         <h3 className="siteHeaderMobileCardTitle">{title}</h3>
         <p className="siteHeaderMobileCardDescription">{description}</p>
       </div>
 
-      <Link
+      <BakeryAction
+        as={Link}
         aria-label={`Open ${title}`}
         className="siteHeaderMobileCardAction"
         href={href}
         onClick={() => {
           setIsOpen(false)
         }}
+        size="sm"
+        variant="secondary"
       >
         <span className="siteHeaderMobileCardActionLabel">GO</span>
-      </Link>
-    </article>
+      </BakeryAction>
+    </BakeryCard>
   )
 
   return (
     <div className={cn('siteHeaderMobileMenu', isOpen && 'is-open')} ref={menuRef}>
       <div className="siteHeaderMobileControls">
-        <button
+        <BakeryPressable
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
           className="siteHeaderMobileIconButton"
           onClick={() => {
-            setIsOpen((current) => !current)
+            const nextOpen = !isOpen
+            setIsOpen(nextOpen)
+            announce(nextOpen ? 'Mobile navigation opened.' : 'Mobile navigation closed.')
           }}
           type="button"
         >
           {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
-        </button>
+        </BakeryPressable>
 
-        <button
+        <BakeryPressable
+          aria-label={accountButtonLabel}
+          className={cn('siteHeaderMobileIconButton siteHeaderMobileAccountButton', {
+            'is-active': isAccountOpen,
+          })}
+          onClick={() => {
+            setIsOpen(false)
+            onOpenAccount()
+          }}
+          type="button"
+        >
+          <UserRound className="h-4 w-4" />
+        </BakeryPressable>
+
+        <BakeryPressable
           aria-label={`Open cart with ${cartQuantity} items`}
           className="siteHeaderMobileBagButton"
           onClick={() => {
@@ -137,7 +178,7 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
         >
           <ShoppingBag className="siteHeaderMobileBagIcon h-4 w-4" />
           <span className="siteHeaderMobileBagCount">[{cartQuantity}]</span>
-        </button>
+        </BakeryPressable>
       </div>
 
       <div className={cn('siteHeaderMobilePanel', isOpen && 'is-open')}>
@@ -155,32 +196,36 @@ export function MobileMenu({ cartQuantity, items, onOpenCart }: Props) {
 
           {appItems.length ? (
             <div className="siteHeaderMobileSectionDivider" role="separator">
-              <span>Other pages</span>
+              <span>Apps</span>
             </div>
           ) : null}
 
-          {appItems.flatMap((item) =>
-            (item.panel.cards?.length
-              ? item.panel.cards
-              : [
-                  {
-                    description: item.panel.description,
-                    eyebrow: item.panel.eyebrow,
-                    href: item.href,
-                    title: item.label,
-                  },
-                ]
-            ).map((card, index) =>
-              renderCard({
-                description: card.description,
-                eyebrow: card.eyebrow,
-                href: card.href,
-                key: `${item.id}-${card.href}`,
-                title: card.title,
-                tone: appCardFlowerTones[index % appCardFlowerTones.length],
-              }),
-            ),
-          )}
+          {appItems.length ? (
+            <div className="siteHeaderMobileAppScroller" aria-label="Other pages">
+              {appItems.flatMap((item) =>
+                (item.panel.cards?.length
+                  ? item.panel.cards
+                  : [
+                      {
+                        description: item.panel.description,
+                        eyebrow: item.panel.eyebrow,
+                        href: item.href,
+                        title: item.label,
+                      },
+                    ]
+                ).map((card, index) =>
+                  renderCard({
+                    description: card.description,
+                    eyebrow: card.eyebrow,
+                    href: card.href,
+                    key: `${item.id}-${card.href}`,
+                    title: card.title,
+                    tone: appCardFlowerTones[index % appCardFlowerTones.length],
+                  }),
+                ),
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

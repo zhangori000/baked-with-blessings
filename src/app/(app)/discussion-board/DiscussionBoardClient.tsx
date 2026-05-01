@@ -11,6 +11,7 @@ import {
   type DiscussionSortKey,
   type DiscussionTreeData,
 } from '@/features/discussion-graph/types'
+import { BakeryAction, BakeryCard, BakeryPageShell, BakeryPressable } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import {
@@ -40,6 +41,7 @@ import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
 type Props = {
   initialData: DiscussionTreeData
   initialFocusedNodeId?: string
+  initialSceneryTone?: MenuSceneryTone
   initialTopicId?: string
 }
 
@@ -186,6 +188,7 @@ const getVisibleEdgeGroups = (edges: DiscussionBoardEdge[]) => {
 export function DiscussionBoardClient({
   initialData,
   initialFocusedNodeId,
+  initialSceneryTone = 'dawn',
   initialTopicId,
 }: Props) {
   const router = useRouter()
@@ -205,7 +208,7 @@ export function DiscussionBoardClient({
   const [isRoutePending, startRouteRefresh] = useTransition()
   const [isGuideOpen, setIsGuideOpen] = useState(false)
   const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(() => new Set())
-  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone('classic')
+  const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
   const didPrepareInitialHistory = useRef(false)
 
@@ -218,11 +221,11 @@ export function DiscussionBoardClient({
   const handleSelectHeroScenery = (nextSceneryTone: MenuSceneryTone) => {
     if (nextSceneryTone === heroSceneryTone) return
 
-    preloadSceneryAssets(nextSceneryTone)
+    setIsSceneryPickerOpen(false)
     startTransition(() => {
       setHeroSceneryTone(nextSceneryTone)
     })
-    setIsSceneryPickerOpen(false)
+    preloadSceneryAssets(nextSceneryTone)
   }
 
   useEffect(() => {
@@ -453,25 +456,25 @@ export function DiscussionBoardClient({
         ) : null}
 
         {isCollapsed && edges.length > 0 ? (
-          <button
+          <BakeryPressable
             className="discussionCollapsedBranch"
             onClick={() => toggleNodeCollapse(node.id)}
             type="button"
           >
             <ChevronDown aria-hidden="true" className="h-4 w-4" />
             Show {getStatLabel(edges.length, 'collapsed reply')}
-          </button>
+          </BakeryPressable>
         ) : null}
 
         {!isCollapsed && level >= depth && edges.length > 0 ? (
-          <button
+          <BakeryPressable
             className="discussionCollapsedBranch"
             onClick={() => focusNode(node.id)}
             type="button"
           >
             <ChevronDown aria-hidden="true" className="h-4 w-4" />
             {getStatLabel(edges.length, 'hidden branch')}
-          </button>
+          </BakeryPressable>
         ) : null}
 
         {!isCollapsed && level < depth && groupedEdges.length ? (
@@ -527,16 +530,21 @@ export function DiscussionBoardClient({
           eyebrow="Public reasoning"
           isSceneryPickerOpen={isSceneryPickerOpen}
           isSceneChanging={false}
-          key={heroSceneryTone}
           onSelectScenery={handleSelectHeroScenery}
           onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
           sceneryTone={heroSceneryTone}
-          summary="Open a question, follow replies and follow-up questions, and keep the reasoning visible instead of buried in disconnected comments."
+          summary="This page is experimental."
           title="Discussion Board"
         />
       </div>
 
-      <section className="discussionBoardShell container">
+      <BakeryPageShell
+        as="section"
+        className="discussionBoardShell"
+        spacing="none"
+        tone="transparent"
+        width="container"
+      >
         {isRoutePending ? (
           <p aria-live="polite" className="discussionPendingNotice">
             Updating discussion
@@ -544,21 +552,27 @@ export function DiscussionBoardClient({
         ) : null}
         {!treeRoot ? (
           <>
-            <header className="discussionBoardHeader discussionBoardToolbar">
+            <BakeryCard
+              as="header"
+              className="discussionBoardHeader discussionBoardToolbar"
+              radius="md"
+              spacing="none"
+              tone="transparent"
+            >
               <p className="discussionBoardToolbarTitle">Sort discussion threads</p>
               <div className="discussionSortRail" aria-label="Sort topics">
                 {discussionSorts.map((item) => (
-                  <button
+                  <BakeryPressable
                     className={cn('discussionSortButton', sort === item.value && 'is-active')}
                     key={item.value}
                     onClick={() => setSort(item.value)}
                     type="button"
                   >
                     {item.label}
-                  </button>
+                  </BakeryPressable>
                 ))}
               </div>
-            </header>
+            </BakeryCard>
 
             <DiscussionGuide
               isOpen={isGuideOpen}
@@ -581,7 +595,8 @@ export function DiscussionBoardClient({
               data-transitioning-id={transitioningRootId || undefined}
             >
               {sortedRoots.map((root) => (
-                <button
+                <BakeryCard
+                  as="button"
                   className={cn(
                     'discussionTopicRow',
                     transitioningRootId === root.id && 'is-selected-transition',
@@ -589,6 +604,9 @@ export function DiscussionBoardClient({
                   )}
                   key={root.id}
                   onClick={() => openTopic(root.id)}
+                  radius="md"
+                  spacing="none"
+                  tone="transparent"
                   type="button"
                 >
                   <span className="discussionTopicMain">
@@ -610,27 +628,37 @@ export function DiscussionBoardClient({
                     <span>{getStatLabel(root.responseCount, 'reply')}</span>
                     <span>{getStatLabel(root.questionCount, 'follow-up question')}</span>
                   </span>
-                </button>
+                </BakeryCard>
               ))}
             </div>
           </>
         ) : (
           <>
-            <header className="discussionGraphHeader">
+            <BakeryCard
+              as="header"
+              className="discussionGraphHeader"
+              radius="md"
+              spacing="none"
+              tone="transparent"
+            >
               <div className="discussionGraphNav">
-                <button className="discussionBackButton" onClick={backToList} type="button">
+                <BakeryPressable
+                  className="discussionBackButton"
+                  onClick={backToList}
+                  type="button"
+                >
                   <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                   Topic list
-                </button>
+                </BakeryPressable>
                 {currentParentNode ? (
-                  <button
+                  <BakeryPressable
                     className="discussionBackButton"
                     onClick={() => focusNode(currentParentNode.id)}
                     type="button"
                   >
                     <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                     Parent
-                  </button>
+                  </BakeryPressable>
                 ) : null}
               </div>
 
@@ -639,26 +667,26 @@ export function DiscussionBoardClient({
                 <h1>{treeRoot.title}</h1>
                 <nav aria-label="Focused discussion path" className="discussionTrail">
                   {trail.map((node) => (
-                    <button key={node.id} onClick={() => focusNode(node.id)} type="button">
+                    <BakeryPressable key={node.id} onClick={() => focusNode(node.id)} type="button">
                       {node.title}
-                    </button>
+                    </BakeryPressable>
                   ))}
                 </nav>
               </div>
 
               <div className="discussionDepthControl" aria-label="Tree depth">
                 {[1, 2, 3, 4].map((value) => (
-                  <button
+                  <BakeryPressable
                     className={cn(depth === value && 'is-active')}
                     key={value}
                     onClick={() => setDepth(value)}
                     type="button"
                   >
                     Depth {value}
-                  </button>
+                  </BakeryPressable>
                 ))}
               </div>
-            </header>
+            </BakeryCard>
 
             <DiscussionGuide
               isOpen={isGuideOpen}
@@ -678,21 +706,31 @@ export function DiscussionBoardClient({
             {notice ? <p className="discussionNotice">{notice}</p> : null}
 
             {currentParentNode ? (
-              <section className="discussionParentBanner" aria-label="Current parent node">
+              <BakeryCard
+                as="section"
+                className="discussionParentBanner"
+                aria-label="Current parent node"
+                radius="md"
+                spacing="none"
+                tone="transparent"
+              >
                 <span>
                   Under parent: <strong>{currentParentNode.title}</strong>
                 </span>
-                <button onClick={() => focusNode(currentParentNode.id, true)} type="button">
+                <BakeryPressable
+                  onClick={() => focusNode(currentParentNode.id, true)}
+                  type="button"
+                >
                   <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                   Jump to parent node
-                </button>
-              </section>
+                </BakeryPressable>
+              </BakeryCard>
             ) : null}
 
             <div className="discussionTree">{renderNode(treeRoot, 0)}</div>
           </>
         )}
-      </section>
+      </BakeryPageShell>
     </div>
   )
 }
@@ -715,7 +753,14 @@ function NodeCard({
   const [areActionsOpen, setAreActionsOpen] = useState(false)
 
   return (
-    <div className={cn('discussionNodeCard', isFocused && 'is-focused')} data-node-type={node.type}>
+    <BakeryCard
+      as="article"
+      className={cn('discussionNodeCard', isFocused && 'is-focused')}
+      data-node-type={node.type}
+      radius="md"
+      spacing="none"
+      tone="transparent"
+    >
       <div className="discussionNodeTopline">
         {isFocused ? <span className="discussionHerePill">You are here</span> : null}
         <span>{node.type}</span>
@@ -735,52 +780,56 @@ function NodeCard({
 
       <div className="discussionNodeUtilityRow">
         {childCount > 0 ? (
-          <button className="discussionInlineAction" onClick={onToggleCollapse} type="button">
+          <BakeryPressable
+            className="discussionInlineAction"
+            onClick={onToggleCollapse}
+            type="button"
+          >
             <ChevronDown
               aria-hidden="true"
               className={cn('h-4 w-4', isCollapsed && 'discussionIconRotated')}
             />
             {isCollapsed ? 'Expand branch' : 'Collapse branch'}
-          </button>
+          </BakeryPressable>
         ) : null}
-      </div>
 
-      <div className="discussionNodeActionPanel" data-open={areActionsOpen}>
-        <button
-          aria-expanded={areActionsOpen}
-          className="discussionActionsToggle"
-          onClick={() => setAreActionsOpen((current) => !current)}
-          type="button"
-        >
-          Actions
-          <ChevronDown
-            aria-hidden="true"
-            className={cn('h-4 w-4', areActionsOpen && 'discussionIconFlipped')}
-          />
-        </button>
+        <div className="discussionNodeActionPanel" data-open={areActionsOpen}>
+          <BakeryPressable
+            aria-expanded={areActionsOpen}
+            className="discussionActionsToggle"
+            onClick={() => setAreActionsOpen((current) => !current)}
+            type="button"
+          >
+            Actions
+            <ChevronDown
+              aria-hidden="true"
+              className={cn('h-4 w-4', areActionsOpen && 'discussionIconFlipped')}
+            />
+          </BakeryPressable>
 
-        {areActionsOpen ? (
-          <div className="discussionNodeActions">
-            <button
-              data-edge="responds_to"
-              onClick={() => onReply(node.id, 'responds_to')}
-              type="button"
-            >
-              <MessageSquarePlus aria-hidden="true" className="h-4 w-4" />
-              Reply
-            </button>
-            <button
-              data-edge="asks_about"
-              onClick={() => onReply(node.id, 'asks_about')}
-              type="button"
-            >
-              <CircleHelp aria-hidden="true" className="h-4 w-4" />
-              Ask question
-            </button>
-          </div>
-        ) : null}
+          {areActionsOpen ? (
+            <div className="discussionNodeActions">
+              <BakeryPressable
+                data-edge="responds_to"
+                onClick={() => onReply(node.id, 'responds_to')}
+                type="button"
+              >
+                <MessageSquarePlus aria-hidden="true" className="h-4 w-4" />
+                Reply
+              </BakeryPressable>
+              <BakeryPressable
+                data-edge="asks_about"
+                onClick={() => onReply(node.id, 'asks_about')}
+                type="button"
+              >
+                <CircleHelp aria-hidden="true" className="h-4 w-4" />
+                Ask question
+              </BakeryPressable>
+            </div>
+          ) : null}
+        </div>
       </div>
-    </div>
+    </BakeryCard>
   )
 }
 
@@ -838,19 +887,27 @@ function NodeContent({
               </div>
             ) : null}
             {showBottomReadLess ? (
-              <button className="discussionReadLessBottom" onClick={closeDetails} type="button">
+              <BakeryPressable
+                className="discussionReadLessBottom"
+                onClick={closeDetails}
+                type="button"
+              >
                 Read less
-              </button>
+              </BakeryPressable>
             ) : null}
           </>
         )
 
         if (block.type === 'background') {
           return (
-            <details
+            <BakeryCard
+              as="details"
               className="discussionContentBlock discussionBackgroundBlock"
               data-block-type={block.type}
               key={block.id}
+              radius="sm"
+              spacing="none"
+              tone="transparent"
             >
               <summary>
                 <span>{label}</span>
@@ -859,16 +916,20 @@ function NodeContent({
                 <span className="discussionReadLessText">Read less</span>
               </summary>
               {blockBody(true)}
-            </details>
+            </BakeryCard>
           )
         }
 
         if (isLongBlock) {
           return (
-            <details
+            <BakeryCard
+              as="details"
               className="discussionContentBlock discussionPreviewBlock"
               data-block-type={block.type}
               key={block.id}
+              radius="sm"
+              spacing="none"
+              tone="transparent"
             >
               <summary>
                 <span className="discussionPreviewText">{getPreviewText(block.text, 300)}</span>
@@ -876,15 +937,23 @@ function NodeContent({
                 <span className="discussionReadLessText">Read less</span>
               </summary>
               {blockBody(true)}
-            </details>
+            </BakeryCard>
           )
         }
 
         return (
-          <section className="discussionContentBlock" data-block-type={block.type} key={block.id}>
+          <BakeryCard
+            as="section"
+            className="discussionContentBlock"
+            data-block-type={block.type}
+            key={block.id}
+            radius="sm"
+            spacing="none"
+            tone="transparent"
+          >
             {block.type === 'body' ? null : <span>{label}</span>}
             {blockBody()}
-          </section>
+          </BakeryCard>
         )
       })}
     </div>
@@ -956,9 +1025,9 @@ function ReplyComposer({
           {edgeIcons[edgeType]}
           {edgeLabels[edgeType]}
         </span>
-        <button onClick={onCancel} type="button">
+        <BakeryPressable onClick={onCancel} type="button">
           Cancel
-        </button>
+        </BakeryPressable>
       </div>
 
       <div className="discussionFieldHelp">
@@ -980,24 +1049,30 @@ function ReplyComposer({
           <label>
             Reply <span>required</span>
             <span className="discussionTextTools" aria-label="Text tools">
-              <button onClick={() => wrapSelectedBodyText('**')} type="button">
+              <BakeryPressable onClick={() => wrapSelectedBodyText('**')} type="button">
                 Bold
-              </button>
-              <button onClick={() => wrapSelectedBodyText('*')} type="button">
+              </BakeryPressable>
+              <BakeryPressable onClick={() => wrapSelectedBodyText('*')} type="button">
                 Italic
-              </button>
-              <button onClick={() => wrapSelectedBodyText('[[conclusion:', ']]')} type="button">
+              </BakeryPressable>
+              <BakeryPressable
+                onClick={() => wrapSelectedBodyText('[[conclusion:', ']]')}
+                type="button"
+              >
                 Conclusion
-              </button>
-              <button onClick={() => wrapSelectedBodyText('[[premise:', ']]')} type="button">
+              </BakeryPressable>
+              <BakeryPressable
+                onClick={() => wrapSelectedBodyText('[[premise:', ']]')}
+                type="button"
+              >
                 Premise
-              </button>
-              <button onClick={markSelectedBodyLink} type="button">
+              </BakeryPressable>
+              <BakeryPressable onClick={markSelectedBodyLink} type="button">
                 Highlight link
-              </button>
-              <button onClick={markSelectedBodyReference} type="button">
+              </BakeryPressable>
+              <BakeryPressable onClick={markSelectedBodyReference} type="button">
                 Reference
-              </button>
+              </BakeryPressable>
             </span>
             <textarea
               name="bodyText"
@@ -1034,10 +1109,16 @@ function ReplyComposer({
         </>
       )}
 
-      <button className="discussionSubmitButton" disabled={isSubmitting} type="submit">
+      <BakeryAction
+        className="discussionSubmitButton"
+        disabled={isSubmitting}
+        size="sm"
+        type="submit"
+        variant="primary"
+      >
         <Sparkles aria-hidden="true" className="h-4 w-4" />
         {isSubmitting ? 'Posting' : 'Post node'}
-      </button>
+      </BakeryAction>
     </form>
   )
 }
@@ -1061,14 +1142,14 @@ function HelpText({ text }: { text: string }) {
 
   return (
     <span className="discussionHelpText" ref={wrapperRef}>
-      <button
+      <BakeryPressable
         aria-expanded={isOpen}
         aria-label="Show help"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
         ?
-      </button>
+      </BakeryPressable>
       {isOpen ? <p>{text}</p> : null}
     </span>
   )
@@ -1086,8 +1167,15 @@ function DiscussionGuide({
   title: string
 }) {
   return (
-    <section className="discussionGuide" data-open={isOpen}>
-      <button
+    <BakeryCard
+      as="section"
+      className="discussionGuide"
+      data-open={isOpen}
+      radius="md"
+      spacing="none"
+      tone="transparent"
+    >
+      <BakeryPressable
         aria-expanded={isOpen}
         className="discussionGuideToggle"
         onClick={onToggle}
@@ -1096,8 +1184,8 @@ function DiscussionGuide({
         <ShieldQuestion aria-hidden="true" className="h-4 w-4" />
         {title}
         <ChevronDown aria-hidden="true" className="h-4 w-4" />
-      </button>
+      </BakeryPressable>
       {isOpen ? <div className="discussionGuideBody">{children}</div> : null}
-    </section>
+    </BakeryCard>
   )
 }

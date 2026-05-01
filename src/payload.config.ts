@@ -19,12 +19,20 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
+import { FlavorRotations } from '@/collections/FlavorRotations'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { Posts } from '@/collections/Posts'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
+import { EmailVerificationStarts } from '@/collections/EmailVerificationStarts'
 import { PhoneVerificationStarts } from '@/collections/PhoneVerificationStarts'
+import {
+  BlessingsNetworkAnswers,
+  BlessingsNetworkOwners,
+  BlessingsNetworkOwnerPosts,
+  BlessingsNetworkQuestions,
+} from '@/features/blessings-network/collections'
 import {
   AwarenessMarks,
   DiscussionEdges,
@@ -74,20 +82,28 @@ export default buildConfig({
   collections: [
     Admins,
     Customers,
+    EmailVerificationStarts,
     PhoneVerificationStarts,
     DiscussionNodes,
     DiscussionEdges,
     AwarenessMarks,
     Reviews,
+    BlessingsNetworkOwners,
+    BlessingsNetworkQuestions,
+    BlessingsNetworkAnswers,
+    BlessingsNetworkOwnerPosts,
     Pages,
     Posts,
+    FlavorRotations,
     Categories,
     Media,
   ],
   db: postgresAdapter({
+    migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    push: process.env.NODE_ENV !== 'production' && !process.env.VERCEL,
   }),
   editor: lexicalEditor({
     features: () => {

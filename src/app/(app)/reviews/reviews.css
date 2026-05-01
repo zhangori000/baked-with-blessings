@@ -1,4 +1,8 @@
 .reviewsPage {
+  --bakery-color-action-bg: #244f2d;
+  --bakery-color-action-fg: #fffdf6;
+  --scene-action-aura: rgba(112, 185, 93, 0.28);
+
   background: #fff8f2;
   color: var(--foreground);
   min-height: 100vh;
@@ -48,19 +52,10 @@
   width: 100%;
 }
 
-.reviewsPrinciples article,
-.reviewDiscountPolicy {
-  background: rgba(255, 252, 244, 0.92);
-  border: 1px solid rgba(36, 25, 15, 0.14);
-  border-radius: 8px;
-  box-shadow: 0 18px 42px rgba(69, 43, 18, 0.08);
-}
-
-.reviewsPrinciples article,
+.reviewsPrincipleCard,
 .reviewDiscountPolicy {
   display: grid;
   gap: 0.75rem;
-  padding: 1rem;
 }
 
 .reviewsEyebrow {
@@ -104,7 +99,10 @@
 }
 
 .reviewDiscountPolicy {
-  background: linear-gradient(180deg, rgba(232, 240, 222, 0.95), rgba(255, 252, 244, 0.92));
+  --bakery-card-border: rgba(67, 92, 37, 0.2);
+  --bakery-card-wash-end: rgba(255, 252, 244, 0.92);
+  --bakery-card-wash-start: rgba(232, 240, 222, 0.95);
+
   border-color: rgba(67, 92, 37, 0.2);
 }
 
@@ -389,41 +387,14 @@
 }
 
 .reviewsSubmitButton {
-  align-items: center;
-  background: #244f2d;
-  border: 1px solid rgba(36, 25, 15, 0.16);
   border-radius: 7px;
-  color: #fffdf6;
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
-  font-weight: 900;
-  gap: 0.35rem;
   justify-self: start;
-  min-height: 2.35rem;
-  padding: 0.52rem 0.8rem;
-}
-
-.reviewsSubmitButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.52;
 }
 
 .reviewsComposeButton {
-  align-items: center;
-  background: #244f2d;
   border: 1px solid rgba(255, 253, 246, 0.28);
-  border-radius: 999px;
   bottom: 1.2rem;
   box-shadow: 0 18px 40px rgba(15, 24, 12, 0.24);
-  color: #fffdf6;
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
-  font-weight: 900;
-  gap: 0.5rem;
-  min-height: 3.35rem;
-  padding: 0.85rem 1.15rem;
   position: fixed;
   right: 1.2rem;
   z-index: 70;
@@ -445,14 +416,9 @@
 }
 
 .reviewCard {
-  background: rgba(255, 252, 244, 0.94);
-  border: 1px solid rgba(36, 25, 15, 0.14);
-  border-radius: 7px;
-  box-shadow: 0 18px 42px rgba(69, 43, 18, 0.08);
   display: grid;
   gap: 0.75rem;
   overflow: hidden;
-  padding: 1rem;
   position: relative;
 }
 
@@ -517,17 +483,16 @@
 
 .reviewResponse {
   align-items: center;
-  background: rgba(246, 249, 239, 0.9);
-  border: 1px solid rgba(36, 79, 45, 0.16);
+  --bakery-card-border: rgba(36, 79, 45, 0.16);
+  --bakery-card-wash-end: rgba(246, 249, 239, 0.9);
+  --bakery-card-wash-start: rgba(246, 249, 239, 0.94);
+
   border-left: 4px solid rgba(36, 79, 45, 0.34);
-  border-radius: 8px;
-  box-shadow: 0 12px 28px rgba(69, 43, 18, 0.06);
   display: flex;
   gap: 0.8rem;
   justify-self: end;
   margin-left: 1.35rem;
   overflow: hidden;
-  padding: 0.75rem 0.75rem 0.75rem 0.85rem;
   position: relative;
   width: calc(100% - 1.35rem);
 }

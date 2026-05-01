@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { BakeryPageShell, BakeryPageSurface } from '@/design-system/bakery'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 
@@ -7,9 +8,11 @@ import { ForgotPasswordForm } from '@/components/forms/ForgotPasswordForm'
 
 export default async function ForgotPasswordPage() {
   return (
-    <div className="container py-16">
-      <ForgotPasswordForm />
-    </div>
+    <BakeryPageShell as="main" spacing="lg" width="narrow">
+      <BakeryPageSurface spacing="lg">
+        <ForgotPasswordForm />
+      </BakeryPageSurface>
+    </BakeryPageShell>
   )
 }
 
