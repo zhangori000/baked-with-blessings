@@ -49,6 +49,7 @@ export const ConfirmOrder: React.FC = () => {
           if (accessToken) {
             queryParams.set('accessToken', accessToken)
           }
+          queryParams.set('justOrdered', '1')
 
           const queryString = queryParams.toString()
           const redirectUrl = `/orders/${result.orderID}${queryString ? `?${queryString}` : ''}`

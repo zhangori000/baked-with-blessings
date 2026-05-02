@@ -15,6 +15,9 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { OrderStatus } from '@/components/OrderStatus'
 import { AddressItem } from '@/components/addresses/AddressItem'
+import { NewOrderNotePrompt } from '@/components/community/NewOrderNotePrompt'
+import { findExistingNoteForOrder } from '@/features/community/services'
+import { communityHref } from '@/utilities/routes'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 
 export const dynamic = 'force-dynamic'
@@ -141,6 +144,12 @@ export default async function Order({ params, searchParams }: PageProps) {
 
   const hasShippingAddress = hasAddressContent(order.shippingAddress)
   const isVenmoOrder = order.manualPaymentMethod === 'venmo'
+
+  const canPostNote = Boolean(user)
+  const existingCommunityNote = canPostNote
+    ? await findExistingNoteForOrder({ orderId: order.id, payload }).catch(() => null)
+    : null
+
   const itemCount =
     order.items?.reduce(
       (total, item) => total + (typeof item.quantity === 'number' ? item.quantity : 0),
@@ -149,6 +158,12 @@ export default async function Order({ params, searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
+      {canPostNote ? (
+        <NewOrderNotePrompt
+          alreadyPosted={Boolean(existingCommunityNote)}
+          orderId={order.id}
+        />
+      ) : null}
       <div className="flex items-center justify-between gap-4">
         {user ? (
           <div className="flex gap-4">
@@ -315,6 +330,42 @@ export default async function Order({ params, searchParams }: PageProps) {
             </ul>
           </section>
         )}
+
+        {canPostNote ? (
+          <section className="rounded-[1.6rem] border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 sm:p-5">
+            <h2 className="mb-2 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
+              Community Post-it Wall
+            </h2>
+            {existingCommunityNote ? (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm leading-6 text-[#5f5632]">
+                  You posted a note on the wall for this order. Thanks for sharing.
+                </p>
+                <Button
+                  asChild
+                  className="rounded-full border border-[#d8c9a5] bg-[#fff8e8] px-4 text-[#4a421d] shadow-sm hover:bg-[#f7edcf]"
+                  variant="ghost"
+                >
+                  <Link href={communityHref}>See it on the wall</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm leading-6 text-[#5f5632]">
+                  Want to leave a tiny letter for everyone who passes through? Post a note that says
+                  what you got and what you were thinking. You can do it now or come back later — it
+                  is one note per order, and you can stay anonymous.
+                </p>
+                <Button
+                  asChild
+                  className="rounded-full bg-[#c14d2a] px-4 text-[#fff8e8] shadow-sm hover:bg-[#a93b1d]"
+                >
+                  <Link href={`${communityHref}?fromOrder=${order.id}`}>Post a note</Link>
+                </Button>
+              </div>
+            )}
+          </section>
+        ) : null}
 
         <section className="rounded-[1.6rem] border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
           <h2 className="mb-4 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">

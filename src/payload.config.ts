@@ -19,6 +19,7 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
+import { CommunityNotes } from '@/collections/CommunityNotes'
 import { FlavorRotations } from '@/collections/FlavorRotations'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
@@ -41,6 +42,7 @@ import {
 import { Reviews } from '@/features/reviews/collections/index'
 import { BlogPageContent } from '@/globals/BlogPageContent'
 import { Brand } from '@/globals/Brand'
+import { CommunityPageContent } from '@/globals/CommunityPageContent'
 import { DiscussionBoardContent } from '@/globals/DiscussionBoardContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
@@ -100,6 +102,7 @@ export default buildConfig({
     Posts,
     FlavorRotations,
     Categories,
+    CommunityNotes,
     Media,
   ],
   db: postgresAdapter({
@@ -146,7 +149,7 @@ export default buildConfig({
   }),
   email: emailAdapter,
   endpoints: [],
-  globals: [Brand, Header, Footer, BlogPageContent, DiscussionBoardContent],
+  globals: [Brand, Header, Footer, BlogPageContent, DiscussionBoardContent, CommunityPageContent],
   plugins: [
     vercelBlobStorage({
       collections: {

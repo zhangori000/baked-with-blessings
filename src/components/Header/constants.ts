@@ -2,6 +2,7 @@ import type { Header } from '@/payload-types'
 import {
   blessingsNetworkHref,
   blogHref,
+  communityHref,
   contactHref,
   discussionBoardHref,
   isContactLinkHint,
@@ -161,6 +162,14 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           title: 'Open reviews',
           tone: 'light',
         },
+        {
+          description:
+            'Tiny letters from people who just ordered with us — react, scroll, and leave one of your own after you order.',
+          eyebrow: 'Community',
+          href: communityHref,
+          title: 'Open the Post-it Wall',
+          tone: 'dark',
+        },
       ],
       links: [
         {
@@ -182,6 +191,11 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           description: 'Go to public reviews.',
           href: reviewsHref,
           label: 'Open reviews',
+        },
+        {
+          description: 'Go to the Community Post-it Wall.',
+          href: communityHref,
+          label: 'Open the Post-it Wall',
         },
       ],
     },
@@ -255,6 +269,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, reviewsHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, communityHref)) {
     return item.id === 'more'
   }
 

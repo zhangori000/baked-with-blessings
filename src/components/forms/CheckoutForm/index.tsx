@@ -341,6 +341,7 @@ export const CheckoutForm: React.FC<Props> = ({
             if (accessToken) {
               queryParams.set('accessToken', accessToken)
             }
+            queryParams.set('justOrdered', '1')
 
             const queryString = queryParams.toString()
             const redirectUrl = `/orders/${confirmResult.orderID}${queryString ? `?${queryString}` : ''}`

@@ -18,6 +18,7 @@ import { cn } from '@/utilities/cn'
 import {
   blessingsNetworkHref,
   blogHref,
+  communityHref,
   contactHref,
   discussionBoardHref,
   menuHref,
@@ -39,6 +40,7 @@ import {
   LoaderCircle,
   MessageSquareText,
   PanelsTopLeft,
+  StickyNote,
   ShoppingBag,
   UserRound,
 } from 'lucide-react'
@@ -111,6 +113,9 @@ const getActiveAppLabel = (pathname: string) => {
   }
   if (pathname === discussionBoardHref || pathname.startsWith(`${discussionBoardHref}/`)) {
     return 'Discussion Board'
+  }
+  if (pathname === communityHref || pathname.startsWith(`${communityHref}/`)) {
+    return 'Post-it Wall'
   }
 
   return null
@@ -251,6 +256,7 @@ export function HeaderClient({ brand, header }: Props) {
     router.prefetch(discussionBoardHref)
     router.prefetch(blessingsNetworkHref)
     router.prefetch(reviewsHref)
+    router.prefetch(communityHref)
   }, [router])
 
   useEffect(() => {
@@ -1005,6 +1011,29 @@ export function HeaderClient({ brand, header }: Props) {
                       <span className="siteHeaderAppDescription">
                         Reviews with photos, public responses, action logs, and boundaries around
                         unfair claims.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </BakeryCard>
+
+                  <BakeryCard
+                    as={Link}
+                    className="siteHeaderAppCard"
+                    href={communityHref}
+                    onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <StickyNote className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Community</span>
+                      <span className="siteHeaderAppTitle">Post-it Wall</span>
+                      <span className="siteHeaderAppDescription">
+                        Tiny letters from people who just ordered with us — react, scroll,
+                        and leave one of your own after you order.
                       </span>
                     </span>
                     <ArrowRight className="siteHeaderAppArrow h-4 w-4" />

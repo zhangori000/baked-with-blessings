@@ -10,7 +10,7 @@ import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/baker
 import { bakeryPrimitiveTokens } from '@/design-system/bakery/tokens'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { menuHref } from '@/utilities/routes'
+import { communityHref, menuHref } from '@/utilities/routes'
 import { isPayloadMediaFileURL, resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
   Sheet,
@@ -21,7 +21,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
-import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, ShoppingBag, UserPlus, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, ShoppingBag, StickyNote, UserPlus, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -1457,7 +1457,11 @@ function CartSignupPanel({
 }
 
 function CartCompletePanel({ onClose, order }: { onClose: () => void; order: CompleteOrder }) {
-  const orderHref = `/orders/${order.orderID}${order.accessToken ? `?accessToken=${order.accessToken}` : ''}`
+  const orderQuery = new URLSearchParams()
+  if (order.accessToken) orderQuery.set('accessToken', order.accessToken)
+  orderQuery.set('justOrdered', '1')
+  const orderHref = `/orders/${order.orderID}?${orderQuery.toString()}`
+  const postNoteHref = `${communityHref}?fromOrder=${order.orderID}`
   const isVenmoOrder = order.paymentMethod === 'venmo'
   const finishOrderFlow = () => {
     window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
@@ -1484,7 +1488,35 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
           </p>
         </div>
 
-        <div className="grid w-full max-w-[22rem] gap-2">
+        <div className="grid w-full max-w-[22rem] gap-3">
+          <div className="rounded-2xl border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 text-left">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#ffd87a] text-[#4a421d]">
+                <StickyNote className="h-4 w-4" />
+              </span>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-[#4a421d]">
+                  Want to leave a note for the wall?
+                </p>
+                <p className="text-xs leading-5 text-[#5f5632]">
+                  Pin a tiny letter to the Community Post-it Wall — what you got, what you were
+                  thinking. You can stay anonymous.
+                </p>
+              </div>
+            </div>
+            <BakeryAction
+              as={Link}
+              block
+              className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#c14d2a] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#fff8e8] transition duration-200 hover:bg-[#a93b1d]"
+              href={postNoteHref}
+              onClick={finishOrderFlow}
+              size="sm"
+              variant="primary"
+            >
+              Post a note
+            </BakeryAction>
+          </div>
+
           <BakeryAction
             as={Link}
             block

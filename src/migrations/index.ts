@@ -12,6 +12,7 @@ import * as migration_20260501_140000_remove_review_ratings from './20260501_140
 import * as migration_20260501_150000_add_review_social_visibility from './20260501_150000_add_review_social_visibility'
 import * as migration_20260501_160000_add_review_extra_socials from './20260501_160000_add_review_extra_socials'
 import * as migration_20260501_212728_add_page_content_globals from './20260501_212728_add_page_content_globals'
+import * as migration_20260501_220000_add_community_notes from './20260501_220000_add_community_notes'
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260501_212728_add_page_content_globals.up,
     down: migration_20260501_212728_add_page_content_globals.down,
     name: '20260501_212728_add_page_content_globals',
+  },
+  {
+    up: migration_20260501_220000_add_community_notes.up,
+    down: migration_20260501_220000_add_community_notes.down,
+    name: '20260501_220000_add_community_notes',
   },
 ]

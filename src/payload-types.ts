@@ -91,6 +91,7 @@ export interface Config {
     posts: Post;
     'flavor-rotations': FlavorRotation;
     categories: Category;
+    'community-notes': CommunityNote;
     media: Media;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -137,6 +138,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    'community-notes': CommunityNotesSelect<false> | CommunityNotesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -163,6 +165,7 @@ export interface Config {
     footer: Footer;
     'blog-page-content': BlogPageContent;
     'discussion-board-content': DiscussionBoardContent;
+    'community-page-content': CommunityPageContent;
   };
   globalsSelect: {
     brand: BrandSelect<false> | BrandSelect<true>;
@@ -170,6 +173,7 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
     'blog-page-content': BlogPageContentSelect<false> | BlogPageContentSelect<true>;
     'discussion-board-content': DiscussionBoardContentSelect<false> | DiscussionBoardContentSelect<true>;
+    'community-page-content': CommunityPageContentSelect<false> | CommunityPageContentSelect<true>;
   };
   locale: null;
   widgets: {
@@ -2007,6 +2011,63 @@ export interface FlavorRotation {
   createdAt: string;
 }
 /**
+ * Customer-written post-it notes shown on the Community Post-it Wall. Toggle "isHidden" to take a note off the public wall without deleting it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-notes".
+ */
+export interface CommunityNote {
+  id: number;
+  /**
+   * The order this note was written for. One note per order.
+   */
+  order: number | Order;
+  /**
+   * The logged-in customer who posted this note.
+   */
+  customer: number | Customer;
+  /**
+   * The handwritten message body, 500 characters max.
+   */
+  body: string;
+  /**
+   * When on, the customer is shown as their pseudonym (or "Anonymous").
+   */
+  isAnonymous?: boolean | null;
+  /**
+   * Pseudonym shown when posting anonymously. Blank → "Anonymous".
+   */
+  pseudonym?: string | null;
+  /**
+   * Snapshot of the order items at the moment the note was posted. Frozen so wall content stays stable even if the order changes later.
+   */
+  orderItemSnapshot?:
+    | {
+        productTitle: string;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Hide from the public Post-it Wall (admin moderation). Does not delete.
+   */
+  isHidden?: boolean | null;
+  likeCount?: number | null;
+  dislikeCount?: number | null;
+  /**
+   * Per-customer like/dislike. Maintained by the vote endpoint.
+   */
+  votes?:
+    | {
+        customer: number | Customer;
+        value: 'like' | 'dislike';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
@@ -2110,6 +2171,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'community-notes';
+        value: number | CommunityNote;
       } | null)
     | ({
         relationTo: 'media';
@@ -2697,6 +2762,36 @@ export interface CategoriesSelect<T extends boolean = true> {
   menuOrder?: T;
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-notes_select".
+ */
+export interface CommunityNotesSelect<T extends boolean = true> {
+  order?: T;
+  customer?: T;
+  body?: T;
+  isAnonymous?: T;
+  pseudonym?: T;
+  orderItemSnapshot?:
+    | T
+    | {
+        productTitle?: T;
+        quantity?: T;
+        id?: T;
+      };
+  isHidden?: T;
+  likeCount?: T;
+  dislikeCount?: T;
+  votes?:
+    | T
+    | {
+        customer?: T;
+        value?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3374,6 +3469,29 @@ export interface DiscussionBoardContent {
   createdAt?: string | null;
 }
 /**
+ * Hero copy shown at the top of /community. Edit here to change what visitors read above the Post-it Wall, without a code change.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-page-content".
+ */
+export interface CommunityPageContent {
+  id: number;
+  /**
+   * Small uppercase label above the title (1–4 words).
+   */
+  eyebrow?: string | null;
+  /**
+   * Large headline shown in the hero.
+   */
+  title?: string | null;
+  /**
+   * Short paragraph below the title that sets expectations for the page (what it is for, that it is experimental, etc.).
+   */
+  summary?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand_select".
  */
@@ -3450,6 +3568,18 @@ export interface BlogPageContentSelect<T extends boolean = true> {
  * via the `definition` "discussion-board-content_select".
  */
 export interface DiscussionBoardContentSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-page-content_select".
+ */
+export interface CommunityPageContentSelect<T extends boolean = true> {
   eyebrow?: T;
   title?: T;
   summary?: T;
