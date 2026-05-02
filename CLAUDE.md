@@ -66,17 +66,18 @@ Also read these files in this folder when relevant:
 - `TEACHING-GUIDANCE.md` for explanation style, ordering, pacing, and anti-patterns when teaching
 - `PAYLOAD-SETTINGS-AND-HOOKS.md` for practical guidance on config settings, analytics placement, hooks, route handlers, endpoints, and context
 
-## Schema changes & migrations — read before proposing collection/global edits
+## Schema changes & migrations - read before proposing collection/global edits
 
-This project runs Postgres in three independent databases (local Docker, Neon preview, Neon prod). The local DB uses `push: true` (auto-syncs schema), preview/prod do not. **Vercel does NOT auto-run migrations** — they're applied manually with `pnpm sync-db:preview` / `pnpm sync-db:prod`. The full workflow is documented in `README.md` under "Working with Postgres" and "Schema change workflow"; read that first.
+This project runs Postgres in three independent databases (local Docker, Neon preview, Neon prod). Payload schema push is disabled everywhere (`push: false`); all schema changes must go through migration files. **Vercel does NOT auto-run migrations** - they're applied manually with `pnpm sync-db:preview` / `pnpm sync-db:prod`. The full workflow is documented in `README.md` under "Working with Postgres" and "Schema change workflow"; read that first.
 
 When you propose any change that adds, removes, renames, or retypes a Payload field/collection/global, you MUST:
 
 1. Mention that a migration is needed and that `pnpm sync-db:preview` + `pnpm sync-db:prod` will need to run after the deploy.
-2. After running `pnpm payload migrate:create`, **read the generated `.ts`** before recommending a commit. On a freshly-pushed local DB it commonly over-includes — trim to just the SQL describing the actual change, rename the file with a descriptive `_add_<thing>.ts` suffix, update `src/migrations/index.ts`, delete the matching auto-generated `.json` snapshot.
+2. After running `pnpm payload migrate:create`, **read the generated `.ts`** before recommending a commit. If local migration history is stale, it can over-include - trim to just the SQL describing the actual change, rename the file with a descriptive `_add_<thing>.ts` suffix, update `src/migrations/index.ts`, delete the matching auto-generated `.json` snapshot.
 3. Never silently propose `--force-accept-warning` on a destructive migrate run. Renames, drops, and risky type changes need a human at the prompts of `migrate:create`. Once committed, the file is non-interactive; that's the right place to lean on automation.
-4. Between push and `sync-db:preview` running, the preview deploy is technically broken (new code, old schema). This is a known early-dev gap; do not auto-suggest wiring `migrate:vercel` into `prebuild` until the schema stops churning.
+4. Between merge/deploy and `sync-db:preview` running, the preview deploy is technically broken (new code, old schema). This is a known early-dev gap; do not auto-suggest wiring `migrate:vercel` into `prebuild` until the schema stops churning.
 
+`vercel env run` can coexist with values loaded from local `.env.local`. This repo's database resolver intentionally ignores a local `DATABASE_URL` when `VERCEL=1` and Neon URLs are present, so one-off Preview/Production commands do not accidentally target Docker.
 For editor-controlled hero copy on hardcoded route pages (e.g., `/blog`, `/discussion-board`), prefer the **Global + bootstrap script** pattern already used by `BlogPageContent` and `DiscussionBoardContent`: a `src/globals/<Name>.ts` file exporting both the `GlobalConfig` and a `*_DEFAULTS` constant, plus an entry in `scripts/bootstrap-page-content.ts` that fills empty fields only (idempotent, never overwrites editor edits).
 
 ## What is Payload CMS
