@@ -1,4 +1,5 @@
 import config from '@/payload.config'
+import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getFirstConfiguredEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getPayload } from 'payload'
@@ -123,13 +124,15 @@ export const POST = async (request: Request) => {
       <p>${escapeHTML(message).replace(/\n/g, '<br />')}</p>
     `
 
-    await payload.sendEmail({
-      html,
-      replyTo: email || undefined,
-      subject: emailSubject,
-      text,
-      to: ownerEmail,
-    })
+    await payload.sendEmail(
+      decorateEmailEnvelope({
+        html,
+        replyTo: email || undefined,
+        subject: emailSubject,
+        text,
+        to: ownerEmail,
+      }),
+    )
 
     return Response.json({ success: true })
   } catch (error) {

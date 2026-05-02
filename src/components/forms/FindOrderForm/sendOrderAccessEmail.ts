@@ -2,6 +2,7 @@
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type SendOrderAccessEmailArgs = {
@@ -50,11 +51,13 @@ export async function sendOrderAccessEmail({
 
     console.log('[sendOrderAccessEmail] Email body:', emailBody)
 
-    await payload.sendEmail({
-      to: email,
-      subject: `Access your order #${order.id}`,
-      html: emailBody,
-    })
+    await payload.sendEmail(
+      decorateEmailEnvelope({
+        to: email,
+        subject: `Access your order #${order.id}`,
+        html: emailBody,
+      }),
+    )
 
     return { success: true }
   } catch (err) {

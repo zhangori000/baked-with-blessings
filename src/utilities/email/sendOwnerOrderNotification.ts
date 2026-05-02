@@ -1,6 +1,7 @@
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 
 import type { Order, Product, Variant } from '@/payload-types'
+import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { parseEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -218,12 +219,14 @@ export const sendOwnerOrderNotification = async ({
     <p><a href="${escapeHTML(adminURL)}">Open this order in Payload admin</a></p>
   `
 
-  await payload.sendEmail({
-    html,
-    subject,
-    text,
-    to,
-  })
+  await payload.sendEmail(
+    decorateEmailEnvelope({
+      html,
+      subject,
+      text,
+      to,
+    }),
+  )
 
   return true
 }
