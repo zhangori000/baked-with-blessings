@@ -51,11 +51,13 @@ NEON_POSTGRES_URL
 NEON_DATABASE_URL
 ```
 
-The app reads the database in this order:
+The app normally reads the database in this order:
 
 ```txt
 DATABASE_URL || NEON_POSTGRES_URL || NEON_DATABASE_URL
 ```
+
+There is one safety exception for local one-off commands. `vercel env run -e production -- ...` injects Production env vars, but local `.env.local` can still be loaded by the child process. If that local file has `DATABASE_URL` pointing at `localhost`, `127.0.0.1`, or `::1`, the app ignores it when `VERCEL=1` and uses `NEON_POSTGRES_URL` / `NEON_DATABASE_URL` instead. This prevents Production migration and seed commands from accidentally targeting local Docker.
 
 The Neon/Vercel integration creates many `NEON_*` variables on purpose. They are different connection-string formats and individual pieces for different tools:
 
@@ -182,6 +184,8 @@ The production seed:
 ```bash
 pnpm.cmd exec vercel env run -e production -- pnpm.cmd payload migrate
 ```
+
+Payload schema push is disabled everywhere (`push: false`). Local, Preview, and Production schema changes all go through committed migration files.
 
 1. Verify `https://bakedwithblessings.com`.
 

@@ -107,7 +107,7 @@ export default buildConfig({
     pool: {
       connectionString: databaseURL,
     },
-    push: process.env.NODE_ENV !== 'production' && !process.env.VERCEL,
+    push: false,
   }),
   editor: lexicalEditor({
     features: () => {

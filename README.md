@@ -307,37 +307,36 @@ Note that often times when making big schema changes you can run the risk of los
 
 | Environment | Database | Schema sync mechanism |
 |---|---|---|
-| **Local** (your laptop) | Docker Postgres (`pnpm db:up`) | `push: true` — Payload auto-syncs schema on every dev restart. No migrations needed. |
-| **Preview** (Neon) | Neon DB linked to Vercel preview | Migrations only — must be run manually with `pnpm sync-db:preview`. |
-| **Production** (Neon) | Neon DB linked to Vercel prod | Migrations only — must be run manually with `pnpm sync-db:prod`. |
+| **Local** (your laptop) | Docker Postgres (`pnpm db:up`) | Migrations only. Payload schema push is disabled everywhere. |
+| **Preview** (Neon) | Neon DB linked to Vercel preview | Migrations only - must be run manually with `pnpm sync-db:preview`. |
+| **Production** (Neon) | Neon DB linked to Vercel prod | Migrations only - must be run manually with `pnpm sync-db:prod`. |
 
-Each database is independent. Migration files in `src/migrations/` are the **shared source of truth** that lets you bring a non-local DB up to the schema your code expects.
+Each database is independent. Migration files in `src/migrations/` are the **shared source of truth** that lets every database catch up to the schema your code expects. Do not rely on Payload/Drizzle dev push for schema changes; `payload.config.ts` sets `push: false` on purpose.
 
 #### Schema change workflow
 
 Whenever you add, remove, or rename a Payload field/collection/global, follow these four steps:
 
 ```bash
-# 1. Locally: Payload auto-pushes the schema change while `pnpm dev` is running.
-#    Test the change in admin UI / on the page until you're happy.
-
-# 2. Generate a migration file that captures the change for non-local DBs:
+# 1. Generate a migration file that captures the schema change:
 pnpm payload migrate:create
 #    READ the generated file in src/migrations/ before committing.
-#    On a freshly-pushed local DB it may include "everything" — trim it
-#    down to only the new statements that describe your change. (See the
-#    "migrate:create can over-include" note below.)
+#    If local migration history is stale, it may include too much. Trim it
+#    down to only the statements that describe your change.
+
+# 2. Apply the migration locally and test the app/admin UI.
+pnpm payload migrate
 
 # 3. Commit + push. Wait for the Vercel preview build to go green.
 
-# 4. Sync the non-local databases. These run `payload migrate` AND the
+# 4. Sync the hosted databases. These run `payload migrate` AND the
 #    page-content bootstrap idempotently, in one step:
 pnpm sync-db:preview
 #    verify the change on the preview URL, then:
 pnpm sync-db:prod
 ```
 
-> **Known gap (early dev only):** between steps 3 and 4, the preview deploy is technically broken — new code expects the new schema but the Neon DB hasn't been migrated yet. Once the schema stabilizes, wire `migrate:vercel` into the `prebuild` step so it auto-runs on Vercel deploys. Don't do that yet — the interactive prompts during destructive changes still need a human (see `--force-accept-warning` discussion below).
+> **Known gap (early dev only):** between steps 3 and 4, the preview deploy is technically broken - new code expects the new schema but the Neon DB hasn't been migrated yet. Once the schema stabilizes, wire `migrate:vercel` into the `prebuild` step so it auto-runs on Vercel deploys. Don't do that yet - the interactive prompts during destructive changes still need a human (see `--force-accept-warning` discussion below).
 
 #### Authoring a migration locally
 
@@ -347,9 +346,9 @@ pnpm payload migrate:create
 
 This compares your code's schema against the existing migration files (and the local DB's `payload_migrations` table) and writes a new file under `src/migrations/`. Always read it before committing.
 
-##### `migrate:create` can over-include
+##### `migrate:create` can over-include when local history is stale
 
-The local Docker DB uses `push: true`, which means its tables are in sync with code, but the `payload_migrations` table is **never updated** there. As a result, `migrate:create` may regenerate "everything not yet tracked" — sometimes thousands of lines describing tables that Neon already has.
+This project previously allowed local Payload dev schema push. A database touched by that old behavior can have tables that match code while `payload_migrations` does not fully reflect the migration files. When that happens, `migrate:create` may regenerate "everything not yet tracked" - sometimes thousands of lines describing tables that already exist elsewhere.
 
 When this happens:
 
@@ -359,6 +358,17 @@ When this happens:
 4. **Delete the matching auto-generated `.json` snapshot** if it appeared.
 
 For purely additive changes (a new field, a new global), the part you keep is usually a single `CREATE TABLE` or `ALTER TABLE ADD COLUMN` plus the matching `DROP` in `down()`.
+
+If your local Docker DB is disposable, the cleanest fix for stale local migration history is to reset the local Postgres volume, restart Docker Postgres, and run the committed migrations from scratch:
+
+```bash
+pnpm db:down
+docker compose down -v
+pnpm db:up
+pnpm payload migrate
+```
+
+Only do this when you are okay losing local-only rows, uploads metadata, local admin users, and seed data. Preview and Production are not affected by this local Docker reset.
 
 #### Applying migrations to Neon
 
@@ -375,9 +385,15 @@ pnpm sync-db:prod        # vercel env run -e production -- (migrate + bootstrap 
 
 Those wrappers rely on `vercel login` + `vercel link` having been run once. They use `vercel env run` to inject the right Neon connection string for the chosen environment, so no manual copy-paste of secrets is needed.
 
+##### `.env.local` and `vercel env run`
+
+`vercel env run -e preview -- ...` and `vercel env run -e production -- ...` are the correct way to run one-off commands against hosted Vercel environments. However, local `.env.local` can still be loaded by the CLI or child process. If `.env.local` contains `DATABASE_URL=postgresql://...127.0.0.1...`, a naive config that blindly prefers `DATABASE_URL` can accidentally target local Docker instead of Neon.
+
+This project guards against that in `src/utilities/resolveDatabaseURL.ts`: when `VERCEL=1` and `DATABASE_URL` points at `localhost`, `127.0.0.1`, or `::1`, the app ignores that local URL and uses `NEON_POSTGRES_URL` / `NEON_DATABASE_URL` instead. Keep local-only `DATABASE_URL` values in `.env.local`, but do not remove the resolver guard.
+
 ##### Sensitive env var caveat
 
-`vercel env run` cannot pull variables marked **Sensitive** in the Vercel dashboard. This project's `payload.config.ts` falls back from `DATABASE_URL` → `NEON_POSTGRES_URL` → `NEON_DATABASE_URL`, so even if production's `DATABASE_URL` is Sensitive, the script still works because `NEON_DATABASE_URL` is pullable. If both are Sensitive, you'll need to either downgrade one in the Vercel UI, or paste a connection string directly:
+`vercel env run` cannot pull variables marked **Sensitive** in the Vercel dashboard. This project's `payload.config.ts` normally falls back from `DATABASE_URL` to `NEON_POSTGRES_URL` to `NEON_DATABASE_URL`, so even if production's `DATABASE_URL` is Sensitive, the script still works because `NEON_DATABASE_URL` is pullable. If both are Sensitive, you'll need to either downgrade one in the Vercel UI, or paste a connection string directly:
 
 ```bash
 DATABASE_URL='postgresql://neondb_owner:...' pnpm payload migrate
@@ -387,7 +403,7 @@ DATABASE_URL='postgresql://neondb_owner:...' pnpm payload migrate
 
 ##### `--force-accept-warning` is dangerous
 
-Some destructive schema diffs (renames, dropped columns, type changes that can lose data) trigger an interactive Y/N prompt. **Do not blindly add `--force-accept-warning` to automated migrate runs** — picking the wrong default can drop production data silently. The right pattern is to answer the prompts when generating the migration locally (`migrate:create`), inspect the resulting SQL, then commit. Once the file is committed, `pnpm payload migrate` is non-interactive because all decisions are baked into the file.
+Some destructive schema diffs (renames, dropped columns, type changes that can lose data) trigger an interactive Y/N prompt. **Do not blindly add `--force-accept-warning` to automated migrate runs** - picking the wrong default can drop production data silently. The right pattern is to answer the prompts when generating the migration locally (`migrate:create`), inspect the resulting SQL, then commit. Once the file is committed, `pnpm payload migrate` is non-interactive because all decisions are baked into the file.
 
 #### Page-content globals (`pnpm bootstrap:page-content`)
 
