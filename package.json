@@ -8,6 +8,7 @@
     "bootstrap:admin": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-first-admin.ts",
     "bootstrap:page-content": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-page-content.ts",
     "bootstrap:test-customer": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-test-customer.ts",
+    "bootstrap:test-product": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-test-product.ts",
     "sync-db": "pnpm payload migrate && pnpm bootstrap:page-content",
     "sync-db:preview": "vercel env run -e preview -- pnpm sync-db",
     "sync-db:prod": "vercel env run -e production -- pnpm sync-db",

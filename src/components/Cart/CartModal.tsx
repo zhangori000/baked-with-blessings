@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/sheet'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, ShoppingBag, UserPlus, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -573,11 +574,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           .cartAuthPanelSurface {
             border: 1px solid rgba(74, 58, 35, 0.22);
             border-radius: 0.9rem;
-            background: linear-gradient(
-              152deg,
-              rgba(255, 252, 244, 0.82),
-              rgba(255, 254, 250, 0.72)
-            );
+            background: rgba(255, 253, 248, 0.94);
             box-shadow: 0 16px 32px rgba(19, 30, 46, 0.14);
             backdrop-filter: blur(9px);
           }
@@ -595,41 +592,98 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           }
 
           .cartAuthPrimaryButton {
-            border: 1px solid rgba(18, 30, 51, 0.24);
-            color: #fffefa;
-            background: linear-gradient(180deg, #18293f, #111e33);
-            letter-spacing: 0.02em;
-            box-shadow: 0 12px 24px rgba(10, 16, 28, 0.18);
+            border: 1px solid #171f11;
+            background: #171f11;
+            color: #fffaf0;
+            font-size: 0.82rem;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            box-shadow: none;
           }
 
-          .cartAuthPrimaryButton:hover {
-            filter: brightness(1.06);
+          .cartAuthPrimaryButton:hover,
+          .cartAuthPrimaryButton:focus-visible {
+            background: #2b3d1b;
+            filter: none;
+          }
+
+          .cartAuthContactGrid {
+            display: grid;
+            gap: 1.05rem;
+          }
+
+          .cartAuthContactField {
+            display: grid;
+            gap: 0.34rem;
+          }
+
+          .cartAuthContactControl {
+            display: grid;
+            gap: 0.56rem;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: end;
+          }
+
+          .cartAuthCodeButton {
+            height: 3rem;
+            min-height: 3rem;
+            border-color: rgba(23, 52, 31, 0.14) !important;
+            border-radius: 999px !important;
+            background: #f5ecd1 !important;
+            color: #243519 !important;
+            font-size: 0.74rem;
+            font-weight: 900;
+            letter-spacing: 0;
+            line-height: 1;
+            padding: 0.68rem 0.86rem;
+            box-shadow: none;
+          }
+
+          .cartAuthCodeButton:hover,
+          .cartAuthCodeButton:focus-visible {
+            border-color: rgba(23, 52, 31, 0.18) !important;
+            background: #ffe69f !important;
+            box-shadow: none;
+          }
+
+          .cartAuthVerificationPanel {
+            border: 1px solid rgba(23, 52, 31, 0.12);
+            border-radius: 1rem;
+            background: rgba(255, 253, 248, 0.9);
+            padding: 0.8rem;
+            box-shadow: none;
           }
 
           .cartAuthInput {
-            min-height: 2.65rem;
-            border-color: rgba(74, 58, 35, 0.28);
-            background: rgba(255, 254, 248, 0.72);
-            color: #2a241a;
-            font-size: 0.95rem;
-            line-height: 1.4rem;
+            height: 3rem;
+            min-height: 3rem;
+            border-color: rgba(23, 52, 31, 0.16);
+            border-radius: 1rem;
+            background: #fffdf8;
+            color: #151d10;
+            font-size: 0.94rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.4;
+            padding: 0.82rem 0.92rem;
           }
 
           .cartAuthInput::placeholder {
-            color: rgba(74, 58, 35, 0.56);
+            color: rgba(21, 29, 16, 0.48);
           }
 
           .cartAuthInput:focus-visible {
-            border-color: rgba(31, 43, 77, 0.55);
-            box-shadow: 0 0 0 3px rgba(31, 43, 77, 0.18);
+            border-color: rgba(23, 52, 31, 0.34);
+            box-shadow: 0 0 0 3px rgba(151, 187, 108, 0.26);
           }
 
           .cartAuthLabel {
-            color: rgba(31, 43, 77, 0.72);
+            color: rgba(21, 29, 16, 0.7);
             text-transform: uppercase;
-            letter-spacing: 0.14em;
-            font-size: 0.68rem;
-            font-weight: 600;
+            letter-spacing: 0.12em;
+            font-size: 0.7rem;
+            font-weight: 850;
           }
 
           .cartAuthError {
@@ -669,7 +723,6 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
 
             .cartAuthInput {
               font-size: 0.9rem;
-              min-height: 2.35rem;
             }
 
             .cartAuthLabel {
@@ -681,6 +734,16 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
               min-height: 2.75rem;
               position: sticky;
               z-index: 8;
+            }
+          }
+
+          @media (max-width: 520px) {
+            .cartAuthContactControl {
+              grid-template-columns: 1fr;
+            }
+
+            .cartAuthCodeButton {
+              width: 100%;
             }
           }
 
@@ -876,7 +939,7 @@ function CartLoginPanel({
           </BakeryAction>
         ) : null}
 
-        <Message className="cartAuthHint" error={error} />
+        <Message className="cartAuthHint" error={error} onDismiss={() => setError(null)} />
 
         <FormItem>
           <Label className="cartAuthLabel" htmlFor="cart-login-identifier">
@@ -925,11 +988,12 @@ function CartLoginPanel({
 
 type SignupFormData = {
   email: string
+  emailVerificationCode: string
   name: string
   password: string
   passwordConfirm: string
   phone: string
-  verificationCode: string
+  phoneVerificationCode: string
 }
 
 function CartSignupPanel({
@@ -944,21 +1008,35 @@ function CartSignupPanel({
   const { create } = useAuth()
   const [error, setError] = useState<null | string>(null)
   const [verificationMode, setVerificationMode] = useState<null | 'email' | 'phone'>(null)
+  const [isSendingEmailCode, setIsSendingEmailCode] = useState(false)
+  const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false)
   const [maskedPhone, setMaskedPhone] = useState<null | string>(null)
   const [maskedEmail, setMaskedEmail] = useState<null | string>(null)
   const {
     clearErrors,
     control,
     formState: { errors, isSubmitting },
+    getValues,
     handleSubmit,
     register,
     setError: setFieldError,
-  } = useForm<SignupFormData>()
+    setValue,
+    trigger,
+  } = useForm<SignupFormData>({
+    defaultValues: {
+      email: '',
+      emailVerificationCode: '',
+      name: '',
+      password: '',
+      passwordConfirm: '',
+      phone: '',
+      phoneVerificationCode: '',
+    },
+  })
 
   const email = useWatch({ control, defaultValue: '', name: 'email' })
   const password = useWatch({ control, defaultValue: '', name: 'password' })
   const phone = useWatch({ control, defaultValue: '', name: 'phone' })
-  const verificationCode = useWatch({ control, defaultValue: '', name: 'verificationCode' })
   const isEmailVerification = verificationMode === 'email'
   const isPhoneVerification = verificationMode === 'phone'
   const verificationRecipient =
@@ -967,16 +1045,106 @@ function CartSignupPanel({
       : maskedEmail || email || 'your contact method'
   const emailRegistration = register('email', {
     validate: (value) =>
-      !value.trim() || /\S+@\S+\.\S+/.test(value) || 'Enter a valid email address.',
+      !String(value || '').trim() ||
+      /\S+@\S+\.\S+/.test(String(value || '')) ||
+      'Enter a valid email address.',
   })
-  const phoneRegistration = register('phone')
-  const verificationCodeRegistration = register('verificationCode', {
-    required:
-      isPhoneVerification || isEmailVerification
-        ? `Enter the 6-digit code sent to ${verificationRecipient}.`
-        : 'Enter the 6-digit verification code.',
-    validate: (value) => /^\d{6}$/.test(value.trim()) || 'Enter a valid 6-digit verification code.',
+  const phoneRegistration = register('phone', {
+    validate: (value) =>
+      !String(value || '').trim() ||
+      String(value || '').replace(/\D/g, '').length >= 7 ||
+      'Enter a valid phone number.',
   })
+  const emailVerificationCodeRegistration = register('emailVerificationCode', {
+    required: isEmailVerification
+      ? `Enter the 6-digit code sent to ${verificationRecipient}.`
+      : false,
+    validate: (value) =>
+      !isEmailVerification ||
+      /^\d{6}$/.test(String(value || '').trim()) ||
+      'Enter a valid 6-digit verification code.',
+  })
+  const phoneVerificationCodeRegistration = register('phoneVerificationCode', {
+    required: isPhoneVerification
+      ? `Enter the 6-digit code sent to ${verificationRecipient}.`
+      : false,
+    validate: (value) =>
+      !isPhoneVerification ||
+      /^\d{6}$/.test(String(value || '').trim()) ||
+      'Enter a valid 6-digit verification code.',
+  })
+
+  const sendVerificationCode = async (channel: 'email' | 'phone') => {
+    if (channel === 'email' && isSendingEmailCode) return
+    if (channel === 'phone' && isSendingPhoneCode) return
+
+    const values = getValues()
+    const trimmedEmail = String(values.email || '').trim()
+    const trimmedPhone = String(values.phone || '').trim()
+    const contactValue = channel === 'email' ? trimmedEmail : trimmedPhone
+
+    setError(null)
+
+    if (!contactValue) {
+      setFieldError(channel, {
+        message:
+          channel === 'email' ? 'Enter an email address first.' : 'Enter a phone number first.',
+        type: 'contact-required',
+      })
+      return
+    }
+
+    const isContactValid = await trigger(channel)
+
+    if (!isContactValid) {
+      return
+    }
+
+    try {
+      if (channel === 'email') {
+        setIsSendingEmailCode(true)
+      } else {
+        setIsSendingPhoneCode(true)
+      }
+
+      const result = await create({
+        email: channel === 'email' ? trimmedEmail : undefined,
+        name: values.name,
+        password: values.password || '',
+        passwordConfirm: values.passwordConfirm || '',
+        phone: channel === 'phone' ? trimmedPhone : undefined,
+      })
+
+      if (channel === 'email' && result.requiresEmailVerification) {
+        setMaskedEmail(result.maskedEmail || trimmedEmail)
+        setMaskedPhone(null)
+        setVerificationMode('email')
+        setValue('emailVerificationCode', '')
+        clearErrors('emailVerificationCode')
+        return
+      }
+
+      if (channel === 'phone' && result.requiresPhoneVerification) {
+        setMaskedPhone(result.maskedPhone || trimmedPhone)
+        setMaskedEmail(null)
+        setVerificationMode('phone')
+        setValue('phoneVerificationCode', '')
+        clearErrors('phoneVerificationCode')
+        return
+      }
+
+      setError('Could not start verification for that contact method. Please try again.')
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error && caughtError.message
+          ? caughtError.message
+          : 'Could not send a verification code. Please try again.',
+      )
+    } finally {
+      setIsSendingEmailCode(false)
+      setIsSendingPhoneCode(false)
+    }
+  }
 
   return (
     <div className={embedded ? '' : 'min-h-0 flex-1 overflow-y-auto px-4 py-4'}>
@@ -984,8 +1152,12 @@ function CartSignupPanel({
         as="form"
         className="cartAuthPanelSurface space-y-5 rounded-[6px] px-5 py-5"
         onSubmit={handleSubmit(async (data) => {
-          const trimmedEmail = data.email.trim()
-          const trimmedPhone = data.phone.trim()
+          const trimmedEmail = String(data.email || '').trim()
+          const trimmedPhone = String(data.phone || '').trim()
+          const verificationCode =
+            verificationMode === 'phone'
+              ? String(data.phoneVerificationCode || '').trim()
+              : String(data.emailVerificationCode || '').trim()
 
           setError(null)
 
@@ -1001,8 +1173,31 @@ function CartSignupPanel({
             return
           }
 
+          if (!verificationMode) {
+            setError('Send a verification code to your email or phone before creating the account.')
+            return
+          }
+
+          if (!/^\d{6}$/.test(verificationCode)) {
+            setFieldError(
+              verificationMode === 'phone' ? 'phoneVerificationCode' : 'emailVerificationCode',
+              {
+                message: 'Enter a valid 6-digit verification code.',
+                type: 'verification-code',
+              },
+            )
+            return
+          }
+
           try {
-            const result = await create(data)
+            const result = await create({
+              email: trimmedEmail || undefined,
+              name: data.name,
+              password: data.password,
+              passwordConfirm: data.passwordConfirm,
+              phone: verificationMode === 'phone' ? trimmedPhone : undefined,
+              verificationCode,
+            })
 
             if (result.requiresPhoneVerification) {
               setMaskedPhone(result.maskedPhone || trimmedPhone)
@@ -1019,8 +1214,12 @@ function CartSignupPanel({
             }
 
             onSuccess()
-          } catch {
-            setError('There was an error creating the account. Please try again.')
+          } catch (caughtError) {
+            setError(
+              caughtError instanceof Error && caughtError.message
+                ? caughtError.message
+                : 'There was an error creating the account. Please try again.',
+            )
           }
         })}
       >
@@ -1037,7 +1236,7 @@ function CartSignupPanel({
           </BakeryAction>
         ) : null}
 
-        <Message className="cartAuthHint" error={error} />
+        <Message className="cartAuthHint" error={error} onDismiss={() => setError(null)} />
 
         <FormItem>
           <Label className="cartAuthLabel" htmlFor="cart-signup-name">
@@ -1051,45 +1250,149 @@ function CartSignupPanel({
           />
         </FormItem>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormItem>
+        <div className="cartAuthContactGrid">
+          <FormItem className="cartAuthContactField">
             <Label className="cartAuthLabel" htmlFor="cart-signup-email">
               Email address
             </Label>
-            <Input
-              id="cart-signup-email"
-              type="email"
-              className="cartAuthInput"
-              {...emailRegistration}
-              onChange={(event) => {
-                emailRegistration.onChange(event)
-                clearErrors(['email', 'phone'])
-                setVerificationMode(null)
-                setMaskedEmail(null)
-                setMaskedPhone(null)
-              }}
-            />
+            <div className="cartAuthContactControl">
+              <Input
+                id="cart-signup-email"
+                type="email"
+                className="cartAuthInput min-w-0"
+                {...emailRegistration}
+                onChange={(event) => {
+                  emailRegistration.onChange(event)
+                  clearErrors(['email', 'phone'])
+                  setError(null)
+                  if (verificationMode === 'email') {
+                    setVerificationMode(null)
+                    setMaskedEmail(null)
+                    setValue('emailVerificationCode', '')
+                  }
+                }}
+              />
+              <BakeryAction
+                className="cartAuthCodeButton"
+                disabled={isSubmitting || isSendingPhoneCode || isSendingEmailCode}
+                onClick={() => void sendVerificationCode('email')}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                {isSendingEmailCode ? 'Sending' : isEmailVerification ? 'Resend code' : 'Send code'}
+              </BakeryAction>
+            </div>
+            <AnimatePresence initial={false}>
+              {isEmailVerification ? (
+                <motion.div
+                  animate={{ height: 'auto', opacity: 1, y: 0 }}
+                  className="cartAuthVerificationPanel mt-3 overflow-hidden"
+                  exit={{ height: 0, opacity: 0, y: -6 }}
+                  initial={{ height: 0, opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p className="mb-2 text-xs font-semibold leading-5 text-[#6b5835]">
+                    Code sent to {verificationRecipient}. Enter it here.
+                  </p>
+                  <Input
+                    autoComplete="one-time-code"
+                    className="cartAuthInput text-center text-lg font-semibold tracking-[0.18em]"
+                    id="cart-signup-email-verification-code"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    type="text"
+                    {...emailVerificationCodeRegistration}
+                    onChange={(event) => {
+                      event.target.value = event.target.value.replace(/\D/g, '').slice(0, 6)
+                      emailVerificationCodeRegistration.onChange(event)
+                      clearErrors('emailVerificationCode')
+                      setError(null)
+                    }}
+                  />
+                  {errors.emailVerificationCode ? (
+                    <FormError
+                      className="cartAuthError mt-2"
+                      message={errors.emailVerificationCode.message}
+                    />
+                  ) : null}
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
             {errors.email && <FormError className="cartAuthError" message={errors.email.message} />}
           </FormItem>
 
-          <FormItem>
+          <FormItem className="cartAuthContactField">
             <Label className="cartAuthLabel" htmlFor="cart-signup-phone">
               Phone number
             </Label>
-            <Input
-              id="cart-signup-phone"
-              inputMode="tel"
-              type="tel"
-              className="cartAuthInput"
-              {...phoneRegistration}
-              onChange={(event) => {
-                phoneRegistration.onChange(event)
-                clearErrors(['email', 'phone'])
-                setVerificationMode(null)
-                setMaskedEmail(null)
-                setMaskedPhone(null)
-              }}
-            />
+            <div className="cartAuthContactControl">
+              <Input
+                id="cart-signup-phone"
+                inputMode="tel"
+                type="tel"
+                className="cartAuthInput min-w-0"
+                {...phoneRegistration}
+                onChange={(event) => {
+                  phoneRegistration.onChange(event)
+                  clearErrors(['email', 'phone'])
+                  setError(null)
+                  if (verificationMode === 'phone') {
+                    setVerificationMode(null)
+                    setMaskedPhone(null)
+                    setValue('phoneVerificationCode', '')
+                  }
+                }}
+              />
+              <BakeryAction
+                className="cartAuthCodeButton"
+                disabled={isSubmitting || isSendingPhoneCode || isSendingEmailCode}
+                onClick={() => void sendVerificationCode('phone')}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                {isSendingPhoneCode ? 'Sending' : isPhoneVerification ? 'Resend code' : 'Send code'}
+              </BakeryAction>
+            </div>
+            <AnimatePresence initial={false}>
+              {isPhoneVerification ? (
+                <motion.div
+                  animate={{ height: 'auto', opacity: 1, y: 0 }}
+                  className="cartAuthVerificationPanel mt-3 overflow-hidden"
+                  exit={{ height: 0, opacity: 0, y: -6 }}
+                  initial={{ height: 0, opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p className="mb-2 text-xs font-semibold leading-5 text-[#6b5835]">
+                    Code sent to {verificationRecipient}. Enter it here.
+                  </p>
+                  <Input
+                    autoComplete="one-time-code"
+                    className="cartAuthInput text-center text-lg font-semibold tracking-[0.18em]"
+                    id="cart-signup-phone-verification-code"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    type="text"
+                    {...phoneVerificationCodeRegistration}
+                    onChange={(event) => {
+                      event.target.value = event.target.value.replace(/\D/g, '').slice(0, 6)
+                      phoneVerificationCodeRegistration.onChange(event)
+                      clearErrors('phoneVerificationCode')
+                      setError(null)
+                    }}
+                  />
+                  {errors.phoneVerificationCode ? (
+                    <FormError
+                      className="cartAuthError mt-2"
+                      message={errors.phoneVerificationCode.message}
+                    />
+                  ) : null}
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
             {errors.phone && <FormError className="cartAuthError" message={errors.phone.message} />}
           </FormItem>
         </div>
@@ -1129,32 +1432,12 @@ function CartSignupPanel({
           </FormItem>
         </div>
 
-        {verificationMode ? (
-          <FormItem>
-            <Label className="cartAuthLabel" htmlFor="cart-signup-verification-code">
-              {isPhoneVerification ? 'Verification code (text)' : 'Verification code (email)'}
-            </Label>
-            <Input
-              id="cart-signup-verification-code"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="123456"
-              type="text"
-              className="cartAuthInput"
-              {...verificationCodeRegistration}
-            />
-            {errors.verificationCode && (
-              <FormError className="cartAuthError" message={errors.verificationCode.message} />
-            )}
-          </FormItem>
-        ) : null}
-
         <div className="grid gap-2 text-xs cartAuthHint">
-          {phone.trim() && !verificationMode && !verificationCode.trim() ? (
-            <p>Enter the code sent to your phone to finish account creation.</p>
+          {phone.trim() && !verificationMode ? (
+            <p>Send a phone code to verify this number before continuing.</p>
           ) : null}
-          {email.trim() && !phone.trim() && !verificationMode && !verificationCode.trim() ? (
-            <p>Enter the code sent to your email to finish account creation.</p>
+          {email.trim() && !phone.trim() && !verificationMode ? (
+            <p>Send an email code to verify this address before continuing.</p>
           ) : null}
         </div>
 
@@ -1166,13 +1449,7 @@ function CartSignupPanel({
           type="submit"
           variant="primary"
         >
-          {isSubmitting
-            ? 'Processing'
-            : verificationMode
-              ? 'Verify and continue'
-              : phone.trim() || email.trim()
-                ? 'Send verification code'
-                : 'Create account and continue'}
+          {isSubmitting ? 'Processing' : 'Create account and continue'}
         </BakeryAction>
       </BakeryCard>
     </div>

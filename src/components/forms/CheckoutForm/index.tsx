@@ -8,6 +8,10 @@ import React, { FormEvent } from 'react'
 import { useEcommerce, usePayments } from '@payloadcms/plugin-ecommerce/client/react'
 import { Address } from '@/payload-types'
 
+const STRIPE_LOADING_ERROR = 'Stripe is still loading. Please try again in a moment.'
+const PAYMENT_FIELDS_LOADING_ERROR =
+  'The secure payment fields are still loading. Please wait a moment.'
+
 type Props = {
   customerEmail?: string
   customerPhone?: string
@@ -260,13 +264,13 @@ export const CheckoutForm: React.FC<Props> = ({
     setIsLoading(true)
 
     if (!stripe || !elements) {
-      setError('Stripe is still loading. Please try again in a moment.')
+      setError(STRIPE_LOADING_ERROR)
       stopLoading()
       return
     }
 
     if (!isPaymentElementReady) {
-      setError('The secure payment fields are still loading. Please wait a moment.')
+      setError(PAYMENT_FIELDS_LOADING_ERROR)
       stopLoading()
       return
     }
@@ -386,7 +390,7 @@ export const CheckoutForm: React.FC<Props> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <Message error={error} />}
+      {error && <Message error={error} onDismiss={() => setError(null)} />}
       <div className="relative min-h-[28rem]">
         {!isPaymentElementReady ? <StripeElementLoader /> : null}
         <div
@@ -400,7 +404,17 @@ export const CheckoutForm: React.FC<Props> = ({
             Choose Card in the Stripe panel if Link opens first or asks for a text code.
           </p>
           <PaymentElement
-            onReady={() => setIsPaymentElementReady(true)}
+            onChange={() => {
+              setError(null)
+            }}
+            onReady={() => {
+              setIsPaymentElementReady(true)
+              setError((current) =>
+                current === STRIPE_LOADING_ERROR || current === PAYMENT_FIELDS_LOADING_ERROR
+                  ? null
+                  : current,
+              )
+            }}
             options={paymentElementOptions}
           />
         </div>
