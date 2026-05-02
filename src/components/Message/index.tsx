@@ -43,7 +43,8 @@ export const Message: React.FC<{
           {
             'bg-success': Boolean(success),
             'bg-warning': Boolean(warning),
-            'bg-error': Boolean(error),
+            'border border-[#efb6a8] bg-[#fff2ee] text-[#7a271c] shadow-[0_8px_24px_rgba(122,39,28,0.08)] dark:border-[#8d3d33] dark:bg-[#3a1713] dark:text-[#ffd8cf]':
+              Boolean(error),
           },
           className,
         )}
