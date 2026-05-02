@@ -18,19 +18,17 @@ export function NewOrderNotePrompt({ orderId, alreadyPosted }: Props) {
   const searchParams = useSearchParams()
   const justOrdered = searchParams.get('justOrdered') === '1'
 
-  const [isOpen, setIsOpen] = useState<boolean>(justOrdered && !alreadyPosted)
-
-  useEffect(() => {
-    setIsOpen(justOrdered && !alreadyPosted)
-  }, [justOrdered, alreadyPosted])
+  const promptKey = `${justOrdered}-${alreadyPosted}`
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null)
+  const isOpen = justOrdered && !alreadyPosted && dismissedKey !== promptKey
 
   const dismiss = useCallback(() => {
-    setIsOpen(false)
+    setDismissedKey(promptKey)
     const next = new URLSearchParams(searchParams.toString())
     next.delete('justOrdered')
     const query = next.toString()
     router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false })
-  }, [pathname, router, searchParams])
+  }, [pathname, promptKey, router, searchParams])
 
   useEffect(() => {
     if (!isOpen) return

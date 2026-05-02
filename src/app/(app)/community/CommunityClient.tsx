@@ -3,6 +3,7 @@
 import {
   BakeryAction,
   BakeryCard,
+  BakeryCheckbox,
   BakeryPageShell,
   BakeryPressable,
 } from '@/design-system/bakery'
@@ -113,7 +114,7 @@ export function CommunityClient({
   const [isFormOpen, setIsFormOpen] = useState<boolean>(Boolean(fromOrderId))
   const [body, setBody] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
-  const [pseudonym, setPseudonym] = useState('')
+  const [displayName, setDisplayName] = useState(viewerName?.trim() ?? '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -218,7 +219,7 @@ export function CommunityClient({
           body: trimmed,
           isAnonymous,
           orderId: fromOrderId,
-          pseudonym: isAnonymous ? pseudonym : null,
+          pseudonym: isAnonymous ? null : displayName.trim() || null,
         }),
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
@@ -232,7 +233,7 @@ export function CommunityClient({
       }
       setNotes((prev) => [json.note, ...prev.filter((existing) => existing.id !== json.note.id)])
       setBody('')
-      setPseudonym('')
+      setDisplayName(viewerName?.trim() ?? '')
       setIsAnonymous(false)
       setIsFormOpen(false)
       const next = new URLSearchParams(searchParams.toString())
@@ -377,30 +378,35 @@ export function CommunityClient({
               {remainingChars} characters left
             </p>
 
-            <div className="communityComposerToggleRow">
-              <label className="communityComposerToggle">
-                <input
-                  checked={isAnonymous}
-                  onChange={(event) => setIsAnonymous(event.target.checked)}
-                  type="checkbox"
-                />
-                <span>Post anonymously</span>
+            <div className="communityComposerIdentity">
+              <label className="communityComposerLabel" htmlFor="community-note-name">
+                What name do you want to appear as?
               </label>
-              {isAnonymous ? (
-                <input
-                  aria-label="Pseudonym"
-                  className="communityComposerPseudonym"
-                  maxLength={60}
-                  onChange={(event) => setPseudonym(event.target.value)}
-                  placeholder="Pseudonym (or leave blank for 'Anonymous')"
-                  type="text"
-                  value={pseudonym}
-                />
-              ) : (
-                <p className="communityComposerSignature">
-                  Will appear as <strong>{viewerName?.trim() || 'Anonymous'}</strong>
-                </p>
-              )}
+              <input
+                aria-describedby="community-note-name-hint"
+                className="communityComposerName"
+                disabled={isAnonymous}
+                id="community-note-name"
+                maxLength={60}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder={viewerName?.trim() || 'Your name'}
+                type="text"
+                value={displayName}
+              />
+              <p className="communityComposerSignature" id="community-note-name-hint">
+                Will appear as{' '}
+                <strong>
+                  {isAnonymous
+                    ? 'Anonymous'
+                    : displayName.trim() || viewerName?.trim() || 'Anonymous'}
+                </strong>
+              </p>
+              <BakeryCheckbox
+                checked={isAnonymous}
+                onChange={(event) => setIsAnonymous(event.target.checked)}
+              >
+                Post anonymously
+              </BakeryCheckbox>
             </div>
 
             {formError ? <p className="communityComposerError">{formError}</p> : null}

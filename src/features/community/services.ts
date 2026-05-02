@@ -17,14 +17,20 @@ export const computeDisplayName = (
   note: Pick<CommunityNote, 'isAnonymous' | 'pseudonym' | 'customer'>,
 ): string => {
   if (note.isAnonymous) {
-    const trimmed = typeof note.pseudonym === 'string' ? note.pseudonym.trim() : ''
-    return trimmed || 'Anonymous'
+    return 'Anonymous'
+  }
+
+  const trimmedPseudonym = typeof note.pseudonym === 'string' ? note.pseudonym.trim() : ''
+  if (trimmedPseudonym) {
+    return trimmedPseudonym
   }
 
   if (isObjectLike(note.customer)) {
     const name = (note.customer as Customer).name
-    const trimmed = typeof name === 'string' ? name.trim() : ''
-    return trimmed || 'Anonymous'
+    const trimmedAccountName = typeof name === 'string' ? name.trim() : ''
+    if (trimmedAccountName) {
+      return trimmedAccountName
+    }
   }
 
   return 'Anonymous'
@@ -218,7 +224,7 @@ export const createCommunityNote = async ({
       likeCount: 0,
       order: order.id,
       orderItemSnapshot: items,
-      pseudonym: input.isAnonymous ? trimmedPseudonym || null : null,
+      pseudonym: input.isAnonymous ? null : trimmedPseudonym || null,
       votes: [],
     },
   })
