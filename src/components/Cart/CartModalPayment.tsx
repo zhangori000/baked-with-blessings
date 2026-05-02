@@ -9,9 +9,14 @@ import { cssVariables } from '@/cssVariables'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { useCart, useEcommerce, usePayments } from '@payloadcms/plugin-ecommerce/client/react'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
+const STRIPE_CONTACT_REQUIRED_ERROR =
+  'Log in with an email or phone number before starting payment.'
+const VENMO_CONTACT_REQUIRED_ERROR =
+  'Log in with an email or phone number before reporting a Venmo payment.'
+const CART_LOADING_ERROR = 'Your cart is still loading. Try again in a moment.'
 
 type CompleteOrder = {
   accessToken?: string
@@ -223,9 +228,25 @@ export function CartModalPayment({ onOrderComplete }: Props) {
 
   const canStartPayment = Boolean(user && (customerEmail || customerPhone || user.id))
 
+  useEffect(() => {
+    if (!canStartPayment) return
+
+    setError((current) =>
+      current === STRIPE_CONTACT_REQUIRED_ERROR || current === VENMO_CONTACT_REQUIRED_ERROR
+        ? null
+        : current,
+    )
+  }, [canStartPayment])
+
+  useEffect(() => {
+    if (!cart?.id) return
+
+    setError((current) => (current === CART_LOADING_ERROR ? null : current))
+  }, [cart?.id])
+
   const initiateModalPayment = useCallback(async () => {
     if (!canStartPayment) {
-      setError('Log in with an email or phone number before starting payment.')
+      setError(STRIPE_CONTACT_REQUIRED_ERROR)
       return
     }
 
@@ -255,12 +276,12 @@ export function CartModalPayment({ onOrderComplete }: Props) {
 
   const markVenmoSent = useCallback(async () => {
     if (!canStartPayment) {
-      setError('Log in with an email or phone number before reporting a Venmo payment.')
+      setError(VENMO_CONTACT_REQUIRED_ERROR)
       return
     }
 
     if (!cart?.id) {
-      setError('Your cart is still loading. Try again in a moment.')
+      setError(CART_LOADING_ERROR)
       return
     }
 
@@ -388,7 +409,7 @@ export function CartModalPayment({ onOrderComplete }: Props) {
         </p>
       </div>
 
-      <Message className="mt-4" error={error} />
+      <Message className="mb-0 mt-4" error={error} onDismiss={() => setError(null)} />
 
       {!clientSecret ? (
         <>
@@ -422,7 +443,10 @@ export function CartModalPayment({ onOrderComplete }: Props) {
               </div>
               <BakeryAction
                 className="max-w-full shrink-0 whitespace-normal rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold leading-tight text-[#1f3d24] transition [white-space:normal] hover:border-black/20 hover:bg-[#f8edd2] sm:max-w-[11rem]"
-                onClick={() => setShowVenmoInstructions((current) => !current)}
+                onClick={() => {
+                  setError(null)
+                  setShowVenmoInstructions((current) => !current)
+                }}
                 size="sm"
                 type="button"
                 variant="secondary"

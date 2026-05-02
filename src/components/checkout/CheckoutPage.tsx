@@ -37,7 +37,10 @@ type CheckoutPageProps = {
   onOrderComplete?: (result: { accessToken?: string; orderID: number | string }) => void
 }
 
-export const CheckoutPage: React.FC<CheckoutPageProps> = ({ embedded = false, onOrderComplete }) => {
+export const CheckoutPage: React.FC<CheckoutPageProps> = ({
+  embedded = false,
+  onOrderComplete,
+}) => {
   const { user } = useAuth()
   const router = useRouter()
   const { cart } = useCart()
@@ -299,7 +302,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ embedded = false, on
 
         {!clientSecret && error && (
           <div className="my-8">
-            <Message error={error} />
+            <Message error={error} onDismiss={() => setError(null)} />
 
             <Button
               onClick={(e) => {

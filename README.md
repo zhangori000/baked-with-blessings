@@ -237,6 +237,19 @@ By default the template ships with support only for USD however you can change t
 
 By default we ship with the Stripe adapter configured, so you'll need to setup the `secretKey`, `publishableKey` and `webhookSecret` from your Stripe dashboard. Follow [Stripe's guide](https://docs.stripe.com/get-started/api-request?locale=en-GB) on how to set this up.
 
+To create or refresh a 50-cent checkout test item on `/menu`, run:
+
+```bash
+pnpm bootstrap:test-product
+pnpm exec vercel env run -e preview -- pnpm bootstrap:test-product
+```
+
+The product slug is `stripe-test-cookie`, it is published in the `catering` category, and it uses `priceInUSD=50`, which is Stripe's USD minimum charge amount. Production is guarded because this creates a public purchasable product:
+
+```bash
+BOOTSTRAP_TEST_PRODUCT_ALLOW_PRODUCTION=true pnpm exec vercel env run -e production -- pnpm bootstrap:test-product
+```
+
 ## Tests
 
 We provide automated tests out of the box for both E2E and Int tests along with this template. They are being run in our CI to ensure the stability of this template over time. You can integrate them into your CI or run them locally as well via:

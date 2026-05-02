@@ -876,7 +876,7 @@ function CartLoginPanel({
           </BakeryAction>
         ) : null}
 
-        <Message className="cartAuthHint" error={error} />
+        <Message className="cartAuthHint" error={error} onDismiss={() => setError(null)} />
 
         <FormItem>
           <Label className="cartAuthLabel" htmlFor="cart-login-identifier">
@@ -1037,7 +1037,7 @@ function CartSignupPanel({
           </BakeryAction>
         ) : null}
 
-        <Message className="cartAuthHint" error={error} />
+        <Message className="cartAuthHint" error={error} onDismiss={() => setError(null)} />
 
         <FormItem>
           <Label className="cartAuthLabel" htmlFor="cart-signup-name">
