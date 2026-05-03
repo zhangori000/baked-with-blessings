@@ -63,7 +63,7 @@ const FALLBACK_ALLERGENS = ['wheat', 'eggs', 'milk']
 export const getCookieAllergens = (slug: string): string[] =>
   ALLERGENS_BY_SLUG[slug] ?? FALLBACK_ALLERGENS
 
-const cookiePosterDisplayPriceInUSD = 750
+const cookiePosterDisplayPriceInUSD = 500
 
 const defaultInfoButtonLabel = 'Info'
 const defaultIngredientsNoteTitle = 'Baker Notes'
