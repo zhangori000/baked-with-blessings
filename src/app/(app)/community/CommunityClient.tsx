@@ -346,37 +346,29 @@ export function CommunityClient({
             className="communityComposer"
             onSubmit={handleSubmit}
             radius="lg"
-            spacing="lg"
+            spacing="sm"
             tone="paper"
           >
-            <div className="communityComposerHead">
-              <p className="communityComposerEyebrow">Pin it to the wall</p>
-              <BakeryPressable
-                aria-label="Close composer"
-                className="communityComposerClose"
-                onClick={handleCloseForm}
-                type="button"
-              >
-                <X aria-hidden="true" />
-              </BakeryPressable>
-            </div>
-            <p className="communityComposerLead">
-              Write a tiny letter for everyone who passes through the wall. Up to 500 characters.
-            </p>
-            <label className="communityComposerLabel" htmlFor="community-note-body">
-              Your note
-            </label>
+            <BakeryPressable
+              aria-label="Close composer"
+              className="communityComposerClose"
+              onClick={handleCloseForm}
+              type="button"
+            >
+              <X aria-hidden="true" />
+            </BakeryPressable>
+
             <textarea
+              aria-label="Your note"
               className="communityComposerTextarea"
               id="community-note-body"
               maxLength={500}
               onChange={(event) => setBody(event.target.value)}
-              rows={5}
+              placeholder="Write a tiny letter for everyone who passes through the wall…"
+              rows={3}
               value={body}
             />
-            <p className="communityComposerCharCount">
-              {remainingChars} characters left
-            </p>
+            <p className="communityComposerCharCount">{remainingChars} characters left</p>
 
             <div className="communityComposerIdentity">
               <label className="communityComposerLabel" htmlFor="community-note-name">
@@ -393,20 +385,23 @@ export function CommunityClient({
                 type="text"
                 value={displayName}
               />
-              <p className="communityComposerSignature" id="community-note-name-hint">
-                Will appear as{' '}
-                <strong>
-                  {isAnonymous
-                    ? 'Anonymous'
-                    : displayName.trim() || viewerName?.trim() || 'Anonymous'}
-                </strong>
-              </p>
-              <BakeryCheckbox
-                checked={isAnonymous}
-                onChange={(event) => setIsAnonymous(event.target.checked)}
-              >
-                Post anonymously
-              </BakeryCheckbox>
+              <div className="communityComposerIdentityFooter">
+                <p className="communityComposerSignature" id="community-note-name-hint">
+                  Will appear as{' '}
+                  <strong>
+                    {isAnonymous
+                      ? 'Anonymous'
+                      : displayName.trim() || viewerName?.trim() || 'Anonymous'}
+                  </strong>
+                </p>
+                <BakeryCheckbox
+                  checked={isAnonymous}
+                  onChange={(event) => setIsAnonymous(event.target.checked)}
+                  size="sm"
+                >
+                  Post anonymously
+                </BakeryCheckbox>
+              </div>
             </div>
 
             {formError ? <p className="communityComposerError">{formError}</p> : null}

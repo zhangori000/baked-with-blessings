@@ -1164,20 +1164,20 @@
 
   .bakeryCheckboxBox {
     align-items: center;
-    background: var(--bakery-color-bg, #fff);
-    border: 1.5px solid var(--bakery-color-border);
-    border-radius: 0.35rem;
+    background: var(--bakery-color-bg, #fffefb);
+    border: 1.5px solid var(--bakery-color-border, #b89f70);
+    border-radius: 0.3rem;
     box-sizing: border-box;
     display: inline-flex;
     flex-shrink: 0;
-    height: 1.15rem;
+    height: 1.05rem;
     justify-content: center;
-    margin-top: 0.05rem;
+    margin-top: 0.1rem;
     transition:
       background-color var(--bakery-motion-quick) ease,
       border-color var(--bakery-motion-quick) ease,
       box-shadow var(--bakery-motion-quick) ease;
-    width: 1.15rem;
+    width: 1.05rem;
   }
 
   .bakeryCheckboxIcon {
