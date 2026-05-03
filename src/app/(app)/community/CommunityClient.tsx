@@ -36,12 +36,9 @@ import {
 } from '@/features/community/types'
 
 const POST_IT_BACKGROUNDS = [
-  '#fff3a4',
-  '#ffd9a8',
-  '#ffb6c1',
-  '#c8eed1',
-  '#bfe2ff',
-  '#e0c8ff',
+  '#fff170',
+  '#ffe863',
+  '#fff58a',
 ] as const
 
 const TAPE_TONES = [
@@ -61,6 +58,16 @@ const hashString = (value: string) => {
 const formatNoteDate = (value: string) => {
   return new Intl.DateTimeFormat('en', {
     day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value))
+}
+
+const formatOrderTimestamp = (value: string) => {
+  return new Intl.DateTimeFormat('en', {
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
     month: 'short',
     year: 'numeric',
   }).format(new Date(value))
@@ -348,14 +355,16 @@ export function CommunityClient({
             spacing="sm"
             tone="paper"
           >
-            <BakeryPressable
-              aria-label="Close composer"
-              className="communityComposerClose"
-              onClick={handleCloseForm}
-              type="button"
-            >
-              <X aria-hidden="true" />
-            </BakeryPressable>
+            <div className="communityComposerHead">
+              <BakeryPressable
+                aria-label="Close composer"
+                className="communityComposerClose"
+                onClick={handleCloseForm}
+                type="button"
+              >
+                <X aria-hidden="true" />
+              </BakeryPressable>
+            </div>
 
             <textarea
               aria-label="Your note"
@@ -456,17 +465,18 @@ export function CommunityClient({
                     <div className="communityNoteTopRow">
                       <span className="communityNoteHeader">
                         <span className="communityNoteAuthor">{note.displayName}</span>
-                        <time className="communityNoteDate" dateTime={note.createdAt}>
-                          {formatNoteDate(note.createdAt)}
-                        </time>
                         {note.orderCreatedAt ? (
                           <time
                             className="communityNoteOrderDate"
                             dateTime={note.orderCreatedAt}
                           >
-                            Ordered {formatNoteDate(note.orderCreatedAt)}
+                            Ordered {formatOrderTimestamp(note.orderCreatedAt)}
                           </time>
-                        ) : null}
+                        ) : (
+                          <time className="communityNoteDate" dateTime={note.createdAt}>
+                            {formatNoteDate(note.createdAt)}
+                          </time>
+                        )}
                       </span>
                       <div className="communityNoteReactions">
                         <button
@@ -555,14 +565,14 @@ export function CommunityClient({
             </button>
             <span aria-hidden="true" className="communityNoteTape" />
             <p className="communityModalAuthor">{activeNote.displayName}</p>
+            {activeNote.orderCreatedAt ? (
+              <time className="communityModalOrderDate" dateTime={activeNote.orderCreatedAt}>
+                Ordered {formatOrderTimestamp(activeNote.orderCreatedAt)}
+              </time>
+            ) : null}
             <time className="communityModalDate" dateTime={activeNote.createdAt}>
               Posted {formatNoteDate(activeNote.createdAt)}
             </time>
-            {activeNote.orderCreatedAt ? (
-              <time className="communityModalOrderDate" dateTime={activeNote.orderCreatedAt}>
-                Ordered {formatNoteDate(activeNote.orderCreatedAt)}
-              </time>
-            ) : null}
             <p className="communityModalBody">{activeNote.body}</p>
             {activeNote.items.length > 0 ? (
               <section className="communityModalItems">

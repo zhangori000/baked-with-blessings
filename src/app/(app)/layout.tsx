@@ -10,7 +10,7 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { getServerSideURL } from '@/utilities/getURL'
 import { defaultSocialImage, siteDescription, siteName } from '@/utilities/siteMetadata'
-import { Rubik } from 'next/font/google'
+import { Caveat, Rubik } from 'next/font/google'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -60,9 +60,20 @@ const rubik = Rubik({
   display: 'swap',
 })
 
+const caveat = Caveat({
+  subsets: ['latin'],
+  variable: '--font-handwriting',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
+
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html className={rubik.variable} lang="en" suppressHydrationWarning>
+    <html
+      className={`${rubik.variable} ${caveat.variable}`}
+      lang="en"
+      suppressHydrationWarning
+    >
       <head>
         <InitTheme />
         <InitMenuScene />

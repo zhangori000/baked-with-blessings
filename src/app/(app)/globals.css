@@ -1212,7 +1212,7 @@
   }
 
   .bakeryCheckboxLabel {
-    color: var(--bakery-color-fg);
+    color: var(--bakery-checkbox-label, #4a3617);
     font-size: 0.92rem;
     font-weight: 500;
   }
