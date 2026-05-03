@@ -3,9 +3,11 @@ import { fetchCommunityNotesPage } from '@/features/community/services'
 import { COMMUNITY_NOTES_PAGE_SIZE } from '@/features/community/types'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { getSitePages } from '@/utilities/getSitePages'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
 import { headers as getHeaders } from 'next/headers.js'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { Suspense } from 'react'
 
@@ -34,6 +36,11 @@ type Props = {
 }
 
 async function CommunityPageContent({ searchParams }: Props) {
+  const sitePages = await getSitePages()
+  if (!sitePages.communityEnabled) {
+    notFound()
+  }
+
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const headers = await getHeaders()
   const payload = await getPayload({ config })

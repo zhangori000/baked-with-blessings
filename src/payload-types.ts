@@ -166,6 +166,7 @@ export interface Config {
     'blog-page-content': BlogPageContent;
     'discussion-board-content': DiscussionBoardContent;
     'community-page-content': CommunityPageContent;
+    'site-pages': SitePage;
   };
   globalsSelect: {
     brand: BrandSelect<false> | BrandSelect<true>;
@@ -174,6 +175,7 @@ export interface Config {
     'blog-page-content': BlogPageContentSelect<false> | BlogPageContentSelect<true>;
     'discussion-board-content': DiscussionBoardContentSelect<false> | DiscussionBoardContentSelect<true>;
     'community-page-content': CommunityPageContentSelect<false> | CommunityPageContentSelect<true>;
+    'site-pages': SitePagesSelect<false> | SitePagesSelect<true>;
   };
   locale: null;
   widgets: {
@@ -3492,6 +3494,37 @@ export interface CommunityPageContent {
   createdAt?: string | null;
 }
 /**
+ * Toggle individual public pages on or off. Disabling a page hides it from the Other Pages menu and 404s the route (and any sub-routes). New pages default to enabled.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-pages".
+ */
+export interface SitePage {
+  id: number;
+  /**
+   * Untick to hide the Community Post-it Wall from the Other Pages menu and 404 the /community route.
+   */
+  communityEnabled?: boolean | null;
+  /**
+   * Untick to hide Reviews from the Other Pages menu and 404 the /reviews route.
+   */
+  reviewsEnabled?: boolean | null;
+  /**
+   * Untick to hide the Blog from the Other Pages menu and 404 the /blog route (including /blog/[slug]).
+   */
+  blogEnabled?: boolean | null;
+  /**
+   * Untick to hide the Discussion Board from the Other Pages menu and 404 the /discussion-board route.
+   */
+  discussionBoardEnabled?: boolean | null;
+  /**
+   * Untick to hide Community Advice from the Other Pages menu and 404 the /blessings-network route.
+   */
+  blessingsNetworkEnabled?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand_select".
  */
@@ -3583,6 +3616,20 @@ export interface CommunityPageContentSelect<T extends boolean = true> {
   eyebrow?: T;
   title?: T;
   summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-pages_select".
+ */
+export interface SitePagesSelect<T extends boolean = true> {
+  communityEnabled?: T;
+  reviewsEnabled?: T;
+  blogEnabled?: T;
+  discussionBoardEnabled?: T;
+  blessingsNetworkEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

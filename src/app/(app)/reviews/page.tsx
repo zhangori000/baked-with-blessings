@@ -1,7 +1,9 @@
 import { getReviewsPageData } from '@/features/reviews/services/reviewData'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { getSitePages } from '@/utilities/getSitePages'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { Suspense } from 'react'
 
@@ -24,6 +26,11 @@ export const metadata = {
 }
 
 async function ReviewsPageContent() {
+  const sitePages = await getSitePages()
+  if (!sitePages.reviewsEnabled) {
+    notFound()
+  }
+
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config })
   const data = await getReviewsPageData(payload)

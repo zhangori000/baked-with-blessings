@@ -46,6 +46,7 @@ import { CommunityPageContent } from '@/globals/CommunityPageContent'
 import { DiscussionBoardContent } from '@/globals/DiscussionBoardContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
+import { SitePages } from '@/globals/SitePages'
 import { resolveDatabaseURL } from '@/utilities/resolveDatabaseURL'
 import { plugins } from './plugins'
 
@@ -149,7 +150,15 @@ export default buildConfig({
   }),
   email: emailAdapter,
   endpoints: [],
-  globals: [Brand, Header, Footer, BlogPageContent, DiscussionBoardContent, CommunityPageContent],
+  globals: [
+    Brand,
+    Header,
+    Footer,
+    BlogPageContent,
+    DiscussionBoardContent,
+    CommunityPageContent,
+    SitePages,
+  ],
   plugins: [
     vercelBlobStorage({
       collections: {
