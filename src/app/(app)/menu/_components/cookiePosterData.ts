@@ -63,8 +63,6 @@ const FALLBACK_ALLERGENS = ['wheat', 'eggs', 'milk']
 export const getCookieAllergens = (slug: string): string[] =>
   ALLERGENS_BY_SLUG[slug] ?? FALLBACK_ALLERGENS
 
-const cookiePosterDisplayPriceInUSD = 750
-
 const defaultInfoButtonLabel = 'Info'
 const defaultIngredientsNoteTitle = 'Baker Notes'
 
@@ -508,7 +506,7 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
   return {
     ...meta,
     allergens: getCookieAllergens(meta.slug),
-    amount: formatAmount(cookiePosterDisplayPriceInUSD),
+    amount: formatAmount(product.priceInUSD),
     canBuyCatering: true,
     canBuyIndividually: true,
     href: `/cookies/${meta.slug}`,

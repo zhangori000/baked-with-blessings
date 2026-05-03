@@ -11,6 +11,7 @@ export const SonnerProvider = ({ children }: { children?: React.ReactNode }) => 
       {children}
 
       <Toaster
+        offset={180}
         position="top-center"
         theme={theme || 'light'}
         toastOptions={{

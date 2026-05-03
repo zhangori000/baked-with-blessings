@@ -181,7 +181,18 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
   const hasSignedInAccount = Boolean(user || adminSessionUser)
   const isAccountSessionPending = !user && isAdminSessionLoading
   const signedInAccountLabel = user ? 'Customer account' : adminSessionUser ? 'Owner workspace' : null
-  const signedInAccountDetail = user?.email ?? adminSessionUser?.email ?? 'Signed in'
+  const signedInAccountIdentifier = (() => {
+    const candidates = user
+      ? [user.name, user.email, user.phone, user.username]
+      : [adminSessionUser?.email]
+    const trimmed = candidates
+      .map((value) => (typeof value === 'string' ? value.trim() : ''))
+      .find((value) => value.length > 0)
+    return trimmed || null
+  })()
+  const signedInAccountDetail = signedInAccountIdentifier
+    ? `Signed in as ${signedInAccountIdentifier}`
+    : 'Signed in'
 
   const navigationItems = useMemo(() => {
     return buildHeaderNavigation(header.navItems || []).map((item) => ({
