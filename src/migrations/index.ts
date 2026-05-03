@@ -15,6 +15,7 @@ import * as migration_20260501_212728_add_page_content_globals from './20260501_
 import * as migration_20260501_220000_add_community_notes from './20260501_220000_add_community_notes'
 import * as migration_20260502_000000_add_site_pages from './20260502_000000_add_site_pages'
 import * as migration_20260503_000000_add_feature_requests from './20260503_000000_add_feature_requests'
+import * as migration_20260504_000000_default_disable_pages from './20260504_000000_default_disable_pages'
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260503_000000_add_feature_requests.up,
     down: migration_20260503_000000_add_feature_requests.down,
     name: '20260503_000000_add_feature_requests',
+  },
+  {
+    up: migration_20260504_000000_default_disable_pages.up,
+    down: migration_20260504_000000_default_disable_pages.down,
+    name: '20260504_000000_default_disable_pages',
   },
 ]

@@ -3,10 +3,10 @@ import type { GlobalConfig } from 'payload'
 import { adminOnly } from '@/access/adminOnly'
 
 export const SITE_PAGES_DEFAULTS = {
-  blessingsNetworkEnabled: true,
-  blogEnabled: true,
+  blessingsNetworkEnabled: false,
+  blogEnabled: false,
   communityEnabled: true,
-  discussionBoardEnabled: true,
+  discussionBoardEnabled: false,
   featureRequestsEnabled: true,
   reviewsEnabled: true,
 } as const
@@ -46,7 +46,7 @@ export const SitePages: GlobalConfig = {
     {
       name: 'blogEnabled',
       type: 'checkbox',
-      defaultValue: true,
+      defaultValue: false,
       label: 'Blog (/blog)',
       admin: {
         description:
@@ -56,7 +56,7 @@ export const SitePages: GlobalConfig = {
     {
       name: 'discussionBoardEnabled',
       type: 'checkbox',
-      defaultValue: true,
+      defaultValue: false,
       label: 'Discussion Board (/discussion-board)',
       admin: {
         description:
@@ -66,7 +66,7 @@ export const SitePages: GlobalConfig = {
     {
       name: 'blessingsNetworkEnabled',
       type: 'checkbox',
-      defaultValue: true,
+      defaultValue: false,
       label: 'Community Advice (/blessings-network)',
       admin: {
         description:
