@@ -9,6 +9,7 @@ import {
 } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { useAuth } from '@/providers/Auth'
 import { MessageSquare, Star, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -70,6 +71,7 @@ export function FeatureRequestsClient({
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { setUser, user: authUser } = useAuth()
 
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
@@ -88,7 +90,18 @@ export function FeatureRequestsClient({
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [pseudonymInput, setPseudonymInput] = useState('')
   const [accountNameInput, setAccountNameInput] = useState('')
-  const [localViewerName, setLocalViewerName] = useState(viewerName?.trim() ?? '')
+  const [localViewerName, setLocalViewerNameRaw] = useState(viewerName?.trim() ?? '')
+
+  const setLocalViewerName = useCallback(
+    (next: string) => {
+      const trimmed = next.trim()
+      setLocalViewerNameRaw(trimmed)
+      if (authUser) {
+        setUser({ ...authUser, name: trimmed })
+      }
+    },
+    [authUser, setUser],
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
