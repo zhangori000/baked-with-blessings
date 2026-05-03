@@ -13,10 +13,10 @@ export type SitePagesFlags = {
 }
 
 const SITE_PAGES_DEFAULTS: SitePagesFlags = {
-  blessingsNetworkEnabled: true,
-  blogEnabled: true,
+  blessingsNetworkEnabled: false,
+  blogEnabled: false,
   communityEnabled: true,
-  discussionBoardEnabled: true,
+  discussionBoardEnabled: false,
   featureRequestsEnabled: true,
   reviewsEnabled: true,
 }

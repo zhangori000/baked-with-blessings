@@ -1,0 +1,46 @@
+.adminNotAllowedShell {
+  padding-block: 4rem 6rem;
+}
+
+.adminNotAllowedCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0 auto;
+  max-width: 36rem;
+  text-align: left;
+}
+
+.adminNotAllowedEyebrow {
+  color: rgba(44, 38, 19, 0.6);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.adminNotAllowedTitle {
+  color: #2c2613;
+  font-family: var(--font-rounded-display);
+  font-size: clamp(1.85rem, 4vw, 2.45rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.adminNotAllowedBody {
+  color: rgba(44, 38, 19, 0.78);
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.adminNotAllowedActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
