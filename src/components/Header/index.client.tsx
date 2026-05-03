@@ -929,6 +929,52 @@ export function HeaderClient({ brand, header }: Props) {
                   <BakeryCard
                     as={Link}
                     className="siteHeaderAppCard"
+                    href={communityHref}
+                    onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <StickyNote className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Community</span>
+                      <span className="siteHeaderAppTitle">Post-it Wall</span>
+                      <span className="siteHeaderAppDescription">
+                        Tiny letters from people who just ordered with us — react, scroll,
+                        and leave one of your own after you order.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </BakeryCard>
+
+                  <BakeryCard
+                    as={Link}
+                    className="siteHeaderAppCard"
+                    href={reviewsHref}
+                    onClick={() => setActivePanel(null)}
+                    radius="md"
+                    spacing="none"
+                    tone="transparent"
+                  >
+                    <span className="siteHeaderAppIcon" aria-hidden="true">
+                      <ClipboardCheck className="h-5 w-5" />
+                    </span>
+                    <span className="siteHeaderAppCopy">
+                      <span className="siteHeaderAppEyebrow">Transparency</span>
+                      <span className="siteHeaderAppTitle">Reviews</span>
+                      <span className="siteHeaderAppDescription">
+                        Reviews with photos, public responses, action logs, and boundaries around
+                        unfair claims.
+                      </span>
+                    </span>
+                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                  </BakeryCard>
+
+                  <BakeryCard
+                    as={Link}
+                    className="siteHeaderAppCard"
                     href={blogHref}
                     onClick={() => setActivePanel(null)}
                     radius="md"
@@ -988,52 +1034,6 @@ export function HeaderClient({ brand, header }: Props) {
                       <span className="siteHeaderAppTitle">Community Advice</span>
                       <span className="siteHeaderAppDescription">
                         Practical owner advice paired with public business profiles and links.
-                      </span>
-                    </span>
-                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </BakeryCard>
-
-                  <BakeryCard
-                    as={Link}
-                    className="siteHeaderAppCard"
-                    href={reviewsHref}
-                    onClick={() => setActivePanel(null)}
-                    radius="md"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <span className="siteHeaderAppIcon" aria-hidden="true">
-                      <ClipboardCheck className="h-5 w-5" />
-                    </span>
-                    <span className="siteHeaderAppCopy">
-                      <span className="siteHeaderAppEyebrow">Transparency</span>
-                      <span className="siteHeaderAppTitle">Reviews</span>
-                      <span className="siteHeaderAppDescription">
-                        Reviews with photos, public responses, action logs, and boundaries around
-                        unfair claims.
-                      </span>
-                    </span>
-                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </BakeryCard>
-
-                  <BakeryCard
-                    as={Link}
-                    className="siteHeaderAppCard"
-                    href={communityHref}
-                    onClick={() => setActivePanel(null)}
-                    radius="md"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <span className="siteHeaderAppIcon" aria-hidden="true">
-                      <StickyNote className="h-5 w-5" />
-                    </span>
-                    <span className="siteHeaderAppCopy">
-                      <span className="siteHeaderAppEyebrow">Community</span>
-                      <span className="siteHeaderAppTitle">Post-it Wall</span>
-                      <span className="siteHeaderAppDescription">
-                        Tiny letters from people who just ordered with us — react, scroll,
-                        and leave one of your own after you order.
                       </span>
                     </span>
                     <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
