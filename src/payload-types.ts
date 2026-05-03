@@ -92,6 +92,8 @@ export interface Config {
     'flavor-rotations': FlavorRotation;
     categories: Category;
     'community-notes': CommunityNote;
+    'feature-requests': FeatureRequest;
+    'feature-request-comments': FeatureRequestComment;
     media: Media;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -139,6 +141,8 @@ export interface Config {
     'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'community-notes': CommunityNotesSelect<false> | CommunityNotesSelect<true>;
+    'feature-requests': FeatureRequestsSelect<false> | FeatureRequestsSelect<true>;
+    'feature-request-comments': FeatureRequestCommentsSelect<false> | FeatureRequestCommentsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -166,6 +170,7 @@ export interface Config {
     'blog-page-content': BlogPageContent;
     'discussion-board-content': DiscussionBoardContent;
     'community-page-content': CommunityPageContent;
+    'feature-requests-content': FeatureRequestsContent;
     'site-pages': SitePage;
   };
   globalsSelect: {
@@ -175,6 +180,7 @@ export interface Config {
     'blog-page-content': BlogPageContentSelect<false> | BlogPageContentSelect<true>;
     'discussion-board-content': DiscussionBoardContentSelect<false> | DiscussionBoardContentSelect<true>;
     'community-page-content': CommunityPageContentSelect<false> | CommunityPageContentSelect<true>;
+    'feature-requests-content': FeatureRequestsContentSelect<false> | FeatureRequestsContentSelect<true>;
     'site-pages': SitePagesSelect<false> | SitePagesSelect<true>;
   };
   locale: null;
@@ -2070,6 +2076,92 @@ export interface CommunityNote {
   createdAt: string;
 }
 /**
+ * Customer-submitted feature requests. Public requests appear on /feature-requests; private ones are direct messages only the bakery owner sees in this admin. Filter by visibility = "private" for your private inbox.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests".
+ */
+export interface FeatureRequest {
+  id: number;
+  /**
+   * The logged-in customer who submitted this request.
+   */
+  customer: number | Customer;
+  /**
+   * Public: shows on /feature-requests for everyone to rate and comment on. Private: direct message to the bakery owner only.
+   */
+  visibility: 'public' | 'private';
+  /**
+   * Short headline for the request (60 chars max).
+   */
+  title: string;
+  /**
+   * The request itself (1000 chars max).
+   */
+  body: string;
+  /**
+   * Only applies to public requests. "Self" shows the customer's real account name. "Anonymous" shows a pseudonym (or "Anonymous").
+   */
+  displayMode?: ('self' | 'anonymous') | null;
+  /**
+   * Pseudonym shown when displayMode = "anonymous". Blank → "Anonymous".
+   */
+  pseudonym?: string | null;
+  /**
+   * Hide from the public list (admin moderation). Does not delete.
+   */
+  isHidden?: boolean | null;
+  ratingCount?: number | null;
+  ratingSum?: number | null;
+  /**
+   * Per-customer 1–5 star rating. Maintained by the rating endpoint. ratingCount and ratingSum are derived.
+   */
+  ratings?:
+    | {
+        customer: number | Customer;
+        value: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Replies to feature requests. Owner moderation: tick "isHidden" to take a comment off the public thread without deleting it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-request-comments".
+ */
+export interface FeatureRequestComment {
+  id: number;
+  /**
+   * The feature request this comment replies to.
+   */
+  request: number | FeatureRequest;
+  /**
+   * The logged-in customer who posted this comment.
+   */
+  customer: number | Customer;
+  /**
+   * The reply body (500 chars max).
+   */
+  body: string;
+  /**
+   * "Self" shows the customer's real account name. "Anonymous" shows a pseudonym (or "Anonymous").
+   */
+  displayMode?: ('self' | 'anonymous') | null;
+  /**
+   * Pseudonym shown when displayMode = "anonymous". Blank → "Anonymous".
+   */
+  pseudonym?: string | null;
+  /**
+   * Hide from the public thread (admin moderation). Does not delete.
+   */
+  isHidden?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
@@ -2177,6 +2269,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'community-notes';
         value: number | CommunityNote;
+      } | null)
+    | ({
+        relationTo: 'feature-requests';
+        value: number | FeatureRequest;
+      } | null)
+    | ({
+        relationTo: 'feature-request-comments';
+        value: number | FeatureRequestComment;
       } | null)
     | ({
         relationTo: 'media';
@@ -2794,6 +2894,44 @@ export interface CommunityNotesSelect<T extends boolean = true> {
         value?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests_select".
+ */
+export interface FeatureRequestsSelect<T extends boolean = true> {
+  customer?: T;
+  visibility?: T;
+  title?: T;
+  body?: T;
+  displayMode?: T;
+  pseudonym?: T;
+  isHidden?: T;
+  ratingCount?: T;
+  ratingSum?: T;
+  ratings?:
+    | T
+    | {
+        customer?: T;
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-request-comments_select".
+ */
+export interface FeatureRequestCommentsSelect<T extends boolean = true> {
+  request?: T;
+  customer?: T;
+  body?: T;
+  displayMode?: T;
+  pseudonym?: T;
+  isHidden?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3494,6 +3632,29 @@ export interface CommunityPageContent {
   createdAt?: string | null;
 }
 /**
+ * Hero copy shown at the top of /feature-requests. Edit here to change what visitors read above the request composer.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests-content".
+ */
+export interface FeatureRequestsContent {
+  id: number;
+  /**
+   * Small uppercase label above the title (1–4 words).
+   */
+  eyebrow?: string | null;
+  /**
+   * Large headline shown in the hero.
+   */
+  title?: string | null;
+  /**
+   * Short paragraph that explains what feature requests are, that public posts are encouraged, and that pseudonyms / private DMs are options.
+   */
+  summary?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Toggle individual public pages on or off. Disabling a page hides it from the Other Pages menu and 404s the route (and any sub-routes). New pages default to enabled.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3521,6 +3682,10 @@ export interface SitePage {
    * Untick to hide Community Advice from the Other Pages menu and 404 the /blessings-network route.
    */
   blessingsNetworkEnabled?: boolean | null;
+  /**
+   * Untick to hide Request Features from the Other Pages menu and 404 the /feature-requests route.
+   */
+  featureRequestsEnabled?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3622,6 +3787,18 @@ export interface CommunityPageContentSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests-content_select".
+ */
+export interface FeatureRequestsContentSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-pages_select".
  */
 export interface SitePagesSelect<T extends boolean = true> {
@@ -3630,6 +3807,7 @@ export interface SitePagesSelect<T extends boolean = true> {
   blogEnabled?: T;
   discussionBoardEnabled?: T;
   blessingsNetworkEnabled?: T;
+  featureRequestsEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

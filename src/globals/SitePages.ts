@@ -7,6 +7,7 @@ export const SITE_PAGES_DEFAULTS = {
   blogEnabled: true,
   communityEnabled: true,
   discussionBoardEnabled: true,
+  featureRequestsEnabled: true,
   reviewsEnabled: true,
 } as const
 
@@ -70,6 +71,16 @@ export const SitePages: GlobalConfig = {
       admin: {
         description:
           'Untick to hide Community Advice from the Other Pages menu and 404 the /blessings-network route.',
+      },
+    },
+    {
+      name: 'featureRequestsEnabled',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Request Features (/feature-requests)',
+      admin: {
+        description:
+          'Untick to hide Request Features from the Other Pages menu and 404 the /feature-requests route.',
       },
     },
   ],

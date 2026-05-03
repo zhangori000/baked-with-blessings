@@ -20,6 +20,8 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
 import { CommunityNotes } from '@/collections/CommunityNotes'
+import { FeatureRequestComments } from '@/collections/FeatureRequestComments'
+import { FeatureRequests } from '@/collections/FeatureRequests'
 import { FlavorRotations } from '@/collections/FlavorRotations'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
@@ -44,6 +46,7 @@ import { BlogPageContent } from '@/globals/BlogPageContent'
 import { Brand } from '@/globals/Brand'
 import { CommunityPageContent } from '@/globals/CommunityPageContent'
 import { DiscussionBoardContent } from '@/globals/DiscussionBoardContent'
+import { FeatureRequestsContent } from '@/globals/FeatureRequestsContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { SitePages } from '@/globals/SitePages'
@@ -104,6 +107,8 @@ export default buildConfig({
     FlavorRotations,
     Categories,
     CommunityNotes,
+    FeatureRequests,
+    FeatureRequestComments,
     Media,
   ],
   db: postgresAdapter({
@@ -157,6 +162,7 @@ export default buildConfig({
     BlogPageContent,
     DiscussionBoardContent,
     CommunityPageContent,
+    FeatureRequestsContent,
     SitePages,
   ],
   plugins: [

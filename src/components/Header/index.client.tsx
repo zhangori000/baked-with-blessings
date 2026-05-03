@@ -22,6 +22,7 @@ import {
   communityHref,
   contactHref,
   discussionBoardHref,
+  featureRequestsHref,
   menuHref,
   reviewsHref,
   rotatingCookieFlavorsHref,
@@ -38,6 +39,7 @@ import {
   Eye,
   EyeOff,
   Handshake,
+  Lightbulb,
   LoaderCircle,
   MessageSquareText,
   PanelsTopLeft,
@@ -118,6 +120,9 @@ const getActiveAppLabel = (pathname: string) => {
   }
   if (pathname === communityHref || pathname.startsWith(`${communityHref}/`)) {
     return 'Post-it Wall'
+  }
+  if (pathname === featureRequestsHref || pathname.startsWith(`${featureRequestsHref}/`)) {
+    return 'Request Features'
   }
 
   return null
@@ -259,6 +264,7 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
     router.prefetch(blessingsNetworkHref)
     router.prefetch(reviewsHref)
     router.prefetch(communityHref)
+    router.prefetch(featureRequestsHref)
   }, [router])
 
   useEffect(() => {
@@ -972,6 +978,31 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                         <span className="siteHeaderAppDescription">
                           Reviews with photos, public responses, action logs, and boundaries around
                           unfair claims.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
+
+                  {sitePages.featureRequestsEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={featureRequestsHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <Lightbulb className="h-5 w-5" />
+                      </span>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Tell us what to build</span>
+                        <span className="siteHeaderAppTitle">Request Features</span>
+                        <span className="siteHeaderAppDescription">
+                          Suggest pages, food, packaging, anything. Public requests get rated and
+                          replied to; private DMs go straight to the bakery owner.
                         </span>
                       </span>
                       <ArrowRight className="siteHeaderAppArrow h-4 w-4" />

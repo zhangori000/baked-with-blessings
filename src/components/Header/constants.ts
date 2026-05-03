@@ -5,6 +5,7 @@ import {
   communityHref,
   contactHref,
   discussionBoardHref,
+  featureRequestsHref,
   isContactLinkHint,
   menuHref,
   reviewsHref,
@@ -273,6 +274,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, communityHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, featureRequestsHref)) {
     return item.id === 'more'
   }
 

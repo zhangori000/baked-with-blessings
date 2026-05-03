@@ -6,6 +6,7 @@ export const discussionBoardHref = '/discussion-board'
 export const reviewsHref = '/reviews'
 export const blessingsNetworkHref = '/blessings-network'
 export const communityHref = '/community'
+export const featureRequestsHref = '/feature-requests'
 export const customerLoginHref = `${rotatingCookieFlavorsHref}?account=login`
 
 export const buildCustomerLoginHref = ({
