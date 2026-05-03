@@ -86,9 +86,13 @@ export function FeatureRequestsClient({
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
-  const [displayName, setDisplayName] = useState(viewerName?.trim() ?? '')
+  const [pseudonymInput, setPseudonymInput] = useState('')
+  const [accountNameInput, setAccountNameInput] = useState('')
+  const [localViewerName, setLocalViewerName] = useState(viewerName?.trim() ?? '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+
+  const hasAccountName = Boolean(localViewerName)
 
   useEffect(() => {
     for (const sceneryTone of menuSceneryTones) {
@@ -192,6 +196,9 @@ export function FeatureRequestsClient({
     }
     const trimmedTitle = title.trim()
     const trimmedBody = body.trim()
+    const trimmedAccountName = accountNameInput.trim()
+    const trimmedPseudonym = pseudonymInput.trim()
+
     if (!trimmedTitle) {
       setFormError('Add a short title.')
       return
@@ -200,15 +207,30 @@ export function FeatureRequestsClient({
       setFormError('Write a few words about what you would like to see.')
       return
     }
+    if (
+      visibility === 'public' &&
+      !isAnonymous &&
+      !hasAccountName &&
+      !trimmedAccountName
+    ) {
+      setFormError(
+        'Pick a display name to show on your post (will be saved to your account), or check "Post anonymously".',
+      )
+      return
+    }
+
     setIsSubmitting(true)
     setFormError(null)
     try {
       const res = await fetch('/api/feature-requests', {
         body: JSON.stringify({
           body: trimmedBody,
+          customerName:
+            visibility === 'public' && !isAnonymous && !hasAccountName
+              ? trimmedAccountName
+              : null,
           displayMode: visibility === 'public' && isAnonymous ? 'anonymous' : 'self',
-          pseudonym:
-            visibility === 'public' && isAnonymous ? displayName.trim() || null : null,
+          pseudonym: visibility === 'public' && isAnonymous ? trimmedPseudonym || null : null,
           title: trimmedTitle,
           visibility,
         }),
@@ -228,15 +250,21 @@ export function FeatureRequestsClient({
           ...prev.filter((existing) => existing.id !== json.request.id),
         ])
       }
+      if (
+        visibility === 'public' &&
+        !isAnonymous &&
+        !hasAccountName &&
+        trimmedAccountName
+      ) {
+        setLocalViewerName(trimmedAccountName)
+      }
       setTitle('')
       setBody('')
       setIsAnonymous(false)
-      setDisplayName(viewerName?.trim() ?? '')
+      setPseudonymInput('')
+      setAccountNameInput('')
       setVisibility('public')
       setIsFormOpen(false)
-      if (visibility === 'private') {
-        setFormError(null)
-      }
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Could not submit request.')
     } finally {
@@ -446,26 +474,43 @@ export function FeatureRequestsClient({
                     aria-label="Pseudonym"
                     className="featureRequestsName"
                     maxLength={PSEUDONYM_MAX}
-                    onChange={(event) => setDisplayName(event.target.value)}
+                    onChange={(event) => setPseudonymInput(event.target.value)}
                     placeholder="Pseudonym (blank → 'Anonymous')"
                     type="text"
-                    value={displayName}
+                    value={pseudonymInput}
                   />
+                ) : !hasAccountName ? (
+                  <>
+                    <input
+                      aria-label="Display name"
+                      className="featureRequestsName"
+                      maxLength={80}
+                      onChange={(event) => setAccountNameInput(event.target.value)}
+                      placeholder="Your display name"
+                      type="text"
+                      value={accountNameInput}
+                    />
+                    <p className="featureRequestsSignature">
+                      Your account doesn&apos;t have a name yet — pick one. We&apos;ll save it
+                      to your account so it pre-fills here and in comments next time.
+                    </p>
+                  </>
                 ) : null}
                 <p className="featureRequestsSignature">
                   Will appear as{' '}
                   <strong>
                     {isAnonymous
-                      ? displayName.trim() || 'Anonymous'
-                      : viewerName?.trim() || 'Anonymous'}
+                      ? pseudonymInput.trim() || 'Anonymous'
+                      : hasAccountName
+                        ? localViewerName
+                        : accountNameInput.trim() || 'Anonymous'}
                   </strong>
                 </p>
               </div>
             ) : (
               <p className="featureRequestsSignature">
-                Will be sent as{' '}
-                <strong>{viewerName?.trim() || 'your account'}</strong>{' '}
-                directly to the bakery owner. Not visible publicly.
+                Will be sent privately to the bakery owner from{' '}
+                <strong>{localViewerName || 'your account'}</strong>. Not visible publicly.
               </p>
             )}
 
@@ -507,9 +552,10 @@ export function FeatureRequestsClient({
               <FeatureRequestCard
                 isAuthenticated={isAuthenticated}
                 key={request.id}
+                onAccountNameSet={setLocalViewerName}
                 onRate={handleRate}
                 request={request}
-                viewerName={viewerName}
+                viewerName={localViewerName}
               />
             ))}
           </ul>
@@ -533,19 +579,28 @@ export function FeatureRequestsClient({
 
 type CardProps = {
   isAuthenticated: boolean
+  onAccountNameSet: (name: string) => void
   onRate: (request: FeatureRequestPublic, value: number) => void
   request: FeatureRequestPublic
   viewerName: string | null
 }
 
-function FeatureRequestCard({ isAuthenticated, onRate, request, viewerName }: CardProps) {
+function FeatureRequestCard({
+  isAuthenticated,
+  onAccountNameSet,
+  onRate,
+  request,
+  viewerName,
+}: CardProps) {
   const router = useRouter()
+  const hasAccountName = Boolean(viewerName)
   const [comments, setComments] = useState<FeatureRequestCommentPublic[]>([])
   const [commentsLoaded, setCommentsLoaded] = useState(false)
   const [commentsExpanded, setCommentsExpanded] = useState(false)
   const [commentBody, setCommentBody] = useState('')
   const [commentAnonymous, setCommentAnonymous] = useState(false)
-  const [commentPseudonym, setCommentPseudonym] = useState(viewerName?.trim() ?? '')
+  const [commentPseudonym, setCommentPseudonym] = useState('')
+  const [commentAccountName, setCommentAccountName] = useState('')
   const [isPostingComment, setIsPostingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
   const [hoverRating, setHoverRating] = useState<number | null>(null)
@@ -586,18 +641,29 @@ function FeatureRequestCard({ isAuthenticated, onRate, request, viewerName }: Ca
       return
     }
     const trimmed = commentBody.trim()
+    const trimmedPseudonym = commentPseudonym.trim()
+    const trimmedAccountName = commentAccountName.trim()
+
     if (!trimmed) {
       setCommentError('Write a few words first.')
       return
     }
+    if (!commentAnonymous && !hasAccountName && !trimmedAccountName) {
+      setCommentError(
+        'Pick a display name to show on your reply (will be saved to your account), or check "Reply anonymously".',
+      )
+      return
+    }
+
     setIsPostingComment(true)
     setCommentError(null)
     try {
       const res = await fetch(`/api/feature-requests/${request.id}/comments`, {
         body: JSON.stringify({
           body: trimmed,
+          customerName: !commentAnonymous && !hasAccountName ? trimmedAccountName : null,
           displayMode: commentAnonymous ? 'anonymous' : 'self',
-          pseudonym: commentAnonymous ? commentPseudonym.trim() || null : null,
+          pseudonym: commentAnonymous ? trimmedPseudonym || null : null,
         }),
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
@@ -608,9 +674,13 @@ function FeatureRequestCard({ isAuthenticated, onRate, request, viewerName }: Ca
         | { error: string; success: false }
       if (!json.success) throw new Error(json.error)
       setComments((prev) => [...prev, json.comment])
+      if (!commentAnonymous && !hasAccountName && trimmedAccountName) {
+        onAccountNameSet(trimmedAccountName)
+      }
       setCommentBody('')
       setCommentAnonymous(false)
-      setCommentPseudonym(viewerName?.trim() ?? '')
+      setCommentPseudonym('')
+      setCommentAccountName('')
     } catch (error) {
       setCommentError(error instanceof Error ? error.message : 'Could not post comment.')
     } finally {
@@ -734,6 +804,16 @@ function FeatureRequestCard({ isAuthenticated, onRate, request, viewerName }: Ca
                       placeholder="Pseudonym"
                       type="text"
                       value={commentPseudonym}
+                    />
+                  ) : !hasAccountName ? (
+                    <input
+                      aria-label="Display name"
+                      className="featureRequestsName featureRequestsName--inline"
+                      maxLength={80}
+                      onChange={(event) => setCommentAccountName(event.target.value)}
+                      placeholder="Your display name (saves to account)"
+                      type="text"
+                      value={commentAccountName}
                     />
                   ) : null}
                 </div>

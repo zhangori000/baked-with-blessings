@@ -60,6 +60,7 @@ export const POST = async (request: Request, { params }: RouteContext) => {
       customer: customer as never,
       input: {
         body: typeof raw.body === 'string' ? raw.body : '',
+        customerName: typeof raw.customerName === 'string' ? raw.customerName : null,
         displayMode,
         pseudonym: typeof raw.pseudonym === 'string' ? raw.pseudonym : null,
       },

@@ -240,10 +240,34 @@ export const fetchRequestsPage = async ({
 
 type CreateRequestInput = {
   body: string
+  customerName?: string | null
   displayMode?: 'self' | 'anonymous'
   pseudonym?: string | null
   title: string
   visibility: 'public' | 'private'
+}
+
+const updateCustomerNameIfMissing = async ({
+  customer,
+  payload,
+  proposedName,
+}: {
+  customer: Customer
+  payload: Payload
+  proposedName: string | null | undefined
+}): Promise<Customer> => {
+  const trimmed = typeof proposedName === 'string' ? proposedName.trim().slice(0, 80) : ''
+  const existingName = typeof customer.name === 'string' ? customer.name.trim() : ''
+  if (!trimmed || existingName) {
+    return customer
+  }
+  const updated = (await payload.update({
+    collection: 'customers',
+    data: { name: trimmed } as never,
+    id: customer.id,
+    overrideAccess: true,
+  })) as Customer
+  return updated ?? customer
 }
 
 export const createRequest = async ({
@@ -284,11 +308,20 @@ export const createRequest = async ({
   const isPublic = input.visibility === 'public'
   const displayMode = isPublic && input.displayMode === 'anonymous' ? 'anonymous' : 'self'
 
+  let activeCustomer = customer
+  if (isPublic && displayMode === 'self') {
+    activeCustomer = await updateCustomerNameIfMissing({
+      customer,
+      payload,
+      proposedName: input.customerName,
+    })
+  }
+
   const created = await payload.create({
     collection: 'feature-requests',
     data: {
       body: trimmedBody.slice(0, FEATURE_REQUEST_BODY_MAX_LENGTH),
-      customer: customer.id as never,
+      customer: activeCustomer.id as never,
       displayMode,
       isHidden: false,
       pseudonym:
@@ -364,6 +397,7 @@ export const rateRequest = async ({
 
 type CreateCommentInput = {
   body: string
+  customerName?: string | null
   displayMode?: 'self' | 'anonymous'
   pseudonym?: string | null
 }
@@ -414,11 +448,20 @@ export const createComment = async ({
 
   const displayMode = input.displayMode === 'anonymous' ? 'anonymous' : 'self'
 
+  let activeCustomer = customer
+  if (displayMode === 'self') {
+    activeCustomer = await updateCustomerNameIfMissing({
+      customer,
+      payload,
+      proposedName: input.customerName,
+    })
+  }
+
   const created = await payload.create({
     collection: 'feature-request-comments',
     data: {
       body: trimmedBody.slice(0, FEATURE_REQUEST_COMMENT_BODY_MAX_LENGTH),
-      customer: customer.id as never,
+      customer: activeCustomer.id as never,
       displayMode,
       isHidden: false,
       pseudonym: displayMode === 'anonymous' && trimmedPseudonym ? trimmedPseudonym : null,

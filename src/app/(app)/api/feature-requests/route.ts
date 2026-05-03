@@ -10,6 +10,7 @@ import {
 } from '@/features/feature-requests/types'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { getSitePages } from '@/utilities/getSitePages'
+import { sendOwnerFeatureRequestNotification } from '@/utilities/email/sendOwnerFeatureRequestNotification'
 import config from '@/payload.config'
 import { getPayload } from 'payload'
 
@@ -82,6 +83,7 @@ export const POST = async (request: Request) => {
       customer: customer as never,
       input: {
         body: typeof raw.body === 'string' ? raw.body : '',
+        customerName: typeof raw.customerName === 'string' ? raw.customerName : null,
         displayMode,
         pseudonym: typeof raw.pseudonym === 'string' ? raw.pseudonym : null,
         title: typeof raw.title === 'string' ? raw.title : '',
@@ -94,6 +96,16 @@ export const POST = async (request: Request) => {
       collection: 'feature-requests',
       depth: 1,
       id: created.id,
+    })
+
+    sendOwnerFeatureRequestNotification({
+      payload,
+      request: populated as never,
+    }).catch((error: unknown) => {
+      payload.logger.error(
+        { err: error, requestID: (populated as { id: number | string }).id },
+        'Owner feature-request notification failed',
+      )
     })
 
     return Response.json({
