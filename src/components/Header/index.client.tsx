@@ -15,11 +15,14 @@ import { useAuth } from '@/providers/Auth'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { Header, Product, Variant } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import type { SitePagesFlags } from '@/utilities/getSitePages'
 import {
   blessingsNetworkHref,
   blogHref,
+  communityHref,
   contactHref,
   discussionBoardHref,
+  featureRequestsHref,
   menuHref,
   reviewsHref,
   rotatingCookieFlavorsHref,
@@ -36,9 +39,11 @@ import {
   Eye,
   EyeOff,
   Handshake,
+  Lightbulb,
   LoaderCircle,
   MessageSquareText,
   PanelsTopLeft,
+  StickyNote,
   ShoppingBag,
   UserRound,
 } from 'lucide-react'
@@ -65,6 +70,7 @@ type Props = {
     logoUrl: string | null
   }
   header: Header
+  sitePages: SitePagesFlags
 }
 
 type HeaderAdminUser = {
@@ -112,6 +118,12 @@ const getActiveAppLabel = (pathname: string) => {
   if (pathname === discussionBoardHref || pathname.startsWith(`${discussionBoardHref}/`)) {
     return 'Discussion Board'
   }
+  if (pathname === communityHref || pathname.startsWith(`${communityHref}/`)) {
+    return 'Post-it Wall'
+  }
+  if (pathname === featureRequestsHref || pathname.startsWith(`${featureRequestsHref}/`)) {
+    return 'Request Features'
+  }
 
   return null
 }
@@ -130,7 +142,7 @@ const getSafeLocalRedirect = (value: null | string) => {
 
 const isEmailLike = (value: string) => /\S+@\S+\.\S+/.test(value.trim())
 
-export function HeaderClient({ brand, header }: Props) {
+export function HeaderClient({ brand, header, sitePages }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
@@ -251,6 +263,8 @@ export function HeaderClient({ brand, header }: Props) {
     router.prefetch(discussionBoardHref)
     router.prefetch(blessingsNetworkHref)
     router.prefetch(reviewsHref)
+    router.prefetch(communityHref)
+    router.prefetch(featureRequestsHref)
   }, [router])
 
   useEffect(() => {
@@ -920,95 +934,153 @@ export function HeaderClient({ brand, header }: Props) {
                     </div>
                   </div>
 
-                  <BakeryCard
-                    as={Link}
-                    className="siteHeaderAppCard"
-                    href={blogHref}
-                    onClick={() => setActivePanel(null)}
-                    radius="md"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <span className="siteHeaderAppIcon" aria-hidden="true">
-                      <BookOpenText className="h-5 w-5" />
-                    </span>
-                    <span className="siteHeaderAppCopy">
-                      <span className="siteHeaderAppEyebrow">Writing</span>
-                      <span className="siteHeaderAppTitle">Blog</span>
-                      <span className="siteHeaderAppDescription">
-                        Notes and essays about school, business, community, and building the bakery.
+                  {sitePages.communityEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={communityHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <StickyNote className="h-5 w-5" />
                       </span>
-                    </span>
-                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </BakeryCard>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Community</span>
+                        <span className="siteHeaderAppTitle">Post-it Wall</span>
+                        <span className="siteHeaderAppDescription">
+                          Tiny letters from people who just ordered with us — react, scroll,
+                          and leave one of your own after you order.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
 
-                  <BakeryCard
-                    as={Link}
-                    className="siteHeaderAppCard"
-                    href={discussionBoardHref}
-                    onClick={() => setActivePanel(null)}
-                    radius="md"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <span className="siteHeaderAppIcon" aria-hidden="true">
-                      <MessageSquareText className="h-5 w-5" />
-                    </span>
-                    <span className="siteHeaderAppCopy">
-                      <span className="siteHeaderAppEyebrow">Community</span>
-                      <span className="siteHeaderAppTitle">Discussion Board</span>
-                      <span className="siteHeaderAppDescription">
-                        Open questions, replies, support paths, and challenges in one structured
-                        board.
+                  {sitePages.reviewsEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={reviewsHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <ClipboardCheck className="h-5 w-5" />
                       </span>
-                    </span>
-                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </BakeryCard>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Transparency</span>
+                        <span className="siteHeaderAppTitle">Reviews</span>
+                        <span className="siteHeaderAppDescription">
+                          Reviews with photos, public responses, action logs, and boundaries around
+                          unfair claims.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
 
-                  <BakeryCard
-                    as={Link}
-                    className="siteHeaderAppCard"
-                    href={blessingsNetworkHref}
-                    onClick={() => setActivePanel(null)}
-                    radius="md"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <span className="siteHeaderAppIcon" aria-hidden="true">
-                      <Handshake className="h-5 w-5" />
-                    </span>
-                    <span className="siteHeaderAppCopy">
-                      <span className="siteHeaderAppEyebrow">Community advice</span>
-                      <span className="siteHeaderAppTitle">Community Advice</span>
-                      <span className="siteHeaderAppDescription">
-                        Practical owner advice paired with public business profiles and links.
+                  {sitePages.featureRequestsEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={featureRequestsHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <Lightbulb className="h-5 w-5" />
                       </span>
-                    </span>
-                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </BakeryCard>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Tell us what to build</span>
+                        <span className="siteHeaderAppTitle">Request Features</span>
+                        <span className="siteHeaderAppDescription">
+                          Suggest pages, food, packaging, anything. Public requests get rated and
+                          replied to; private DMs go straight to the bakery owner.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
 
-                  <BakeryCard
-                    as={Link}
-                    className="siteHeaderAppCard"
-                    href={reviewsHref}
-                    onClick={() => setActivePanel(null)}
-                    radius="md"
-                    spacing="none"
-                    tone="transparent"
-                  >
-                    <span className="siteHeaderAppIcon" aria-hidden="true">
-                      <ClipboardCheck className="h-5 w-5" />
-                    </span>
-                    <span className="siteHeaderAppCopy">
-                      <span className="siteHeaderAppEyebrow">Transparency</span>
-                      <span className="siteHeaderAppTitle">Reviews</span>
-                      <span className="siteHeaderAppDescription">
-                        Reviews with photos, public responses, action logs, and boundaries around
-                        unfair claims.
+                  {sitePages.blogEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={blogHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <BookOpenText className="h-5 w-5" />
                       </span>
-                    </span>
-                    <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                  </BakeryCard>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Writing</span>
+                        <span className="siteHeaderAppTitle">Blog</span>
+                        <span className="siteHeaderAppDescription">
+                          Notes and essays about school, business, community, and building the bakery.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
+
+                  {sitePages.discussionBoardEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={discussionBoardHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <MessageSquareText className="h-5 w-5" />
+                      </span>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Community</span>
+                        <span className="siteHeaderAppTitle">Discussion Board</span>
+                        <span className="siteHeaderAppDescription">
+                          Open questions, replies, support paths, and challenges in one structured
+                          board.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
+
+                  {sitePages.blessingsNetworkEnabled ? (
+                    <BakeryCard
+                      as={Link}
+                      className="siteHeaderAppCard"
+                      href={blessingsNetworkHref}
+                      onClick={() => setActivePanel(null)}
+                      radius="md"
+                      spacing="none"
+                      tone="transparent"
+                    >
+                      <span className="siteHeaderAppIcon" aria-hidden="true">
+                        <Handshake className="h-5 w-5" />
+                      </span>
+                      <span className="siteHeaderAppCopy">
+                        <span className="siteHeaderAppEyebrow">Community advice</span>
+                        <span className="siteHeaderAppTitle">Community Advice</span>
+                        <span className="siteHeaderAppDescription">
+                          Practical owner advice paired with public business profiles and links.
+                        </span>
+                      </span>
+                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                    </BakeryCard>
+                  ) : null}
                 </div>
               ) : null}
 

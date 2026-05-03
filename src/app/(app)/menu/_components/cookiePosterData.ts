@@ -26,6 +26,7 @@ export type CookiePosterMeta = {
 }
 
 export type CookiePosterAsset = CookiePosterMeta & {
+  allergens: string[]
   amount: string
   canBuyCatering?: boolean
   canBuyIndividually?: boolean
@@ -39,6 +40,28 @@ export type CookiePosterAsset = CookiePosterMeta & {
   monthlyFlavorLabel?: string
   productId?: number
 }
+
+const ALLERGENS_BY_SLUG: Record<string, string[]> = {
+  'apple-snickerdoodle': ['wheat', 'eggs', 'milk'],
+  'banana-choc-chip-walnut': ['wheat', 'eggs', 'milk', 'soy', 'tree nuts (walnut)'],
+  'banana-crumble': ['wheat', 'eggs', 'milk'],
+  biscoff: ['wheat', 'eggs', 'milk', 'soy'],
+  brookie: ['wheat', 'eggs', 'milk', 'soy'],
+  'cinnamon-roll': ['wheat', 'eggs', 'milk'],
+  'dubai-chocolate': ['wheat', 'eggs', 'milk', 'soy', 'tree nuts (pistachio)'],
+  'oreo-cheesecake': ['wheat', 'eggs', 'milk', 'soy'],
+  'peanut-butter-cup': ['wheat', 'eggs', 'milk', 'soy', 'peanuts'],
+  'salted-caramel-nest': ['wheat', 'eggs', 'milk', 'soy'],
+  smores: ['wheat', 'eggs', 'milk', 'soy'],
+  'strawberry-cheesecake': ['wheat', 'eggs', 'milk', 'soy'],
+  'strawberry-matcha': ['wheat', 'eggs', 'milk', 'soy'],
+  'strawberry-matcha-marble': ['wheat', 'eggs', 'milk', 'soy'],
+}
+
+const FALLBACK_ALLERGENS = ['wheat', 'eggs', 'milk']
+
+export const getCookieAllergens = (slug: string): string[] =>
+  ALLERGENS_BY_SLUG[slug] ?? FALLBACK_ALLERGENS
 
 const cookiePosterDisplayPriceInUSD = 750
 
@@ -484,6 +507,7 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
 
   return {
     ...meta,
+    allergens: getCookieAllergens(meta.slug),
     amount: formatAmount(cookiePosterDisplayPriceInUSD),
     canBuyCatering: true,
     canBuyIndividually: true,

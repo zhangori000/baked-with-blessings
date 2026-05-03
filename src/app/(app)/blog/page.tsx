@@ -10,6 +10,8 @@ import {
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { BLOG_PAGE_CONTENT_DEFAULTS } from '@/globals/BlogPageContent'
 import { formatDateTime } from '@/utilities/formatDateTime'
+import { getSitePages } from '@/utilities/getSitePages'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -44,6 +46,11 @@ const postsSelect = {
 } as const
 
 export default async function BlogPage() {
+  const sitePages = await getSitePages()
+  if (!sitePages.blogEnabled) {
+    notFound()
+  }
+
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config: configPromise })
 

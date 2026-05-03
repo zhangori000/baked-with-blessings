@@ -19,6 +19,9 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
+import { CommunityNotes } from '@/collections/CommunityNotes'
+import { FeatureRequestComments } from '@/collections/FeatureRequestComments'
+import { FeatureRequests } from '@/collections/FeatureRequests'
 import { FlavorRotations } from '@/collections/FlavorRotations'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
@@ -41,9 +44,12 @@ import {
 import { Reviews } from '@/features/reviews/collections/index'
 import { BlogPageContent } from '@/globals/BlogPageContent'
 import { Brand } from '@/globals/Brand'
+import { CommunityPageContent } from '@/globals/CommunityPageContent'
 import { DiscussionBoardContent } from '@/globals/DiscussionBoardContent'
+import { FeatureRequestsContent } from '@/globals/FeatureRequestsContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
+import { SitePages } from '@/globals/SitePages'
 import { resolveDatabaseURL } from '@/utilities/resolveDatabaseURL'
 import { plugins } from './plugins'
 
@@ -100,6 +106,9 @@ export default buildConfig({
     Posts,
     FlavorRotations,
     Categories,
+    CommunityNotes,
+    FeatureRequests,
+    FeatureRequestComments,
     Media,
   ],
   db: postgresAdapter({
@@ -146,7 +155,16 @@ export default buildConfig({
   }),
   email: emailAdapter,
   endpoints: [],
-  globals: [Brand, Header, Footer, BlogPageContent, DiscussionBoardContent],
+  globals: [
+    Brand,
+    Header,
+    Footer,
+    BlogPageContent,
+    DiscussionBoardContent,
+    CommunityPageContent,
+    FeatureRequestsContent,
+    SitePages,
+  ],
   plugins: [
     vercelBlobStorage({
       collections: {

@@ -4,7 +4,6 @@ import { CheckoutForm } from '@/components/forms/CheckoutForm'
 import { Message } from '@/components/Message'
 import { BakeryAction, BakeryCard } from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
-import { ECOMMERCE_SESSION_RESET_EVENT } from '@/providers/Ecommerce'
 import { cssVariables } from '@/cssVariables'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
@@ -314,7 +313,11 @@ export function CartModalPayment({ onOrderComplete }: Props) {
       }
 
       clearSession()
-      window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
+      // Do NOT dispatch ECOMMERCE_SESSION_RESET_EVENT here — that listener
+      // remounts the entire EcommerceProvider subtree (including this modal),
+      // which would unmount before the parent can switch to the complete panel.
+      // The dispatch is deferred to CartCompletePanel.finishOrderFlow when the
+      // user closes the panel. Stripe's CheckoutForm path follows the same rule.
       onOrderComplete({
         accessToken: responseData.accessToken,
         orderID: responseData.orderID,

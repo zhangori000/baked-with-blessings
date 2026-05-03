@@ -1,5 +1,7 @@
 import type { Media as MediaType } from '@/payload-types'
 
+import type { CookieInfoRichText } from './cookiePosterData'
+
 export type MenuSceneryTone =
   | 'dawn'
   | 'under-tree'
@@ -9,6 +11,7 @@ export type MenuSceneryTone =
   | 'fairy-castle'
 
 export type SelectableFlavor = {
+  allergens?: string[]
   bodyFallbackSrc: string
   id: number
   image: MediaType | null
@@ -19,6 +22,7 @@ export type SelectableFlavor = {
   }>
   ingredientsIntro?: string
   ingredientsNoteTitle?: string
+  receiptBody?: CookieInfoRichText
   summary: string
   title: string
 }

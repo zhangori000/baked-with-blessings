@@ -2,8 +2,10 @@ import type { Header } from '@/payload-types'
 import {
   blessingsNetworkHref,
   blogHref,
+  communityHref,
   contactHref,
   discussionBoardHref,
+  featureRequestsHref,
   isContactLinkHint,
   menuHref,
   reviewsHref,
@@ -131,6 +133,22 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
       cards: [
         {
           description:
+            'Tiny letters from people who just ordered with us — react, scroll, and leave one of your own after you order.',
+          eyebrow: 'Community',
+          href: communityHref,
+          title: 'Open the Post-it Wall',
+          tone: 'light',
+        },
+        {
+          description:
+            'Read public reviews, see what changed in response, and submit a text review.',
+          eyebrow: 'Review transparency',
+          href: reviewsHref,
+          title: 'Open reviews',
+          tone: 'dark',
+        },
+        {
+          description:
             'Read or draft something while your order is coming together — notes about school, business, community, and the bakery. Limit testing this one, just for fun.',
           eyebrow: 'Writing',
           href: blogHref,
@@ -153,16 +171,18 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           title: 'Open Community Advice',
           tone: 'light',
         },
-        {
-          description:
-            'Read public reviews, see what changed in response, and submit a text review.',
-          eyebrow: 'Review transparency',
-          href: reviewsHref,
-          title: 'Open reviews',
-          tone: 'light',
-        },
       ],
       links: [
+        {
+          description: 'Go to the Community Post-it Wall.',
+          href: communityHref,
+          label: 'Open the Post-it Wall',
+        },
+        {
+          description: 'Go to public reviews.',
+          href: reviewsHref,
+          label: 'Open reviews',
+        },
         {
           description: 'Go to the blog.',
           href: blogHref,
@@ -177,11 +197,6 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           description: 'Go to Community Advice.',
           href: blessingsNetworkHref,
           label: 'Open Community Advice',
-        },
-        {
-          description: 'Go to public reviews.',
-          href: reviewsHref,
-          label: 'Open reviews',
         },
       ],
     },
@@ -255,6 +270,14 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, reviewsHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, communityHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, featureRequestsHref)) {
     return item.id === 'more'
   }
 

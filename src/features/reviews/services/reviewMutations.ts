@@ -1,6 +1,7 @@
 import type { File, Payload } from 'payload'
 
 import { REVIEW_TENANT_ID } from '@/features/reviews/types'
+import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getFirstConfiguredEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -164,13 +165,15 @@ const sendOwnerReviewNotification = async ({
     <p><a href="${escapeHTML(adminURL)}">Open this review in Payload admin</a></p>
   `
 
-  await payload.sendEmail({
-    html,
-    replyTo: customerEmail || undefined,
-    subject,
-    text,
-    to,
-  })
+  await payload.sendEmail(
+    decorateEmailEnvelope({
+      html,
+      replyTo: customerEmail || undefined,
+      subject,
+      text,
+      to,
+    }),
+  )
 }
 
 export const createReviewSubmission = async ({

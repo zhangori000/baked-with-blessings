@@ -11,6 +11,7 @@ import {
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { formatDateTime } from '@/utilities/formatDateTime'
 import { generateMeta } from '@/utilities/generateMeta'
+import { getSitePages } from '@/utilities/getSitePages'
 import { ArrowLeft } from 'lucide-react'
 import { draftMode } from 'next/headers'
 import Link from 'next/link'
@@ -47,6 +48,11 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Args) {
+  const sitePages = await getSitePages()
+  if (!sitePages.blogEnabled) {
+    notFound()
+  }
+
   const { slug = '' } = await params
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const post = await queryPostBySlug(slug)

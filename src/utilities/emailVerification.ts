@@ -1,6 +1,7 @@
 import { createHmac, randomInt, timingSafeEqual } from 'crypto'
 import type { Payload } from 'payload'
 
+import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { normalizeEmail } from '@/utilities/phone'
 
 const ttlMinutes: number = 10
@@ -70,12 +71,14 @@ export const sendEmailVerificationCode = async ({
 <p>If you didn't request this code, you can ignore this email.</p>`
   const text = `Your ${companyName} verification code is ${safeCode}. It expires in ${ttlMinutes} minutes. If you didn't request this code, ignore this email.`
 
-  await payload.sendEmail({
-    html,
-    subject,
-    text,
-    to: email,
-  })
+  await payload.sendEmail(
+    decorateEmailEnvelope({
+      html,
+      subject,
+      text,
+      to: email,
+    }),
+  )
 
   return {
     maskedEmail,

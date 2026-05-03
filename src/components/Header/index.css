@@ -876,7 +876,26 @@
   display: grid;
   gap: 0.95rem;
   padding: 1rem;
-  overflow: hidden;
+  max-height: min(var(--site-header-panel-depth), calc(100dvh - 5.5rem));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgb(23 52 31 / 34%) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.siteHeaderAppsPanel::-webkit-scrollbar {
+  width: 0.6rem;
+}
+
+.siteHeaderAppsPanel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.siteHeaderAppsPanel::-webkit-scrollbar-thumb {
+  background: rgb(23 52 31 / 34%);
+  border-radius: 999px;
 }
 
 .siteHeaderAppsPanel::before,

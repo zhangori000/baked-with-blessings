@@ -1,5 +1,6 @@
 import type { Payload } from 'payload'
 
+import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type SendCustomerWelcomeEmailArgs = {
@@ -39,10 +40,12 @@ export async function sendCustomerWelcomeEmail({
     `Thanks for joining ${companyName}.`,
   ].join('\n')
 
-  await payload.sendEmail({
-    to: email,
-    subject: `Welcome to ${companyName}`,
-    html,
-    text,
-  })
+  await payload.sendEmail(
+    decorateEmailEnvelope({
+      to: email,
+      subject: `Welcome to ${companyName}`,
+      html,
+      text,
+    }),
+  )
 }

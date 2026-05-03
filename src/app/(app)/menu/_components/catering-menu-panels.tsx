@@ -7,6 +7,7 @@ import type { Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import React from 'react'
 
+import { CookieInfoNote } from './CookieInfoNote'
 import { CookieSheepRig } from './cookie-sheep-rig'
 import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
 
@@ -217,12 +218,12 @@ export function TrayFlavorCard({
           aria-hidden={!isIngredientNoteOpen}
           className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ${
             isIngredientNoteOpen
-              ? 'max-h-[22rem] translate-y-0 px-3 pb-3 opacity-100'
+              ? 'max-h-[26rem] translate-y-0 px-3 pb-3 opacity-100'
               : 'max-h-0 -translate-y-2 px-3 pb-0 opacity-0'
           }`}
         >
           <BakeryCard
-            aria-label={`${flavor.title} ingredients`}
+            aria-label={`${flavor.title} info`}
             className="relative rounded-b-[1.15rem] rounded-t-[0.72rem] border border-t-0 border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
             id={receiptId}
             radius="none"
@@ -231,8 +232,8 @@ export function TrayFlavorCard({
             tone="transparent"
           >
             <BakeryPressable
-              aria-label={`Close ingredients for ${flavor.title}`}
-              className="cateringMenuRoundHeading absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
+              aria-label={`Close info for ${flavor.title}`}
+              className="absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] font-medium text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
               onClick={onToggleIngredientNotes}
               type="button"
             >
@@ -240,34 +241,22 @@ export function TrayFlavorCard({
             </BakeryPressable>
 
             <p className="cateringMenuEyebrow pr-12">For {flavor.title}</p>
-            <h5 className="cateringMenuRoundHeading mt-1 text-[1rem] tracking-[-0.02em] text-[#5d4119]">
-              {flavor.ingredientsNoteTitle ?? 'Ingredient Notes'}
+            <h5 className="mt-0.5 text-[0.9rem] font-semibold tracking-[-0.005em] text-[#5d4119]">
+              {flavor.ingredientsNoteTitle ?? 'Baker Notes'}
             </h5>
             {flavor.ingredientsIntro ? (
-              <p className="mt-2 max-w-[30ch] text-[0.8rem] leading-[1.45] text-[rgba(88,64,32,0.78)]">
+              <p className="mt-2 max-w-[34ch] text-[0.8rem] italic leading-[1.45] text-[rgba(88,64,32,0.72)]">
                 {flavor.ingredientsIntro}
               </p>
             ) : null}
 
-            <ul className="mt-3 grid gap-2">
-              {flavor.ingredients.map((ingredient) => (
-                <li
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-0.5 text-[#4f3818]"
-                  key={`${ingredient.name}-${ingredient.detail ?? ''}`}
-                >
-                  <span className="cateringMenuRoundHeading text-[0.85rem] tracking-[-0.01em]">
-                    {ingredient.name}
-                  </span>
-                  {ingredient.detail ? (
-                    <span className="text-right text-[0.68rem] uppercase tracking-[0.08em] text-[rgba(92,67,31,0.58)]">
-                      {ingredient.detail}
-                    </span>
-                  ) : (
-                    <span />
-                  )}
-                </li>
-              ))}
-            </ul>
+            {flavor.receiptBody ? (
+              <CookieInfoNote
+                allergens={flavor.allergens}
+                body={flavor.receiptBody}
+                className="cookieInfoNote--menu"
+              />
+            ) : null}
 
             <div
               aria-hidden="true"

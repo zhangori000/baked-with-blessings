@@ -67,7 +67,6 @@ export function AccountSceneryBanner() {
     <div
       className="accountSceneryBannerHost"
       data-scene-changing={isSceneChanging ? 'true' : undefined}
-      style={{ fontFamily: 'var(--font-rounded-body)' }}
     >
       <MenuHero
         eyebrow="Baked with Blessings"

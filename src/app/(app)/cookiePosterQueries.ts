@@ -6,6 +6,7 @@ import { menuHref } from '@/utilities/routes'
 import {
   buildCookiePosterAssets,
   cookiePosterMetas,
+  getCookieAllergens,
   type CookiePosterAsset,
 } from './menu/_components/cookiePosterData'
 
@@ -136,6 +137,7 @@ const applyRotationAvailability = ({
 export const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
   cookiePosterMetas.map((meta) => ({
     ...meta,
+    allergens: getCookieAllergens(meta.slug),
     amount: 'Fresh weekly',
     href: `/cookies/${meta.slug}`,
     image: null,

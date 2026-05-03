@@ -109,6 +109,7 @@ const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] =
       const posterAsset = buildCookiePosterAsset(selectableProduct)
 
       return {
+        allergens: posterAsset?.allergens,
         bodyFallbackSrc: posterAsset?.bodyFallbackSrc ?? '/cookie-singular-brookie.svg',
         id: selectableProduct.id,
         image: posterAsset?.image ?? normalizeImage(selectableProduct),
@@ -116,6 +117,7 @@ const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] =
         ingredients: posterAsset?.ingredients ?? [],
         ingredientsIntro: posterAsset?.ingredientsIntro,
         ingredientsNoteTitle: posterAsset?.ingredientsNoteTitle,
+        receiptBody: posterAsset?.receiptBody,
         summary: posterAsset?.summary ?? resolveSummary(selectableProduct),
         title: posterAsset?.title ?? selectableProduct.title,
       }

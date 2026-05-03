@@ -597,8 +597,8 @@
   body:has(.accountSceneryRoute) .siteHeaderMobileIconButton,
   body:has(.accountSceneryRoute) .siteHeaderMobileBagButton,
   body:has(.accountSceneryRoute) .siteHeaderMobileBagCount {
-    color: #17341f !important;
-    text-shadow: none !important;
+    color: #fffaee !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32) !important;
   }
 
   body:has(.accountSceneryRoute) .siteHeaderBannerList {
@@ -1135,6 +1135,148 @@
 
   .bakeryPressable:not(:disabled):hover {
     transform: translateY(-1px);
+  }
+
+  .bakeryCheckbox {
+    align-items: flex-start;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .bakeryCheckbox-disabled {
+    cursor: not-allowed;
+    opacity: 0.56;
+  }
+
+  .bakeryCheckboxInput {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .bakeryCheckboxBox {
+    align-items: center;
+    background: var(--bakery-checkbox-bg, #fffefb);
+    border: 1.5px solid var(--bakery-checkbox-border, #b89f70);
+    border-radius: 0.3rem;
+    box-sizing: border-box;
+    display: inline-flex;
+    flex-shrink: 0;
+    height: 1.05rem;
+    justify-content: center;
+    margin-top: 0.1rem;
+    transition:
+      background-color var(--bakery-motion-quick) ease,
+      border-color var(--bakery-motion-quick) ease,
+      box-shadow var(--bakery-motion-quick) ease;
+    width: 1.05rem;
+  }
+
+  .bakeryCheckboxIcon {
+    color: var(--bakery-checkbox-icon, #fff8e8);
+    height: 0.85rem;
+    opacity: 0;
+    transform: scale(0.7);
+    transition:
+      opacity var(--bakery-motion-quick) ease,
+      transform var(--bakery-motion-quick) ease;
+    width: 0.85rem;
+  }
+
+  .bakeryCheckboxInput:checked + .bakeryCheckboxBox {
+    background: var(--bakery-checkbox-checked-bg, #c14d2a);
+    border-color: var(--bakery-checkbox-checked-bg, #c14d2a);
+  }
+
+  .bakeryCheckboxInput:checked + .bakeryCheckboxBox .bakeryCheckboxIcon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .bakeryCheckboxInput:focus-visible + .bakeryCheckboxBox {
+    box-shadow: 0 0 0 3px var(--scene-action-aura, rgba(0, 0, 0, 0.15));
+  }
+
+  .bakeryCheckboxText {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .bakeryCheckboxLabel {
+    color: var(--bakery-checkbox-label, #4a3617);
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .bakeryCheckboxDescription {
+    color: var(--bakery-color-fg-muted);
+    font-size: 0.82rem;
+  }
+
+  .bakeryCheckbox-sm .bakeryCheckboxBox {
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .bakeryCheckbox-sm .bakeryCheckboxIcon {
+    height: 0.7rem;
+    width: 0.7rem;
+  }
+
+  .bakeryCheckbox-sm .bakeryCheckboxLabel {
+    font-size: 0.85rem;
+  }
+
+  .cookieInfoNote {
+    color: rgba(74, 54, 23, 0.92);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.86rem;
+    gap: 0.55rem;
+    line-height: 1.55;
+  }
+
+  .cookieInfoNote p {
+    margin: 0;
+  }
+
+  .cookieInfoNote h4 {
+    color: #5d4119;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin: 0;
+  }
+
+  .cookieInfoNote strong {
+    color: #4a3617;
+    font-weight: 600;
+  }
+
+  .cookieInfoNoteAllergens {
+    color: rgba(88, 64, 32, 0.72);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    margin-top: 0.15rem;
+  }
+
+  .cookieInfoNoteAllergens strong {
+    color: rgba(74, 54, 23, 0.92);
+    font-weight: 600;
+  }
+
+  .cookieInfoNote--menu {
+    margin-top: 0.75rem;
+    max-width: 34ch;
   }
 
   .bakeryPopoverPanel {
@@ -3316,4 +3458,80 @@ body:has(.accountSceneryRoute) .siteHeaderMobileIconButton:hover,
 body:has(.accountSceneryRoute) .siteHeaderMobileBagButton:hover {
   border-color: rgb(255 250 226 / 46%) !important;
   background: rgb(8 20 47 / 34%) !important;
+}
+
+/* ----- Sonner toast: bakery theme ----- */
+
+.bakeryToast {
+  background: linear-gradient(180deg, #fffefb 0%, #fff5d4 100%) !important;
+  border: 1px solid #ead7a8 !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 12px 28px rgba(63, 53, 31, 0.16),
+    0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  color: #2c2613 !important;
+  font-family: var(--font-rubik), system-ui, sans-serif !important;
+  padding: 0.7rem 0.95rem !important;
+}
+
+.bakeryToastTitle {
+  color: #2c2613 !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.005em !important;
+}
+
+.bakeryToastDescription {
+  color: rgba(44, 38, 19, 0.74) !important;
+  font-size: 0.85rem !important;
+}
+
+.bakeryToast--success {
+  border-left: 4px solid #6b8b3a !important;
+}
+
+.bakeryToast--success [data-icon] svg {
+  color: #6b8b3a !important;
+}
+
+.bakeryToast--error {
+  border-left: 4px solid #c14d2a !important;
+}
+
+.bakeryToast--error [data-icon] svg {
+  color: #c14d2a !important;
+}
+
+.bakeryToast--info {
+  border-left: 4px solid #34587a !important;
+}
+
+.bakeryToast--info [data-icon] svg {
+  color: #34587a !important;
+}
+
+.bakeryToast--warning {
+  border-left: 4px solid #c98a14 !important;
+}
+
+.bakeryToast--warning [data-icon] svg {
+  color: #c98a14 !important;
+}
+
+.bakeryToastActionBtn {
+  background: #2c2613 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #fff8e8 !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.75rem !important;
+}
+
+.bakeryToastCancelBtn {
+  background: transparent !important;
+  border: 1px solid #d8c9a5 !important;
+  border-radius: 999px !important;
+  color: rgba(44, 38, 19, 0.74) !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.75rem !important;
 }

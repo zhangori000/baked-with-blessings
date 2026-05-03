@@ -41,7 +41,8 @@ import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacemen
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
-import type { CookiePosterAsset, CookieInfoRichText } from './menu/_components/cookiePosterData'
+import { CookieInfoNote } from './menu/_components/CookieInfoNote'
+import type { CookiePosterAsset } from './menu/_components/cookiePosterData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
 type HomeCookieCarouselProps = {
@@ -79,57 +80,6 @@ type ShowcaseFlowerRailBloom = {
   id: string
   src: string
   style: CSSProperties
-}
-
-type InfoTextNode = {
-  format?: number
-  text?: string
-  type?: string
-}
-
-type InfoElementNode = {
-  children?: InfoTextNode[]
-  tag?: string
-  type?: string
-}
-
-const isInfoTextNode = (node: unknown): node is InfoTextNode =>
-  Boolean(node && typeof node === 'object' && (node as InfoTextNode).type === 'text')
-
-const isInfoElementNode = (node: unknown): node is InfoElementNode =>
-  Boolean(node && typeof node === 'object' && 'type' in node)
-
-const renderInfoTextNodes = (nodes: InfoTextNode[] | undefined) =>
-  nodes?.map((node, index) => {
-    if (!isInfoTextNode(node) || !node.text) {
-      return null
-    }
-
-    return node.format && (node.format & 1) === 1 ? (
-      <strong key={`${node.text}-${index}`}>{node.text}</strong>
-    ) : (
-      <span key={`${node.text}-${index}`}>{node.text}</span>
-    )
-  }) ?? null
-
-function CookieInfoRichText({ data }: { data: CookieInfoRichText }) {
-  const nodes = data.root?.children ?? []
-
-  return (
-    <>
-      {nodes.map((node, index) => {
-        if (!isInfoElementNode(node)) {
-          return null
-        }
-
-        if (node.type === 'heading') {
-          return <h4 key={index}>{renderInfoTextNodes(node.children)}</h4>
-        }
-
-        return <p key={index}>{renderInfoTextNodes(node.children)}</p>
-      })}
-    </>
-  )
 }
 
 abstract class PaperOverlayPiece {
@@ -1253,7 +1203,7 @@ export function HomeCookieCarousel({
           <X aria-hidden="true" size={14} />
         </BakeryPressable>
         <div className="homeCookieInfoPromptBody">
-          <CookieInfoRichText data={activePoster.receiptBody} />
+          <CookieInfoNote allergens={activePoster.allergens} body={activePoster.receiptBody} />
         </div>
       </BakeryCard>
     ) : null

@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getSitePages } from '@/utilities/getSitePages'
 import { getPayload } from 'payload'
 
 import './index.css'
@@ -62,7 +63,7 @@ const buildHeaderBrand = (brand: BrandGlobalDocument | null): HeaderBrand => {
 
 export async function Header() {
   const payload = await getPayload({ config: configPromise })
-  const [header, brandDocument] = await Promise.all([
+  const [header, brandDocument, sitePages] = await Promise.all([
     getCachedGlobal('header', 1)(),
     payload
       .findGlobal({
@@ -70,12 +71,14 @@ export async function Header() {
         slug: 'brand' as any,
       })
       .catch(() => null),
+    getSitePages(),
   ])
 
   return (
     <HeaderClient
       brand={buildHeaderBrand(brandDocument as BrandGlobalDocument | null)}
       header={header}
+      sitePages={sitePages}
     />
   )
 }

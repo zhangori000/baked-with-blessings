@@ -1,0 +1,158 @@
+.newOrderNotePromptOverlay {
+  align-items: center;
+  background: rgba(34, 28, 12, 0.55);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1.25rem;
+  position: fixed;
+  z-index: 9999;
+  animation: newOrderNotePromptFade 0.2s ease;
+}
+
+@keyframes newOrderNotePromptFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.newOrderNotePromptCard {
+  background: #fff5cf;
+  border-radius: 14px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
+  color: #2c2613;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: min(440px, 92vw);
+  padding: 1.6rem 1.4rem 1.3rem;
+  position: relative;
+  width: 100%;
+  animation: newOrderNotePromptPop 0.22s cubic-bezier(0.18, 0.96, 0.32, 1.04);
+}
+
+@keyframes newOrderNotePromptPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.newOrderNotePromptClose {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(74, 66, 29, 0.18);
+  border-radius: 999px;
+  color: #4a421d;
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 0.85rem;
+  top: 0.85rem;
+  transition: background 0.15s ease;
+  width: 32px;
+}
+
+.newOrderNotePromptClose svg {
+  height: 16px;
+  width: 16px;
+}
+
+.newOrderNotePromptClose:hover {
+  background: #fff8e8;
+}
+
+.newOrderNotePromptIcon {
+  align-items: center;
+  background: #ffd87a;
+  border-radius: 999px;
+  color: #4a421d;
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.newOrderNotePromptIcon svg {
+  height: 22px;
+  width: 22px;
+}
+
+.newOrderNotePromptTitle {
+  font-family: var(--font-catering-serif), 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.newOrderNotePromptBody {
+  color: #5f5632;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.newOrderNotePromptActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.4rem;
+}
+
+@media (min-width: 480px) {
+  .newOrderNotePromptActions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.newOrderNotePromptPrimary,
+.newOrderNotePromptSecondary {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 600;
+  justify-content: center;
+  padding: 0.55rem 1.1rem;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.newOrderNotePromptPrimary {
+  background: #c14d2a;
+  color: #fff8e8;
+}
+
+.newOrderNotePromptPrimary:hover {
+  background: #a93b1d;
+  transform: translateY(-1px);
+}
+
+.newOrderNotePromptSecondary {
+  background: transparent;
+  border-color: #d8c9a5;
+  color: #4a421d;
+}
+
+.newOrderNotePromptSecondary:hover {
+  background: rgba(193, 77, 42, 0.08);
+}

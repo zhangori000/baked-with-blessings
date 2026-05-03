@@ -91,6 +91,9 @@ export interface Config {
     posts: Post;
     'flavor-rotations': FlavorRotation;
     categories: Category;
+    'community-notes': CommunityNote;
+    'feature-requests': FeatureRequest;
+    'feature-request-comments': FeatureRequestComment;
     media: Media;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -137,6 +140,9 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    'community-notes': CommunityNotesSelect<false> | CommunityNotesSelect<true>;
+    'feature-requests': FeatureRequestsSelect<false> | FeatureRequestsSelect<true>;
+    'feature-request-comments': FeatureRequestCommentsSelect<false> | FeatureRequestCommentsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -163,6 +169,9 @@ export interface Config {
     footer: Footer;
     'blog-page-content': BlogPageContent;
     'discussion-board-content': DiscussionBoardContent;
+    'community-page-content': CommunityPageContent;
+    'feature-requests-content': FeatureRequestsContent;
+    'site-pages': SitePage;
   };
   globalsSelect: {
     brand: BrandSelect<false> | BrandSelect<true>;
@@ -170,6 +179,9 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
     'blog-page-content': BlogPageContentSelect<false> | BlogPageContentSelect<true>;
     'discussion-board-content': DiscussionBoardContentSelect<false> | DiscussionBoardContentSelect<true>;
+    'community-page-content': CommunityPageContentSelect<false> | CommunityPageContentSelect<true>;
+    'feature-requests-content': FeatureRequestsContentSelect<false> | FeatureRequestsContentSelect<true>;
+    'site-pages': SitePagesSelect<false> | SitePagesSelect<true>;
   };
   locale: null;
   widgets: {
@@ -2007,6 +2019,149 @@ export interface FlavorRotation {
   createdAt: string;
 }
 /**
+ * Customer-written post-it notes shown on the Community Post-it Wall. Toggle "isHidden" to take a note off the public wall without deleting it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-notes".
+ */
+export interface CommunityNote {
+  id: number;
+  /**
+   * The order this note was written for. One note per order.
+   */
+  order: number | Order;
+  /**
+   * The logged-in customer who posted this note.
+   */
+  customer: number | Customer;
+  /**
+   * The handwritten message body, 500 characters max.
+   */
+  body: string;
+  /**
+   * When on, the customer is shown as their pseudonym (or "Anonymous").
+   */
+  isAnonymous?: boolean | null;
+  /**
+   * Pseudonym shown when posting anonymously. Blank → "Anonymous".
+   */
+  pseudonym?: string | null;
+  /**
+   * Snapshot of the order items at the moment the note was posted. Frozen so wall content stays stable even if the order changes later.
+   */
+  orderItemSnapshot?:
+    | {
+        productTitle: string;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Hide from the public Post-it Wall (admin moderation). Does not delete.
+   */
+  isHidden?: boolean | null;
+  likeCount?: number | null;
+  dislikeCount?: number | null;
+  /**
+   * Per-customer like/dislike. Maintained by the vote endpoint.
+   */
+  votes?:
+    | {
+        customer: number | Customer;
+        value: 'like' | 'dislike';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Customer-submitted feature requests. Public requests appear on /feature-requests; private ones are direct messages only the bakery owner sees in this admin. Filter by visibility = "private" for your private inbox.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests".
+ */
+export interface FeatureRequest {
+  id: number;
+  /**
+   * The logged-in customer who submitted this request.
+   */
+  customer: number | Customer;
+  /**
+   * Public: shows on /feature-requests for everyone to rate and comment on. Private: direct message to the bakery owner only.
+   */
+  visibility: 'public' | 'private';
+  /**
+   * Short headline for the request (60 chars max).
+   */
+  title: string;
+  /**
+   * The request itself (1000 chars max).
+   */
+  body: string;
+  /**
+   * Only applies to public requests. "Self" shows the customer's real account name. "Anonymous" shows a pseudonym (or "Anonymous").
+   */
+  displayMode?: ('self' | 'anonymous') | null;
+  /**
+   * Pseudonym shown when displayMode = "anonymous". Blank → "Anonymous".
+   */
+  pseudonym?: string | null;
+  /**
+   * Hide from the public list (admin moderation). Does not delete.
+   */
+  isHidden?: boolean | null;
+  ratingCount?: number | null;
+  ratingSum?: number | null;
+  /**
+   * Per-customer 1–5 star rating. Maintained by the rating endpoint. ratingCount and ratingSum are derived.
+   */
+  ratings?:
+    | {
+        customer: number | Customer;
+        value: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Replies to feature requests. Owner moderation: tick "isHidden" to take a comment off the public thread without deleting it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-request-comments".
+ */
+export interface FeatureRequestComment {
+  id: number;
+  /**
+   * The feature request this comment replies to.
+   */
+  request: number | FeatureRequest;
+  /**
+   * The logged-in customer who posted this comment.
+   */
+  customer: number | Customer;
+  /**
+   * The reply body (500 chars max).
+   */
+  body: string;
+  /**
+   * "Self" shows the customer's real account name. "Anonymous" shows a pseudonym (or "Anonymous").
+   */
+  displayMode?: ('self' | 'anonymous') | null;
+  /**
+   * Pseudonym shown when displayMode = "anonymous". Blank → "Anonymous".
+   */
+  pseudonym?: string | null;
+  /**
+   * Hide from the public thread (admin moderation). Does not delete.
+   */
+  isHidden?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
@@ -2110,6 +2265,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'community-notes';
+        value: number | CommunityNote;
+      } | null)
+    | ({
+        relationTo: 'feature-requests';
+        value: number | FeatureRequest;
+      } | null)
+    | ({
+        relationTo: 'feature-request-comments';
+        value: number | FeatureRequestComment;
       } | null)
     | ({
         relationTo: 'media';
@@ -2697,6 +2864,74 @@ export interface CategoriesSelect<T extends boolean = true> {
   menuOrder?: T;
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-notes_select".
+ */
+export interface CommunityNotesSelect<T extends boolean = true> {
+  order?: T;
+  customer?: T;
+  body?: T;
+  isAnonymous?: T;
+  pseudonym?: T;
+  orderItemSnapshot?:
+    | T
+    | {
+        productTitle?: T;
+        quantity?: T;
+        id?: T;
+      };
+  isHidden?: T;
+  likeCount?: T;
+  dislikeCount?: T;
+  votes?:
+    | T
+    | {
+        customer?: T;
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests_select".
+ */
+export interface FeatureRequestsSelect<T extends boolean = true> {
+  customer?: T;
+  visibility?: T;
+  title?: T;
+  body?: T;
+  displayMode?: T;
+  pseudonym?: T;
+  isHidden?: T;
+  ratingCount?: T;
+  ratingSum?: T;
+  ratings?:
+    | T
+    | {
+        customer?: T;
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-request-comments_select".
+ */
+export interface FeatureRequestCommentsSelect<T extends boolean = true> {
+  request?: T;
+  customer?: T;
+  body?: T;
+  displayMode?: T;
+  pseudonym?: T;
+  isHidden?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3374,6 +3609,87 @@ export interface DiscussionBoardContent {
   createdAt?: string | null;
 }
 /**
+ * Hero copy shown at the top of /community. Edit here to change what visitors read above the Post-it Wall, without a code change.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-page-content".
+ */
+export interface CommunityPageContent {
+  id: number;
+  /**
+   * Small uppercase label above the title (1–4 words).
+   */
+  eyebrow?: string | null;
+  /**
+   * Large headline shown in the hero.
+   */
+  title?: string | null;
+  /**
+   * Short paragraph below the title that sets expectations for the page (what it is for, that it is experimental, etc.).
+   */
+  summary?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Hero copy shown at the top of /feature-requests. Edit here to change what visitors read above the request composer.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests-content".
+ */
+export interface FeatureRequestsContent {
+  id: number;
+  /**
+   * Small uppercase label above the title (1–4 words).
+   */
+  eyebrow?: string | null;
+  /**
+   * Large headline shown in the hero.
+   */
+  title?: string | null;
+  /**
+   * Short paragraph that explains what feature requests are, that public posts are encouraged, and that pseudonyms / private DMs are options.
+   */
+  summary?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Toggle individual public pages on or off. Disabling a page hides it from the Other Pages menu and 404s the route (and any sub-routes). New pages default to enabled.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-pages".
+ */
+export interface SitePage {
+  id: number;
+  /**
+   * Untick to hide the Community Post-it Wall from the Other Pages menu and 404 the /community route.
+   */
+  communityEnabled?: boolean | null;
+  /**
+   * Untick to hide Reviews from the Other Pages menu and 404 the /reviews route.
+   */
+  reviewsEnabled?: boolean | null;
+  /**
+   * Untick to hide the Blog from the Other Pages menu and 404 the /blog route (including /blog/[slug]).
+   */
+  blogEnabled?: boolean | null;
+  /**
+   * Untick to hide the Discussion Board from the Other Pages menu and 404 the /discussion-board route.
+   */
+  discussionBoardEnabled?: boolean | null;
+  /**
+   * Untick to hide Community Advice from the Other Pages menu and 404 the /blessings-network route.
+   */
+  blessingsNetworkEnabled?: boolean | null;
+  /**
+   * Untick to hide Request Features from the Other Pages menu and 404 the /feature-requests route.
+   */
+  featureRequestsEnabled?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brand_select".
  */
@@ -3453,6 +3769,45 @@ export interface DiscussionBoardContentSelect<T extends boolean = true> {
   eyebrow?: T;
   title?: T;
   summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-page-content_select".
+ */
+export interface CommunityPageContentSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feature-requests-content_select".
+ */
+export interface FeatureRequestsContentSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-pages_select".
+ */
+export interface SitePagesSelect<T extends boolean = true> {
+  communityEnabled?: T;
+  reviewsEnabled?: T;
+  blogEnabled?: T;
+  discussionBoardEnabled?: T;
+  blessingsNetworkEnabled?: T;
+  featureRequestsEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

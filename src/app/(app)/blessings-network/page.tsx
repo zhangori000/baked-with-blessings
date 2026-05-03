@@ -1,7 +1,9 @@
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { getBlessingsNetworkPageData } from '@/features/blessings-network/services/networkData'
+import { getSitePages } from '@/utilities/getSitePages'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { Suspense } from 'react'
 
@@ -24,6 +26,11 @@ export const metadata = {
 }
 
 async function BlessingsNetworkPageContent() {
+  const sitePages = await getSitePages()
+  if (!sitePages.blessingsNetworkEnabled) {
+    notFound()
+  }
+
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config })
   const data = await getBlessingsNetworkPageData(payload)

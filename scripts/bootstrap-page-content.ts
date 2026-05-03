@@ -3,8 +3,9 @@ import { loadScriptEnv } from './lib/load-script-env'
 loadScriptEnv()
 
 /*
- * Populate hero copy globals (BlogPageContent, DiscussionBoardContent) with
- * sensible defaults the first time they are run against a database.
+ * Populate hero copy globals (BlogPageContent, DiscussionBoardContent,
+ * CommunityPageContent) with sensible defaults the first time they are run
+ * against a database.
  *
  * Idempotent: if a global already has non-empty fields, this script leaves
  * them alone so editor tweaks are never overwritten.
@@ -44,13 +45,25 @@ const bootstrap = async () => {
   const { getPayload } = await import('payload')
   const { default: config } = await import('../src/payload.config')
   const { BLOG_PAGE_CONTENT_DEFAULTS } = await import('../src/globals/BlogPageContent')
+  const { COMMUNITY_PAGE_CONTENT_DEFAULTS } = await import('../src/globals/CommunityPageContent')
   const { DISCUSSION_BOARD_CONTENT_DEFAULTS } = await import(
     '../src/globals/DiscussionBoardContent'
+  )
+  const { FEATURE_REQUESTS_CONTENT_DEFAULTS } = await import(
+    '../src/globals/FeatureRequestsContent'
   )
 
   const payload = await getPayload({ config })
 
-  const targets: { defaults: ContentDefaults; label: string; slug: 'blog-page-content' | 'discussion-board-content' }[] = [
+  const targets: {
+    defaults: ContentDefaults
+    label: string
+    slug:
+      | 'blog-page-content'
+      | 'community-page-content'
+      | 'discussion-board-content'
+      | 'feature-requests-content'
+  }[] = [
     {
       defaults: BLOG_PAGE_CONTENT_DEFAULTS,
       label: 'Blog page content',
@@ -60,6 +73,16 @@ const bootstrap = async () => {
       defaults: DISCUSSION_BOARD_CONTENT_DEFAULTS,
       label: 'Discussion board content',
       slug: 'discussion-board-content',
+    },
+    {
+      defaults: COMMUNITY_PAGE_CONTENT_DEFAULTS,
+      label: 'Community page content',
+      slug: 'community-page-content',
+    },
+    {
+      defaults: FEATURE_REQUESTS_CONTENT_DEFAULTS,
+      label: 'Feature requests page content',
+      slug: 'feature-requests-content',
     },
   ]
 

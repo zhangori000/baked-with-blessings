@@ -1700,24 +1700,6 @@ export function PersuasionGardenPanel({
                   gap="2"
                   style={styles?.actionRow}
                 >
-                  <CateringActionButton
-                    className={classNames?.actionButton}
-                    onClick={spawnCloud}
-                    style={styles?.actionButton}
-                    wrapperClassName={classNames?.actionButtonWrap}
-                    wrapperStyle={styles?.actionButtonWrap}
-                  >
-                    {spawnedCloudLabelByScenery[sceneryTone]}
-                  </CateringActionButton>
-                  <CateringActionButton
-                    className={classNames?.actionButton}
-                    onClick={spawnFlower}
-                    style={styles?.actionButton}
-                    wrapperClassName={classNames?.actionButtonWrap}
-                    wrapperStyle={styles?.actionButtonWrap}
-                  >
-                    {spawnedAccentLabelByScenery[sceneryTone]}
-                  </CateringActionButton>
                   {hasGallery ? (
                     <CateringActionButton
                       className={cn(
@@ -1743,21 +1725,6 @@ export function PersuasionGardenPanel({
                       <span>See photos</span>
                     </CateringActionButton>
                   ) : null}
-                  <CateringActionButton
-                    buttonRef={chooserButtonRef}
-                    className={cn(
-                      (isSceneChanging || isSceneryPickerOpen) && 'cateringSpawnButtonCharging',
-                      classNames?.actionButton,
-                      classNames?.sceneryButton,
-                    )}
-                    disabled={isPanelTransitioning}
-                    onClick={onToggleSceneryPicker}
-                    style={{ ...styles?.actionButton, ...styles?.sceneryButton }}
-                    wrapperClassName={classNames?.actionButtonWrap}
-                    wrapperStyle={styles?.actionButtonWrap}
-                  >
-                    Change scenery
-                  </CateringActionButton>
                 </SceneActionRow>
               </BakeryPopoverPanel>
             </div>

@@ -1,8 +1,10 @@
 import { getDiscussionTreeData } from '@/features/discussion-graph/services/discussionData'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { DISCUSSION_BOARD_CONTENT_DEFAULTS } from '@/globals/DiscussionBoardContent'
+import { getSitePages } from '@/utilities/getSitePages'
 import config from '@/payload.config'
 import { Cormorant_Garamond } from 'next/font/google'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { Suspense } from 'react'
 
@@ -31,6 +33,11 @@ type Props = {
 }
 
 async function DiscussionBoardPageContent({ searchParams }: Props) {
+  const sitePages = await getSitePages()
+  if (!sitePages.discussionBoardEnabled) {
+    notFound()
+  }
+
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const payload = await getPayload({ config })
   const [data, pageContent, params] = await Promise.all([
