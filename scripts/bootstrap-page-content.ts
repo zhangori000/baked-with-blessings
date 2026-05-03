@@ -49,13 +49,20 @@ const bootstrap = async () => {
   const { DISCUSSION_BOARD_CONTENT_DEFAULTS } = await import(
     '../src/globals/DiscussionBoardContent'
   )
+  const { FEATURE_REQUESTS_CONTENT_DEFAULTS } = await import(
+    '../src/globals/FeatureRequestsContent'
+  )
 
   const payload = await getPayload({ config })
 
   const targets: {
     defaults: ContentDefaults
     label: string
-    slug: 'blog-page-content' | 'community-page-content' | 'discussion-board-content'
+    slug:
+      | 'blog-page-content'
+      | 'community-page-content'
+      | 'discussion-board-content'
+      | 'feature-requests-content'
   }[] = [
     {
       defaults: BLOG_PAGE_CONTENT_DEFAULTS,
@@ -71,6 +78,11 @@ const bootstrap = async () => {
       defaults: COMMUNITY_PAGE_CONTENT_DEFAULTS,
       label: 'Community page content',
       slug: 'community-page-content',
+    },
+    {
+      defaults: FEATURE_REQUESTS_CONTENT_DEFAULTS,
+      label: 'Feature requests page content',
+      slug: 'feature-requests-content',
     },
   ]
 
