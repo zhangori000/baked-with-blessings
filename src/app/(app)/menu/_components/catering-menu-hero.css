@@ -2,7 +2,7 @@
   color: var(--scene-hero-title, var(--scene-text, #20391f));
   font-family: var(--font-rounded-display);
   font-size: clamp(3.85rem, 8.8vw, 6.25rem);
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 0.86;
   max-width: 10ch;
