@@ -462,22 +462,28 @@ export function CommunityClient({
                     tabIndex={0}
                   >
                     <span aria-hidden="true" className="communityNoteTape" />
-                    <div className="communityNoteTopRow">
-                      <span className="communityNoteHeader">
-                        <span className="communityNoteAuthor">{note.displayName}</span>
-                        {note.orderCreatedAt ? (
-                          <time
-                            className="communityNoteOrderDate"
-                            dateTime={note.orderCreatedAt}
-                          >
-                            Ordered {formatOrderTimestamp(note.orderCreatedAt)}
-                          </time>
-                        ) : (
-                          <time className="communityNoteDate" dateTime={note.createdAt}>
-                            {formatNoteDate(note.createdAt)}
-                          </time>
-                        )}
-                      </span>
+                    <span className="communityNoteHeader">
+                      <span className="communityNoteAuthor">{note.displayName}</span>
+                      {note.orderCreatedAt ? (
+                        <time className="communityNoteOrderDate" dateTime={note.orderCreatedAt}>
+                          Ordered {formatOrderTimestamp(note.orderCreatedAt)}
+                        </time>
+                      ) : (
+                        <time className="communityNoteDate" dateTime={note.createdAt}>
+                          {formatNoteDate(note.createdAt)}
+                        </time>
+                      )}
+                    </span>
+                    <span className="communityNoteBody">{truncate(note.body, 220)}</span>
+                    <div className="communityNoteFooter">
+                      {summary ? (
+                        <span className="communityNoteOrderTeaser">
+                          <span className="communityNoteOrderEyebrow">Just ordered:</span>{' '}
+                          {summary}
+                        </span>
+                      ) : (
+                        <span />
+                      )}
                       <div className="communityNoteReactions">
                         <button
                           aria-label={`Like (${note.likeCount})`}
@@ -513,13 +519,6 @@ export function CommunityClient({
                         </button>
                       </div>
                     </div>
-                    <span className="communityNoteBody">{truncate(note.body, 220)}</span>
-                    {summary ? (
-                      <span className="communityNoteOrderTeaser">
-                        <span className="communityNoteOrderEyebrow">Just ordered:</span>{' '}
-                        {summary}
-                      </span>
-                    ) : null}
                   </div>
                 </li>
               )

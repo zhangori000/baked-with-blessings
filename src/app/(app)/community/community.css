@@ -265,22 +265,22 @@
 .communityGrid {
   display: grid;
   gap: 1.4rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-@media (min-width: 720px) {
+@media (min-width: 540px) {
   .communityGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.6rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1080px) {
   .communityGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.6rem;
   }
 }
 
@@ -308,7 +308,7 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  font-family: var(--font-handwriting), 'Caveat', 'Patrick Hand', cursive;
+  font-family: var(--font-handwriting), 'Patrick Hand', 'Comic Sans MS', cursive;
   gap: 0.65rem;
   min-height: 16rem;
   padding: 1.4rem 1.3rem 1.2rem;
@@ -320,6 +320,7 @@
 .communityNoteTopRow {
   align-items: flex-start;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: space-between;
 }
@@ -350,7 +351,7 @@
 
 .communityNoteAuthor {
   color: #1f1a08;
-  font-family: var(--font-handwriting), 'Caveat', 'Patrick Hand', cursive;
+  font-family: var(--font-handwriting), 'Patrick Hand', 'Comic Sans MS', cursive;
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.005em;
@@ -368,7 +369,7 @@
 .communityNoteOrderDate {
   color: rgba(44, 38, 19, 0.7);
   display: block;
-  font-family: var(--font-handwriting), 'Caveat', 'Patrick Hand', cursive;
+  font-family: var(--font-handwriting), 'Patrick Hand', 'Comic Sans MS', cursive;
   font-size: 1rem;
   font-weight: 500;
   letter-spacing: 0.005em;
@@ -386,7 +387,7 @@
 
 .communityNoteBody {
   color: #1f1a08;
-  font-family: var(--font-handwriting), 'Caveat', 'Patrick Hand', cursive;
+  font-family: var(--font-handwriting), 'Patrick Hand', 'Comic Sans MS', cursive;
   font-size: 1.45rem;
   font-weight: 500;
   line-height: 1.25;
@@ -394,12 +395,21 @@
   word-break: break-word;
 }
 
+.communityNoteFooter {
+  align-items: flex-end;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.55rem;
+}
+
 .communityNoteOrderTeaser {
   color: rgba(44, 38, 19, 0.74);
+  flex: 1 1 auto;
   font-size: 0.82rem;
   line-height: 1.3;
-  margin-top: auto;
-  padding-top: 0.5rem;
+  min-width: 0;
 }
 
 .communityNoteOrderEyebrow {
