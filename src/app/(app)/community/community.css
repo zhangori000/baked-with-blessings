@@ -163,18 +163,18 @@
 }
 
 .communityComposerIdentity {
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
-.communityComposerIdentityFooter {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem 1rem;
-  justify-content: space-between;
-  margin-top: 0.1rem;
+.communityComposerIdentity > * {
+  width: auto;
+}
+
+.communityComposerIdentity .communityComposerName {
+  width: 100%;
 }
 
 .communityComposerName {
@@ -328,15 +328,15 @@
 }
 
 .communityNoteTape {
-  background: var(--communityNoteTape, rgba(255, 248, 184, 0.78));
+  background: var(--communityNoteTape, rgba(255, 240, 165, 0.85));
   border-radius: 2px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  height: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  height: 18px;
   left: 50%;
   position: absolute;
-  top: -10px;
-  transform: translateX(-50%) rotate(-3deg);
-  width: 86px;
+  top: -8px;
+  transform: translateX(-50%);
+  width: 82px;
 }
 
 .communityNoteHeader {
@@ -360,6 +360,24 @@
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.communityNoteOrderDate {
+  color: rgba(44, 38, 19, 0.55);
+  display: block;
+  font-size: 0.7rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  margin-top: 0.05rem;
+}
+
+.communityModalOrderDate {
+  color: rgba(44, 38, 19, 0.55);
+  display: block;
+  font-size: 0.78rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  margin-top: 0.1rem;
 }
 
 .communityNoteBody {

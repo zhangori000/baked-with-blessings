@@ -69,6 +69,11 @@ export const toPublicNote = (
       ? note.votes.find((vote) => extractCustomerId(vote) === viewer.id)?.value ?? null
       : null
 
+  const orderCreatedAt =
+    isObjectLike(note.order) && typeof (note.order as { createdAt?: unknown }).createdAt === 'string'
+      ? ((note.order as { createdAt: string }).createdAt)
+      : null
+
   return {
     id: String(note.id),
     body: typeof note.body === 'string' ? note.body : '',
@@ -79,6 +84,7 @@ export const toPublicNote = (
     likeCount: typeof note.likeCount === 'number' ? note.likeCount : 0,
     dislikeCount: typeof note.dislikeCount === 'number' ? note.dislikeCount : 0,
     myVote: (myVote as CommunityNoteVoteValue | null) ?? null,
+    orderCreatedAt,
   }
 }
 

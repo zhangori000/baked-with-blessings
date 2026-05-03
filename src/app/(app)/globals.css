@@ -1164,8 +1164,8 @@
 
   .bakeryCheckboxBox {
     align-items: center;
-    background: var(--bakery-color-bg, #fffefb);
-    border: 1.5px solid var(--bakery-color-border, #b89f70);
+    background: var(--bakery-checkbox-bg, #fffefb);
+    border: 1.5px solid var(--bakery-checkbox-border, #b89f70);
     border-radius: 0.3rem;
     box-sizing: border-box;
     display: inline-flex;
@@ -1181,7 +1181,7 @@
   }
 
   .bakeryCheckboxIcon {
-    color: var(--bakery-color-action-fg);
+    color: var(--bakery-checkbox-icon, #fff8e8);
     height: 0.85rem;
     opacity: 0;
     transform: scale(0.7);
@@ -1192,8 +1192,8 @@
   }
 
   .bakeryCheckboxInput:checked + .bakeryCheckboxBox {
-    background: var(--bakery-color-action-bg);
-    border-color: var(--bakery-color-action-bg);
+    background: var(--bakery-checkbox-checked-bg, #c14d2a);
+    border-color: var(--bakery-checkbox-checked-bg, #c14d2a);
   }
 
   .bakeryCheckboxInput:checked + .bakeryCheckboxBox .bakeryCheckboxIcon {

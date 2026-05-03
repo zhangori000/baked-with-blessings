@@ -17,6 +17,7 @@ export type CommunityNotePublic = {
   likeCount: number
   dislikeCount: number
   myVote: CommunityNoteVoteValue | null
+  orderCreatedAt: string | null
 }
 
 export type CommunityNotesPage = {

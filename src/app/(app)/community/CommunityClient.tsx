@@ -45,9 +45,8 @@ const POST_IT_BACKGROUNDS = [
 ] as const
 
 const TAPE_TONES = [
-  'rgba(255, 248, 184, 0.78)',
-  'rgba(217, 232, 255, 0.78)',
-  'rgba(255, 220, 220, 0.78)',
+  'rgba(255, 240, 165, 0.85)',
+  'rgba(255, 252, 240, 0.92)',
 ] as const
 
 const hashString = (value: string) => {
@@ -371,11 +370,9 @@ export function CommunityClient({
             <p className="communityComposerCharCount">{remainingChars} characters left</p>
 
             <div className="communityComposerIdentity">
-              <label className="communityComposerLabel" htmlFor="community-note-name">
-                What name do you want to appear as?
-              </label>
               <input
                 aria-describedby="community-note-name-hint"
+                aria-label="What name do you want to appear as?"
                 className="communityComposerName"
                 disabled={isAnonymous}
                 id="community-note-name"
@@ -385,23 +382,21 @@ export function CommunityClient({
                 type="text"
                 value={displayName}
               />
-              <div className="communityComposerIdentityFooter">
-                <p className="communityComposerSignature" id="community-note-name-hint">
-                  Will appear as{' '}
-                  <strong>
-                    {isAnonymous
-                      ? 'Anonymous'
-                      : displayName.trim() || viewerName?.trim() || 'Anonymous'}
-                  </strong>
-                </p>
-                <BakeryCheckbox
-                  checked={isAnonymous}
-                  onChange={(event) => setIsAnonymous(event.target.checked)}
-                  size="sm"
-                >
-                  Post anonymously
-                </BakeryCheckbox>
-              </div>
+              <BakeryCheckbox
+                checked={isAnonymous}
+                onChange={(event) => setIsAnonymous(event.target.checked)}
+                size="sm"
+              >
+                Post anonymously
+              </BakeryCheckbox>
+              <p className="communityComposerSignature" id="community-note-name-hint">
+                Will appear as{' '}
+                <strong>
+                  {isAnonymous
+                    ? 'Anonymous'
+                    : displayName.trim() || viewerName?.trim() || 'Anonymous'}
+                </strong>
+              </p>
             </div>
 
             {formError ? <p className="communityComposerError">{formError}</p> : null}
@@ -464,6 +459,14 @@ export function CommunityClient({
                         <time className="communityNoteDate" dateTime={note.createdAt}>
                           {formatNoteDate(note.createdAt)}
                         </time>
+                        {note.orderCreatedAt ? (
+                          <time
+                            className="communityNoteOrderDate"
+                            dateTime={note.orderCreatedAt}
+                          >
+                            Ordered {formatNoteDate(note.orderCreatedAt)}
+                          </time>
+                        ) : null}
                       </span>
                       <div className="communityNoteReactions">
                         <button
@@ -553,8 +556,13 @@ export function CommunityClient({
             <span aria-hidden="true" className="communityNoteTape" />
             <p className="communityModalAuthor">{activeNote.displayName}</p>
             <time className="communityModalDate" dateTime={activeNote.createdAt}>
-              {formatNoteDate(activeNote.createdAt)}
+              Posted {formatNoteDate(activeNote.createdAt)}
             </time>
+            {activeNote.orderCreatedAt ? (
+              <time className="communityModalOrderDate" dateTime={activeNote.orderCreatedAt}>
+                Ordered {formatNoteDate(activeNote.orderCreatedAt)}
+              </time>
+            ) : null}
             <p className="communityModalBody">{activeNote.body}</p>
             {activeNote.items.length > 0 ? (
               <section className="communityModalItems">
