@@ -420,7 +420,7 @@ export interface Product {
   id: number;
   title: string;
   /**
-   * Short product story for the product page and supporting storefront copy.
+   * General customer-facing description. Keep this short and clear; the menu can use it as fallback summary text when a shorter menu summary is not set.
    */
   description?: {
     root: {
@@ -438,7 +438,7 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Long-form copy shown inside expandable menu cards. Use this when you want a more persuasive, blog-like section without creating a dedicated product page.
+   * When a customer clicks Expand on a /menu card, this longer blog-like section appears inside the opened card. Use it for selling points, serving ideas, and details that are too long for the collapsed card.
    */
   menuExpandedPitch?: {
     root: {
@@ -456,7 +456,7 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Product image gallery. The first image is the main storefront image, so put the best primary photo first.
+   * Photos for this product. The first photo is the main storefront image, so put the best primary photo first.
    */
   gallery?:
     | {
@@ -472,52 +472,15 @@ export interface Product {
       }[]
     | null;
   /**
-   * Optional long-form sections below the main product details. Use these for ingredient notes, FAQs, extra selling copy, or supporting media.
+   * Internal legacy field from the original product-page template. Keep hidden unless the storefront gets a dedicated product detail page again.
    */
   layout?: (CallToActionBlock | ContentBlock | MediaBlock)[] | null;
   /**
-   * Display details for the cookie cards and cookie detail art. This is where the business owner edits the short cookie tags, summary, and the handwritten-style ingredient note popup.
+   * Reusable product information shown when customers click Info on rotating cookie pages and tray flavor choices. Use this for flavor notes, serving notes, ingredients, and allergy guidance.
    */
   poster?: {
     /**
-     * Short line used under the cookie title on poster-style storefront cards.
-     */
-    subtitle?: string | null;
-    /**
-     * Short all-caps tags shown as visual pills, such as BROWN BUTTER or CHEWY.
-     */
-    chips?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Highlighted label shown above the cookie title on the poster detail page.
-     */
-    label?: string | null;
-    /**
-     * Background color for the poster label, usually a hex value like #f6c58f.
-     */
-    labelTone?: string | null;
-    /**
-     * Short marketing summary used on the poster card and poster detail page.
-     */
-    summary?: string | null;
-    /**
-     * Small label for the translucent scene button that opens the baker-note ingredient popup.
-     */
-    infoButtonLabel?: string | null;
-    /**
-     * Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.
-     */
-    ingredientsNoteTitle?: string | null;
-    /**
-     * Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.
-     */
-    ingredientsIntro?: string | null;
-    /**
-     * Rich text shown in the cookie info speech bubble. Use paragraphs and bold text for flavor notes, handling notes, and allergy warnings.
+     * Rich text shown in the Info popup. This is reused on the rotating cookie page and in tray flavor choices. Use paragraphs and bold text for flavor notes, serving notes, ingredients, and allergy warnings.
      */
     receiptBody?: {
       root: {
@@ -534,72 +497,38 @@ export interface Product {
       };
       [k: string]: unknown;
     } | null;
-    /**
-     * Deprecated. Kept only to preserve existing database schema; the storefront now uses Info Dialog Text.
-     */
-    receiptTitle?: string | null;
-    /**
-     * Deprecated. Kept only to preserve existing database schema; warnings should now be written directly in Info Dialog Text.
-     */
-    receiptWarnings?:
-      | {
-          tone: 'info' | 'caution' | 'danger';
-          label: string;
-          message: string;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Deprecated. Use Info Dialog Text instead; the old row layout could collide on narrow cards.
-     */
-    ingredients?:
-      | {
-          name: string;
-          detail?: string | null;
-          id?: string | null;
-        }[]
-      | null;
   };
-  /**
-   * Stock count for simple products. If you enable variants, manage stock on each variant instead of here.
-   */
   inventory?: number | null;
-  /**
-   * Turn this on when one product needs selectable options such as size, flavor, filling, or color.
-   */
   enableVariants?: boolean | null;
-  /**
-   * Choose which kinds of options customers can pick, for example size, flavor, or pickup package.
-   */
   variantTypes?: (number | VariantType)[] | null;
-  /**
-   * After you choose variant types, create the actual purchasable combinations here with their own price and inventory.
-   */
   variants?: {
     docs?: (number | Variant)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   priceInUSDEnabled?: boolean | null;
+  /**
+   * Customer-facing price in USD.
+   */
   priceInUSD?: number | null;
   /**
-   * Short quantity label for menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".
+   * Short quantity label shown on menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".
    */
   menuPortionLabel?: string | null;
   /**
-   * Use configurable tray when this product is built from child product flavors instead of being added directly. The storefront currently supports single-flavor trays, and custom mix trays can be enabled later without changing the relationship model.
+   * Use "Yes" for cookie trays or themed trays where the customer chooses from a list of products inside the expanded /menu card.
    */
   menuBehavior?: ('simple' | 'batchBuilder') | null;
   /**
-   * How many cookies belong in the tray. For today's single-flavor trays, this becomes the quantity of the chosen flavor.
+   * How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.
    */
   requiredSelectionCount?: number | null;
   /**
-   * Choose which cookie flavors are allowed for this tray. The storefront currently lets the customer pick one of these flavors for the full tray.
+   * These are the product choices customers see when they expand this tray on /menu. For example, Cookie Tray can list every cookie; a future themed tray can list only the matching subset.
    */
   selectableProducts?: (number | Product)[] | null;
   /**
-   * Pick other products that should be suggested alongside this one on the storefront.
+   * Internal legacy field. Related product suggestions are not part of the current owner workflow.
    */
   relatedProducts?: (number | Product)[] | null;
   meta?: {
@@ -1964,7 +1893,7 @@ export interface BlessingsNetworkOwnerPost {
   createdAt: string;
 }
 /**
- * Manual storefront flavor rotations. The active rotation controls which cookie products can be ordered individually; all other cookie flavors stay visible and link customers to /menu for catering trays.
+ * Controls the /rotations page. Choose every flavor customers should see, then choose which of those are available for individual orders right now.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "flavor-rotations".
@@ -1972,47 +1901,47 @@ export interface BlessingsNetworkOwnerPost {
 export interface FlavorRotation {
   id: number;
   /**
-   * Internal admin title, for example "May 2026 Cookie Rotation".
+   * Internal name so you can recognize this rotation later. Customers do not see this.
    */
   title: string;
   /**
-   * Only one rotation should be active. Draft and archived rotations are invisible to customers.
+   * Set exactly one rotation to Active. Draft and Archived rotations do not control the storefront.
    */
   status: 'draft' | 'active' | 'archived';
   /**
-   * This keeps the model flexible for future seasonal or special flavor lineups without changing the storefront API.
+   * Internal organizer for monthly, seasonal, or special lineups. It does not change the page by itself.
    */
   rotationType: 'monthly' | 'seasonal' | 'special';
   /**
-   * Optional name for this lineup, such as "May cookie rotation" or "Spring specials". Leave blank if you do not want to name the whole lineup.
+   * Legacy field kept for old data. Use the badge and catering-only fields below for customer-facing text.
    */
   displayLabel?: string | null;
   /**
-   * How many flavors can be ordered individually for this rotation. Use 3 for the normal monthly model, or raise it before selecting flavors when the owner wants 5, 6, or a larger special lineup.
+   * Every normal product selected here appears on the /rotations page. Tray, catering-pack, and batch-builder products are intentionally excluded.
    */
-  individualFlavorSlots: number;
+  showcaseProducts: (number | Product)[];
   /**
-   * Choose exactly the number of cookie products set in Rotation size. These are the only cookies customers can order one at a time; every other cookie remains visible and links to /menu for catering trays.
+   * Choose from the list above. These flavors appear first and customers can add them directly to cart; the other shown flavors become catering-only.
    */
   individualFlavors: (number | Product)[];
   /**
-   * Short badge text for cookies included in this rotation. The default is fine unless you want wording like "Spring special" or "Available individually".
+   * Small label shown on flavors customers can order one at a time, for example "This month's flavor" or "Available individually".
    */
   monthlyFlavorLabel?: string | null;
   /**
-   * Short label shown beside the lock icon on non-rotation cookie cards.
+   * Short label shown on flavors that are visible on /rotations but cannot be ordered one at a time.
    */
   lockedLabel?: string | null;
   /**
-   * Plain-English explanation shown for non-rotation cookies. Keep it short so it fits on small cards.
+   * Message shown when a customer opens a visible flavor that is not available for individual ordering.
    */
   lockedDescription?: string | null;
   /**
-   * CTA label for catering-only cookies. The link destination remains /menu.
+   * Button label for catering-only flavors. The destination is always the /menu page.
    */
   menuLinkLabel?: string | null;
   /**
-   * Internal notes for the business owner. Not shown on the storefront; useful for future discount or seasonal planning.
+   * Private notes for planning. Customers never see this.
    */
   ownerNotes?: string | null;
   updatedAt: string;
@@ -2845,7 +2774,7 @@ export interface FlavorRotationsSelect<T extends boolean = true> {
   status?: T;
   rotationType?: T;
   displayLabel?: T;
-  individualFlavorSlots?: T;
+  showcaseProducts?: T;
   individualFlavors?: T;
   monthlyFlavorLabel?: T;
   lockedLabel?: T;
@@ -3233,36 +3162,7 @@ export interface ProductsSelect<T extends boolean = true> {
   poster?:
     | T
     | {
-        subtitle?: T;
-        chips?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-            };
-        label?: T;
-        labelTone?: T;
-        summary?: T;
-        infoButtonLabel?: T;
-        ingredientsNoteTitle?: T;
-        ingredientsIntro?: T;
         receiptBody?: T;
-        receiptTitle?: T;
-        receiptWarnings?:
-          | T
-          | {
-              tone?: T;
-              label?: T;
-              message?: T;
-              id?: T;
-            };
-        ingredients?:
-          | T
-          | {
-              name?: T;
-              detail?: T;
-              id?: T;
-            };
       };
   inventory?: T;
   enableVariants?: T;

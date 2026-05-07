@@ -1,0 +1,14 @@
+.copy-product-description-to-seo {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 16px 0 8px;
+}
+
+.copy-product-description-to-seo__description {
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}

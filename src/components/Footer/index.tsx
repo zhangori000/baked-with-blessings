@@ -19,7 +19,7 @@ type BrandGlobalDocument = {
 const defaultFooterBrand = {
   brandName: 'Baked with Blessings',
   logoAlt: 'Baked with Blessings logo',
-  logoUrl: '/baked-with-blessings-logo-pasture-restored.svg',
+  logoUrl: '/logo.svg',
 }
 
 const normalizeBrandLogoUrl = (value: BrandGlobalDocument['logo']) => {
@@ -45,7 +45,8 @@ const buildFooterBrand = (brand: BrandGlobalDocument | null) => {
     logoAlt,
     logoUrl:
       brand?.logoPath?.trim() === '/baked-with-blessings-logo.svg' ||
-      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture.svg'
+      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture.svg' ||
+      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture-restored.svg'
         ? defaultFooterBrand.logoUrl
         : brand?.logoPath?.trim() || defaultFooterBrand.logoUrl,
   }

@@ -18,6 +18,7 @@ import {
 import { bakeryPrimitiveTokens, bakerySceneThemes } from '@/design-system/bakery/tokens'
 import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import { withPayloadMediaCacheTag } from '@/utilities/resolveMediaDisplayURL'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -735,7 +736,10 @@ const getGalleryImageKey = (image: MediaType, index: number) =>
   `${image.id ?? image.url ?? 'gallery-photo'}-${index}`
 
 const getGalleryImagePreloadUrl = (image: MediaType) =>
-  image.sizes?.card?.url ?? image.sizes?.tablet?.url ?? image.thumbnailURL ?? image.url
+  withPayloadMediaCacheTag({
+    media: image,
+    url: image.sizes?.card?.url ?? image.sizes?.tablet?.url ?? image.thumbnailURL ?? image.url,
+  })
 
 const preloadGalleryImages = (images: readonly MediaType[]) => {
   if (typeof window === 'undefined') {

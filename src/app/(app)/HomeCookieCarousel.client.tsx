@@ -42,7 +42,7 @@ import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMe
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
 import { CookieInfoNote } from './menu/_components/CookieInfoNote'
-import type { CookiePosterAsset } from './menu/_components/cookiePosterData'
+import type { CookiePosterAsset } from '@/features/products/cookieDisplayData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
 
 type HomeCookieCarouselProps = {

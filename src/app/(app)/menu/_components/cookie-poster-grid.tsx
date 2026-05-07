@@ -15,7 +15,7 @@ import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { toast } from 'sonner'
 
-import type { CookiePosterAsset } from './cookiePosterData'
+import type { CookiePosterAsset } from '@/features/products/cookieDisplayData'
 import { CookieSheepRig } from './cookie-sheep-rig'
 
 type PosterCloud = {

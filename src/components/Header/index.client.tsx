@@ -25,7 +25,7 @@ import {
   featureRequestsHref,
   menuHref,
   reviewsHref,
-  rotatingCookieFlavorsHref,
+  rotationsHref,
 } from '@/utilities/routes'
 import {
   isPayloadMediaFileURL,
@@ -66,6 +66,7 @@ const customerCreateResendDelayMs = 7 * 1000
 type Props = {
   brand: {
     brandName: string
+    darkLogoUrl: string | null
     logoAlt: string
     logoUrl: string | null
   }
@@ -268,7 +269,7 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
 
   useEffect(() => {
     router.prefetch(menuHref)
-    router.prefetch(rotatingCookieFlavorsHref)
+    router.prefetch(rotationsHref)
     router.prefetch(contactHref)
     router.prefetch(blogHref)
     router.prefetch(discussionBoardHref)
@@ -782,18 +783,32 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
               className={cn(headerClassNames.brand, {
                 'has-logo': Boolean(brand.logoUrl),
               })}
-              href={rotatingCookieFlavorsHref}
+              href={rotationsHref}
             >
               {brand.logoUrl ? (
-                <Image
-                  alt={brand.logoAlt}
-                  className={headerClassNames.brandLogo}
-                  height={80}
-                  priority
-                  src={brand.logoUrl}
-                  unoptimized
-                  width={180}
-                />
+                <span className="siteHeaderBrandLogoFrame">
+                  <Image
+                    alt={brand.logoAlt}
+                    className={`${headerClassNames.brandLogo} siteHeaderBrandLogo--default`}
+                    height={80}
+                    priority
+                    src={brand.logoUrl}
+                    unoptimized
+                    width={180}
+                  />
+                  {brand.darkLogoUrl ? (
+                    <Image
+                      alt=""
+                      aria-hidden="true"
+                      className={`${headerClassNames.brandLogo} siteHeaderBrandLogo--dark`}
+                      height={80}
+                      priority
+                      src={brand.darkLogoUrl}
+                      unoptimized
+                      width={180}
+                    />
+                  ) : null}
+                </span>
               ) : (
                 <>
                   <span className={headerClassNames.brandEyebrow}>Bakery and cafe</span>

@@ -1,6 +1,6 @@
 import type { Media as MediaType } from '@/payload-types'
 
-import type { CookieInfoRichText } from './cookiePosterData'
+import type { CookieInfoRichText } from '@/features/products/cookieDisplayData'
 
 export type MenuSceneryTone =
   | 'dawn'
@@ -16,12 +16,6 @@ export type SelectableFlavor = {
   id: number
   image: MediaType | null
   infoButtonLabel?: string
-  ingredients: Array<{
-    detail?: string
-    name: string
-  }>
-  ingredientsIntro?: string
-  ingredientsNoteTitle?: string
   receiptBody?: CookieInfoRichText
   summary: string
   title: string

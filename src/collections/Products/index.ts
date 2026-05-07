@@ -20,43 +20,72 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { DefaultDocumentIDType, type Field, Where } from 'payload'
 
-const productDetailsDescriptions: Record<string, string> = {
-  inventory:
-    'Stock count for simple products. If you enable variants, manage stock on each variant instead of here.',
-  enableVariants:
-    'Turn this on when one product needs selectable options such as size, flavor, filling, or color.',
-  variantTypes:
-    'Choose which kinds of options customers can pick, for example size, flavor, or pickup package.',
-  variants:
-    'After you choose variant types, create the actual purchasable combinations here with their own price and inventory.',
-}
+const hiddenProductDetailFields = new Set([
+  'enableVariants',
+  'inventory',
+  'variantTypes',
+  'variants',
+])
 
 const productDetailsFields = (defaultFields: Field[]): Field[] =>
-  defaultFields.map((field): Field => {
-    if (!field || typeof field !== 'object' || !('name' in field)) {
-      return field
-    }
+  defaultFields.map(transformProductDetailField)
 
-    const description = productDetailsDescriptions[field.name]
-
-    if (description) {
-      return {
-        ...field,
-        admin: {
-          ...(field.admin ?? {}),
-          description,
-        },
-      } as Field
-    }
-
+const transformProductDetailField = (field: Field): Field => {
+  if (!field || typeof field !== 'object') {
     return field
-  })
+  }
+
+  const fieldWithChildren = field as Field & { fields?: Field[] }
+  const childFields = Array.isArray(fieldWithChildren.fields)
+    ? fieldWithChildren.fields.map(transformProductDetailField)
+    : undefined
+  const nextField = childFields ? ({ ...field, fields: childFields } as Field) : field
+
+  if (!('name' in nextField) || typeof nextField.name !== 'string') {
+    return nextField
+  }
+
+  if (hiddenProductDetailFields.has(nextField.name)) {
+    return {
+      ...nextField,
+      admin: {
+        ...(nextField.admin ?? {}),
+        hidden: true,
+      },
+    } as Field
+  }
+
+  if (nextField.name === 'priceInUSDEnabled') {
+    return {
+      ...nextField,
+      admin: {
+        ...(nextField.admin ?? {}),
+        hidden: true,
+      },
+      defaultValue: true,
+    } as Field
+  }
+
+  if (nextField.name === 'priceInUSD') {
+    return {
+      ...nextField,
+      admin: {
+        ...(nextField.admin ?? {}),
+        condition: () => true,
+        description: 'Customer-facing price in USD.',
+      },
+      label: 'Price',
+    } as Field
+  }
+
+  return nextField
+}
 
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'categories', 'menuBehavior', 'priceInUSD', 'inventory', '_status'],
+    defaultColumns: ['title', 'categories', 'menuBehavior', 'priceInUSD', '_status'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -103,7 +132,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'richText',
               admin: {
                 description:
-                  'Short product story for the product page and supporting storefront copy.',
+                  'General customer-facing description. Keep this short and clear; the menu can use it as fallback summary text when a shorter menu summary is not set.',
               },
               editor: lexicalEditor({
                 features: ({ rootFeatures }) => {
@@ -116,7 +145,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   ]
                 },
               }),
-              label: false,
+              label: 'Product Description',
               required: false,
             },
             {
@@ -124,7 +153,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'richText',
               admin: {
                 description:
-                  'Long-form copy shown inside expandable menu cards. Use this when you want a more persuasive, blog-like section without creating a dedicated product page.',
+                  'When a customer clicks Expand on a /menu card, this longer blog-like section appears inside the opened card. Use it for selling points, serving ideas, and details that are too long for the collapsed card.',
               },
               editor: lexicalEditor({
                 features: ({ rootFeatures }) => {
@@ -137,16 +166,17 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   ]
                 },
               }),
-              label: 'Expanded Menu Pitch',
+              label: 'Expanded Menu Description',
               required: false,
             },
             {
               name: 'gallery',
+              label: 'Product Photos',
               type: 'array',
               minRows: 1,
               admin: {
                 description:
-                  'Product image gallery. The first image is the main storefront image, so put the best primary photo first.',
+                  'Photos for this product. The first photo is the main storefront image, so put the best primary photo first.',
               },
               fields: [
                 {
@@ -218,101 +248,27 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'blocks',
               admin: {
                 description:
-                  'Optional long-form sections below the main product details. Use these for ingredient notes, FAQs, extra selling copy, or supporting media.',
+                  'Internal legacy field from the original product-page template. Keep hidden unless the storefront gets a dedicated product detail page again.',
+                hidden: true,
               },
               blocks: [CallToAction, Content, MediaBlock],
             },
             {
               name: 'poster',
-              label: 'Cookie Card Details',
+              label: 'Product Info Popup',
               type: 'group',
               admin: {
                 description:
-                  'Display details for the cookie cards and cookie detail art. This is where the business owner edits the short cookie tags, summary, and the handwritten-style ingredient note popup.',
+                  'Reusable product information shown when customers click Info on rotating cookie pages and tray flavor choices. Use this for flavor notes, serving notes, ingredients, and allergy guidance.',
               },
               fields: [
                 {
-                  name: 'subtitle',
-                  type: 'text',
-                  admin: {
-                    description: 'Short line used under the cookie title on poster-style storefront cards.',
-                  },
-                },
-                {
-                  name: 'chips',
-                  type: 'array',
-                  admin: {
-                    description:
-                      'Short all-caps tags shown as visual pills, such as BROWN BUTTER or CHEWY.',
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      name: 'text',
-                      type: 'text',
-                      required: true,
-                    },
-                  ],
-                },
-                {
-                  name: 'label',
-                  type: 'text',
-                  admin: {
-                    description:
-                      'Highlighted label shown above the cookie title on the poster detail page.',
-                  },
-                },
-                {
-                  name: 'labelTone',
-                  type: 'text',
-                  admin: {
-                    description:
-                      'Background color for the poster label, usually a hex value like #f6c58f.',
-                  },
-                },
-                {
-                  name: 'summary',
-                  type: 'textarea',
-                  admin: {
-                    description:
-                      'Short marketing summary used on the poster card and poster detail page.',
-                  },
-                },
-                {
-                  name: 'infoButtonLabel',
-                  type: 'text',
-                  admin: {
-                    description:
-                      'Small label for the translucent scene button that opens the baker-note ingredient popup.',
-                  },
-                },
-                {
-                  name: 'ingredientsNoteTitle',
-                  label: 'Legacy Ingredient Popup Title',
-                  type: 'text',
-                  admin: {
-                    hidden: true,
-                    description:
-                      'Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.',
-                  },
-                },
-                {
-                  name: 'ingredientsIntro',
-                  label: 'Legacy Ingredient Popup Intro',
-                  type: 'textarea',
-                  admin: {
-                    hidden: true,
-                    description:
-                      'Deprecated. Use Info Dialog Text instead so the storefront can render normal paragraphs.',
-                  },
-                },
-                {
                   name: 'receiptBody',
-                  label: 'Info Dialog Text',
+                  label: 'Product Info Text',
                   type: 'richText',
                   admin: {
                     description:
-                      'Rich text shown in the cookie info speech bubble. Use paragraphs and bold text for flavor notes, handling notes, and allergy warnings.',
+                      'Rich text shown in the Info popup. This is reused on the rotating cookie page and in tray flavor choices. Use paragraphs and bold text for flavor notes, serving notes, ingredients, and allergy warnings.',
                   },
                   editor: lexicalEditor({
                     features: ({ rootFeatures }) => {
@@ -326,124 +282,61 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   }),
                   required: false,
                 },
-                {
-                  name: 'receiptTitle',
-                  label: 'Legacy Receipt Title',
-                  type: 'text',
-                  admin: {
-                    hidden: true,
-                    description:
-                      'Deprecated. Kept only to preserve existing database schema; the storefront now uses Info Dialog Text.',
-                  },
-                },
-                {
-                  name: 'receiptWarnings',
-                  label: 'Legacy Receipt Warnings',
-                  type: 'array',
-                  admin: {
-                    hidden: true,
-                    initCollapsed: true,
-                    description:
-                      'Deprecated. Kept only to preserve existing database schema; warnings should now be written directly in Info Dialog Text.',
-                  },
-                  fields: [
-                    {
-                      name: 'tone',
-                      type: 'select',
-                      defaultValue: 'caution',
-                      options: [
-                        {
-                          label: 'Info',
-                          value: 'info',
-                        },
-                        {
-                          label: 'Caution',
-                          value: 'caution',
-                        },
-                        {
-                          label: 'High Allergy Risk',
-                          value: 'danger',
-                        },
-                      ],
-                      required: true,
-                    },
-                    {
-                      name: 'label',
-                      type: 'text',
-                      defaultValue: 'Allergy note',
-                      required: true,
-                    },
-                    {
-                      name: 'message',
-                      type: 'textarea',
-                      required: true,
-                    },
-                  ],
-                },
-                {
-                  name: 'ingredients',
-                  label: 'Legacy Ingredient Rows',
-                  type: 'array',
-                  admin: {
-                    hidden: true,
-                    description:
-                      'Deprecated. Use Info Dialog Text instead; the old row layout could collide on narrow cards.',
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      name: 'name',
-                      type: 'text',
-                      required: true,
-                    },
-                    {
-                      name: 'detail',
-                      type: 'text',
-                    },
-                  ],
-                },
               ],
             },
           ],
-          label: 'Content',
+          label: 'Description & Photos',
         },
         {
           fields: [
             ...productDetailsFields(defaultCollection.fields as Field[]),
             {
               name: 'menuPortionLabel',
+              label: 'Menu Quantity Label',
               type: 'text',
               admin: {
                 description:
-                  'Short quantity label for menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".',
+                  'Short quantity label shown on menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".',
               },
             },
             {
               name: 'menuBehavior',
+              label: 'Can customers choose flavors for this item?',
               type: 'select',
               admin: {
                 description:
-                  'Use configurable tray when this product is built from child product flavors instead of being added directly. The storefront currently supports single-flavor trays, and custom mix trays can be enabled later without changing the relationship model.',
+                  'Use "Yes" for cookie trays or themed trays where the customer chooses from a list of products inside the expanded /menu card.',
               },
               defaultValue: 'simple',
               options: [
                 {
-                  label: 'Simple Add To Cart',
+                  label: 'No, simple product',
                   value: 'simple',
                 },
                 {
-                  label: 'Configurable Tray',
+                  label: 'Yes, show flavor choices',
                   value: 'batchBuilder',
                 },
               ],
             },
             {
+              name: 'trayPlacement',
+              type: 'ui',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                components: {
+                  Field: '@/components/admin/ProductTrayPlacementField#ProductTrayPlacementField',
+                },
+              },
+            },
+            {
               name: 'requiredSelectionCount',
+              label: 'Tray quantity',
               type: 'number',
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'How many cookies belong in the tray. For today\'s single-flavor trays, this becomes the quantity of the chosen flavor.',
+                  'How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.',
               },
               min: 1,
               validate: (
@@ -469,11 +362,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
             },
             {
               name: 'selectableProducts',
+              label: 'Flavor choices for this tray',
               type: 'relationship',
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'Choose which cookie flavors are allowed for this tray. The storefront currently lets the customer pick one of these flavors for the full tray.',
+                  'These are the product choices customers see when they expand this tray on /menu. For example, Cookie Tray can list every cookie; a future themed tray can list only the matching subset.',
               },
               filterOptions: ({ id }) => {
                 if (id) {
@@ -517,8 +411,9 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               name: 'relatedProducts',
               type: 'relationship',
               admin: {
+                hidden: true,
                 description:
-                  'Pick other products that should be suggested alongside this one on the storefront.',
+                  'Internal legacy field. Related product suggestions are not part of the current owner workflow.',
               },
               filterOptions: ({ id }) => {
                 if (id) {
@@ -540,7 +435,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               relationTo: 'products',
             },
           ],
-          label: 'Product Details',
+          label: 'Price & Tray Choices',
         },
         {
           name: 'meta',
@@ -557,7 +452,16 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
             MetaImageField({
               relationTo: 'media',
             }),
-
+            {
+              name: 'copyProductDescriptionToSEO',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field:
+                    '@/components/admin/CopyProductDescriptionToSEO#CopyProductDescriptionToSEO',
+                },
+              },
+            },
             MetaDescriptionField({}),
             PreviewField({
               // if the `generateUrl` function is configured

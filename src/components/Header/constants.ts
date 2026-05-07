@@ -9,7 +9,7 @@ import {
   isContactLinkHint,
   menuHref,
   reviewsHref,
-  rotatingCookieFlavorsHref,
+  rotationsHref,
 } from '@/utilities/routes'
 
 export type HeaderPanelLink = {
@@ -41,7 +41,7 @@ export type HeaderNavigationItem = {
 
 const fallbackHeaderNavigation: HeaderNavigationItem[] = [
   {
-    href: rotatingCookieFlavorsHref,
+    href: rotationsHref,
     id: 'cookies-of-the-month',
     label: 'Cookies of the Month',
     panel: {
@@ -53,7 +53,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
           description:
             'See the featured cookie lineup first, with the current flavors and direct add-to-cart actions in one place.',
           eyebrow: 'Featured first',
-          href: rotatingCookieFlavorsHref,
+          href: rotationsHref,
           title: 'View rotating cookie flavors',
           tone: 'dark',
         },
@@ -61,7 +61,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
       links: [
         {
           description: 'Open the current cookie lineup.',
-          href: rotatingCookieFlavorsHref,
+          href: rotationsHref,
           label: 'View rotating cookie flavors',
         },
       ],
@@ -253,7 +253,7 @@ export const isHeaderNavigationItemActive = (
   pathname: string,
   item: Pick<HeaderNavigationItem, 'href' | 'id'>,
 ) => {
-  if (isRouteActive(pathname, rotatingCookieFlavorsHref)) {
+  if (isRouteActive(pathname, rotationsHref)) {
     return item.id === 'cookies-of-the-month'
   }
 

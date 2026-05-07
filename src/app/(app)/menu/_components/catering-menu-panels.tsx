@@ -113,7 +113,7 @@ export function TrayFlavorCard({
   sceneryTone,
   skySrc,
 }: TrayFlavorCardProps) {
-  const hasIngredients = flavor.ingredients.length > 0
+  const hasInfo = Boolean(flavor.receiptBody)
   const receiptId = `${flavor.id}-ingredients-receipt`
 
   return (
@@ -189,17 +189,17 @@ export function TrayFlavorCard({
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
         {sceneryTone === 'moonlit' ? <TrayFlavorMoonlitLinework /> : null}
 
-        {hasIngredients ? (
+        {hasInfo ? (
           <div className="absolute bottom-2.5 right-2.5 z-[4]">
             <BakeryPressable
               aria-controls={receiptId}
               aria-expanded={isIngredientNoteOpen}
-              aria-label={`Show ingredients for ${flavor.title}`}
+              aria-label={`Show info for ${flavor.title}`}
               className="cateringMenuRoundHeading inline-flex min-h-8 items-center rounded-full border border-[rgba(235,246,255,0.34)] bg-[rgba(246,251,255,0.22)] px-3 py-1.5 text-[0.76rem] tracking-[0.01em] text-[rgba(247,252,255,0.9)] shadow-[0_10px_28px_rgba(6,17,36,0.18),inset_0_1px_0_rgba(255,255,255,0.26)] backdrop-blur-[10px] transition duration-200 hover:-translate-y-px hover:border-[rgba(255,248,227,0.96)] hover:bg-[rgba(255,250,236,0.92)] hover:text-[#5a4121]"
               onClick={onToggleIngredientNotes}
               type="button"
             >
-              {flavor.infoButtonLabel ?? 'Ingredients'}
+              {flavor.infoButtonLabel ?? 'Info'}
             </BakeryPressable>
           </div>
         ) : null}
@@ -213,7 +213,7 @@ export function TrayFlavorCard({
         </div>
       </div>
 
-      {hasIngredients ? (
+      {hasInfo ? (
         <div
           aria-hidden={!isIngredientNoteOpen}
           className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ${
@@ -242,13 +242,8 @@ export function TrayFlavorCard({
 
             <p className="cateringMenuEyebrow pr-12">For {flavor.title}</p>
             <h5 className="mt-0.5 text-[0.9rem] font-semibold tracking-[-0.005em] text-[#5d4119]">
-              {flavor.ingredientsNoteTitle ?? 'Baker Notes'}
+              Product Info
             </h5>
-            {flavor.ingredientsIntro ? (
-              <p className="mt-2 max-w-[34ch] text-[0.8rem] italic leading-[1.45] text-[rgba(88,64,32,0.72)]">
-                {flavor.ingredientsIntro}
-              </p>
-            ) : null}
 
             {flavor.receiptBody ? (
               <CookieInfoNote

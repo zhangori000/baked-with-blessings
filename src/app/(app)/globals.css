@@ -339,18 +339,8 @@
   body:has(.homeCookieScene-moonlit) .siteHeaderBrand,
   body:has(.cateringScene-moonlit) .siteHeaderBrand {
     border-radius: 999px;
-    background:
-      radial-gradient(circle at 58% 30%, rgba(255, 255, 255, 0.92) 0 12%, transparent 13%),
-      radial-gradient(
-        circle at 50% 50%,
-        rgba(251, 248, 220, 0.98) 0 58%,
-        rgba(227, 235, 194, 0.92) 76%,
-        rgba(190, 206, 175, 0.78) 100%
-      );
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.34),
-      0 0 28px rgba(245, 240, 196, 0.34),
-      0 12px 26px rgba(3, 11, 34, 0.26);
+    background: transparent;
+    box-shadow: none;
   }
 
   body:has(.homeCookieScene-moonlit) .siteHeaderBrand.has-logo,
@@ -360,7 +350,7 @@
     height: auto;
     justify-content: center;
     justify-self: start;
-    padding: 0.22rem 0.42rem;
+    padding: 0;
     width: max-content;
   }
 
@@ -372,6 +362,18 @@
     max-width: clamp(7.15rem, 10.6vw, 8.45rem);
     object-fit: contain;
     width: auto;
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo--default,
+  body:has(.cateringScene-moonlit) .siteHeaderBrandLogo--default {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo--dark,
+  body:has(.cateringScene-moonlit) .siteHeaderBrandLogo--dark {
+    opacity: 1;
+    visibility: visible;
   }
 
   @media (max-width: 639px) {
@@ -442,7 +444,7 @@
 
     body:has(.homeCookieScene-moonlit) .siteHeaderBrand.has-logo,
     body:has(.cateringScene-moonlit) .siteHeaderBrand.has-logo {
-      padding: 0.06rem 0.14rem !important;
+      padding: 0 !important;
     }
 
     body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
