@@ -1,4 +1,4 @@
-export const rotatingCookieFlavorsHref = '/rotating-cookie-flavors'
+export const rotationsHref = '/rotations'
 export const menuHref = '/menu'
 export const contactHref = '/contact'
 export const blogHref = '/blog'
@@ -7,7 +7,7 @@ export const reviewsHref = '/reviews'
 export const blessingsNetworkHref = '/blessings-network'
 export const communityHref = '/community'
 export const featureRequestsHref = '/feature-requests'
-export const customerLoginHref = `${rotatingCookieFlavorsHref}?account=login`
+export const customerLoginHref = `${rotationsHref}?account=login`
 
 export const buildCustomerLoginHref = ({
   redirect,
@@ -28,7 +28,7 @@ export const buildCustomerLoginHref = ({
     params.set('warning', warning.trim())
   }
 
-  return `${rotatingCookieFlavorsHref}?${params.toString()}`
+  return `${rotationsHref}?${params.toString()}`
 }
 
 const normalizeRouteHint = (value?: string | null) =>

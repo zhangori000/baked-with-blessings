@@ -13,7 +13,9 @@ import {
   bakerySceneThemes,
   useBakeryAnnouncer,
 } from '@/design-system/bakery'
+import { buildCookiePosterAsset, hasReceiptBody } from '@/features/products/cookieDisplayData'
 import type { Product } from '@/payload-types'
+import { extractRichTextPlainText } from '@/utilities/extractRichTextPlainText'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { ChevronDownIcon, LoaderCircle } from 'lucide-react'
 import Image from 'next/image'
@@ -34,7 +36,6 @@ import {
   type PersuasionGardenPanelClassNames,
 } from './catering-menu-scenery'
 import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
-import { buildCookiePosterAsset } from './cookiePosterData'
 
 type CateringMenuSectionProps = {
   initialSceneryTone?: MenuSceneryTone
@@ -86,7 +87,23 @@ const resolveSummary = (product: Partial<Product>) => {
     return product.meta.description.trim()
   }
 
-  return ''
+  return extractRichTextPlainText(product.description)
+}
+
+const getPosterGroup = (product: Partial<Product>) => {
+  return 'poster' in product && product.poster && typeof product.poster === 'object'
+    ? product.poster
+    : null
+}
+
+const resolveInfoBody = (product: Partial<Product>, fallback?: SelectableFlavor['receiptBody']) => {
+  const poster = getPosterGroup(product)
+
+  if (hasReceiptBody(poster?.receiptBody)) {
+    return poster.receiptBody
+  }
+
+  return fallback
 }
 
 const normalizeProductRelation = (value: number | Product | null | undefined): Product | null => {
@@ -107,17 +124,15 @@ const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] =
     .filter((selectableProduct): selectableProduct is Product => Boolean(selectableProduct?.id))
     .map((selectableProduct) => {
       const posterAsset = buildCookiePosterAsset(selectableProduct)
+      const receiptBody = resolveInfoBody(selectableProduct, posterAsset?.receiptBody)
 
       return {
         allergens: posterAsset?.allergens,
         bodyFallbackSrc: posterAsset?.bodyFallbackSrc ?? '/cookie-singular-brookie.svg',
         id: selectableProduct.id,
         image: posterAsset?.image ?? normalizeImage(selectableProduct),
-        infoButtonLabel: posterAsset?.infoButtonLabel,
-        ingredients: posterAsset?.ingredients ?? [],
-        ingredientsIntro: posterAsset?.ingredientsIntro,
-        ingredientsNoteTitle: posterAsset?.ingredientsNoteTitle,
-        receiptBody: posterAsset?.receiptBody,
+        infoButtonLabel: posterAsset?.infoButtonLabel ?? 'Info',
+        receiptBody,
         summary: posterAsset?.summary ?? resolveSummary(selectableProduct),
         title: posterAsset?.title ?? selectableProduct.title,
       }

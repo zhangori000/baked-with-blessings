@@ -1,14 +1,19 @@
 import configPromise from '@payload-config'
-import { getPayload, type CollectionSlug, type DefaultDocumentIDType, type Payload } from 'payload'
-import { measureServerStep } from '@/utilities/devTiming'
-import { menuHref } from '@/utilities/routes'
-
+import {
+  getPayload,
+  type CollectionSlug,
+  type DefaultDocumentIDType,
+  type Payload,
+  type Where,
+} from 'payload'
 import {
   buildCookiePosterAssets,
   cookiePosterMetas,
   getCookieAllergens,
   type CookiePosterAsset,
-} from './menu/_components/cookiePosterData'
+} from '@/features/products/cookieDisplayData'
+import { measureServerStep } from '@/utilities/devTiming'
+import { menuHref } from '@/utilities/routes'
 
 type ProductRelationship = DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null | undefined
 
@@ -19,8 +24,19 @@ type ActiveFlavorRotation = {
   lockedLabel?: null | string
   menuLinkLabel?: null | string
   monthlyFlavorLabel?: null | string
+  showcaseProducts?: ProductRelationship[] | null
   title?: null | string
 }
+
+const productSelect = {
+  gallery: true,
+  id: true,
+  meta: true,
+  poster: true,
+  priceInUSD: true,
+  slug: true,
+  title: true,
+} as const
 
 const getRelationshipID = (value: ProductRelationship) => {
   if (!value) {
@@ -29,6 +45,11 @@ const getRelationshipID = (value: ProductRelationship) => {
 
   return typeof value === 'object' ? value.id : value
 }
+
+const getRelationshipIDs = (values?: ProductRelationship[] | null) =>
+  (values ?? [])
+    .map((value) => getRelationshipID(value))
+    .filter((id): id is DefaultDocumentIDType => id != null)
 
 const queryActiveFlavorRotation = async (payload: Payload) => {
   const rotationResult = await measureServerStep(
@@ -47,6 +68,7 @@ const queryActiveFlavorRotation = async (payload: Payload) => {
           lockedLabel: true,
           menuLinkLabel: true,
           monthlyFlavorLabel: true,
+          showcaseProducts: true,
           title: true,
         },
         sort: '-updatedAt',
@@ -73,16 +95,12 @@ const applyRotationAvailability = ({
   }
 
   const monthlyFlavorIDs = new Set(
-    (activeRotation.individualFlavors ?? [])
-      .map((flavor) => getRelationshipID(flavor))
-      .filter((flavorID): flavorID is DefaultDocumentIDType => flavorID != null)
-      .map((flavorID) => String(flavorID)),
+    getRelationshipIDs(activeRotation.individualFlavors).map((flavorID) => String(flavorID)),
   )
   const monthlyFlavorOrder = new Map(
-    (activeRotation.individualFlavors ?? [])
-      .map((flavor) => getRelationshipID(flavor))
-      .filter((flavorID): flavorID is DefaultDocumentIDType => flavorID != null)
-      .map((flavorID, index) => [String(flavorID), index] as const),
+    getRelationshipIDs(activeRotation.individualFlavors).map(
+      (flavorID, index) => [String(flavorID), index] as const,
+    ),
   )
 
   return posters
@@ -141,34 +159,174 @@ export const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
     amount: 'Fresh weekly',
     href: `/cookies/${meta.slug}`,
     image: null,
+    infoButtonLabel: 'Info',
   }))
 
-export const queryHomeCookiePosters = async () => {
-  const payload = await measureServerStep('payload init: rotating cookie posters', () =>
-    getPayload({ config: configPromise }),
+const queryCookieCategoryID = async (payload: Payload) => {
+  const categoryResult = await measureServerStep(
+    'payload.find categories: rotating cookie fallback category',
+    () =>
+      payload.find({
+        collection: 'categories',
+        depth: 0,
+        limit: 1,
+        overrideAccess: false,
+        pagination: false,
+        where: {
+          slug: {
+            equals: 'cookies',
+          },
+        },
+      }),
   )
-  const activeRotation = await queryActiveFlavorRotation(payload)
-  const result = await measureServerStep('payload.find products: rotating cookie posters', () =>
+
+  return categoryResult.docs[0]?.id
+}
+
+const queryCateringCategoryID = async (payload: Payload) => {
+  const categoryResult = await measureServerStep(
+    'payload.find categories: rotating cookie catering exclusion',
+    () =>
+      payload.find({
+        collection: 'categories',
+        depth: 0,
+        limit: 1,
+        overrideAccess: false,
+        pagination: false,
+        where: {
+          slug: {
+            equals: 'catering',
+          },
+        },
+      }),
+  )
+
+  return categoryResult.docs[0]?.id
+}
+
+const queryProductsByIDs = async ({
+  payload,
+  productIDs,
+}: {
+  payload: Payload
+  productIDs: DefaultDocumentIDType[]
+}) => {
+  const productOrder = new Map(productIDs.map((productID, index) => [String(productID), index]))
+  const cateringCategoryID = await queryCateringCategoryID(payload)
+  const and: Where[] = [
+    {
+      id: {
+        in: productIDs,
+      },
+    },
+    {
+      _status: {
+        equals: 'published',
+      },
+    },
+    {
+      menuBehavior: {
+        not_equals: 'batchBuilder',
+      },
+    },
+  ]
+
+  if (cateringCategoryID) {
+    and.push({
+      categories: {
+        not_in: [cateringCategoryID],
+      },
+    })
+  }
+
+  const result = await measureServerStep('payload.find products: rotation showcase products', () =>
+    payload.find({
+      collection: 'products',
+      draft: false,
+      limit: productIDs.length,
+      overrideAccess: false,
+      pagination: false,
+      select: productSelect,
+      where: {
+        and,
+      },
+    }),
+  )
+
+  return result.docs.sort((left, right) => {
+    const leftOrder = productOrder.get(String(left.id)) ?? Number.MAX_SAFE_INTEGER
+    const rightOrder = productOrder.get(String(right.id)) ?? Number.MAX_SAFE_INTEGER
+
+    return leftOrder - rightOrder
+  })
+}
+
+const queryCookieCategoryProducts = async (payload: Payload) => {
+  const cookieCategoryID = await queryCookieCategoryID(payload)
+
+  if (!cookieCategoryID) {
+    return []
+  }
+
+  const result = await measureServerStep('payload.find products: rotating cookie category', () =>
     payload.find({
       collection: 'products',
       draft: false,
       limit: 100,
       overrideAccess: false,
       pagination: false,
-      select: {
-        gallery: true,
-        id: true,
-        meta: true,
-        poster: true,
-        priceInUSD: true,
-        slug: true,
-        title: true,
-      },
+      select: productSelect,
       sort: 'title',
+      where: {
+        and: [
+          {
+            _status: {
+              equals: 'published',
+            },
+          },
+          {
+            categories: {
+              contains: cookieCategoryID,
+            },
+          },
+        ],
+      },
     }),
   )
 
-  const posters = buildCookiePosterAssets(result.docs)
+  return result.docs
+}
+
+const queryRotationShowcaseProducts = async ({
+  activeRotation,
+  payload,
+}: {
+  activeRotation: ActiveFlavorRotation | null
+  payload: Payload
+}) => {
+  const showcaseProductIDs = getRelationshipIDs(activeRotation?.showcaseProducts)
+
+  if (showcaseProductIDs.length > 0) {
+    return queryProductsByIDs({
+      payload,
+      productIDs: showcaseProductIDs,
+    })
+  }
+
+  return queryCookieCategoryProducts(payload)
+}
+
+export const queryHomeCookiePosters = async () => {
+  const payload = await measureServerStep('payload init: rotating cookie posters', () =>
+    getPayload({ config: configPromise }),
+  )
+  const activeRotation = await queryActiveFlavorRotation(payload)
+  const products = await queryRotationShowcaseProducts({
+    activeRotation,
+    payload,
+  })
+
+  const posters = buildCookiePosterAssets(products)
   const postersWithAvailability = applyRotationAvailability({
     activeRotation,
     posters,

@@ -8,6 +8,7 @@ import { HeaderClient } from './index.client'
 
 type HeaderBrand = {
   brandName: string
+  darkLogoUrl: string | null
   logoAlt: string
   logoUrl: string | null
 }
@@ -27,8 +28,9 @@ type BrandGlobalDocument = {
 
 const defaultHeaderBrand: HeaderBrand = {
   brandName: 'Baked with Blessings',
+  darkLogoUrl: '/logo-dark-theme.svg',
   logoAlt: 'Baked with Blessings logo',
-  logoUrl: '/baked-with-blessings-logo-pasture-restored.svg',
+  logoUrl: '/logo.svg',
 }
 
 const normalizeBrandLogoUrl = (value: BrandGlobalDocument['logo']) => {
@@ -45,6 +47,7 @@ const buildHeaderBrand = (brand: BrandGlobalDocument | null): HeaderBrand => {
   if (brand?.logoSource === 'mediaUpload') {
     return {
       brandName,
+      darkLogoUrl: defaultHeaderBrand.darkLogoUrl,
       logoAlt,
       logoUrl: uploadedLogoUrl || defaultHeaderBrand.logoUrl,
     }
@@ -52,10 +55,12 @@ const buildHeaderBrand = (brand: BrandGlobalDocument | null): HeaderBrand => {
 
   return {
     brandName,
+    darkLogoUrl: defaultHeaderBrand.darkLogoUrl,
     logoAlt,
     logoUrl:
       brand?.logoPath?.trim() === '/baked-with-blessings-logo.svg' ||
-      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture.svg'
+      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture.svg' ||
+      brand?.logoPath?.trim() === '/baked-with-blessings-logo-pasture-restored.svg'
         ? defaultHeaderBrand.logoUrl
         : brand?.logoPath?.trim() || defaultHeaderBrand.logoUrl,
   }
@@ -68,7 +73,7 @@ export async function Header() {
     payload
       .findGlobal({
         depth: 1,
-        slug: 'brand' as any,
+        slug: 'brand',
       })
       .catch(() => null),
     getSitePages(),

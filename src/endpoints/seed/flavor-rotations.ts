@@ -26,8 +26,6 @@ export const seedFlavorRotation = async ({
   await payload.create({
     collection: 'flavor-rotations',
     data: {
-      displayLabel: 'Current monthly cookie rotation',
-      individualFlavorSlots: 3,
       individualFlavors: initialMonthlyFlavors,
       lockedDescription:
         'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
@@ -35,6 +33,7 @@ export const seedFlavorRotation = async ({
       menuLinkLabel: 'View menu',
       monthlyFlavorLabel: "This month's flavor",
       rotationType: 'monthly',
+      showcaseProducts: Object.values(cookieProductsBySlug),
       status: 'active',
       title: 'Current Monthly Cookie Rotation',
     },

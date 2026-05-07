@@ -3,17 +3,20 @@
 import type { FormState } from 'payload'
 
 import { BakeryPressable } from '@/design-system/bakery'
+import type { Media } from '@/payload-types'
+import { withPayloadMediaCacheTag } from '@/utilities/resolveMediaDisplayURL'
 import { Button, toast, useConfig, useForm, useFormFields } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import './ProductGalleryBulkPicker.css'
 
-type MediaDoc = {
-  id: number | string
-  alt?: string | null
-  filename?: string | null
-  thumbnailURL?: string | null
-  url?: string | null
+type MediaID = number | string
+
+type MediaDoc = Pick<
+  Media,
+  'alt' | 'filename' | 'filesize' | 'thumbnailURL' | 'updatedAt' | 'url'
+> & {
+  id: MediaID
   sizes?: {
     thumbnail?: {
       url?: string | null
@@ -43,8 +46,11 @@ const getMediaID = (value: GalleryItem['image']): MediaDoc['id'] | null => {
   return value
 }
 
-const getImageURL = (doc: MediaDoc): string | null =>
-  doc.sizes?.thumbnail?.url ?? doc.thumbnailURL ?? doc.url ?? null
+const getImageURL = (doc: MediaDoc): string | null => {
+  const url = doc.sizes?.thumbnail?.url ?? doc.thumbnailURL ?? doc.url ?? null
+
+  return withPayloadMediaCacheTag({ media: doc as Media, url })
+}
 
 const createGalleryRowState = (mediaID: MediaDoc['id']): FormState => ({
   image: {
@@ -79,7 +85,7 @@ export const ProductGalleryBulkPicker: React.FC = () => {
         setIsLoading(true)
         setError(null)
 
-        const response = await fetch(`${api}/media?limit=100&sort=-createdAt&depth=0`, {
+        const response = await fetch(`${api}/media?limit=100&sort=-updatedAt&depth=0`, {
           credentials: 'include',
           signal: controller.signal,
         })

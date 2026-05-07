@@ -7,14 +7,14 @@ import {
   discussionBoardHref,
   menuHref,
   reviewsHref,
-  rotatingCookieFlavorsHref,
+  rotationsHref,
 } from '@/utilities/routes'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getPayload } from 'payload'
 
 const staticPublicRoutes = [
   '/',
-  rotatingCookieFlavorsHref,
+  rotationsHref,
   menuHref,
   contactHref,
   blogHref,

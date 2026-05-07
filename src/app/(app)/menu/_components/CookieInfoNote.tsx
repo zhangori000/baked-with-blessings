@@ -1,4 +1,4 @@
-import type { CookieInfoRichText } from './cookiePosterData'
+import type { CookieInfoRichText } from '@/features/products/cookieDisplayData'
 
 type InfoTextNode = {
   format?: number

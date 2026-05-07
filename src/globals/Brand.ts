@@ -48,7 +48,7 @@ export const Brand: GlobalConfig = {
     {
       name: 'logoPath',
       type: 'text',
-      defaultValue: '/baked-with-blessings-logo-pasture-restored.svg',
+      defaultValue: '/logo.svg',
       admin: {
         condition: (_, siblingData) => siblingData?.logoSource === 'publicPath',
         description:

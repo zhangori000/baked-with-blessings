@@ -80,6 +80,28 @@ Remove-Item Env:\BOOTSTRAP_TEST_CUSTOMER_PASSWORD
 
 The test customer login identifier defaults to `test.customer@baked-with-blessings.invalid`. If you type the wrong password, the script will create or update the Preview customer with that wrong password. Nothing is permanently broken: update the Vercel env var to the intended password if needed, then rerun the command with the same intended password to reset the customer.
 
+### Common maintenance scripts
+
+These scripts are meant to make local and hosted content easier to keep in sync without guessing which database or storage layer is involved.
+
+| Script | What it does | Safe to rerun? |
+| --- | --- | --- |
+| `pnpm bootstrap:page-content` | Fills empty page-content globals with defaults. Existing owner-edited text is left alone. | Yes |
+| `pnpm sync:media:prod-to-local` | Reconciles local Payload Media documents against `https://bakedwithblessings.com/api/media`: creates missing records, updates matching records, and deletes local-only Media records. It does not upload, download, or delete Blob files. | Yes |
+| `pnpm sync:media:prod-to-local -- --dry-run` | Shows which local Media records would be created, updated, or deleted without writing to the local database. | Yes |
+| `pnpm sync:media:prod-to-local -- --keep-local-missing` | Keeps local-only Media records instead of pruning them. Use this when local has temporary test uploads you do not want to remove. | Yes |
+| `pnpm sync:media:prod-to-local -- --skip-existing` | Creates missing Media records but leaves matching existing local Media records unchanged. Local-only records are still pruned unless you also pass `--keep-local-missing`. | Yes |
+
+Payload media uses two layers: Vercel Blob stores the actual files, while the Payload `media` collection stores database documents with filenames, URLs, alt text, dimensions, and generated sizes. If a photo is uploaded in Production, the Blob file may be shared, but localhost still needs the Media document in its own database before the image appears in the local Admin Media list. The sync script deletes only local database records that are missing from Production; it does not delete the actual Blob files.
+
+As a guardrail, the script refuses to prune local records if the source returns zero usable filenames. That usually means the source URL is wrong or temporarily broken. Only pass `--allow-empty-source-prune` if you intentionally want an empty source Media collection to clear local Media records.
+
+By default, `sync:media:prod-to-local` refuses to write to a non-local database. Pass `--allow-remote-target` only when you intentionally want the current environment to receive the records:
+
+```bash
+pnpm sync:media:prod-to-local -- --allow-remote-target
+```
+
 ### Production deployment guide
 
 For the current Baked with Blessings Vercel production flow, use [Production Deployment Setup](./documentation/getting-started/production-deployment.md). It covers the required Vercel env vars, Neon Production database setup, the temporary Stripe test-mode launch path, migrations, admin bootstrap, and `seed:prod`.

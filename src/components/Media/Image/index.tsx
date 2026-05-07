@@ -9,7 +9,7 @@ import React from 'react'
 import type { Props as MediaProps } from '../types'
 
 import { cssVariables } from '@/cssVariables'
-import { isPayloadMediaFileURL } from '@/utilities/resolveMediaDisplayURL'
+import { isPayloadMediaFileURL, withPayloadMediaCacheTag } from '@/utilities/resolveMediaDisplayURL'
 
 const { breakpoints } = cssVariables
 const sameOriginServerURL = process.env.NEXT_PUBLIC_SERVER_URL?.replace(/\/$/, '')
@@ -55,8 +55,6 @@ export const Image: React.FC<MediaProps> = (props) => {
     width: widthFromProps,
   } = props
 
-  const [isLoading, setIsLoading] = React.useState(true)
-
   let width: number | undefined | null
   let height: number | undefined | null
   let alt = altFromProps
@@ -79,7 +77,9 @@ export const Image: React.FC<MediaProps> = (props) => {
     height = heightFromProps ?? sizedImage?.height ?? fullHeight
     alt = altFromResource
 
-    src = normalizeImageSrc(sizedImage?.url || url || '')
+    src = normalizeImageSrc(
+      withPayloadMediaCacheTag({ media: resource, url: sizedImage?.url || url || '' }) || '',
+    )
   }
 
   const shouldBypassOptimizer = typeof src === 'string' && isPayloadMediaFileURL(src)
@@ -99,7 +99,6 @@ export const Image: React.FC<MediaProps> = (props) => {
       height={!fill ? height || heightFromProps : undefined}
       onClick={onClick}
       onLoad={() => {
-        setIsLoading(false)
         if (typeof onLoadFromProps === 'function') {
           onLoadFromProps()
         }

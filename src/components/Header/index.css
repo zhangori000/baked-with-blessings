@@ -64,7 +64,13 @@
   width: 122px;
 }
 
+.siteHeaderBrandLogoFrame {
+  display: grid;
+  width: 100%;
+}
+
 .siteHeaderBrandLogo {
+  grid-area: 1 / 1;
   width: 100%;
   height: auto;
   max-height: 50px;
@@ -72,6 +78,11 @@
   object-position: left center;
   filter: drop-shadow(0 0 0.8px rgba(8, 10, 16, 0.9)) drop-shadow(0 2px 8px rgba(7, 9, 18, 0.2));
   transform: translateZ(0);
+}
+
+.siteHeaderBrandLogo--dark {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .siteHeaderBrandEyebrow {
@@ -1888,19 +1899,17 @@ body:has(.cateringScene-moonlit) .siteHeaderBannerLink.is-active {
 body:has(.homeCookieScene-moonlit) .siteHeaderBrand.has-logo,
 body:has(.cateringScene-moonlit) .siteHeaderBrand.has-logo {
   align-items: center;
-  border: 1px solid rgb(255 250 236 / 44%);
-  border-radius: 18px;
-  background: rgb(255 250 236 / 72%);
-  box-shadow:
-    0 12px 24px rgb(15 27 16 / 10%),
-    inset 0 1px 0 rgb(255 255 255 / 46%);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   display: inline-flex;
   height: auto;
   justify-content: center;
   justify-self: start;
-  padding: 0.22rem 0.42rem;
+  padding: 0;
   width: max-content;
-  backdrop-filter: blur(6px);
+  backdrop-filter: none;
 }
 
 body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
@@ -1909,6 +1918,18 @@ body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
   max-height: none;
   max-width: clamp(7.15rem, 10.6vw, 8.45rem);
   width: auto;
+}
+
+body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo--default,
+body:has(.cateringScene-moonlit) .siteHeaderBrandLogo--default {
+  opacity: 0;
+  visibility: hidden;
+}
+
+body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo--dark,
+body:has(.cateringScene-moonlit) .siteHeaderBrandLogo--dark {
+  opacity: 1;
+  visibility: visible;
 }
 
 body:has(.routeLoadingSurface) .siteHeader {

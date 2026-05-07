@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { BakeryCard, BakeryPressable } from '@/design-system/bakery'
+import { extractRichTextPlainText } from '@/utilities/extractRichTextPlainText'
 
 type Props = {
   product: Partial<Product>
@@ -66,11 +67,11 @@ const resolvePrice = (product: Partial<Product>) => {
 }
 
 const resolveDescription = (product: Partial<Product>) => {
-  if (typeof product.meta === 'object') {
-    return product.meta?.description?.replace(/\s+/g, ' ').trim() || ''
+  if (typeof product.meta === 'object' && product.meta?.description?.trim()) {
+    return product.meta.description.replace(/\s+/g, ' ').trim()
   }
 
-  return ''
+  return extractRichTextPlainText(product.description)
 }
 
 const hasNonSquareCategory = (product: Partial<Product>) => {
