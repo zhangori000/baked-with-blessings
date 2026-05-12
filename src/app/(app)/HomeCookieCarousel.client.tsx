@@ -113,6 +113,7 @@ class CloudPaperOverlay extends PaperOverlayPiece {
 
 const JUMP_DURATION_MS = 280
 const MOBILE_JUMP_DURATION_MS = 175
+const REDUCED_JUMP_DURATION_MS = 140
 const grassVisibleHeightRatioDesktop = Number(((375 - 246.066406) / 375).toFixed(5))
 const grassVisibleHeightRatioMobile = 0.834
 const grassCrestLimitRatio = 0.45
@@ -604,6 +605,30 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion
 }
 
+function useIsMobileViewport() {
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 639px)')
+    const updateViewport = () => {
+      setIsMobileViewport(mediaQuery.matches)
+    }
+
+    updateViewport()
+    mediaQuery.addEventListener('change', updateViewport)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport)
+    }
+  }, [])
+
+  return isMobileViewport
+}
+
 type HomeCookieJumpRigPhase = 'active' | 'incoming' | 'outgoing'
 
 type HomeCookieJumpRigProps = {
@@ -684,6 +709,7 @@ export function HomeCookieCarousel({
 }: HomeCookieCarouselProps) {
   const { addItem, isLoading: cartIsLoading } = useCart()
   const prefersReducedMotion = usePrefersReducedMotion()
+  const isMobileViewport = useIsMobileViewport()
   const [activeIndex, setActiveIndex] = useState(0)
   const [cartPromptState, setCartPromptState] = useState<{
     phase: 'added' | 'idle' | 'loading' | 'open'
@@ -1008,11 +1034,12 @@ export function HomeCookieCarousel({
     activePosterPromptPhase === 'open' ||
     activePosterPromptPhase === 'loading' ||
     activePosterPromptPhase === 'added'
-  const getJumpDurationMs = () =>
-    typeof window !== 'undefined' && window.innerWidth < 640
+  const jumpDurationMs = prefersReducedMotion
+    ? REDUCED_JUMP_DURATION_MS
+    : isMobileViewport
       ? MOBILE_JUMP_DURATION_MS
       : JUMP_DURATION_MS
-  const jumpDurationSeconds = (prefersReducedMotion ? 140 : getJumpDurationMs()) / 1000
+  const jumpDurationSeconds = jumpDurationMs / 1000
 
   const beginCarouselTransition = (direction: -1 | 1) => {
     const currentIndex = activeIndexRef.current

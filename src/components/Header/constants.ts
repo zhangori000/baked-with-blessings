@@ -1,4 +1,5 @@
 import type { Header } from '@/payload-types'
+import type { SitePagesFlags } from '@/utilities/getSitePages'
 import {
   blessingsNetworkHref,
   blogHref,
@@ -26,6 +27,27 @@ export type HeaderPanelCard = {
   tone?: 'dark' | 'light' | 'muted'
 }
 
+export type HeaderAppPageIcon =
+  | 'book-open-text'
+  | 'clipboard-check'
+  | 'handshake'
+  | 'lightbulb'
+  | 'message-square-text'
+  | 'sticky-note'
+
+export type HeaderAppPage = {
+  id: string
+  description: string
+  enabledFlag: keyof SitePagesFlags
+  eyebrow: string
+  href: string
+  icon: HeaderAppPageIcon
+  mobileDescription?: string
+  mobileTitle?: string
+  title: string
+  tone?: HeaderPanelCard['tone']
+}
+
 export type HeaderNavigationItem = {
   id: string
   href: string
@@ -38,6 +60,112 @@ export type HeaderNavigationItem = {
     links: HeaderPanelLink[]
   }
 }
+
+export const headerAppPages: HeaderAppPage[] = [
+  {
+    description:
+      'Tiny letters from people who just ordered with us - react, scroll, and leave one of your own after you order.',
+    enabledFlag: 'communityEnabled',
+    eyebrow: 'Community',
+    href: communityHref,
+    icon: 'sticky-note',
+    id: 'community',
+    mobileTitle: 'Open the Post-it Wall',
+    title: 'Post-it Wall',
+    tone: 'light',
+  },
+  {
+    description:
+      'Reviews with photos, public responses, action logs, and boundaries around unfair claims.',
+    enabledFlag: 'reviewsEnabled',
+    eyebrow: 'Transparency',
+    href: reviewsHref,
+    icon: 'clipboard-check',
+    id: 'reviews',
+    mobileDescription:
+      'Read public reviews, see what changed in response, and submit a text review.',
+    mobileTitle: 'Open reviews',
+    title: 'Reviews',
+    tone: 'dark',
+  },
+  {
+    description:
+      'Suggest pages, food, packaging, anything. Public requests get rated and replied to; private DMs go straight to the bakery owner.',
+    enabledFlag: 'featureRequestsEnabled',
+    eyebrow: 'Tell us what to build',
+    href: featureRequestsHref,
+    icon: 'lightbulb',
+    id: 'feature-requests',
+    title: 'Request Features',
+    tone: 'light',
+  },
+  {
+    description: 'Notes and essays about school, business, community, and building the bakery.',
+    enabledFlag: 'blogEnabled',
+    eyebrow: 'Writing',
+    href: blogHref,
+    icon: 'book-open-text',
+    id: 'blog',
+    mobileDescription:
+      'Read or draft something while your order is coming together - notes about school, business, community, and the bakery. Limit testing this one, just for fun.',
+    mobileTitle: 'Read the blog',
+    title: 'Blog',
+    tone: 'light',
+  },
+  {
+    description: 'Open questions, replies, support paths, and challenges in one structured board.',
+    enabledFlag: 'discussionBoardEnabled',
+    eyebrow: 'Public reasoning',
+    href: discussionBoardHref,
+    icon: 'message-square-text',
+    id: 'discussion-board',
+    mobileDescription:
+      'Drop a question, weigh in, or just lurk while you wait - structured questions, claims, support, and replies. Limit testing this one, just for fun.',
+    mobileTitle: 'Open discussion board',
+    title: 'Discussion Board',
+    tone: 'dark',
+  },
+  {
+    description: 'Practical owner advice paired with public business profiles and links.',
+    enabledFlag: 'blessingsNetworkEnabled',
+    eyebrow: 'Community advice',
+    href: blessingsNetworkHref,
+    icon: 'handshake',
+    id: 'blessings-network',
+    mobileDescription:
+      'Browse practical advice from food and cafe owners while you wait - and discover the businesses behind each answer. Limit testing this one, just for fun.',
+    mobileTitle: 'Open Community Advice',
+    title: 'Community Advice',
+    tone: 'light',
+  },
+]
+
+const appPageEnabledFlagByHref = new Map(
+  headerAppPages.map((page) => [page.href, page.enabledFlag] as const),
+)
+
+const isHeaderAppPageEnabled = (href: string, sitePages: SitePagesFlags) => {
+  const enabledFlag = appPageEnabledFlagByHref.get(href)
+  return enabledFlag ? sitePages[enabledFlag] : true
+}
+
+export const getEnabledHeaderAppPages = (sitePages: SitePagesFlags) => {
+  return headerAppPages.filter((page) => sitePages[page.enabledFlag])
+}
+
+const buildAppPanelCard = (page: HeaderAppPage): HeaderPanelCard => ({
+  description: page.mobileDescription ?? page.description,
+  eyebrow: page.eyebrow,
+  href: page.href,
+  title: page.mobileTitle ?? page.title,
+  tone: page.tone,
+})
+
+const buildAppPanelLink = (page: HeaderAppPage): HeaderPanelLink => ({
+  description: `Go to ${page.title}.`,
+  href: page.href,
+  label: page.mobileTitle ?? page.title,
+})
 
 const fallbackHeaderNavigation: HeaderNavigationItem[] = [
   {
@@ -130,75 +258,8 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
       eyebrow: 'Bakery apps',
       description:
         'Open public tools connected to the bakery: writing, structured discussions, review transparency, and reusable customer-facing systems.',
-      cards: [
-        {
-          description:
-            'Tiny letters from people who just ordered with us — react, scroll, and leave one of your own after you order.',
-          eyebrow: 'Community',
-          href: communityHref,
-          title: 'Open the Post-it Wall',
-          tone: 'light',
-        },
-        {
-          description:
-            'Read public reviews, see what changed in response, and submit a text review.',
-          eyebrow: 'Review transparency',
-          href: reviewsHref,
-          title: 'Open reviews',
-          tone: 'dark',
-        },
-        {
-          description:
-            'Read or draft something while your order is coming together — notes about school, business, community, and the bakery. Limit testing this one, just for fun.',
-          eyebrow: 'Writing',
-          href: blogHref,
-          title: 'Read the blog',
-          tone: 'light',
-        },
-        {
-          description:
-            'Drop a question, weigh in, or just lurk while you wait — structured questions, claims, support, and replies. Limit testing this one, just for fun.',
-          eyebrow: 'Public reasoning',
-          href: discussionBoardHref,
-          title: 'Open discussion board',
-          tone: 'dark',
-        },
-        {
-          description:
-            'Browse practical advice from food and cafe owners while you wait — and discover the businesses behind each answer. Limit testing this one, just for fun.',
-          eyebrow: 'Community advice',
-          href: blessingsNetworkHref,
-          title: 'Open Community Advice',
-          tone: 'light',
-        },
-      ],
-      links: [
-        {
-          description: 'Go to the Community Post-it Wall.',
-          href: communityHref,
-          label: 'Open the Post-it Wall',
-        },
-        {
-          description: 'Go to public reviews.',
-          href: reviewsHref,
-          label: 'Open reviews',
-        },
-        {
-          description: 'Go to the blog.',
-          href: blogHref,
-          label: 'Read the blog',
-        },
-        {
-          description: 'Go to the discussion board.',
-          href: discussionBoardHref,
-          label: 'Open discussion board',
-        },
-        {
-          description: 'Go to Community Advice.',
-          href: blessingsNetworkHref,
-          label: 'Open Community Advice',
-        },
-      ],
+      cards: headerAppPages.map(buildAppPanelCard),
+      links: headerAppPages.map(buildAppPanelLink),
     },
   },
 ]
@@ -216,11 +277,31 @@ const navItemPriority: Array<HeaderNavigationItem['id']> = [
   'more',
 ]
 
+const filterNavigationItemForSitePages = (
+  item: HeaderNavigationItem,
+  sitePages: SitePagesFlags,
+): HeaderNavigationItem => {
+  if (item.kind !== 'apps') return item
+
+  return {
+    ...item,
+    panel: {
+      ...item.panel,
+      cards: item.panel.cards.filter((card) => isHeaderAppPageEnabled(card.href, sitePages)),
+      links: item.panel.links.filter((link) => isHeaderAppPageEnabled(link.href, sitePages)),
+    },
+  }
+}
+
 export const headerAnnouncement =
   'Fresh bakes daily. Custom cake orders and pickup help are one click away.'
 
-export const buildHeaderNavigation = (menu: Header['navItems']) => {
-  if (!menu?.length) return fallbackHeaderNavigation
+export const buildHeaderNavigation = (menu: Header['navItems'], sitePages?: SitePagesFlags) => {
+  if (!menu?.length) {
+    return sitePages
+      ? fallbackHeaderNavigation.map((item) => filterNavigationItemForSitePages(item, sitePages))
+      : fallbackHeaderNavigation
+  }
 
   const items = menu
     .map((item) => {
@@ -242,7 +323,11 @@ export const buildHeaderNavigation = (menu: Header['navItems']) => {
     .map((id) => itemById.get(id) ?? fallbackItemById.get(id))
     .filter(Boolean) as HeaderNavigationItem[]
 
-  return prioritizedItems.length ? prioritizedItems : fallbackHeaderNavigation
+  const navigationItems = prioritizedItems.length ? prioritizedItems : fallbackHeaderNavigation
+
+  return sitePages
+    ? navigationItems.map((item) => filterNavigationItemForSitePages(item, sitePages))
+    : navigationItems
 }
 
 const isRouteActive = (pathname: string, href: string) => {

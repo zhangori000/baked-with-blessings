@@ -59,6 +59,12 @@ export function MobileMenu({
   const menuRef = useRef<HTMLDivElement | null>(null)
   const mainItems = items.filter((item) => item.kind !== 'apps')
   const appItems = items.filter((item) => item.kind === 'apps')
+  const appCards = appItems.flatMap((item) =>
+    (item.panel.cards ?? []).map((card) => ({
+      card,
+      item,
+    })),
+  )
   const closeMenu = useEffectEvent(() => {
     setIsOpen(false)
   })
@@ -194,35 +200,23 @@ export function MobileMenu({
             }),
           )}
 
-          {appItems.length ? (
+          {appCards.length ? (
             <div className="siteHeaderMobileSectionDivider" role="separator">
               <span>Apps</span>
             </div>
           ) : null}
 
-          {appItems.length ? (
+          {appCards.length ? (
             <div className="siteHeaderMobileAppScroller" aria-label="Other pages">
-              {appItems.flatMap((item) =>
-                (item.panel.cards?.length
-                  ? item.panel.cards
-                  : [
-                      {
-                        description: item.panel.description,
-                        eyebrow: item.panel.eyebrow,
-                        href: item.href,
-                        title: item.label,
-                      },
-                    ]
-                ).map((card, index) =>
-                  renderCard({
-                    description: card.description,
-                    eyebrow: card.eyebrow,
-                    href: card.href,
-                    key: `${item.id}-${card.href}`,
-                    title: card.title,
-                    tone: appCardFlowerTones[index % appCardFlowerTones.length],
-                  }),
-                ),
+              {appCards.map(({ card, item }, index) =>
+                renderCard({
+                  description: card.description,
+                  eyebrow: card.eyebrow,
+                  href: card.href,
+                  key: `${item.id}-${card.href}`,
+                  title: card.title,
+                  tone: appCardFlowerTones[index % appCardFlowerTones.length],
+                }),
               )}
             </div>
           ) : null}

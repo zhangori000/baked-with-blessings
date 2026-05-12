@@ -2,7 +2,7 @@ import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneTo
 import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
 
 import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
-import { queryHomeCookiePosters } from '../cookiePosterQueries'
+import { queryPublicRotationCookiePosters } from '../cookiePosterQueries'
 
 export const metadata = buildStaticMetadata({
   description: 'Browse the rotating cookie flavors in the animated Baked with Blessings showcase.',
@@ -12,7 +12,7 @@ export const metadata = buildStaticMetadata({
 
 export default async function RotationsPage() {
   const initialSceneryTone = await getMenuSceneToneFromCookies()
-  const posters = await queryHomeCookiePosters()
+  const posters = await queryPublicRotationCookiePosters()
 
   return (
     <HomeCookieCarousel
