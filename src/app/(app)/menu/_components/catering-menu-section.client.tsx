@@ -1680,11 +1680,11 @@ export function CateringMenuSection({
           }
 
           .cateringPersuasionFrame {
-            --catering-persuasion-panel-min-height: 37rem;
+            --catering-persuasion-panel-min-height: 35rem;
           }
 
           .cateringPersuasionFrame[data-has-gallery='true'] {
-            --catering-persuasion-panel-min-height: 39rem;
+            --catering-persuasion-panel-min-height: 37rem;
           }
 
           .cateringPersuasionPanel {
@@ -1692,7 +1692,7 @@ export function CateringMenuSection({
           }
 
           .cateringPanelForeground {
-            padding-bottom: 10.8rem;
+            padding-bottom: 9.6rem;
           }
 
           .cateringPanelActionRow {
@@ -1777,11 +1777,11 @@ export function CateringMenuSection({
 
         @media (max-width: 430px) {
           .cateringPersuasionFrame {
-            --catering-persuasion-panel-min-height: 38.25rem;
+            --catering-persuasion-panel-min-height: 36.25rem;
           }
 
           .cateringPersuasionFrame[data-has-gallery='true'] {
-            --catering-persuasion-panel-min-height: 40.25rem;
+            --catering-persuasion-panel-min-height: 38.25rem;
           }
 
           .cateringPersuasionHeading {
@@ -1796,7 +1796,7 @@ export function CateringMenuSection({
           }
 
           .cateringPanelForeground {
-            padding-bottom: 11rem;
+            padding-bottom: 9.8rem;
           }
         }
       `}</style>

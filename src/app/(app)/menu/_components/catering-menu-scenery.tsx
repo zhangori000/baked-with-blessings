@@ -712,8 +712,6 @@ const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly Landsca
 
 const persuasionSheep = [{ left: '89%', src: '/catering/decor/sheep-grin.svg' }] as const
 
-const buildPersuasionHeading = () => 'Random notes you can read...'
-
 const buildPersuasionCopy = (_product: Partial<Product>, summary: string) => {
   if (summary.trim()) {
     return [summary.trim()]
@@ -1577,7 +1575,7 @@ export function PersuasionGardenPanel({
   const isPaintingToDetails = panelTransition === 'to-details'
   const showDetailsFace = !isGalleryFace || isPanelTransitioning
   const showGalleryFace = hasGallery && (isGalleryFace || isPanelTransitioning)
-  const panelMinHeight = hasGallery ? '34rem' : '30rem'
+  const panelMinHeight = hasGallery ? '29rem' : '26rem'
   const panelMinHeightValue = `var(--catering-persuasion-panel-min-height, ${panelMinHeight})`
 
   return (
@@ -1645,21 +1643,11 @@ export function PersuasionGardenPanel({
 
             <div
               className={cn(
-                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-4 pb-20 pr-0 md:pb-24 md:pr-[10rem]',
+                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pb-16 pr-0 md:pb-20 md:pr-[10rem]',
                 classNames?.foreground,
               )}
               style={styles?.foreground}
             >
-              <h4
-                className={cn(
-                  'cateringMenuRoundHeading cateringPersuasionHeading text-[clamp(1.85rem,3.6vw,2.45rem)] leading-[0.95] tracking-[-0.04em]',
-                  classNames?.heading,
-                )}
-                style={styles?.heading}
-              >
-                {buildPersuasionHeading()}
-              </h4>
-
               {product.menuExpandedPitch ? (
                 <RichText
                   className={cn(
@@ -1672,11 +1660,11 @@ export function PersuasionGardenPanel({
                 />
               ) : (
                 <div
-                  className={cn('cateringPersuasionBody space-y-4', classNames?.body)}
+                  className={cn('cateringPersuasionBody space-y-3', classNames?.body)}
                   style={styles?.body}
                 >
                   {persuasionCopy.map((paragraph) => (
-                    <p className="text-[1rem] leading-8 md:text-[1.06rem]" key={paragraph}>
+                    <p className="text-[1rem] leading-7 md:text-[1.04rem]" key={paragraph}>
                       {paragraph}
                     </p>
                   ))}
@@ -1735,7 +1723,7 @@ export function PersuasionGardenPanel({
 
             <div
               className={cn(
-                'pointer-events-none absolute inset-x-0 bottom-0 h-[6.7rem] overflow-hidden',
+                'pointer-events-none absolute inset-x-0 bottom-0 h-[5.9rem] overflow-hidden',
                 classNames?.meadowLayer,
               )}
               style={styles?.meadowLayer}
