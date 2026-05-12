@@ -11,6 +11,7 @@ import { isAdminUser } from '@/access/utilities'
 
 const defaultLockedDescription =
   'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'
+const publicRotationFlavorCount = 3
 
 type ProductRelationship = DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null | undefined
 
@@ -172,7 +173,7 @@ export const FlavorRotations: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'status', 'rotationType', 'individualFlavors', 'updatedAt'],
     description:
-      'Controls the /rotations page. Choose every flavor customers should see, then choose which of those are available for individual orders right now.',
+      'Controls the /rotations page. For now, the public page shows exactly the three products selected in Public rotation cookies.',
     group: 'Content',
     useAsTitle: 'title',
   },
@@ -248,15 +249,14 @@ export const FlavorRotations: CollectionConfig = {
     },
     {
       name: 'showcaseProducts',
-      label: 'All flavors shown on /rotations',
+      label: 'Flavor pool for rotation planning',
       type: 'relationship',
       admin: {
         components: {
-          Field:
-            '@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField',
+          Field: '@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField',
         },
         description:
-          'Every normal product selected here appears on the /rotations page. Tray, catering-pack, and batch-builder products are intentionally excluded.',
+          'Internal planning pool used to choose the public rotation cookies. These products do not appear on /rotations unless they are also selected below.',
       },
       filterOptions: async ({ req }) => buildRotationEligibleProductWhere(req),
       hasMany: true,
@@ -266,7 +266,7 @@ export const FlavorRotations: CollectionConfig = {
         const selectedIDs = getRelationshipIDs(value)
 
         if (selectedIDs.length === 0) {
-          return 'Choose at least one flavor/product to show on /rotations.'
+          return 'Choose at least one flavor/product for the rotation planning pool.'
         }
 
         const ineligibleProductWhere = await buildRotationIneligibleProductWhere(req)
@@ -301,16 +301,16 @@ export const FlavorRotations: CollectionConfig = {
           .filter(Boolean)
           .join(', ')
 
-        return `Remove tray, catering-pack, or batch-builder products from /rotations: ${productNames}.`
+        return `Remove tray, catering-pack, or batch-builder products from the rotation planning pool: ${productNames}.`
       },
     },
     {
       name: 'individualFlavors',
-      label: 'Available for individual orders right now',
+      label: 'Public rotation cookies (/rotations)',
       type: 'relationship',
       admin: {
         description:
-          'Choose from the list above. These flavors appear first and customers can add them directly to cart; the other shown flavors become catering-only.',
+          'Choose exactly three from the planning pool above. These are the only cookies customers see on /rotations right now.',
       },
       filterOptions: async ({ req, siblingData }) => {
         const showcaseIDs = getRelationshipIDs(
@@ -345,7 +345,11 @@ export const FlavorRotations: CollectionConfig = {
         )
 
         if (selectedIDs.length === 0) {
-          return 'Choose at least one flavor that can be ordered individually.'
+          return `Choose exactly ${publicRotationFlavorCount} cookies for /rotations.`
+        }
+
+        if (selectedIDs.length !== publicRotationFlavorCount) {
+          return `Choose exactly ${publicRotationFlavorCount} cookies for /rotations.`
         }
 
         const missingFromShowcase = selectedIDs.filter((id) => !showcaseIDs.has(id))
@@ -354,16 +358,16 @@ export const FlavorRotations: CollectionConfig = {
           return true
         }
 
-        return 'Every individually available flavor must also be selected in "All flavors shown on /rotations".'
+        return 'Every public rotation cookie must also be selected in the flavor planning pool.'
       },
     },
     {
       name: 'monthlyFlavorLabel',
-      label: 'Badge on individually available flavors',
+      label: 'Badge on public rotation cookies',
       type: 'text',
       admin: {
         description:
-          'Small label shown on flavors customers can order one at a time, for example "This month\'s flavor" or "Available individually".',
+          'Small label shown on /rotations cookies, for example "This month\'s flavor" or "Available individually".',
       },
       defaultValue: "This month's flavor",
     },
@@ -373,7 +377,7 @@ export const FlavorRotations: CollectionConfig = {
       type: 'text',
       admin: {
         description:
-          'Short label shown on flavors that are visible on /rotations but cannot be ordered one at a time.',
+          'Short label used by broader cookie showcases when a flavor is outside the public rotation and only available through catering.',
       },
       defaultValue: 'Catering only this month',
     },
@@ -383,7 +387,7 @@ export const FlavorRotations: CollectionConfig = {
       type: 'textarea',
       admin: {
         description:
-          'Message shown when a customer opens a visible flavor that is not available for individual ordering.',
+          'Message used by broader cookie showcases when a customer opens a flavor outside the public rotation.',
       },
       defaultValue: defaultLockedDescription,
     },
@@ -401,8 +405,7 @@ export const FlavorRotations: CollectionConfig = {
       name: 'ownerNotes',
       type: 'textarea',
       admin: {
-        description:
-          'Private notes for planning. Customers never see this.',
+        description: 'Private notes for planning. Customers never see this.',
         position: 'sidebar',
       },
     },

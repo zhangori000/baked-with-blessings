@@ -113,6 +113,8 @@ class CloudPaperOverlay extends PaperOverlayPiece {
 
 const JUMP_DURATION_MS = 280
 const MOBILE_JUMP_DURATION_MS = 175
+const REDUCED_JUMP_DURATION_MS = 140
+const VISUAL_VIEWPORT_ZOOM_THRESHOLD = 1.01
 const grassVisibleHeightRatioDesktop = Number(((375 - 246.066406) / 375).toFixed(5))
 const grassVisibleHeightRatioMobile = 0.834
 const grassCrestLimitRatio = 0.45
@@ -604,6 +606,30 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion
 }
 
+function useIsMobileViewport() {
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      return
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 639px)')
+    const updateViewport = () => {
+      setIsMobileViewport(mediaQuery.matches)
+    }
+
+    updateViewport()
+    mediaQuery.addEventListener('change', updateViewport)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport)
+    }
+  }, [])
+
+  return isMobileViewport
+}
+
 type HomeCookieJumpRigPhase = 'active' | 'incoming' | 'outgoing'
 
 type HomeCookieJumpRigProps = {
@@ -684,6 +710,7 @@ export function HomeCookieCarousel({
 }: HomeCookieCarouselProps) {
   const { addItem, isLoading: cartIsLoading } = useCart()
   const prefersReducedMotion = usePrefersReducedMotion()
+  const isMobileViewport = useIsMobileViewport()
   const [activeIndex, setActiveIndex] = useState(0)
   const [cartPromptState, setCartPromptState] = useState<{
     phase: 'added' | 'idle' | 'loading' | 'open'
@@ -697,6 +724,7 @@ export function HomeCookieCarousel({
   const [sceneTone, setSceneTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
+  const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
   const [infoPhase, setInfoPhase] = useState<CarouselInfoPhase>('hidden')
   const [infoPromptLayout, setInfoPromptLayout] = useState<InfoPromptLayout>({
@@ -719,20 +747,25 @@ export function HomeCookieCarousel({
     if (typeof window === 'undefined') return
 
     const root = document.documentElement
-    const updateViewportHeight = () => {
+    const updateViewportState = () => {
+      const isZoomed = (window.visualViewport?.scale ?? 1) > VISUAL_VIEWPORT_ZOOM_THRESHOLD
+      setIsViewportZoomed((current) => (current === isZoomed ? current : isZoomed))
+
+      if (isZoomed) {
+        return
+      }
+
       const visualHeight = window.visualViewport?.height ?? window.innerHeight
       root.style.setProperty('--home-cookie-viewport-height', `${visualHeight}px`)
     }
 
-    updateViewportHeight()
-    window.addEventListener('resize', updateViewportHeight)
-    window.visualViewport?.addEventListener('resize', updateViewportHeight)
-    window.visualViewport?.addEventListener('scroll', updateViewportHeight)
+    updateViewportState()
+    window.addEventListener('resize', updateViewportState)
+    window.visualViewport?.addEventListener('resize', updateViewportState)
 
     return () => {
-      window.removeEventListener('resize', updateViewportHeight)
-      window.visualViewport?.removeEventListener('resize', updateViewportHeight)
-      window.visualViewport?.removeEventListener('scroll', updateViewportHeight)
+      window.removeEventListener('resize', updateViewportState)
+      window.visualViewport?.removeEventListener('resize', updateViewportState)
       root.style.removeProperty('--home-cookie-viewport-height')
     }
   }, [])
@@ -1008,11 +1041,12 @@ export function HomeCookieCarousel({
     activePosterPromptPhase === 'open' ||
     activePosterPromptPhase === 'loading' ||
     activePosterPromptPhase === 'added'
-  const getJumpDurationMs = () =>
-    typeof window !== 'undefined' && window.innerWidth < 640
+  const jumpDurationMs = prefersReducedMotion
+    ? REDUCED_JUMP_DURATION_MS
+    : isMobileViewport
       ? MOBILE_JUMP_DURATION_MS
       : JUMP_DURATION_MS
-  const jumpDurationSeconds = (prefersReducedMotion ? 140 : getJumpDurationMs()) / 1000
+  const jumpDurationSeconds = jumpDurationMs / 1000
 
   const beginCarouselTransition = (direction: -1 | 1) => {
     const currentIndex = activeIndexRef.current
@@ -1214,6 +1248,8 @@ export function HomeCookieCarousel({
       aria-roledescription="carousel"
       className={`home-page-placeholder homeCookieShowcase relative left-1/2 flex w-screen -translate-x-1/2 flex-col${
         sceneVariant === 'scenery' ? ' homeCookieShowcase--scenery' : ''
+      }${
+        isViewportZoomed ? ' homeCookieShowcase--viewportZoomed' : ''
       } homeCookieScene-${sceneTone}`}
       style={sectionStyle}
     >
@@ -1736,6 +1772,18 @@ export function HomeCookieCarousel({
         .homeCookieShowcase--scenery,
         .homeCookieShowcase--scenery .homeCookieBackdrop {
           background: transparent;
+        }
+
+        .homeCookieShowcase--scenery {
+          touch-action: pan-x pan-y pinch-zoom;
+        }
+
+        .homeCookieShowcase--viewportZoomed .homeCookieSceneCloud,
+        .homeCookieShowcase--viewportZoomed .homeCookieSceneFlower,
+        .homeCookieShowcase--viewportZoomed .homeCookiePaperLayer--cloud,
+        .homeCookieShowcase--viewportZoomed .homeCookieMeadowFlower::before,
+        .homeCookieShowcase--viewportZoomed .homeCookieMeadowFlower::after {
+          animation-play-state: paused;
         }
 
         .homeCookieSceneSky,

@@ -1932,6 +1932,22 @@ body:has(.cateringScene-moonlit) .siteHeaderBrandLogo--dark {
   visibility: visible;
 }
 
+@media (max-width: 767px) {
+  .siteHeaderBrand.has-logo {
+    width: 136px;
+  }
+
+  .siteHeaderBrandLogo {
+    max-height: 56px;
+  }
+
+  body:has(.homeCookieScene-moonlit) .siteHeaderBrandLogo,
+  body:has(.cateringScene-moonlit) .siteHeaderBrandLogo {
+    height: clamp(3.25rem, 15vw, 3.65rem);
+    max-width: clamp(7.8rem, 36vw, 8.8rem);
+  }
+}
+
 body:has(.routeLoadingSurface) .siteHeader {
   --site-header-text: var(--route-loading-banner-color, #10180d) !important;
   background: var(--route-loading-background, #eef8ef) !important;

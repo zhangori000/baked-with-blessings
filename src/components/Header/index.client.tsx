@@ -27,10 +27,7 @@ import {
   reviewsHref,
   rotationsHref,
 } from '@/utilities/routes'
-import {
-  isPayloadMediaFileURL,
-  resolveMediaDisplayURL,
-} from '@/utilities/resolveMediaDisplayURL'
+import { isPayloadMediaFileURL, resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
   ArrowRight,
   BookOpenText,
@@ -45,16 +42,22 @@ import {
   PanelsTopLeft,
   StickyNote,
   ShoppingBag,
+  type LucideIcon,
   UserRound,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { buildHeaderNavigation, isHeaderNavigationItemActive } from './constants'
+import {
+  buildHeaderNavigation,
+  getEnabledHeaderAppPages,
+  type HeaderAppPageIcon,
+  isHeaderNavigationItemActive,
+} from './constants'
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
@@ -131,6 +134,15 @@ const getActiveAppLabel = (pathname: string) => {
 
 const appsNavigationLabel = 'Other pages'
 
+const appIconByKey: Record<HeaderAppPageIcon, LucideIcon> = {
+  'book-open-text': BookOpenText,
+  'clipboard-check': ClipboardCheck,
+  handshake: Handshake,
+  lightbulb: Lightbulb,
+  'message-square-text': MessageSquareText,
+  'sticky-note': StickyNote,
+}
+
 const formatCartQuantity = (quantity: number) => `${quantity} item${quantity === 1 ? '' : 's'}`
 
 const getSafeLocalRedirect = (value: null | string) => {
@@ -181,7 +193,11 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
 
   const hasSignedInAccount = Boolean(user || adminSessionUser)
   const isAccountSessionPending = !user && isAdminSessionLoading
-  const signedInAccountLabel = user ? 'Customer account' : adminSessionUser ? 'Owner workspace' : null
+  const signedInAccountLabel = user
+    ? 'Customer account'
+    : adminSessionUser
+      ? 'Owner workspace'
+      : null
   const signedInAccountIdentifier = (() => {
     const candidates = user
       ? [user.name, user.email, user.phone, user.username]
@@ -196,11 +212,13 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
     : 'Signed in'
 
   const navigationItems = useMemo(() => {
-    return buildHeaderNavigation(header.navItems || []).map((item) => ({
+    return buildHeaderNavigation(header.navItems || [], sitePages).map((item) => ({
       ...item,
       isActive: isHeaderNavigationItemActive(pathname, item),
     }))
-  }, [header.navItems, pathname])
+  }, [header.navItems, pathname, sitePages])
+
+  const enabledAppPages = useMemo(() => getEnabledHeaderAppPages(sitePages), [sitePages])
 
   const cartItems = useMemo(() => cart?.items ?? [], [cart?.items])
   const cartQuantity = useMemo(
@@ -232,6 +250,12 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
   }
 
   const appsButtonLabel = activeAppLabel || appsNavigationLabel
+
+  const submitCustomerCreateFromVerificationCode = useEffectEvent(() => {
+    void handleCustomerCreateSubmit({
+      preventDefault: () => undefined,
+    } as FormEvent<HTMLFormElement>)
+  })
 
   useEffect(() => {
     setActivePanel(null)
@@ -271,13 +295,10 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
     router.prefetch(menuHref)
     router.prefetch(rotationsHref)
     router.prefetch(contactHref)
-    router.prefetch(blogHref)
-    router.prefetch(discussionBoardHref)
-    router.prefetch(blessingsNetworkHref)
-    router.prefetch(reviewsHref)
-    router.prefetch(communityHref)
-    router.prefetch(featureRequestsHref)
-  }, [router])
+    enabledAppPages.forEach((page) => {
+      router.prefetch(page.href)
+    })
+  }, [enabledAppPages, router])
 
   useEffect(() => {
     const closePanel = () => setActivePanel(null)
@@ -683,9 +704,7 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
 
     lastAutoSubmittedCreateCodeRef.current = code
     const timeout = window.setTimeout(() => {
-      void handleCustomerCreateSubmit({
-        preventDefault: () => undefined,
-      } as FormEvent<HTMLFormElement>)
+      submitCustomerCreateFromVerificationCode()
     }, 120)
 
     return () => {
@@ -960,153 +979,32 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                     </div>
                   </div>
 
-                  {sitePages.communityEnabled ? (
-                    <BakeryCard
-                      as={Link}
-                      className="siteHeaderAppCard"
-                      href={communityHref}
-                      onClick={() => setActivePanel(null)}
-                      radius="md"
-                      spacing="none"
-                      tone="transparent"
-                    >
-                      <span className="siteHeaderAppIcon" aria-hidden="true">
-                        <StickyNote className="h-5 w-5" />
-                      </span>
-                      <span className="siteHeaderAppCopy">
-                        <span className="siteHeaderAppEyebrow">Community</span>
-                        <span className="siteHeaderAppTitle">Post-it Wall</span>
-                        <span className="siteHeaderAppDescription">
-                          Tiny letters from people who just ordered with us — react, scroll,
-                          and leave one of your own after you order.
-                        </span>
-                      </span>
-                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                    </BakeryCard>
-                  ) : null}
+                  {enabledAppPages.map((appPage) => {
+                    const Icon = appIconByKey[appPage.icon]
 
-                  {sitePages.reviewsEnabled ? (
-                    <BakeryCard
-                      as={Link}
-                      className="siteHeaderAppCard"
-                      href={reviewsHref}
-                      onClick={() => setActivePanel(null)}
-                      radius="md"
-                      spacing="none"
-                      tone="transparent"
-                    >
-                      <span className="siteHeaderAppIcon" aria-hidden="true">
-                        <ClipboardCheck className="h-5 w-5" />
-                      </span>
-                      <span className="siteHeaderAppCopy">
-                        <span className="siteHeaderAppEyebrow">Transparency</span>
-                        <span className="siteHeaderAppTitle">Reviews</span>
-                        <span className="siteHeaderAppDescription">
-                          Reviews with photos, public responses, action logs, and boundaries around
-                          unfair claims.
+                    return (
+                      <BakeryCard
+                        as={Link}
+                        className="siteHeaderAppCard"
+                        href={appPage.href}
+                        key={appPage.id}
+                        onClick={() => setActivePanel(null)}
+                        radius="md"
+                        spacing="none"
+                        tone="transparent"
+                      >
+                        <span className="siteHeaderAppIcon" aria-hidden="true">
+                          <Icon className="h-5 w-5" />
                         </span>
-                      </span>
-                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                    </BakeryCard>
-                  ) : null}
-
-                  {sitePages.featureRequestsEnabled ? (
-                    <BakeryCard
-                      as={Link}
-                      className="siteHeaderAppCard"
-                      href={featureRequestsHref}
-                      onClick={() => setActivePanel(null)}
-                      radius="md"
-                      spacing="none"
-                      tone="transparent"
-                    >
-                      <span className="siteHeaderAppIcon" aria-hidden="true">
-                        <Lightbulb className="h-5 w-5" />
-                      </span>
-                      <span className="siteHeaderAppCopy">
-                        <span className="siteHeaderAppEyebrow">Tell us what to build</span>
-                        <span className="siteHeaderAppTitle">Request Features</span>
-                        <span className="siteHeaderAppDescription">
-                          Suggest pages, food, packaging, anything. Public requests get rated and
-                          replied to; private DMs go straight to the bakery owner.
+                        <span className="siteHeaderAppCopy">
+                          <span className="siteHeaderAppEyebrow">{appPage.eyebrow}</span>
+                          <span className="siteHeaderAppTitle">{appPage.title}</span>
+                          <span className="siteHeaderAppDescription">{appPage.description}</span>
                         </span>
-                      </span>
-                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                    </BakeryCard>
-                  ) : null}
-
-                  {sitePages.blogEnabled ? (
-                    <BakeryCard
-                      as={Link}
-                      className="siteHeaderAppCard"
-                      href={blogHref}
-                      onClick={() => setActivePanel(null)}
-                      radius="md"
-                      spacing="none"
-                      tone="transparent"
-                    >
-                      <span className="siteHeaderAppIcon" aria-hidden="true">
-                        <BookOpenText className="h-5 w-5" />
-                      </span>
-                      <span className="siteHeaderAppCopy">
-                        <span className="siteHeaderAppEyebrow">Writing</span>
-                        <span className="siteHeaderAppTitle">Blog</span>
-                        <span className="siteHeaderAppDescription">
-                          Notes and essays about school, business, community, and building the bakery.
-                        </span>
-                      </span>
-                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                    </BakeryCard>
-                  ) : null}
-
-                  {sitePages.discussionBoardEnabled ? (
-                    <BakeryCard
-                      as={Link}
-                      className="siteHeaderAppCard"
-                      href={discussionBoardHref}
-                      onClick={() => setActivePanel(null)}
-                      radius="md"
-                      spacing="none"
-                      tone="transparent"
-                    >
-                      <span className="siteHeaderAppIcon" aria-hidden="true">
-                        <MessageSquareText className="h-5 w-5" />
-                      </span>
-                      <span className="siteHeaderAppCopy">
-                        <span className="siteHeaderAppEyebrow">Community</span>
-                        <span className="siteHeaderAppTitle">Discussion Board</span>
-                        <span className="siteHeaderAppDescription">
-                          Open questions, replies, support paths, and challenges in one structured
-                          board.
-                        </span>
-                      </span>
-                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                    </BakeryCard>
-                  ) : null}
-
-                  {sitePages.blessingsNetworkEnabled ? (
-                    <BakeryCard
-                      as={Link}
-                      className="siteHeaderAppCard"
-                      href={blessingsNetworkHref}
-                      onClick={() => setActivePanel(null)}
-                      radius="md"
-                      spacing="none"
-                      tone="transparent"
-                    >
-                      <span className="siteHeaderAppIcon" aria-hidden="true">
-                        <Handshake className="h-5 w-5" />
-                      </span>
-                      <span className="siteHeaderAppCopy">
-                        <span className="siteHeaderAppEyebrow">Community advice</span>
-                        <span className="siteHeaderAppTitle">Community Advice</span>
-                        <span className="siteHeaderAppDescription">
-                          Practical owner advice paired with public business profiles and links.
-                        </span>
-                      </span>
-                      <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                    </BakeryCard>
-                  ) : null}
+                        <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
+                      </BakeryCard>
+                    )
+                  })}
                 </div>
               ) : null}
 
@@ -1223,7 +1121,9 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                             </label>
                             <button
                               className="siteHeaderAuthInlineButton"
-                              disabled={isCustomerCreateResending || customerCreateResendSeconds > 0}
+                              disabled={
+                                isCustomerCreateResending || customerCreateResendSeconds > 0
+                              }
                               onClick={handleCustomerCreateSendCode}
                               type="button"
                             >
@@ -1350,37 +1250,39 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                             <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
                             {accountAuthMode === 'create' ? 'Creating account' : 'Signing in'}
                           </>
+                        ) : accountAuthMode === 'create' ? (
+                          customerCreateNeedsVerification ? (
+                            'Create account'
+                          ) : (
+                            'Send code to continue'
+                          )
                         ) : (
-                          accountAuthMode === 'create'
-                            ? customerCreateNeedsVerification
-                              ? 'Create account'
-                              : 'Send code to continue'
-                            : 'Sign in'
+                          'Sign in'
                         )}
                       </button>
 
                       {!customerCreateNeedsVerification ? (
                         <div className="siteHeaderAuthLinks">
-                        <button
-                          className="siteHeaderAuthLinkButton"
-                          onClick={() => {
-                            setCustomerLoginError(null)
-                            setCustomerCreateError(null)
-                            setCustomerCreateNotice(null)
-                            setCustomerCreateNeedsVerification(false)
-                            setCustomerCreateVerificationCode('')
-                            setCustomerCreateVerificationRecipient('')
-                            setCustomerCreateResendAvailableAt(null)
-                            setAccountAuthMode((current) =>
-                              current === 'create' ? 'login' : 'create',
-                            )
-                          }}
-                          type="button"
-                        >
-                          {accountAuthMode === 'create'
-                            ? 'Already have an account? Sign in'
-                            : 'Create an account'}
-                        </button>
+                          <button
+                            className="siteHeaderAuthLinkButton"
+                            onClick={() => {
+                              setCustomerLoginError(null)
+                              setCustomerCreateError(null)
+                              setCustomerCreateNotice(null)
+                              setCustomerCreateNeedsVerification(false)
+                              setCustomerCreateVerificationCode('')
+                              setCustomerCreateVerificationRecipient('')
+                              setCustomerCreateResendAvailableAt(null)
+                              setAccountAuthMode((current) =>
+                                current === 'create' ? 'login' : 'create',
+                              )
+                            }}
+                            type="button"
+                          >
+                            {accountAuthMode === 'create'
+                              ? 'Already have an account? Sign in'
+                              : 'Create an account'}
+                          </button>
                         </div>
                       ) : null}
                     </form>

@@ -28,6 +28,8 @@ type ActiveFlavorRotation = {
   title?: null | string
 }
 
+const publicRotationFlavorLimit = 3
+
 const productSelect = {
   gallery: true,
   id: true,
@@ -50,6 +52,10 @@ const getRelationshipIDs = (values?: ProductRelationship[] | null) =>
   (values ?? [])
     .map((value) => getRelationshipID(value))
     .filter((id): id is DefaultDocumentIDType => id != null)
+
+export const getPublicRotationProductIDs = (
+  activeRotation: Pick<ActiveFlavorRotation, 'individualFlavors'> | null,
+) => getRelationshipIDs(activeRotation?.individualFlavors).slice(0, publicRotationFlavorLimit)
 
 const queryActiveFlavorRotation = async (payload: Payload) => {
   const rotationResult = await measureServerStep(
@@ -316,6 +322,25 @@ const queryRotationShowcaseProducts = async ({
   return queryCookieCategoryProducts(payload)
 }
 
+const queryPublicRotationProducts = async ({
+  activeRotation,
+  payload,
+}: {
+  activeRotation: ActiveFlavorRotation | null
+  payload: Payload
+}) => {
+  const publicRotationProductIDs = getPublicRotationProductIDs(activeRotation)
+
+  if (publicRotationProductIDs.length > 0) {
+    return queryProductsByIDs({
+      payload,
+      productIDs: publicRotationProductIDs,
+    })
+  }
+
+  return []
+}
+
 export const queryHomeCookiePosters = async () => {
   const payload = await measureServerStep('payload init: rotating cookie posters', () =>
     getPayload({ config: configPromise }),
@@ -335,4 +360,27 @@ export const queryHomeCookiePosters = async () => {
   return postersWithAvailability.length > 0
     ? postersWithAvailability
     : buildFallbackHomeCookiePosters()
+}
+
+export const queryPublicRotationCookiePosters = async () => {
+  const payload = await measureServerStep('payload init: public rotation cookie posters', () =>
+    getPayload({ config: configPromise }),
+  )
+  const activeRotation = await queryActiveFlavorRotation(payload)
+
+  if (!activeRotation) {
+    return buildFallbackHomeCookiePosters().slice(0, publicRotationFlavorLimit)
+  }
+
+  const products = await queryPublicRotationProducts({
+    activeRotation,
+    payload,
+  })
+
+  const posters = buildCookiePosterAssets(products)
+
+  return applyRotationAvailability({
+    activeRotation,
+    posters,
+  })
 }

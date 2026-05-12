@@ -93,10 +93,11 @@ export const RotationShowcaseProductsField: React.FC = () => {
   } = useField<ProductID[]>({
     path: 'showcaseProducts',
   })
-  const { setValue: setIndividualFlavorsValue, value: individualFlavorsValue } =
-    useField<ProductID[]>({
-      path: 'individualFlavors',
-    })
+  const { setValue: setIndividualFlavorsValue, value: individualFlavorsValue } = useField<
+    ProductID[]
+  >({
+    path: 'individualFlavors',
+  })
 
   const [products, setProducts] = useState<ProductDoc[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -178,15 +179,18 @@ export const RotationShowcaseProductsField: React.FC = () => {
   const allLoadedProductsSelected =
     allProductIDs.length > 0 && allProductIDs.every((id) => hasID(selectedIDs, id))
 
-  const updateShowcaseProducts = useCallback((nextIDs: ProductID[]) => {
-    const nextIndividualIDs = removeIDsNotInAllowedSet(
-      normalizeRelationshipIDs(individualFlavorsValue),
-      nextIDs,
-    )
+  const updateShowcaseProducts = useCallback(
+    (nextIDs: ProductID[]) => {
+      const nextIndividualIDs = removeIDsNotInAllowedSet(
+        normalizeRelationshipIDs(individualFlavorsValue),
+        nextIDs,
+      )
 
-    setShowcaseProductsValue(nextIDs)
-    setIndividualFlavorsValue(nextIndividualIDs)
-  }, [individualFlavorsValue, setIndividualFlavorsValue, setShowcaseProductsValue])
+      setShowcaseProductsValue(nextIDs)
+      setIndividualFlavorsValue(nextIndividualIDs)
+    },
+    [individualFlavorsValue, setIndividualFlavorsValue, setShowcaseProductsValue],
+  )
 
   useEffect(() => {
     if (isLoading || error || selectedIDs.length === 0) {
@@ -229,11 +233,11 @@ export const RotationShowcaseProductsField: React.FC = () => {
       <div className={`${baseClass}__header`}>
         <div>
           <span className={`${baseClass}__label`} id="rotation-showcase-products-label">
-            All flavors shown on /rotations <span aria-hidden="true">*</span>
+            Flavor pool for rotation planning <span aria-hidden="true">*</span>
           </span>
           <p className={`${baseClass}__description`} id="rotation-showcase-products-description">
-            Select every normal product customers should see on /rotations. Tray, catering-pack,
-            and batch-builder products are hidden from this list.
+            Select normal products that can be chosen for the public rotation below. This pool does
+            not publish a flavor to /rotations by itself.
           </p>
         </div>
         <div className={`${baseClass}__actions`}>
@@ -281,10 +285,7 @@ export const RotationShowcaseProductsField: React.FC = () => {
             return (
               <BakeryPressable
                 aria-pressed={isSelected}
-                className={[
-                  `${baseClass}__option`,
-                  isSelected && `${baseClass}__option--selected`,
-                ]
+                className={[`${baseClass}__option`, isSelected && `${baseClass}__option--selected`]
                   .filter(Boolean)
                   .join(' ')}
                 disabled={disabled}

@@ -1893,7 +1893,7 @@ export interface BlessingsNetworkOwnerPost {
   createdAt: string;
 }
 /**
- * Controls the /rotations page. Choose every flavor customers should see, then choose which of those are available for individual orders right now.
+ * Controls the /rotations page. For now, the public page shows exactly the three products selected in Public rotation cookies.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "flavor-rotations".
@@ -1917,23 +1917,23 @@ export interface FlavorRotation {
    */
   displayLabel?: string | null;
   /**
-   * Every normal product selected here appears on the /rotations page. Tray, catering-pack, and batch-builder products are intentionally excluded.
+   * Internal planning pool used to choose the public rotation cookies. These products do not appear on /rotations unless they are also selected below.
    */
   showcaseProducts: (number | Product)[];
   /**
-   * Choose from the list above. These flavors appear first and customers can add them directly to cart; the other shown flavors become catering-only.
+   * Choose exactly three from the planning pool above. These are the only cookies customers see on /rotations right now.
    */
   individualFlavors: (number | Product)[];
   /**
-   * Small label shown on flavors customers can order one at a time, for example "This month's flavor" or "Available individually".
+   * Small label shown on /rotations cookies, for example "This month's flavor" or "Available individually".
    */
   monthlyFlavorLabel?: string | null;
   /**
-   * Short label shown on flavors that are visible on /rotations but cannot be ordered one at a time.
+   * Short label used by broader cookie showcases when a flavor is outside the public rotation and only available through catering.
    */
   lockedLabel?: string | null;
   /**
-   * Message shown when a customer opens a visible flavor that is not available for individual ordering.
+   * Message used by broader cookie showcases when a customer opens a flavor outside the public rotation.
    */
   lockedDescription?: string | null;
   /**
