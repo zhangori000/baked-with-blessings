@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { getPublicRotationProductIDs } from '@/app/(app)/cookiePosterQueries'
 
 describe('cookie poster queries', () => {
-  it('uses only the first three public rotation cookie IDs', () => {
+  it('uses every selected public rotation cookie ID', () => {
     expect(
       getPublicRotationProductIDs({
         individualFlavors: [10, { id: 20 }, 30, 40],
       }),
-    ).toEqual([10, 20, 30])
+    ).toEqual([10, 20, 30, 40])
   })
 
   it('returns no public rotation IDs when there is no active rotation', () => {

@@ -1893,7 +1893,7 @@ export interface BlessingsNetworkOwnerPost {
   createdAt: string;
 }
 /**
- * Controls the /rotations page. For now, the public page shows exactly the three products selected in Public rotation cookies.
+ * Controls the /rotations page. The public page shows the products selected in Public rotation cookies.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "flavor-rotations".
@@ -1921,7 +1921,7 @@ export interface FlavorRotation {
    */
   showcaseProducts: (number | Product)[];
   /**
-   * Choose exactly three from the planning pool above. These are the only cookies customers see on /rotations right now.
+   * Choose any number from the planning pool above. These are the cookies customers see on /rotations right now.
    */
   individualFlavors: (number | Product)[];
   /**

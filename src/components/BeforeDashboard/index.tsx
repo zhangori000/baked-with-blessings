@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 
+import { BulkCookiePriceTool } from './BulkCookiePriceTool'
 import { SeedButton } from './SeedButton'
 import styles from './index.module.css'
 
@@ -52,8 +53,22 @@ export const BeforeDashboard: React.FC = () => {
 
         <article className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardKicker}>Payments</span>
+            <span className={styles.cardKicker}>Products</span>
             <span className={styles.cardIcon}>02</span>
+          </div>
+          <h2 className={styles.cardTitle}>Set every cookie price</h2>
+          <p className={styles.cardBody}>
+            Change every cookie product at once instead of editing each flavor one by one.
+          </p>
+          <div className={styles.cardFooter}>
+            <BulkCookiePriceTool messageClassName={styles.helperText} />
+          </div>
+        </article>
+
+        <article className={styles.card}>
+          <div className={styles.cardHeader}>
+            <span className={styles.cardKicker}>Payments</span>
+            <span className={styles.cardIcon}>03</span>
           </div>
           <h2 className={styles.cardTitle}>Connect Stripe test keys</h2>
           <p className={styles.cardBody}>
@@ -83,7 +98,7 @@ export const BeforeDashboard: React.FC = () => {
         <article className={styles.card}>
           <div className={styles.cardHeader}>
             <span className={styles.cardKicker}>Modeling</span>
-            <span className={styles.cardIcon}>03</span>
+            <span className={styles.cardIcon}>04</span>
           </div>
           <h2 className={styles.cardTitle}>Shape your admin around your content</h2>
           <p className={styles.cardBody}>

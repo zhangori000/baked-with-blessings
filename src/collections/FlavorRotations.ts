@@ -11,7 +11,6 @@ import { isAdminUser } from '@/access/utilities'
 
 const defaultLockedDescription =
   'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'
-const publicRotationFlavorCount = 3
 
 type ProductRelationship = DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null | undefined
 
@@ -173,7 +172,7 @@ export const FlavorRotations: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'status', 'rotationType', 'individualFlavors', 'updatedAt'],
     description:
-      'Controls the /rotations page. For now, the public page shows exactly the three products selected in Public rotation cookies.',
+      'Controls the /rotations page. The public page shows the products selected in Public rotation cookies.',
     group: 'Content',
     useAsTitle: 'title',
   },
@@ -310,7 +309,7 @@ export const FlavorRotations: CollectionConfig = {
       type: 'relationship',
       admin: {
         description:
-          'Choose exactly three from the planning pool above. These are the only cookies customers see on /rotations right now.',
+          'Choose any number from the planning pool above. These are the cookies customers see on /rotations right now.',
       },
       filterOptions: async ({ req, siblingData }) => {
         const showcaseIDs = getRelationshipIDs(
@@ -345,11 +344,7 @@ export const FlavorRotations: CollectionConfig = {
         )
 
         if (selectedIDs.length === 0) {
-          return `Choose exactly ${publicRotationFlavorCount} cookies for /rotations.`
-        }
-
-        if (selectedIDs.length !== publicRotationFlavorCount) {
-          return `Choose exactly ${publicRotationFlavorCount} cookies for /rotations.`
+          return 'Choose at least one cookie for /rotations.'
         }
 
         const missingFromShowcase = selectedIDs.filter((id) => !showcaseIDs.has(id))
