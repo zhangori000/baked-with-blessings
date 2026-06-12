@@ -449,30 +449,12 @@
   scrollbar-width: thin;
 }
 
+/* The apps section flows inside .siteHeaderMobilePanelCards' single scroll.
+   It used to cap its own height and scroll independently, which nested two
+   scrollbars inside the mobile panel. */
 .siteHeaderMobileAppScroller {
   display: grid;
   gap: 0.55rem;
-  max-height: min(42dvh, 20.5rem);
-  overflow-y: auto;
-  padding-right: 0.14rem;
-  scrollbar-color: rgb(23 52 31 / 42%) transparent;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-}
-
-.siteHeaderMobileAppScroller::-webkit-scrollbar {
-  width: 0.62rem;
-}
-
-.siteHeaderMobileAppScroller::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.siteHeaderMobileAppScroller::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background: rgb(23 52 31 / 36%);
-  background-clip: padding-box;
 }
 
 .siteHeaderMobileCard {
