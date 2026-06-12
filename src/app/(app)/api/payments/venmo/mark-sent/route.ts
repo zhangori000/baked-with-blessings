@@ -5,6 +5,7 @@ import type { Payload } from 'payload'
 import { getPayload } from 'payload'
 
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { isPayAtPickupMode } from '@/utilities/storeSettings'
 
 const VENMO_HANDLE = '@bakedwithblessings'
 
@@ -110,6 +111,14 @@ const getExistingOrderByReference = async ({
 
 export async function POST(request: Request) {
   const payload = await getPayload({ config })
+
+  if (await isPayAtPickupMode(payload)) {
+    return jsonError(
+      'Venmo at checkout is turned off right now. Place your order and pay when you pick it up.',
+      409,
+    )
+  }
+
   const user = await getAuthenticatedCustomer(payload, request.headers)
 
   if (!user) {

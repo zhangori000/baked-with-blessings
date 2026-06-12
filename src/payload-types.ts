@@ -164,6 +164,7 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    'store-settings': StoreSetting;
     brand: Brand;
     header: Header;
     footer: Footer;
@@ -174,6 +175,7 @@ export interface Config {
     'site-pages': SitePage;
   };
   globalsSelect: {
+    'store-settings': StoreSettingsSelect<false> | StoreSettingsSelect<true>;
     brand: BrandSelect<false> | BrandSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
@@ -3374,6 +3376,21 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Storefront-wide switches the business owner can flip without a code change. Changes apply as soon as you save.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-settings".
+ */
+export interface StoreSetting {
+  id: number;
+  /**
+   * Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over.
+   */
+  paymentCollectionMode: 'payNow' | 'payAtPickup';
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Manage the storefront brand name and logo in one place so the header can change without a code edit.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3588,6 +3605,16 @@ export interface SitePage {
   featureRequestsEnabled?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-settings_select".
+ */
+export interface StoreSettingsSelect<T extends boolean = true> {
+  paymentCollectionMode?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

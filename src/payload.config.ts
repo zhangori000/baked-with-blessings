@@ -50,6 +50,7 @@ import { FeatureRequestsContent } from '@/globals/FeatureRequestsContent'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { SitePages } from '@/globals/SitePages'
+import { StoreSettings } from '@/globals/StoreSettings'
 import { resolveDatabaseURL } from '@/utilities/resolveDatabaseURL'
 import { plugins } from './plugins'
 
@@ -156,6 +157,7 @@ export default buildConfig({
   email: emailAdapter,
   endpoints: [],
   globals: [
+    StoreSettings,
     Brand,
     Header,
     Footer,
