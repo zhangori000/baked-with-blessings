@@ -16,12 +16,17 @@ export type CookiePosterMeta = {
 }
 
 export type CookiePosterAsset = CookiePosterMeta & {
+  /** Variant added when a surface adds to cart without a size picker (the carousel). */
+  addToCartSizeLabel?: null | string
+  addToCartVariantId?: null | number
   allergens: string[]
   amount: string
   canBuyCatering?: boolean
   canBuyIndividually?: boolean
   href: string
   image: Media | null
+  /** Mirrors products.individualAvailability: 'always' = standing menu, 'rotation' = gated by the active rotation. */
+  individualAvailability?: Product['individualAvailability'] | null
   infoButtonLabel: string
   isMonthlyFlavor?: boolean
   lockedDescription?: string
@@ -274,6 +279,7 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
     canBuyCatering: true,
     canBuyIndividually: true,
     href: `/cookies/${meta.slug}`,
+    individualAvailability: product.individualAvailability ?? null,
     image: normalizeImage(product),
     infoButtonLabel: defaultInfoButtonLabel,
     isMonthlyFlavor: true,

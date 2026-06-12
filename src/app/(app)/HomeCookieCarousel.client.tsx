@@ -1176,6 +1176,9 @@ export function HomeCookieCarousel({
     try {
       await addItem({
         product: activePoster.productId!,
+        ...(typeof activePoster.addToCartVariantId === 'number'
+          ? { variant: activePoster.addToCartVariantId }
+          : {}),
       })
 
       setCartPromptState({
@@ -1639,6 +1642,11 @@ export function HomeCookieCarousel({
                       <p className="homeCookieCartPromptSubtext">
                         {activePoster.lockedDescription ??
                           'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'}
+                      </p>
+                    ) : activePoster.addToCartSizeLabel && activePosterPromptPhase === 'open' ? (
+                      <p className="homeCookieCartPromptSubtext">
+                        Adds the {activePoster.addToCartSizeLabel.toLowerCase()} size — every size
+                        and quantity is on the menu.
                       </p>
                     ) : null}
                     {activePosterPromptPhase === 'open' ? (

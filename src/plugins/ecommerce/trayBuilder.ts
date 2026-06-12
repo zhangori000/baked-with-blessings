@@ -37,6 +37,7 @@ type ProductConfigLike = {
     | (DefaultDocumentIDType | CategoryConfigLike | null)[]
     | null
   id?: DefaultDocumentIDType
+  individualAvailability?: null | string
   menuBehavior?: 'batchBuilder' | 'simple' | string | null
   requiredSelectionCount?: null | number
   selectableProducts?:
@@ -308,6 +309,12 @@ const validateBatchSelections = async ({
     product: ProductConfigLike | undefined
     productID: DefaultDocumentIDType
   }) => {
+    // Standing-menu flavors are individually orderable year-round; the
+    // rotation gate below only applies to rotation-scoped flavors.
+    if (product?.individualAvailability === 'always') {
+      return
+    }
+
     const activeRotationFlavorIDs = await loadActiveRotationFlavorIDSet()
 
     if (!activeRotationFlavorIDs) {
