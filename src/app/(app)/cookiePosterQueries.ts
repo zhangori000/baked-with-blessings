@@ -18,7 +18,7 @@ import {
 } from '@/features/products/sizeVariants'
 import type { Variant } from '@/payload-types'
 import { measureServerStep } from '@/utilities/devTiming'
-import { menuHref } from '@/utilities/routes'
+import { cateringMenuHref } from '@/utilities/routes'
 
 type ProductRelationship = DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null | undefined
 
@@ -132,7 +132,7 @@ export const applyRotationAvailability = ({
           activeRotation.lockedDescription?.trim() ||
           'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
         lockedLabel: activeRotation.lockedLabel?.trim() || 'Catering only this month',
-        menuHref,
+        menuHref: cateringMenuHref,
         menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View menu',
         monthlyFlavorLabel:
           !isMonthlyFlavor && isAlwaysAvailable

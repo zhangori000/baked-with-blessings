@@ -35,12 +35,29 @@ import {
   skyByScenery,
   type PersuasionGardenPanelClassNames,
 } from './catering-menu-scenery'
-import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
+import type {
+  MenuSection,
+  MenuSceneryTone,
+  RegularOrderItem,
+  SelectableFlavor,
+} from './catering-menu-types'
+import { MenuSectionTabs, type MenuSectionTabDef } from './menu-section-tabs'
+import { RegularOrdersPanel } from './regular-orders-panel'
 
 type CateringMenuSectionProps = {
   initialSceneryTone?: MenuSceneryTone
+  initialSection?: MenuSection
   products: Partial<Product>[]
+  regularItems?: RegularOrderItem[]
+  seasonalLabel?: string
 }
+
+const menuSectionTabDefs: MenuSectionTabDef[] = [
+  { detail: 'Single cookies · large or mini', label: 'Regular orders', value: 'regular' },
+  { detail: 'Trays & 10-packs', label: 'Catering', value: 'catering' },
+]
+
+const MENU_TABS_ID_BASE = 'menu-section'
 
 type SceneryPickerAnchor = 'hero' | 'panel'
 
@@ -479,13 +496,20 @@ function CateringMenuRow({
 
 export function CateringMenuSection({
   initialSceneryTone = 'dawn',
+  initialSection = 'regular',
   products,
+  regularItems = [],
+  seasonalLabel = "This month's flavor",
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
+  const hasRegularItems = regularItems.length > 0
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
   const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
+  const [section, setSection] = useState<MenuSection>(
+    hasRegularItems ? initialSection : 'catering',
+  )
 
   useEffect(() => {
     for (const sceneryTone of menuSceneryTones) {
@@ -493,8 +517,31 @@ export function CateringMenuSection({
     }
   }, [])
 
-  if (orderedProducts.length === 0) {
+  if (orderedProducts.length === 0 && !hasRegularItems) {
     return null
+  }
+
+  const handleSectionChange = (nextSection: MenuSection) => {
+    if (nextSection === section) {
+      return
+    }
+
+    setSection(nextSection)
+    announce(
+      nextSection === 'regular' ? 'Showing regular orders.' : 'Showing the catering menu.',
+    )
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+
+      if (nextSection === 'catering') {
+        url.searchParams.set('section', 'catering')
+      } else {
+        url.searchParams.delete('section')
+      }
+
+      window.history.replaceState(null, '', url)
+    }
   }
 
   const toggleSceneryPicker = (anchor: SceneryPickerAnchor) => {
@@ -527,6 +574,12 @@ export function CateringMenuSection({
         onSelectScenery={handleSelectHeroScenery}
         onToggleSceneryPicker={() => toggleSceneryPicker('hero')}
         sceneryTone={heroSceneryTone}
+        summary={
+          hasRegularItems
+            ? 'Order the always-available lineup and this season’s flavors as single cookies — large or mini, as many as you like. Catering trays and ten-packs are one tab away.'
+            : undefined
+        }
+        title="Menu"
       />
 
       <section
@@ -534,21 +587,59 @@ export function CateringMenuSection({
         id="catering-menu-items"
       >
         <div className="container pt-0 pb-6 md:pt-0 md:pb-10">
-          <div className="cateringMenuPanel">
-            <Accordion collapsible type="single">
-              {orderedProducts.map((product, index) => (
-                <CateringMenuRow
-                  isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
-                  isSceneChanging={isSceneChanging}
-                  index={index}
-                  key={product.id ?? product.slug ?? index}
-                  onSelectScenery={handleSelectHeroScenery}
-                  onToggleSceneryPicker={() => toggleSceneryPicker('panel')}
-                  product={product}
-                  sceneryTone={heroSceneryTone}
-                />
-              ))}
-            </Accordion>
+          {hasRegularItems ? (
+            <div className="pt-6 md:pt-8">
+              <MenuSectionTabs
+                active={section}
+                idBase={MENU_TABS_ID_BASE}
+                onChange={handleSectionChange}
+                tabs={menuSectionTabDefs}
+              />
+            </div>
+          ) : null}
+
+          {hasRegularItems ? (
+            <div
+              aria-labelledby={`${MENU_TABS_ID_BASE}-tab-regular`}
+              hidden={section !== 'regular'}
+              id={`${MENU_TABS_ID_BASE}-panel-regular`}
+              role="tabpanel"
+            >
+              <RegularOrdersPanel items={regularItems} seasonalLabel={seasonalLabel} />
+            </div>
+          ) : null}
+
+          <div
+            aria-labelledby={
+              hasRegularItems ? `${MENU_TABS_ID_BASE}-tab-catering` : undefined
+            }
+            hidden={hasRegularItems ? section !== 'catering' : undefined}
+            id={`${MENU_TABS_ID_BASE}-panel-catering`}
+            role={hasRegularItems ? 'tabpanel' : undefined}
+          >
+            <div className="cateringMenuPanel">
+              {orderedProducts.length > 0 ? (
+                <Accordion collapsible type="single">
+                  {orderedProducts.map((product, index) => (
+                    <CateringMenuRow
+                      isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
+                      isSceneChanging={isSceneChanging}
+                      index={index}
+                      key={product.id ?? product.slug ?? index}
+                      onSelectScenery={handleSelectHeroScenery}
+                      onToggleSceneryPicker={() => toggleSceneryPicker('panel')}
+                      product={product}
+                      sceneryTone={heroSceneryTone}
+                    />
+                  ))}
+                </Accordion>
+              ) : (
+                <p className="py-12 text-base leading-8 text-[rgba(23,21,16,0.72)]">
+                  Catering items are being restocked — check the regular orders tab, or come
+                  back soon.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </section>

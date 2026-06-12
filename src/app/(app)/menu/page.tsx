@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import { CateringMenuSection } from './_components/catering-menu-section.client'
+import { queryRegularOrderItems } from './regularOrderQueries'
 import './_components/catering-menu-hero.css'
 
 const cateringSerif = Cormorant_Garamond({
@@ -19,9 +20,9 @@ const cateringSerif = Cormorant_Garamond({
 
 export const metadata = buildStaticMetadata({
   description:
-    'Browse the catering menu with transparent pricing, expandable item notes, and tray builders for cookies and mini cookies.',
+    'Order always-available and seasonal cookie flavors individually in large or mini sizes, or browse catering trays with transparent pricing and tray builders.',
   path: '/menu',
-  title: 'Catering Menu',
+  title: 'Menu',
 })
 
 const cateringProductSelect = {
@@ -39,10 +40,20 @@ const cateringProductSelect = {
   title: true,
 } as const
 
-export default async function CateringMenuPage() {
+export default async function CateringMenuPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ section?: string | string[] }>
+}) {
   const initialSceneryTone = await getMenuSceneToneFromCookies()
+  const { section } = await searchParams
+  const initialSection = section === 'catering' ? 'catering' : 'regular'
   const payload = await measureServerStep('payload init: catering menu', () =>
     getPayload({ config: configPromise }),
+  )
+
+  const regularOrderData = await measureServerStep('query regular order items: menu', () =>
+    queryRegularOrderItems(payload),
   )
 
   const cateringCategoryResult = await measureServerStep(
@@ -69,46 +80,42 @@ export default async function CateringMenuPage() {
 
   const cateringCategory = cateringCategoryResult.docs[0]
 
-  if (!cateringCategory) {
+  const cateringProducts = cateringCategory
+    ? (
+        await measureServerStep('payload.find products: catering menu', () =>
+          payload.find({
+            collection: 'products',
+            draft: false,
+            overrideAccess: false,
+            pagination: false,
+            select: cateringProductSelect,
+            sort: 'title',
+            where: {
+              and: [
+                {
+                  _status: {
+                    equals: 'published',
+                  },
+                },
+                {
+                  categories: {
+                    contains: cateringCategory.id,
+                  },
+                },
+              ],
+            },
+          }),
+        )
+      ).docs
+    : []
+
+  if (!cateringProducts.length && !regularOrderData.items.length) {
     return (
       <div className="container py-16">
         <p className="max-w-[42rem] text-base leading-8 text-[#6b5947]">
-          The catering category has not been seeded yet. Run the seed flow, then refresh this page.
-        </p>
-      </div>
-    )
-  }
-
-  const products = await measureServerStep('payload.find products: catering menu', () =>
-    payload.find({
-      collection: 'products',
-      draft: false,
-      overrideAccess: false,
-      pagination: false,
-      select: cateringProductSelect,
-      sort: 'title',
-      where: {
-        and: [
-          {
-            _status: {
-              equals: 'published',
-            },
-          },
-          {
-            categories: {
-              contains: cateringCategory.id,
-            },
-          },
-        ],
-      },
-    }),
-  )
-
-  if (!products.docs.length) {
-    return (
-      <div className="container py-16">
-        <p className="max-w-[42rem] text-base leading-8 text-[#6b5947]">
-          The catering menu is seeded, but no published catering products were found yet.
+          {cateringCategory
+            ? 'The menu is seeded, but no published products were found yet.'
+            : 'The catering category has not been seeded yet. Run the seed flow, then refresh this page.'}
         </p>
       </div>
     )
@@ -118,7 +125,10 @@ export default async function CateringMenuPage() {
     <div className={cateringSerif.variable}>
       <CateringMenuSection
         initialSceneryTone={initialSceneryTone}
-        products={products.docs as Partial<Product>[]}
+        initialSection={initialSection}
+        products={cateringProducts as Partial<Product>[]}
+        regularItems={regularOrderData.items}
+        seasonalLabel={regularOrderData.seasonalLabel}
       />
     </div>
   )

@@ -212,22 +212,22 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     id: 'menu',
     label: 'Menu',
     panel: {
-      eyebrow: 'Catering Menu',
+      eyebrow: 'Menu',
       description:
-        'The menu route is now the dedicated catering experience, with the customer-facing sheet image and expandable order rows.',
+        'Regular orders of single cookies in large or mini, plus the full catering experience with trays and expandable order rows.',
       cards: [
         {
           description:
-            'Open the catering menu page with the tray builder, the honest product notes, and the full row-by-row ordering layout.',
+            'Order always-available and seasonal flavors as single cookies, or switch to the catering tab for tray builders and honest product notes.',
           eyebrow: 'Menu landing',
           href: menuHref,
-          title: 'Open the catering menu',
+          title: 'Open the menu',
           tone: 'dark',
         },
       ],
       links: [
         {
-          description: 'Go to the dedicated catering menu page.',
+          description: 'Go to the menu page for regular orders and catering.',
           href: menuHref,
           label: 'Open the menu',
         },
