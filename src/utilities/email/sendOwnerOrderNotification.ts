@@ -2,6 +2,7 @@ import type { CollectionAfterChangeHook, Payload } from 'payload'
 
 import type { Order, Product, Variant } from '@/payload-types'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
+import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
 import { parseEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -105,9 +106,10 @@ const getProductTitle = (item: OrderItem) => {
   const variantValue = item.variant
   const typedVariant =
     variantValue && typeof variantValue === 'object' ? (variantValue as Variant) : null
+  const variantLabel = getVariantDisplayLabel(typedProduct.title, typedVariant)
 
-  return typedVariant?.title
-    ? `${typedProduct.title} (${typedVariant.title})`
+  return variantLabel
+    ? `${typedProduct.title} (${variantLabel})`
     : typedProduct.title || 'Unknown item'
 }
 

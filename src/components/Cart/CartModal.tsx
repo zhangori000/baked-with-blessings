@@ -321,7 +321,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0 space-y-1">
                                   <p className="text-xs font-medium text-black/45">
-                                    {isVariant ? 'Configured item' : 'Bakery item'}
+                                    Bakery item
                                   </p>
                                   <p className="block text-base font-semibold leading-5 text-black sm:text-lg sm:leading-6">
                                     {product.title}
