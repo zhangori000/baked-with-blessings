@@ -390,7 +390,7 @@ export interface Order {
   /**
    * Manual payment method reported by the customer. This does not mean payment has been verified.
    */
-  manualPaymentMethod?: 'venmo' | null;
+  manualPaymentMethod?: ('venmo' | 'in_person') | null;
   /**
    * Manual payment verification status. Update this after checking the external payment account.
    */

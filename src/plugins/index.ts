@@ -358,6 +358,10 @@ export const plugins: Plugin[] = [
                 label: 'Venmo',
                 value: 'venmo',
               },
+              {
+                label: 'Pay at pickup',
+                value: 'in_person',
+              },
             ],
           },
           {

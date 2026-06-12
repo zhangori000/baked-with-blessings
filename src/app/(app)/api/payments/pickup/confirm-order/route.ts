@@ -5,9 +5,7 @@ import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { createManualOrderFromCart } from '@/utilities/manualOrders'
 import { isPayAtPickupMode } from '@/utilities/storeSettings'
 
-const VENMO_HANDLE = '@bakedwithblessings'
-
-type MarkSentBody = {
+type ConfirmOrderBody = {
   cartID?: number | string
 }
 
@@ -22,9 +20,11 @@ const jsonError = (message: string, status = 400) =>
 export async function POST(request: Request) {
   const payload = await getPayload({ config })
 
-  if (await isPayAtPickupMode(payload)) {
+  // Mirror image of the Venmo route's guard: pickup ordering only exists
+  // while the owner has the store in pay-at-pickup mode.
+  if (!(await isPayAtPickupMode(payload))) {
     return jsonError(
-      'Venmo at checkout is turned off right now. Place your order and pay when you pick it up.',
+      'Pay-at-pickup ordering is not active right now. Pay online at checkout instead.',
       409,
     )
   }
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   const user = await getAuthenticatedCustomer(payload, request.headers)
 
   if (!user) {
-    return jsonError('Log in before reporting a Venmo payment.', 401)
+    return jsonError('Log in before confirming your order.', 401)
   }
 
   const customerID =
@@ -46,12 +46,12 @@ export async function POST(request: Request) {
     return jsonError('Your customer account could not be resolved.', 401)
   }
 
-  let body: MarkSentBody
+  let body: ConfirmOrderBody
 
   try {
-    body = (await request.json()) as MarkSentBody
+    body = (await request.json()) as ConfirmOrderBody
   } catch {
-    return jsonError('Cart information was missing from the Venmo payment request.')
+    return jsonError('Cart information was missing from the order request.')
   }
 
   const cartID =
@@ -62,20 +62,15 @@ export async function POST(request: Request) {
         : Number.NaN
 
   if (!Number.isFinite(cartID)) {
-    return jsonError('Cart information was missing from the Venmo payment request.')
+    return jsonError('Cart information was missing from the order request.')
   }
 
   const result = await createManualOrderFromCart({
     cartID,
     customerID,
-    manualPaymentExtras: {
-      manualPaymentHandle: VENMO_HANDLE,
-      manualPaymentReportedAt: new Date().toISOString(),
-      manualPaymentStatus: 'reported_sent',
-    },
-    method: 'venmo',
+    method: 'in_person',
     payload,
-    reference: `venmo-cart-${cartID}`,
+    reference: `pickup-cart-${cartID}`,
   })
 
   if (result.type === 'error') {
@@ -85,9 +80,9 @@ export async function POST(request: Request) {
   if (result.type === 'existing') {
     return Response.json({
       accessToken: result.order.accessToken || undefined,
-      message: 'We already recorded this Venmo order.',
+      message: 'We already recorded this order.',
       orderID: result.order.id,
-      paymentMethod: 'venmo',
+      paymentMethod: 'in_person',
     })
   }
 
@@ -95,9 +90,9 @@ export async function POST(request: Request) {
     {
       accessToken: result.order.accessToken || undefined,
       message:
-        'We recorded your Venmo report. The bakery will verify the Venmo payment and contact you through your account contact method.',
+        'Order received. Nothing was charged - you pay when you pick it up, and the bakery will contact you through your account contact method.',
       orderID: result.order.id,
-      paymentMethod: 'venmo',
+      paymentMethod: 'in_person',
     },
     { status: 201 },
   )

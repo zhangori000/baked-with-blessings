@@ -18,6 +18,7 @@ import * as migration_20260503_000000_add_feature_requests from './20260503_0000
 import * as migration_20260504_000000_default_disable_pages from './20260504_000000_default_disable_pages';
 import * as migration_20260611_000000_add_store_settings_global from './20260611_000000_add_store_settings_global';
 import * as migration_20260612_071216_snapshot_refresh from './20260612_071216_snapshot_refresh';
+import * as migration_20260612_072715_add_in_person_manual_payment from './20260612_072715_add_in_person_manual_payment';
 
 export const migrations = [
   {
@@ -119,5 +120,10 @@ export const migrations = [
     up: migration_20260612_071216_snapshot_refresh.up,
     down: migration_20260612_071216_snapshot_refresh.down,
     name: '20260612_071216_snapshot_refresh',
+  },
+  {
+    up: migration_20260612_072715_add_in_person_manual_payment.up,
+    down: migration_20260612_072715_add_in_person_manual_payment.down,
+    name: '20260612_072715_add_in_person_manual_payment'
   },
 ];
