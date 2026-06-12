@@ -1,0 +1,101 @@
+.form {
+  display: grid;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.label {
+  color: var(--theme-elevation-700);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.priceField {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 999px;
+  padding: 0 0.85rem;
+  background: var(--theme-elevation-0);
+}
+
+.priceField:focus-within {
+  border-color: var(--theme-success-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-success-500) 18%, transparent);
+}
+
+.currency {
+  color: var(--theme-elevation-700);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.input {
+  width: 5.4rem;
+  border: 0;
+  padding: 0 0 0 0.25rem;
+  background: transparent;
+  color: var(--theme-elevation-900);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  border: 1px solid var(--theme-success-500);
+  border-radius: 999px;
+  padding: 0.625rem 0.95rem;
+  background: var(--theme-success-500);
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.button:hover {
+  cursor: pointer;
+  background: var(--theme-success-600);
+  border-color: var(--theme-success-600);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.message {
+  margin: 0;
+  color: var(--theme-elevation-600);
+  line-height: 1.45;
+}
+
+.error {
+  color: var(--theme-error-600);
+}
+
+.success {
+  color: var(--theme-success-700);
+}

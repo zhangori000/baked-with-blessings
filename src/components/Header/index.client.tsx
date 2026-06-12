@@ -38,6 +38,7 @@ import {
   Handshake,
   Lightbulb,
   LoaderCircle,
+  Megaphone,
   MessageSquareText,
   PanelsTopLeft,
   StickyNote,
@@ -61,12 +62,27 @@ import {
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
-type ActivePanel = 'account' | 'bag' | 'more' | null
+type ActivePanel = 'account' | 'announcements' | 'bag' | 'more' | null
 type AccountAuthMode = 'create' | 'login'
 
 const customerCreateResendDelayMs = 7 * 1000
+const announcementsSeenStorageKey = 'bwb-announcements-seen-at'
+
+export type HeaderAnnouncementItem = {
+  id?: null | string
+  linkHref?: null | string
+  linkLabel?: null | string
+  message: string
+  title: string
+}
+
+export type HeaderAnnouncementsData = {
+  items: HeaderAnnouncementItem[]
+  updatedAt: null | string
+}
 
 type Props = {
+  announcements: HeaderAnnouncementsData
   brand: {
     brandName: string
     darkLogoUrl: string | null
@@ -155,7 +171,7 @@ const getSafeLocalRedirect = (value: null | string) => {
 
 const isEmailLike = (value: string) => /\S+@\S+\.\S+/.test(value.trim())
 
-export function HeaderClient({ brand, header, sitePages }: Props) {
+export function HeaderClient({ announcements, brand, header, sitePages }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
@@ -217,6 +233,38 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
       isActive: isHeaderNavigationItemActive(pathname, item),
     }))
   }, [header.navItems, pathname, sitePages])
+
+  const [hasUnseenAnnouncements, setHasUnseenAnnouncements] = useState(false)
+
+  useEffect(() => {
+    // Computed in an effect so server and first client render agree (no dot),
+    // then localStorage decides. Any save in the admin bumps updatedAt and
+    // brings the dot back for everyone.
+    if (!announcements.items.length || !announcements.updatedAt) {
+      setHasUnseenAnnouncements(false)
+      return
+    }
+
+    const seenAt = window.localStorage.getItem(announcementsSeenStorageKey)
+    setHasUnseenAnnouncements(seenAt !== announcements.updatedAt)
+  }, [announcements.items.length, announcements.updatedAt])
+
+  const markAnnouncementsSeen = () => {
+    if (announcements.updatedAt) {
+      try {
+        window.localStorage.setItem(announcementsSeenStorageKey, announcements.updatedAt)
+      } catch {
+        // Storage can be unavailable (private mode); the dot just stays.
+      }
+    }
+
+    setHasUnseenAnnouncements(false)
+  }
+
+  const openAnnouncementsPanel = () => {
+    toggleHeaderPanel('announcements', 'Announcements opened.', 'Announcements closed.')
+    markAnnouncementsSeen()
+  }
 
   const enabledAppPages = useMemo(() => getEnabledHeaderAppPages(sitePages), [sitePages])
 
@@ -839,8 +887,10 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
             <MobileMenu
               accountButtonLabel={hasSignedInAccount ? 'Open account menu' : 'Open sign-in menu'}
               cartQuantity={cartQuantity}
+              hasUnseenAnnouncements={hasUnseenAnnouncements}
               isAccountOpen={activePanel === 'account'}
               items={navigationItems}
+              onOpenAnnouncements={openAnnouncementsPanel}
               onOpenAccount={() => {
                 toggleHeaderPanel(
                   'account',
@@ -875,6 +925,26 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                           <span className="siteHeaderBannerLabel">{appsButtonLabel}</span>
                           <ChevronDown className="siteHeaderBannerDropdownIcon" />
                         </BakeryPressable>
+                      ) : item.kind === 'announcements' ? (
+                        <BakeryPressable
+                          aria-expanded={activePanel === 'announcements'}
+                          aria-label={
+                            hasUnseenAnnouncements
+                              ? 'Open announcements. New announcements available'
+                              : 'Open announcements'
+                          }
+                          className={cn(headerClassNames.bannerLink, 'siteHeaderBannerButton', {
+                            'is-active': activePanel === 'announcements',
+                          })}
+                          onClick={openAnnouncementsPanel}
+                          type="button"
+                        >
+                          <span className="siteHeaderBannerLabel">{item.label}</span>
+                          {hasUnseenAnnouncements ? (
+                            <span aria-hidden="true" className="siteHeaderNewDot" />
+                          ) : null}
+                          <ChevronDown className="siteHeaderBannerDropdownIcon" />
+                        </BakeryPressable>
                       ) : (
                         <Link
                           className={cn(headerClassNames.bannerLink, {
@@ -886,7 +956,7 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                         </Link>
                       )}
 
-                      {item.kind === 'apps' ? null : (
+                      {item.kind === 'apps' || item.kind === 'announcements' ? null : (
                         <div className={headerClassNames.bannerReveal}>
                           <p className={headerClassNames.bannerRevealEyebrow}>
                             {item.panel.eyebrow}
@@ -952,7 +1022,7 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                 ? 'is-account'
                 : activePanel === 'bag'
                   ? 'is-bag'
-                  : activePanel === 'more'
+                  : activePanel === 'more' || activePanel === 'announcements'
                     ? 'is-more'
                     : '',
             )}
@@ -1005,6 +1075,54 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                       </BakeryCard>
                     )
                   })}
+                </div>
+              ) : null}
+
+              {activePanel === 'announcements' ? (
+                <div className="siteHeaderAppsPanel">
+                  <div className="siteHeaderAppsHeader">
+                    <div className="siteHeaderAppsBadge">
+                      <Megaphone className="h-4 w-4" />
+                      <span>Announcements</span>
+                    </div>
+                    <div>
+                      <p className="siteHeaderAppsTitle">From the baker</p>
+                      <p className="siteHeaderAppsDescription">
+                        Bake days, market dates, pickup windows, and other news.
+                      </p>
+                    </div>
+                  </div>
+
+                  {announcements.items.length ? (
+                    <div className="siteHeaderAnnouncementsList">
+                      {announcements.items.map((entry, index) => (
+                        <article
+                          className="siteHeaderAnnouncementCard"
+                          key={entry.id || `${entry.title}-${index}`}
+                        >
+                          <h3 className="siteHeaderAnnouncementTitle">{entry.title}</h3>
+                          <p className="siteHeaderAnnouncementMessage">{entry.message}</p>
+                          {entry.linkHref && entry.linkLabel ? (
+                            <BakeryAction
+                              as={Link}
+                              className="siteHeaderAnnouncementLink"
+                              end={<ArrowRight className="h-4 w-4" />}
+                              href={entry.linkHref}
+                              onClick={() => setActivePanel(null)}
+                              size="sm"
+                              variant="secondary"
+                            >
+                              <span>{entry.linkLabel}</span>
+                            </BakeryAction>
+                          ) : null}
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="siteHeaderAnnouncementsEmpty">
+                      Nothing new right now — check back soon.
+                    </p>
+                  )}
                 </div>
               ) : null}
 
@@ -1064,7 +1182,7 @@ export function HeaderClient({ brand, header, sitePages }: Props) {
                     >
                       <p className="siteHeaderAuthIntro">
                         {accountAuthMode === 'create'
-                          ? 'Create a customer account without leaving this page. Send a code to your email or phone, then finish your password while it arrives.'
+                          ? 'Create a customer account without leaving this page. Send a code to your email or phone, then finish your password while it arrives. Phone-only works — the baker texts you personally — but automatic emails (receipts, announcements) need an email on file.'
                           : 'Use the email or phone number connected to your account. We will keep you on this page unless your account opens a management workspace.'}
                       </p>
 

@@ -156,6 +156,12 @@ export const CreateAccountForm: React.FC = () => {
           adds a one-time 6-digit verification step before the account is created.
         </p>
 
+        <p className={styles.lead}>
+          Phone-only accounts work — the baker texts you personally about your orders. Just know
+          that automatic emails (order receipts, announcements, future perks) only reach accounts
+          with an email address on file.
+        </p>
+
         <div className={styles.heroMeta}>
           <div className={styles.heroMetaItem}>
             <strong>Email</strong>: good for customers who prefer inbox-based login and recovery.

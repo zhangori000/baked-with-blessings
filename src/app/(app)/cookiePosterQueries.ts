@@ -28,8 +28,6 @@ type ActiveFlavorRotation = {
   title?: null | string
 }
 
-const publicRotationFlavorLimit = 3
-
 const productSelect = {
   gallery: true,
   id: true,
@@ -55,7 +53,7 @@ const getRelationshipIDs = (values?: ProductRelationship[] | null) =>
 
 export const getPublicRotationProductIDs = (
   activeRotation: Pick<ActiveFlavorRotation, 'individualFlavors'> | null,
-) => getRelationshipIDs(activeRotation?.individualFlavors).slice(0, publicRotationFlavorLimit)
+) => getRelationshipIDs(activeRotation?.individualFlavors)
 
 const queryActiveFlavorRotation = async (payload: Payload) => {
   const rotationResult = await measureServerStep(
@@ -369,7 +367,7 @@ export const queryPublicRotationCookiePosters = async () => {
   const activeRotation = await queryActiveFlavorRotation(payload)
 
   if (!activeRotation) {
-    return buildFallbackHomeCookiePosters().slice(0, publicRotationFlavorLimit)
+    return buildFallbackHomeCookiePosters()
   }
 
   const products = await queryPublicRotationProducts({

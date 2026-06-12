@@ -24,7 +24,10 @@ import { RotationShowcaseProductsField as RotationShowcaseProductsField_2f0a7914
 import { VariantOptionsSelector as VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
 import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
 import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
+import { GenerateProductDescription as GenerateProductDescription_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
+import { GenerateExpandedMenuDescription as GenerateExpandedMenuDescription_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
 import { ProductGalleryBulkPicker as ProductGalleryBulkPicker_65ad1e7ed294a445202b41adf748d1a4 } from '@/components/admin/ProductGalleryBulkPicker'
+import { GenerateProductInfoPopup as GenerateProductInfoPopup_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
 import { ProductTrayPlacementField as ProductTrayPlacementField_4962c40848d1cb71f8b19cf0f9aafcea } from '@/components/admin/ProductTrayPlacementField'
 import { CopyProductDescriptionToSEO as CopyProductDescriptionToSEO_8d82c06baad6b06139ff1391e8f300ea } from '@/components/admin/CopyProductDescriptionToSEO'
 import { BeforeDashboard as BeforeDashboard_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
@@ -60,7 +63,10 @@ export const importMap = {
   "@payloadcms/plugin-ecommerce/rsc#VariantOptionsSelector": VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb,
   "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,
   "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
+  "@/components/admin/ProductWritingGenerators#GenerateProductDescription": GenerateProductDescription_65f16633f7e985b157f353a9f08c0be0,
+  "@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription": GenerateExpandedMenuDescription_65f16633f7e985b157f353a9f08c0be0,
   "@/components/admin/ProductGalleryBulkPicker#ProductGalleryBulkPicker": ProductGalleryBulkPicker_65ad1e7ed294a445202b41adf748d1a4,
+  "@/components/admin/ProductWritingGenerators#GenerateProductInfoPopup": GenerateProductInfoPopup_65f16633f7e985b157f353a9f08c0be0,
   "@/components/admin/ProductTrayPlacementField#ProductTrayPlacementField": ProductTrayPlacementField_4962c40848d1cb71f8b19cf0f9aafcea,
   "@/components/admin/CopyProductDescriptionToSEO#CopyProductDescriptionToSEO": CopyProductDescriptionToSEO_8d82c06baad6b06139ff1391e8f300ea,
   "@/components/BeforeDashboard#BeforeDashboard": BeforeDashboard_1a7510af427896d367a49dbf838d2de6,

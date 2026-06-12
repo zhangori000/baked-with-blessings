@@ -7,12 +7,12 @@
  */
 
 /**
- * Business owner workflow status. Paid checkout creates orders as Processing; update this as the order is fulfilled, cancelled, or refunded.
+ * Where this order is in your workflow. New orders arrive as Requested. Move it to Confirmed when you commit to baking it, Ready for pickup once it is packed, and Completed when it is handed over and paid.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "OrderStatus".
  */
-export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
+export type OrderStatus = ('processing' | 'confirmed' | 'ready' | 'completed' | 'cancelled' | 'refunded') | null;
 /**
  * Supported timezones in IANA format.
  *
@@ -164,6 +164,8 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    'store-settings': StoreSetting;
+    announcements: Announcement;
     brand: Brand;
     header: Header;
     footer: Footer;
@@ -174,6 +176,8 @@ export interface Config {
     'site-pages': SitePage;
   };
   globalsSelect: {
+    'store-settings': StoreSettingsSelect<false> | StoreSettingsSelect<true>;
+    announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
     brand: BrandSelect<false> | BrandSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
@@ -328,7 +332,7 @@ export interface Customer {
   collection: 'customers';
 }
 /**
- * Paid customer orders. Open an order to update fulfillment status and review customer contact, items, and delivery details.
+ * Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
@@ -380,15 +384,23 @@ export interface Order {
    * Derived guest checkout contact value. This is app-level groundwork for a future email-or-phone guest flow.
    */
   guestContactValue?: string | null;
+  /**
+   * Copied from the customer account when the order is saved, so the orders list can show and search names at the market stand.
+   */
+  customerName?: string | null;
   accessToken?: string | null;
   /**
    * Set automatically after the new-order email is sent to the business owner.
    */
   ownerNotificationSentAt?: string | null;
   /**
+   * Set automatically after the order confirmation email is sent to the customer. Stays empty for phone-only accounts with no email address.
+   */
+  customerNotificationSentAt?: string | null;
+  /**
    * Manual payment method reported by the customer. This does not mean payment has been verified.
    */
-  manualPaymentMethod?: 'venmo' | null;
+  manualPaymentMethod?: ('venmo' | 'in_person') | null;
   /**
    * Manual payment verification status. Update this after checking the external payment account.
    */
@@ -1893,7 +1905,7 @@ export interface BlessingsNetworkOwnerPost {
   createdAt: string;
 }
 /**
- * Controls the /rotations page. For now, the public page shows exactly the three products selected in Public rotation cookies.
+ * Controls the /rotations page. The public page shows the products selected in Public rotation cookies.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "flavor-rotations".
@@ -1921,7 +1933,7 @@ export interface FlavorRotation {
    */
   showcaseProducts: (number | Product)[];
   /**
-   * Choose exactly three from the planning pool above. These are the only cookies customers see on /rotations right now.
+   * Choose any number from the planning pool above. These are the cookies customers see on /rotations right now.
    */
   individualFlavors: (number | Product)[];
   /**
@@ -3268,8 +3280,10 @@ export interface OrdersSelect<T extends boolean = true> {
   currency?: T;
   guestContactMethod?: T;
   guestContactValue?: T;
+  customerName?: T;
   accessToken?: T;
   ownerNotificationSentAt?: T;
+  customerNotificationSentAt?: T;
   manualPaymentMethod?: T;
   manualPaymentStatus?: T;
   manualPaymentHandle?: T;
@@ -3372,6 +3386,56 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Storefront-wide switches the business owner can flip without a code change. Changes apply as soon as you save.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-settings".
+ */
+export interface StoreSetting {
+  id: number;
+  /**
+   * Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over.
+   */
+  paymentCollectionMode: 'payNow' | 'payAtPickup';
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * These appear under the ANNOUNCEMENTS button in the site header on every page (it replaced Contact in the main nav; Contact now lives under Other pages). Visitors see a red dot on the button until they open the panel — saving any change here shows the dot again.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements".
+ */
+export interface Announcement {
+  id: number;
+  /**
+   * Drag to reorder. Keep these short and current: bake days, market dates, pickup windows. Delete old ones so the list stays fresh.
+   */
+  items?:
+    | {
+        /**
+         * The headline customers see, for example "Farmers market this Saturday!"
+         */
+        title: string;
+        /**
+         * A few friendly sentences: where, when, what is available, how to claim an order.
+         */
+        message: string;
+        /**
+         * Optional button text, for example "Preorder now". Leave empty for no button.
+         */
+        linkLabel?: string | null;
+        /**
+         * Where the optional button goes, for example /menu. Required if button text is set.
+         */
+        linkHref?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * Manage the storefront brand name and logo in one place so the header can change without a code edit.
@@ -3588,6 +3652,34 @@ export interface SitePage {
   featureRequestsEnabled?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-settings_select".
+ */
+export interface StoreSettingsSelect<T extends boolean = true> {
+  paymentCollectionMode?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements_select".
+ */
+export interface AnnouncementsSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        title?: T;
+        message?: T;
+        linkLabel?: T;
+        linkHref?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

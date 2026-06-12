@@ -22,6 +22,8 @@ import {
 } from '@/plugins/ecommerce/trayBuilder'
 import { preventPurchasedCartItemChanges } from '@/plugins/ecommerce/cartLifecycle'
 import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
+import { getRelationshipID } from '@/utilities/manualOrders'
+import { sendCustomerOrderConfirmationAfterChange } from '@/utilities/email/sendCustomerOrderConfirmation'
 import { sendOwnerOrderNotificationAfterChange } from '@/utilities/email/sendOwnerOrderNotification'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
@@ -118,6 +120,22 @@ const createGuestContactFields = () => [
   },
 ]
 
+/**
+ * The owner's workflow lane. Values extend the plugin's original enum
+ * (processing/completed/cancelled/refunded) with two pickup-flow stops, so
+ * every pre-existing order stays valid. 'processing' is kept as the entry
+ * value every order-creation path already uses - it just reads as
+ * "Requested" now.
+ */
+const ORDER_STATUS_OPTIONS = [
+  { label: 'Requested (new order)', value: 'processing' },
+  { label: 'Confirmed — will bake', value: 'confirmed' },
+  { label: 'Ready for pickup', value: 'ready' },
+  { label: 'Completed — handed over & paid', value: 'completed' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Refunded', value: 'refunded' },
+]
+
 const enhanceOrderFields = (fields: Field[]): Field[] =>
   fields.map((field) => {
     if ('name' in field && field.name === 'status') {
@@ -135,8 +153,9 @@ const enhanceOrderFields = (fields: Field[]): Field[] =>
         admin: {
           ...statusField.admin,
           description:
-            'Business owner workflow status. Paid checkout creates orders as Processing; update this as the order is fulfilled, cancelled, or refunded.',
+            'Where this order is in your workflow. New orders arrive as Requested. Move it to Confirmed when you commit to baking it, Ready for pickup once it is packed, and Completed when it is handed over and paid.',
         },
+        options: ORDER_STATUS_OPTIONS,
       } as Field
     }
 
@@ -294,22 +313,70 @@ export const plugins: Plugin[] = [
           ...defaultCollection.admin,
           defaultColumns: [
             'id',
+            'customerName',
             'status',
-            'customerEmail',
-            'guestContactValue',
             'amount',
             'manualPaymentMethod',
-            'ownerNotificationSentAt',
             'createdAt',
           ],
           description:
-            'Paid customer orders. Open an order to update fulfillment status and review customer contact, items, and delivery details.',
+            'Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.',
+          listSearchableFields: [
+            'id',
+            'customerName',
+            'customerEmail',
+            'guestContactValue',
+            'manualPaymentReference',
+          ],
+          useAsTitle: 'id',
         },
         fields: [
           ...extendCollectionItemsWithBatchSelections({
             fields: enhanceOrderFields(defaultCollection.fields),
           }),
           ...createGuestContactFields(),
+          {
+            name: 'customerName',
+            type: 'text',
+            admin: {
+              description:
+                'Copied from the customer account when the order is saved, so the orders list can show and search names at the market stand.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+            hooks: {
+              beforeChange: [
+                async ({ data, req, value }) => {
+                  const customerID = getRelationshipID(data?.customer)
+
+                  if (!customerID) {
+                    // Guest order: fall back to whatever contact we have.
+                    return value || data?.customerEmail || null
+                  }
+
+                  try {
+                    const customer = await req.payload.findByID({
+                      id: customerID,
+                      collection: 'customers',
+                      depth: 0,
+                      overrideAccess: true,
+                      select: {
+                        email: true,
+                        name: true,
+                        phone: true,
+                      },
+                    })
+
+                    // Name first, then email/phone so the orders list always
+                    // shows something Kayla can recognize and search.
+                    return customer?.name || customer?.email || customer?.phone || value || null
+                  } catch {
+                    return value ?? null
+                  }
+                },
+              ],
+            },
+          },
           {
             name: 'accessToken',
             type: 'text',
@@ -345,6 +412,19 @@ export const plugins: Plugin[] = [
             },
           },
           {
+            name: 'customerNotificationSentAt',
+            type: 'date',
+            admin: {
+              date: {
+                pickerAppearance: 'dayAndTime',
+              },
+              description:
+                'Set automatically after the order confirmation email is sent to the customer. Stays empty for phone-only accounts with no email address.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
+          {
             name: 'manualPaymentMethod',
             type: 'select',
             admin: {
@@ -357,6 +437,10 @@ export const plugins: Plugin[] = [
               {
                 label: 'Venmo',
                 value: 'venmo',
+              },
+              {
+                label: 'Pay at pickup',
+                value: 'in_person',
               },
             ],
           },
@@ -432,6 +516,7 @@ export const plugins: Plugin[] = [
           afterChange: [
             ...(defaultCollection.hooks?.afterChange ?? []),
             sendOwnerOrderNotificationAfterChange,
+            sendCustomerOrderConfirmationAfterChange,
           ],
           beforeValidate: [
             ...(defaultCollection.hooks?.beforeValidate ?? []),

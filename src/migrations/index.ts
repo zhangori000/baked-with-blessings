@@ -1,21 +1,29 @@
-import * as migration_20260427_214127_initial_schema from './20260427_214127_initial_schema'
-import * as migration_20260429_000000_add_customer_stripe_customer_id from './20260429_000000_add_customer_stripe_customer_id'
-import * as migration_20260430_000000_add_blessings_network from './20260430_000000_add_blessings_network'
-import * as migration_20260430_010000_add_blessings_network_owner_posts from './20260430_010000_add_blessings_network_owner_posts'
-import * as migration_20260430_020000_add_order_owner_notification_sent_at from './20260430_020000_add_order_owner_notification_sent_at'
-import * as migration_20260430_030000_add_flavor_rotations from './20260430_030000_add_flavor_rotations'
-import * as migration_20260430_040000_add_product_poster_receipt_fields from './20260430_040000_add_product_poster_receipt_fields'
-import * as migration_20260430_050000_add_email_verification_starts from './20260430_050000_add_email_verification_starts'
-import * as migration_20260501_120000_optimistic_reviews_and_rotation_copy from './20260501_120000_optimistic_reviews_and_rotation_copy'
-import * as migration_20260501_130000_add_manual_order_payments from './20260501_130000_add_manual_order_payments'
-import * as migration_20260501_140000_remove_review_ratings from './20260501_140000_remove_review_ratings'
-import * as migration_20260501_150000_add_review_social_visibility from './20260501_150000_add_review_social_visibility'
-import * as migration_20260501_160000_add_review_extra_socials from './20260501_160000_add_review_extra_socials'
-import * as migration_20260501_212728_add_page_content_globals from './20260501_212728_add_page_content_globals'
-import * as migration_20260501_220000_add_community_notes from './20260501_220000_add_community_notes'
-import * as migration_20260502_000000_add_site_pages from './20260502_000000_add_site_pages'
-import * as migration_20260503_000000_add_feature_requests from './20260503_000000_add_feature_requests'
-import * as migration_20260504_000000_default_disable_pages from './20260504_000000_default_disable_pages'
+import * as migration_20260427_214127_initial_schema from './20260427_214127_initial_schema';
+import * as migration_20260429_000000_add_customer_stripe_customer_id from './20260429_000000_add_customer_stripe_customer_id';
+import * as migration_20260430_000000_add_blessings_network from './20260430_000000_add_blessings_network';
+import * as migration_20260430_010000_add_blessings_network_owner_posts from './20260430_010000_add_blessings_network_owner_posts';
+import * as migration_20260430_020000_add_order_owner_notification_sent_at from './20260430_020000_add_order_owner_notification_sent_at';
+import * as migration_20260430_030000_add_flavor_rotations from './20260430_030000_add_flavor_rotations';
+import * as migration_20260430_040000_add_product_poster_receipt_fields from './20260430_040000_add_product_poster_receipt_fields';
+import * as migration_20260430_050000_add_email_verification_starts from './20260430_050000_add_email_verification_starts';
+import * as migration_20260501_120000_optimistic_reviews_and_rotation_copy from './20260501_120000_optimistic_reviews_and_rotation_copy';
+import * as migration_20260501_130000_add_manual_order_payments from './20260501_130000_add_manual_order_payments';
+import * as migration_20260501_140000_remove_review_ratings from './20260501_140000_remove_review_ratings';
+import * as migration_20260501_150000_add_review_social_visibility from './20260501_150000_add_review_social_visibility';
+import * as migration_20260501_160000_add_review_extra_socials from './20260501_160000_add_review_extra_socials';
+import * as migration_20260501_212728_add_page_content_globals from './20260501_212728_add_page_content_globals';
+import * as migration_20260501_220000_add_community_notes from './20260501_220000_add_community_notes';
+import * as migration_20260502_000000_add_site_pages from './20260502_000000_add_site_pages';
+import * as migration_20260503_000000_add_feature_requests from './20260503_000000_add_feature_requests';
+import * as migration_20260504_000000_default_disable_pages from './20260504_000000_default_disable_pages';
+import * as migration_20260611_000000_add_store_settings_global from './20260611_000000_add_store_settings_global';
+import * as migration_20260612_071216_snapshot_refresh from './20260612_071216_snapshot_refresh';
+import * as migration_20260612_072715_add_in_person_manual_payment from './20260612_072715_add_in_person_manual_payment';
+import * as migration_20260612_080233_add_order_lane_statuses from './20260612_080233_add_order_lane_statuses';
+import * as migration_20260612_081254_add_order_customer_name from './20260612_081254_add_order_customer_name';
+import * as migration_20260612_090000_backfill_order_customer_names from './20260612_090000_backfill_order_customer_names';
+import * as migration_20260612_090026_add_customer_notification_sent_at from './20260612_090026_add_customer_notification_sent_at';
+import * as migration_20260612_091709_add_announcements_global from './20260612_091709_add_announcements_global';
 
 export const migrations = [
   {
@@ -108,4 +116,44 @@ export const migrations = [
     down: migration_20260504_000000_default_disable_pages.down,
     name: '20260504_000000_default_disable_pages',
   },
-]
+  {
+    up: migration_20260611_000000_add_store_settings_global.up,
+    down: migration_20260611_000000_add_store_settings_global.down,
+    name: '20260611_000000_add_store_settings_global',
+  },
+  {
+    up: migration_20260612_071216_snapshot_refresh.up,
+    down: migration_20260612_071216_snapshot_refresh.down,
+    name: '20260612_071216_snapshot_refresh',
+  },
+  {
+    up: migration_20260612_072715_add_in_person_manual_payment.up,
+    down: migration_20260612_072715_add_in_person_manual_payment.down,
+    name: '20260612_072715_add_in_person_manual_payment',
+  },
+  {
+    up: migration_20260612_080233_add_order_lane_statuses.up,
+    down: migration_20260612_080233_add_order_lane_statuses.down,
+    name: '20260612_080233_add_order_lane_statuses',
+  },
+  {
+    up: migration_20260612_081254_add_order_customer_name.up,
+    down: migration_20260612_081254_add_order_customer_name.down,
+    name: '20260612_081254_add_order_customer_name',
+  },
+  {
+    up: migration_20260612_090000_backfill_order_customer_names.up,
+    down: migration_20260612_090000_backfill_order_customer_names.down,
+    name: '20260612_090000_backfill_order_customer_names',
+  },
+  {
+    up: migration_20260612_090026_add_customer_notification_sent_at.up,
+    down: migration_20260612_090026_add_customer_notification_sent_at.down,
+    name: '20260612_090026_add_customer_notification_sent_at',
+  },
+  {
+    up: migration_20260612_091709_add_announcements_global.up,
+    down: migration_20260612_091709_add_announcements_global.down,
+    name: '20260612_091709_add_announcements_global'
+  },
+];

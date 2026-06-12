@@ -15,12 +15,16 @@ const STRIPE_CONTACT_REQUIRED_ERROR =
   'Log in with an email or phone number before starting payment.'
 const VENMO_CONTACT_REQUIRED_ERROR =
   'Log in with an email or phone number before reporting a Venmo payment.'
+const PICKUP_CONTACT_REQUIRED_ERROR =
+  'Log in with an email or phone number before confirming your order.'
 const CART_LOADING_ERROR = 'Your cart is still loading. Try again in a moment.'
+
+type PaymentCollectionMode = 'payAtPickup' | 'payNow'
 
 type CompleteOrder = {
   accessToken?: string
   orderID: number | string
-  paymentMethod?: 'stripe' | 'venmo'
+  paymentMethod?: 'in_person' | 'stripe' | 'venmo'
 }
 
 type Props = {
@@ -221,6 +225,8 @@ export function CartModalPayment({ onOrderComplete }: Props) {
   const [isProcessingPayment, setProcessingPayment] = useState(false)
   const [isSubmittingVenmo, setIsSubmittingVenmo] = useState(false)
   const [showVenmoInstructions, setShowVenmoInstructions] = useState(false)
+  const [isConfirmingPickup, setIsConfirmingPickup] = useState(false)
+  const [paymentMode, setPaymentMode] = useState<null | PaymentCollectionMode>(null)
 
   const customerEmail = typeof user?.email === 'string' ? user.email : ''
   const customerPhone = typeof user?.phone === 'string' ? user.phone : ''
@@ -231,11 +237,40 @@ export function CartModalPayment({ onOrderComplete }: Props) {
     if (!canStartPayment) return
 
     setError((current) =>
-      current === STRIPE_CONTACT_REQUIRED_ERROR || current === VENMO_CONTACT_REQUIRED_ERROR
+      current === STRIPE_CONTACT_REQUIRED_ERROR ||
+      current === VENMO_CONTACT_REQUIRED_ERROR ||
+      current === PICKUP_CONTACT_REQUIRED_ERROR
         ? null
         : current,
     )
   }, [canStartPayment])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadPaymentMode = async () => {
+      try {
+        const response = await fetch('/api/globals/store-settings')
+        const settings = (await response.json()) as { paymentCollectionMode?: unknown }
+
+        if (!cancelled) {
+          setPaymentMode(settings?.paymentCollectionMode === 'payAtPickup' ? 'payAtPickup' : 'payNow')
+        }
+      } catch {
+        // The server enforces the real mode on every payment endpoint; the UI
+        // just needs a sensible default if this read fails.
+        if (!cancelled) {
+          setPaymentMode('payNow')
+        }
+      }
+    }
+
+    void loadPaymentMode()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!cart?.id) return
@@ -332,6 +367,63 @@ export function CartModalPayment({ onOrderComplete }: Props) {
     }
   }, [canStartPayment, cart?.id, clearSession, onOrderComplete])
 
+  const confirmPickupOrder = useCallback(async () => {
+    if (!canStartPayment) {
+      setError(PICKUP_CONTACT_REQUIRED_ERROR)
+      return
+    }
+
+    if (!cart?.id) {
+      setError(CART_LOADING_ERROR)
+      return
+    }
+
+    try {
+      setError(null)
+      setIsConfirmingPickup(true)
+
+      const response = await fetch('/api/payments/pickup/confirm-order', {
+        body: JSON.stringify({
+          cartID: cart.id,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+      const responseData = (await response.json()) as {
+        accessToken?: string
+        error?: string
+        message?: string
+        orderID?: number | string
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Could not confirm the order.')
+      }
+
+      if (!responseData.orderID) {
+        throw new Error('The order response did not include an order ID.')
+      }
+
+      clearSession()
+      // Same rule as the Stripe and Venmo paths: do NOT dispatch
+      // ECOMMERCE_SESSION_RESET_EVENT here - that listener remounts the whole
+      // EcommerceProvider subtree before the parent can switch to the
+      // complete panel. CartCompletePanel.finishOrderFlow handles it.
+      onOrderComplete({
+        accessToken: responseData.accessToken,
+        orderID: responseData.orderID,
+        paymentMethod: 'in_person',
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not confirm the order.'
+      setError(message)
+    } finally {
+      setIsConfirmingPickup(false)
+    }
+  }, [canStartPayment, cart?.id, clearSession, onOrderComplete])
+
   const elementsOptions = useMemo(
     () => ({
       appearance: {
@@ -398,6 +490,58 @@ export function CartModalPayment({ onOrderComplete }: Props) {
         <p className="mt-2 text-sm leading-6 text-black/60">
           Keep this window open while Stripe confirms the payment.
         </p>
+      </BakeryCard>
+    )
+  }
+
+  if (paymentMode === null) {
+    return (
+      <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
+        <p className="text-2xl font-medium tracking-[-0.04em]">Checkout</p>
+        <p className="mt-2 text-sm leading-6 text-black/60">Loading checkout options&#8230;</p>
+      </BakeryCard>
+    )
+  }
+
+  if (paymentMode === 'payAtPickup') {
+    return (
+      <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
+        <div className="space-y-2">
+          <p className="text-2xl font-medium tracking-[-0.04em]">Confirm your order</p>
+          <p className="text-sm leading-6 text-black/60">
+            Nothing is charged now. You pay when you pick up your order &#8212; card, Venmo, or
+            cash at the handoff.
+          </p>
+        </div>
+
+        <Message className="mb-0 mt-4" error={error} onDismiss={() => setError(null)} />
+
+        <div className="mt-5 overflow-hidden rounded-[14px] border border-[#e4d7bd] bg-[#fff8e8] p-4 text-[#3f351f]">
+          <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#1f3d24]">
+            Pay at pickup
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
+            Confirming sends your order straight to the baker, who will personally message you
+            through the contact info on your account to arrange the pickup.
+          </p>
+          {!customerEmail && customerPhone ? (
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#1f3d24]">
+              You signed up with a phone number only, so there is no email receipt — the baker
+              will text you personally with every update.
+            </p>
+          ) : null}
+        </div>
+
+        <BakeryAction
+          block
+          className="mt-5"
+          disabled={isConfirmingPickup || !canStartPayment}
+          onClick={confirmPickupOrder}
+          type="button"
+          variant="primary"
+        >
+          {isConfirmingPickup ? 'Sending your order' : 'Confirm order — pay at pickup'}
+        </BakeryAction>
       </BakeryCard>
     )
   }

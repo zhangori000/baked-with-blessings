@@ -42,7 +42,7 @@ type CartPanel = 'cart' | 'auth' | 'login' | 'signup' | 'checkout' | 'complete'
 type CompleteOrder = {
   accessToken?: string
   orderID: number | string
-  paymentMethod?: 'stripe' | 'venmo'
+  paymentMethod?: 'in_person' | 'stripe' | 'venmo'
 }
 
 export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean }) {
@@ -1433,6 +1433,11 @@ function CartSignupPanel({
         </div>
 
         <div className="grid gap-2 text-xs cartAuthHint">
+          <p>
+            Phone-only accounts work — the baker texts you personally about orders. Automatic
+            emails (receipts, announcements, future perks) only reach accounts with an email
+            address.
+          </p>
           {phone.trim() && !verificationMode ? (
             <p>Send a phone code to verify this number before continuing.</p>
           ) : null}
@@ -1463,6 +1468,7 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
   const orderHref = `/orders/${order.orderID}?${orderQuery.toString()}`
   const postNoteHref = `${communityHref}?fromOrder=${order.orderID}`
   const isVenmoOrder = order.paymentMethod === 'venmo'
+  const isPickupOrder = order.paymentMethod === 'in_person'
   const finishOrderFlow = () => {
     window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
     onClose()
@@ -1482,9 +1488,11 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
         <div className="space-y-2">
           <p className="text-3xl font-medium tracking-[-0.05em]">Order received.</p>
           <p className="text-sm leading-6 text-black/60">
-            {isVenmoOrder
-              ? 'We recorded your Venmo report. The bakery will verify the payment to @bakedwithblessings and contact you through your account contact method.'
-              : 'Payment went through and a fresh cart will be started.'}
+            {isPickupOrder
+              ? 'Nothing was charged. You pay when you pick up your order - the baker will personally message you through the contact info on your account to arrange the handoff.'
+              : isVenmoOrder
+                ? 'We recorded your Venmo report. The bakery will verify the payment to @bakedwithblessings and contact you through your account contact method.'
+                : 'Payment went through and a fresh cart will be started.'}
           </p>
         </div>
 
