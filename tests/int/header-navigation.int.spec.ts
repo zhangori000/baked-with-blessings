@@ -27,6 +27,7 @@ describe('header navigation', () => {
     const appsItem = navigationItems.find((item) => item.kind === 'apps')
 
     expect(appsItem?.panel.cards.map((card) => card.href)).toEqual([
+      '/contact',
       '/community',
       '/reviews',
       '/feature-requests',
@@ -43,10 +44,12 @@ describe('header navigation', () => {
     expect(appsItem?.panel.cards.map((card) => card.href)).toEqual(desktopRoutes)
   })
 
-  it('does not fall back to a disabled app route when every app page is disabled', () => {
+  it('keeps only always-on pages when every toggleable app page is disabled', () => {
     const navigationItems = buildHeaderNavigation([], sitePagesWithAllAppsDisabled)
     const appsItem = navigationItems.find((item) => item.kind === 'apps')
 
-    expect(appsItem?.panel.cards).toEqual([])
+    // Contact has no Site Pages toggle: it moved out of the main nav into
+    // this panel, so it must survive even when every other app is off.
+    expect(appsItem?.panel.cards.map((card) => card.href)).toEqual(['/contact'])
   })
 })

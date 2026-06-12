@@ -16,7 +16,13 @@ import {
 describe('idempotency helpers', () => {
   it('keeps phone verification start keys stable inside a throttle window', () => {
     const phoneNumber = '+15551234567'
-    const now = new Date('2026-04-27T12:00:00.000Z')
+    // Buckets are aligned to the epoch, not to "now" - align the test clock to
+    // a bucket start so the window math is deterministic for any window size.
+    const baseTime = new Date('2026-04-27T12:00:00.000Z').getTime()
+    const now = new Date(
+      Math.floor(baseTime / PHONE_VERIFICATION_START_WINDOW_MS) *
+        PHONE_VERIFICATION_START_WINDOW_MS,
+    )
     const sameWindow = new Date(now.getTime() + PHONE_VERIFICATION_START_WINDOW_MS - 1)
     const nextWindow = new Date(now.getTime() + PHONE_VERIFICATION_START_WINDOW_MS)
 
@@ -91,6 +97,7 @@ describe('idempotency helpers', () => {
         payload: {
           find,
           findByID,
+          logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
         },
       } as never,
       transactionsSlug: 'transactions',
@@ -147,6 +154,7 @@ describe('idempotency helpers', () => {
         payload: {
           create,
           find,
+          logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
           update,
         },
       } as never,
