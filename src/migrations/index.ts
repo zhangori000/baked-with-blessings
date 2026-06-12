@@ -24,6 +24,7 @@ import * as migration_20260612_081254_add_order_customer_name from './20260612_0
 import * as migration_20260612_090000_backfill_order_customer_names from './20260612_090000_backfill_order_customer_names';
 import * as migration_20260612_090026_add_customer_notification_sent_at from './20260612_090026_add_customer_notification_sent_at';
 import * as migration_20260612_091709_add_announcements_global from './20260612_091709_add_announcements_global';
+import * as migration_20260612_233122_add_product_individual_availability from './20260612_233122_add_product_individual_availability';
 
 export const migrations = [
   {
@@ -154,6 +155,11 @@ export const migrations = [
   {
     up: migration_20260612_091709_add_announcements_global.up,
     down: migration_20260612_091709_add_announcements_global.down,
-    name: '20260612_091709_add_announcements_global'
+    name: '20260612_091709_add_announcements_global',
+  },
+  {
+    up: migration_20260612_233122_add_product_individual_availability.up,
+    down: migration_20260612_233122_add_product_individual_availability.down,
+    name: '20260612_233122_add_product_individual_availability'
   },
 ];

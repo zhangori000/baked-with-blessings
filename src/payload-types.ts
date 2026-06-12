@@ -532,6 +532,10 @@ export interface Product {
    */
   menuBehavior?: ('simple' | 'batchBuilder') | null;
   /**
+   * Only matters for individual cookie flavors. "Always available" keeps the flavor on the menu year-round (the standing lineup). "Rotation only" means customers can buy it by itself only while it is part of the active cookie rotation — otherwise it stays catering-only. Trays and catering packs ignore this setting.
+   */
+  individualAvailability?: ('rotation' | 'always') | null;
+  /**
    * How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.
    */
   requiredSelectionCount?: number | null;
@@ -3184,6 +3188,7 @@ export interface ProductsSelect<T extends boolean = true> {
   priceInUSD?: T;
   menuPortionLabel?: T;
   menuBehavior?: T;
+  individualAvailability?: T;
   requiredSelectionCount?: T;
   selectableProducts?: T;
   relatedProducts?: T;

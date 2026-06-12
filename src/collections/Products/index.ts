@@ -360,6 +360,27 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               },
             },
             {
+              name: 'individualAvailability',
+              label: 'When can customers order this flavor by itself?',
+              type: 'select',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description:
+                  'Only matters for individual cookie flavors. "Always available" keeps the flavor on the menu year-round (the standing lineup). "Rotation only" means customers can buy it by itself only while it is part of the active cookie rotation — otherwise it stays catering-only. Trays and catering packs ignore this setting.',
+              },
+              defaultValue: 'rotation',
+              options: [
+                {
+                  label: 'Rotation only (default)',
+                  value: 'rotation',
+                },
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
+            },
+            {
               name: 'requiredSelectionCount',
               label: 'Tray quantity',
               type: 'number',
