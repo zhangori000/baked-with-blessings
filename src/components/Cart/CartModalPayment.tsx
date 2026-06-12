@@ -524,6 +524,12 @@ export function CartModalPayment({ onOrderComplete }: Props) {
             Confirming sends your order straight to the baker, who will personally message you
             through the contact info on your account to arrange the pickup.
           </p>
+          {!customerEmail && customerPhone ? (
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#1f3d24]">
+              You signed up with a phone number only, so there is no email receipt — the baker
+              will text you personally with every update.
+            </p>
+          ) : null}
         </div>
 
         <BakeryAction

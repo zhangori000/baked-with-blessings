@@ -1433,6 +1433,11 @@ function CartSignupPanel({
         </div>
 
         <div className="grid gap-2 text-xs cartAuthHint">
+          <p>
+            Phone-only accounts work — the baker texts you personally about orders. Automatic
+            emails (receipts, announcements, future perks) only reach accounts with an email
+            address.
+          </p>
           {phone.trim() && !verificationMode ? (
             <p>Send a phone code to verify this number before continuing.</p>
           ) : null}
