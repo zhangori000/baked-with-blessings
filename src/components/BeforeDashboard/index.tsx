@@ -2,6 +2,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { BulkCookiePriceTool } from './BulkCookiePriceTool'
+import { LocalMediaSyncCard } from './LocalMediaSyncCard'
 import { SeedButton } from './SeedButton'
 import styles from './index.module.css'
 
@@ -64,6 +65,8 @@ export const BeforeDashboard: React.FC = () => {
             <BulkCookiePriceTool messageClassName={styles.helperText} />
           </div>
         </article>
+
+        <LocalMediaSyncCard />
 
         <article className={styles.card}>
           <div className={styles.cardHeader}>
