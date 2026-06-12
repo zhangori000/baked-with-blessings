@@ -1,0 +1,14 @@
+.product-writing-generator {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 12px 0 16px;
+}
+
+.product-writing-generator__description {
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}

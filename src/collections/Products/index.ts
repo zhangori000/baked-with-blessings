@@ -149,6 +149,16 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               required: false,
             },
             {
+              name: 'generateProductDescription',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field:
+                    '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
+                },
+              },
+            },
+            {
               name: 'menuExpandedPitch',
               type: 'richText',
               admin: {
@@ -168,6 +178,16 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               }),
               label: 'Expanded Menu Description',
               required: false,
+            },
+            {
+              name: 'generateExpandedMenuDescription',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field:
+                    '@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription',
+                },
+              },
             },
             {
               name: 'gallery',
@@ -281,6 +301,16 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                     },
                   }),
                   required: false,
+                },
+                {
+                  name: 'generateProductInfoPopup',
+                  type: 'ui',
+                  admin: {
+                    components: {
+                      Field:
+                        '@/components/admin/ProductWritingGenerators#GenerateProductInfoPopup',
+                    },
+                  },
                 },
               ],
             },
