@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     {
       accessToken: result.order.accessToken || undefined,
       message:
-        'Order received. Nothing was charged - you pay when you pick it up, and the bakery will contact you through your account contact method.',
+        'Order received. Nothing was charged - you pay when you pick it up, and the baker will personally message you through the contact info on your account.',
       orderID: result.order.id,
       paymentMethod: 'in_person',
     },

@@ -1484,7 +1484,7 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
           <p className="text-3xl font-medium tracking-[-0.05em]">Order received.</p>
           <p className="text-sm leading-6 text-black/60">
             {isPickupOrder
-              ? 'Nothing was charged. You pay when you pick up your order - the bakery will reach out through your account contact method to arrange the handoff.'
+              ? 'Nothing was charged. You pay when you pick up your order - the baker will personally message you through the contact info on your account to arrange the handoff.'
               : isVenmoOrder
                 ? 'We recorded your Venmo report. The bakery will verify the payment to @bakedwithblessings and contact you through your account contact method.'
                 : 'Payment went through and a fresh cart will be started.'}

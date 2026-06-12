@@ -221,7 +221,7 @@ export default async function Order({ params, searchParams }: PageProps) {
                 </h2>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5f5632] sm:text-base">
                   {isPickupOrder
-                    ? 'Nothing has been charged. You pay when you pick up your order — the bakery will contact you through your account contact method to arrange the handoff.'
+                    ? 'Nothing has been charged. You pay when you pick up your order — the baker will personally message you through the contact info on your account to arrange the handoff.'
                     : isVenmoOrder
                       ? `We saved this order after you reported a Venmo payment to ${
                           order.manualPaymentHandle || '@bakedwithblessings'

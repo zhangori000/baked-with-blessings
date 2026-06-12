@@ -521,8 +521,8 @@ export function CartModalPayment({ onOrderComplete }: Props) {
             Pay at pickup
           </p>
           <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
-            Confirming sends your order to the bakery. They will reach out through the email or
-            phone on your account to arrange the handoff.
+            Confirming sends your order straight to the baker, who will personally message you
+            through the contact info on your account to arrange the pickup.
           </p>
         </div>
 

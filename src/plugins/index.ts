@@ -321,6 +321,7 @@ export const plugins: Plugin[] = [
           description:
             'Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.',
           listSearchableFields: [
+            'id',
             'customerName',
             'customerEmail',
             'guestContactValue',
@@ -348,7 +349,8 @@ export const plugins: Plugin[] = [
                   const customerID = getRelationshipID(data?.customer)
 
                   if (!customerID) {
-                    return value ?? null
+                    // Guest order: fall back to whatever contact we have.
+                    return value || data?.customerEmail || null
                   }
 
                   try {
@@ -358,11 +360,15 @@ export const plugins: Plugin[] = [
                       depth: 0,
                       overrideAccess: true,
                       select: {
+                        email: true,
                         name: true,
+                        phone: true,
                       },
                     })
 
-                    return customer?.name || value || null
+                    // Name first, then email/phone so the orders list always
+                    // shows something Kayla can recognize and search.
+                    return customer?.name || customer?.email || customer?.phone || value || null
                   } catch {
                     return value ?? null
                   }
