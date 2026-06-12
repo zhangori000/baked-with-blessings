@@ -23,6 +23,7 @@ import {
 import { preventPurchasedCartItemChanges } from '@/plugins/ecommerce/cartLifecycle'
 import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
 import { getRelationshipID } from '@/utilities/manualOrders'
+import { sendCustomerOrderConfirmationAfterChange } from '@/utilities/email/sendCustomerOrderConfirmation'
 import { sendOwnerOrderNotificationAfterChange } from '@/utilities/email/sendOwnerOrderNotification'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
@@ -411,6 +412,19 @@ export const plugins: Plugin[] = [
             },
           },
           {
+            name: 'customerNotificationSentAt',
+            type: 'date',
+            admin: {
+              date: {
+                pickerAppearance: 'dayAndTime',
+              },
+              description:
+                'Set automatically after the order confirmation email is sent to the customer. Stays empty for phone-only accounts with no email address.',
+              position: 'sidebar',
+              readOnly: true,
+            },
+          },
+          {
             name: 'manualPaymentMethod',
             type: 'select',
             admin: {
@@ -502,6 +516,7 @@ export const plugins: Plugin[] = [
           afterChange: [
             ...(defaultCollection.hooks?.afterChange ?? []),
             sendOwnerOrderNotificationAfterChange,
+            sendCustomerOrderConfirmationAfterChange,
           ],
           beforeValidate: [
             ...(defaultCollection.hooks?.beforeValidate ?? []),

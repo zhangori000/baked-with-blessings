@@ -392,6 +392,10 @@ export interface Order {
    */
   ownerNotificationSentAt?: string | null;
   /**
+   * Set automatically after the order confirmation email is sent to the customer. Stays empty for phone-only accounts with no email address.
+   */
+  customerNotificationSentAt?: string | null;
+  /**
    * Manual payment method reported by the customer. This does not mean payment has been verified.
    */
   manualPaymentMethod?: ('venmo' | 'in_person') | null;
@@ -3277,6 +3281,7 @@ export interface OrdersSelect<T extends boolean = true> {
   customerName?: T;
   accessToken?: T;
   ownerNotificationSentAt?: T;
+  customerNotificationSentAt?: T;
   manualPaymentMethod?: T;
   manualPaymentStatus?: T;
   manualPaymentHandle?: T;
