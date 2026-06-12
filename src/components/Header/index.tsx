@@ -4,7 +4,7 @@ import { getSitePages } from '@/utilities/getSitePages'
 import { getPayload } from 'payload'
 
 import './index.css'
-import { HeaderClient } from './index.client'
+import { HeaderClient, type HeaderAnnouncementsData } from './index.client'
 
 type HeaderBrand = {
   brandName: string
@@ -66,9 +66,41 @@ const buildHeaderBrand = (brand: BrandGlobalDocument | null): HeaderBrand => {
   }
 }
 
+type AnnouncementsGlobalDocument = {
+  items?:
+    | Array<{
+        id?: null | string
+        linkHref?: null | string
+        linkLabel?: null | string
+        message?: null | string
+        title?: null | string
+      }>
+    | null
+  updatedAt?: null | string
+}
+
+const buildHeaderAnnouncements = (
+  document: AnnouncementsGlobalDocument | null,
+): HeaderAnnouncementsData => ({
+  items: (document?.items ?? []).flatMap((item) =>
+    item?.title && item?.message
+      ? [
+          {
+            id: item.id ?? null,
+            linkHref: item.linkHref ?? null,
+            linkLabel: item.linkLabel ?? null,
+            message: item.message,
+            title: item.title,
+          },
+        ]
+      : [],
+  ),
+  updatedAt: document?.updatedAt ?? null,
+})
+
 export async function Header() {
   const payload = await getPayload({ config: configPromise })
-  const [header, brandDocument, sitePages] = await Promise.all([
+  const [header, brandDocument, sitePages, announcementsDocument] = await Promise.all([
     getCachedGlobal('header', 1)(),
     payload
       .findGlobal({
@@ -77,10 +109,19 @@ export async function Header() {
       })
       .catch(() => null),
     getSitePages(),
+    payload
+      .findGlobal({
+        depth: 0,
+        slug: 'announcements',
+      })
+      .catch(() => null),
   ])
 
   return (
     <HeaderClient
+      announcements={buildHeaderAnnouncements(
+        announcementsDocument as AnnouncementsGlobalDocument | null,
+      )}
       brand={buildHeaderBrand(brandDocument as BrandGlobalDocument | null)}
       header={header}
       sitePages={sitePages}

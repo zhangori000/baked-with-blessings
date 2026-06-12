@@ -38,7 +38,8 @@ export type HeaderAppPageIcon =
 export type HeaderAppPage = {
   id: string
   description: string
-  enabledFlag: keyof SitePagesFlags
+  /** Pages without a flag are always enabled. */
+  enabledFlag?: keyof SitePagesFlags
   eyebrow: string
   href: string
   icon: HeaderAppPageIcon
@@ -52,7 +53,7 @@ export type HeaderNavigationItem = {
   id: string
   href: string
   label: string
-  kind?: 'link' | 'apps'
+  kind?: 'link' | 'apps' | 'announcements'
   panel: {
     eyebrow: string
     description: string
@@ -62,6 +63,17 @@ export type HeaderNavigationItem = {
 }
 
 export const headerAppPages: HeaderAppPage[] = [
+  {
+    description:
+      'Send a note to the bakery owner for custom orders, pickup questions, event details, or anything that needs a real reply.',
+    eyebrow: 'Direct message',
+    href: contactHref,
+    icon: 'message-square-text',
+    id: 'contact',
+    mobileTitle: 'Contact',
+    title: 'Contact',
+    tone: 'light',
+  },
   {
     description:
       'Tiny letters from people who just ordered with us - react, scroll, and leave one of your own after you order.',
@@ -150,7 +162,7 @@ const isHeaderAppPageEnabled = (href: string, sitePages: SitePagesFlags) => {
 }
 
 export const getEnabledHeaderAppPages = (sitePages: SitePagesFlags) => {
-  return headerAppPages.filter((page) => sitePages[page.enabledFlag])
+  return headerAppPages.filter((page) => (page.enabledFlag ? sitePages[page.enabledFlag] : true))
 }
 
 const buildAppPanelCard = (page: HeaderAppPage): HeaderPanelCard => ({
@@ -223,30 +235,16 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     },
   },
   {
-    href: contactHref,
-    id: 'contact',
-    label: 'Contact',
+    href: '#announcements',
+    id: 'announcements',
+    kind: 'announcements',
+    label: 'Announcements',
     panel: {
-      eyebrow: 'Direct message',
+      eyebrow: 'From the baker',
       description:
-        'Send a note to the bakery owner for custom orders, pickup questions, event details, or anything that needs a real reply.',
-      cards: [
-        {
-          description:
-            'Open the message envelope, write a contact note, and send it to the configured owner inbox.',
-          eyebrow: 'Owner inbox',
-          href: contactHref,
-          title: 'Write a message',
-          tone: 'light',
-        },
-      ],
-      links: [
-        {
-          description: 'Go to the contact page.',
-          href: contactHref,
-          label: 'Write a message',
-        },
-      ],
+        'Bake days, market dates, pickup windows, and other news straight from the bakery.',
+      cards: [],
+      links: [],
     },
   },
   {
@@ -273,7 +271,7 @@ const fallbackItemById = new Map(fallbackHeaderNavigation.map((item) => [item.id
 const navItemPriority: Array<HeaderNavigationItem['id']> = [
   'cookies-of-the-month',
   'menu',
-  'contact',
+  'announcements',
   'more',
 ]
 
@@ -308,8 +306,11 @@ export const buildHeaderNavigation = (menu: Header['navItems'], sitePages?: Site
       const label = item.link.label?.trim()
       if (!label) return null
 
+      // Contact moved out of the main nav into the Other pages panel, so a
+      // header-global nav item labeled "Contact" maps to the announcements
+      // slot that replaced it.
       const fallbackItem = isContactLinkHint({ label })
-        ? fallbackItemById.get('contact')
+        ? fallbackItemById.get('announcements')
         : labelToFallbackItem.get(label.toLowerCase())
       if (!fallbackItem) return null
 
@@ -363,6 +364,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, featureRequestsHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, contactHref)) {
     return item.id === 'more'
   }
 

@@ -23,6 +23,7 @@ import * as migration_20260612_080233_add_order_lane_statuses from './20260612_0
 import * as migration_20260612_081254_add_order_customer_name from './20260612_081254_add_order_customer_name';
 import * as migration_20260612_090000_backfill_order_customer_names from './20260612_090000_backfill_order_customer_names';
 import * as migration_20260612_090026_add_customer_notification_sent_at from './20260612_090026_add_customer_notification_sent_at';
+import * as migration_20260612_091709_add_announcements_global from './20260612_091709_add_announcements_global';
 
 export const migrations = [
   {
@@ -148,6 +149,11 @@ export const migrations = [
   {
     up: migration_20260612_090026_add_customer_notification_sent_at.up,
     down: migration_20260612_090026_add_customer_notification_sent_at.down,
-    name: '20260612_090026_add_customer_notification_sent_at'
+    name: '20260612_090026_add_customer_notification_sent_at',
+  },
+  {
+    up: migration_20260612_091709_add_announcements_global.up,
+    down: migration_20260612_091709_add_announcements_global.down,
+    name: '20260612_091709_add_announcements_global'
   },
 ];

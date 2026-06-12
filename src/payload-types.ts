@@ -165,6 +165,7 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'store-settings': StoreSetting;
+    announcements: Announcement;
     brand: Brand;
     header: Header;
     footer: Footer;
@@ -176,6 +177,7 @@ export interface Config {
   };
   globalsSelect: {
     'store-settings': StoreSettingsSelect<false> | StoreSettingsSelect<true>;
+    announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
     brand: BrandSelect<false> | BrandSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
@@ -3401,6 +3403,41 @@ export interface StoreSetting {
   createdAt?: string | null;
 }
 /**
+ * These appear under the ANNOUNCEMENTS button in the site header on every page (it replaced Contact in the main nav; Contact now lives under Other pages). Visitors see a red dot on the button until they open the panel — saving any change here shows the dot again.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements".
+ */
+export interface Announcement {
+  id: number;
+  /**
+   * Drag to reorder. Keep these short and current: bake days, market dates, pickup windows. Delete old ones so the list stays fresh.
+   */
+  items?:
+    | {
+        /**
+         * The headline customers see, for example "Farmers market this Saturday!"
+         */
+        title: string;
+        /**
+         * A few friendly sentences: where, when, what is available, how to claim an order.
+         */
+        message: string;
+        /**
+         * Optional button text, for example "Preorder now". Leave empty for no button.
+         */
+        linkLabel?: string | null;
+        /**
+         * Where the optional button goes, for example /menu. Required if button text is set.
+         */
+        linkHref?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Manage the storefront brand name and logo in one place so the header can change without a code edit.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3622,6 +3659,24 @@ export interface SitePage {
  */
 export interface StoreSettingsSelect<T extends boolean = true> {
   paymentCollectionMode?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements_select".
+ */
+export interface AnnouncementsSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        title?: T;
+        message?: T;
+        linkLabel?: T;
+        linkHref?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

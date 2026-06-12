@@ -2213,3 +2213,64 @@ body:has(.accountSceneryRoute) .siteHeaderViewport::after {
   display: none !important;
   background: none !important;
 }
+
+/* --- Announcements --- */
+
+.siteHeaderNewDot {
+  background: #c14d2a;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgb(255 252 244 / 90%);
+  display: inline-block;
+  flex-shrink: 0;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+.siteHeaderMobileAnnouncementsButton {
+  position: relative;
+}
+
+.siteHeaderMobileAnnouncementsButton .siteHeaderNewDot {
+  position: absolute;
+  right: 0.28rem;
+  top: 0.28rem;
+}
+
+.siteHeaderAnnouncementsList {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.siteHeaderAnnouncementCard {
+  background: rgb(255 252 244 / 94%);
+  border: 1px solid rgb(74 58 35 / 16%);
+  border-radius: 12px;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+  padding: 0.9rem 0.95rem;
+}
+
+.siteHeaderAnnouncementTitle {
+  color: rgb(33 40 20 / 95%);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.siteHeaderAnnouncementMessage {
+  color: rgb(60 52 33 / 86%);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.siteHeaderAnnouncementLink {
+  margin-top: 0.25rem;
+}
+
+.siteHeaderAnnouncementsEmpty {
+  color: rgb(60 52 33 / 70%);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.2rem;
+}

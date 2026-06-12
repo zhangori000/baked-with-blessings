@@ -9,7 +9,7 @@ import {
   useBakeryMediaQuery,
 } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
-import { MenuIcon, ShoppingBag, UserRound, X } from 'lucide-react'
+import { Megaphone, MenuIcon, ShoppingBag, UserRound, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -17,14 +17,16 @@ import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 type Props = {
   accountButtonLabel: string
   cartQuantity: number
+  hasUnseenAnnouncements: boolean
   isAccountOpen: boolean
   onOpenAccount: () => void
+  onOpenAnnouncements: () => void
   onOpenCart: () => void
   items: Array<{
     id: string
     href: string
     isActive?: boolean
-    kind?: 'link' | 'apps'
+    kind?: 'link' | 'apps' | 'announcements'
     label: string
     panel: {
       eyebrow: string
@@ -47,9 +49,11 @@ const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
 export function MobileMenu({
   accountButtonLabel,
   cartQuantity,
+  hasUnseenAnnouncements,
   isAccountOpen,
   items,
   onOpenAccount,
+  onOpenAnnouncements,
   onOpenCart,
 }: Props) {
   const pathname = usePathname()
@@ -57,7 +61,9 @@ export function MobileMenu({
   const isTabletUp = useBakeryMediaQuery(bakeryMediaQueries.tabletUp)
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const mainItems = items.filter((item) => item.kind !== 'apps')
+  // The announcements entry is represented by the megaphone icon button in
+  // the controls row, not by a nav card.
+  const mainItems = items.filter((item) => item.kind !== 'apps' && item.kind !== 'announcements')
   const appItems = items.filter((item) => item.kind === 'apps')
   const appCards = appItems.flatMap((item) =>
     (item.panel.cards ?? []).map((card) => ({
@@ -157,6 +163,25 @@ export function MobileMenu({
           type="button"
         >
           {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
+        </BakeryPressable>
+
+        <BakeryPressable
+          aria-label={
+            hasUnseenAnnouncements
+              ? 'Open announcements. New announcements available'
+              : 'Open announcements'
+          }
+          className="siteHeaderMobileIconButton siteHeaderMobileAnnouncementsButton"
+          onClick={() => {
+            setIsOpen(false)
+            onOpenAnnouncements()
+          }}
+          type="button"
+        >
+          <Megaphone className="h-4 w-4" />
+          {hasUnseenAnnouncements ? (
+            <span aria-hidden="true" className="siteHeaderNewDot" />
+          ) : null}
         </BakeryPressable>
 
         <BakeryPressable
