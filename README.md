@@ -380,11 +380,13 @@ pnpm sync-db:prod
 pnpm payload migrate:create
 ```
 
-This compares your code's schema against the existing migration files (and the local DB's `payload_migrations` table) and writes a new file under `src/migrations/`. Always read it before committing.
+This compares your code's schema against the newest snapshot `.json` in `src/migrations/` — not against the live database. A table can already exist in your DB and still be flagged as brand new if the snapshot predates it. The command writes a new file under `src/migrations/`. Always read it before committing.
 
 ##### `migrate:create` can over-include when local history is stale
 
 This project previously allowed local Payload dev schema push. A database touched by that old behavior can have tables that match code while `payload_migrations` does not fully reflect the migration files. When that happens, `migrate:create` may regenerate "everything not yet tracked" - sometimes thousands of lines describing tables that already exist elsewhere.
+
+In this repo the staleness is permanent: the only snapshot is the initial April one, because every later migration is hand-written and auto-generated snapshots get deleted (step 4 below). `migrate:create` will therefore always over-include here, and it hangs on interactive rename-or-create prompts when run non-interactively. Hand-write migrations instead (see `CLAUDE.md`).
 
 When this happens:
 
@@ -439,7 +441,7 @@ DATABASE_URL='postgresql://neondb_owner:...' pnpm payload migrate
 
 ##### `--force-accept-warning` is dangerous
 
-Some destructive schema diffs (renames, dropped columns, type changes that can lose data) trigger an interactive Y/N prompt. **Do not blindly add `--force-accept-warning` to automated migrate runs** - picking the wrong default can drop production data silently. The right pattern is to answer the prompts when generating the migration locally (`migrate:create`), inspect the resulting SQL, then commit. Once the file is committed, `pnpm payload migrate` is non-interactive because all decisions are baked into the file.
+Some destructive schema diffs (renames, dropped columns, type changes that can lose data) trigger an interactive Y/N prompt. **Do not blindly add `--force-accept-warning` to automated migrate runs** - picking the wrong default can drop production data silently. The generic right pattern is to answer the prompts when generating a migration locally, inspect the resulting SQL, then commit - but in this repo `migrate:create` is not usable at all (see the stale-snapshot note above), so hand-write the migration instead, which involves no prompts. Once a migration file is committed, `pnpm payload migrate` is non-interactive because all decisions are baked into the file.
 
 #### Page-content globals (`pnpm bootstrap:page-content`)
 
