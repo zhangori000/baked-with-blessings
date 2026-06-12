@@ -21,7 +21,7 @@ type UpdatedCookieProduct = {
 
 const cookieProductPageSize = 100
 
-const parsePriceInUSD = (value: unknown): number | null => {
+const parsePriceInUSDCents = (value: unknown): number | null => {
   const price =
     typeof value === 'number' ? value : typeof value === 'string' ? Number(value.trim()) : NaN
 
@@ -29,7 +29,7 @@ const parsePriceInUSD = (value: unknown): number | null => {
     return null
   }
 
-  return Math.round(price * 100) / 100
+  return Math.round(price * 100)
 }
 
 const getCookieCategoryID = async (payload: Payload): Promise<DefaultDocumentIDType | null> => {
@@ -123,7 +123,7 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 
-  const priceInUSD = parsePriceInUSD(body.priceInUSD)
+  const priceInUSD = parsePriceInUSDCents(body.priceInUSD)
 
   if (priceInUSD === null) {
     return Response.json(

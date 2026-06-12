@@ -20,11 +20,11 @@ type BulkCookiePriceResponse = {
   updatedCount?: number
 }
 
-const formatUSD = (value: number) =>
+const formatUSDFromCents = (value: number) =>
   new Intl.NumberFormat('en-US', {
     currency: 'USD',
     style: 'currency',
-  }).format(value)
+  }).format(value / 100)
 
 const formatSuccessMessage = ({
   matchedCount = 0,
@@ -32,7 +32,7 @@ const formatSuccessMessage = ({
   skippedCount = 0,
   updatedCount = 0,
 }: BulkCookiePriceResponse): string => {
-  const priceLabel = formatUSD(priceInUSD)
+  const priceLabel = formatUSDFromCents(priceInUSD)
 
   if (matchedCount === 0) {
     return 'No cookie products were found.'
