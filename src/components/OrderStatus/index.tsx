@@ -6,6 +6,17 @@ type Props = {
   className?: string
 }
 
+type StatusValue = Exclude<StatusOptions, null | undefined>
+
+const statusLabels: Partial<Record<StatusValue, string>> = {
+  cancelled: 'cancelled',
+  completed: 'completed',
+  confirmed: 'confirmed',
+  processing: 'requested',
+  ready: 'ready for pickup',
+  refunded: 'refunded',
+}
+
 export const OrderStatus: React.FC<Props> = ({ status, className }) => {
   return (
     <div
@@ -14,11 +25,14 @@ export const OrderStatus: React.FC<Props> = ({ status, className }) => {
         className,
         {
           'bg-[#f2e4a6]': status === 'processing',
+          'bg-[#f5d9a8]': status === 'confirmed',
+          'bg-[#cfe8f5] text-[#173447]': status === 'ready',
           'bg-[#d6efc7] text-[#173f23]': status === 'completed',
+          'bg-[#eadfd6] text-[#5a4636]': status === 'cancelled' || status === 'refunded',
         },
       )}
     >
-      {status}
+      {(status ? statusLabels[status] : null) ?? status}
     </div>
   )
 }

@@ -144,6 +144,7 @@ export default async function Order({ params, searchParams }: PageProps) {
 
   const hasShippingAddress = hasAddressContent(order.shippingAddress)
   const isVenmoOrder = order.manualPaymentMethod === 'venmo'
+  const isPickupOrder = order.manualPaymentMethod === 'in_person'
 
   const canPostNote = Boolean(user)
   const existingCommunityNote = canPostNote
@@ -219,11 +220,13 @@ export default async function Order({ params, searchParams }: PageProps) {
                   {isVenmoOrder ? 'Venmo order recorded.' : 'Order received.'}
                 </h2>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5f5632] sm:text-base">
-                  {isVenmoOrder
-                    ? `We saved this order after you reported a Venmo payment to ${
-                        order.manualPaymentHandle || '@bakedwithblessings'
-                      }. The bakery will verify the payment and contact you through your account contact method.`
-                    : 'Payment went through. We saved this order and marked it as processing so the bakery can prepare it.'}
+                  {isPickupOrder
+                    ? 'Nothing has been charged. You pay when you pick up your order — the bakery will contact you through your account contact method to arrange the handoff.'
+                    : isVenmoOrder
+                      ? `We saved this order after you reported a Venmo payment to ${
+                          order.manualPaymentHandle || '@bakedwithblessings'
+                        }. The bakery will verify the payment and contact you through your account contact method.`
+                      : 'Payment went through. We saved this order and marked it as processing so the bakery can prepare it.'}
                 </p>
               </div>
               <span className="w-fit rounded-full bg-[#f7e7b6] px-3 py-1.5 font-mono text-xs font-bold tracking-[0.16em] text-[#4a421d] uppercase">
@@ -279,6 +282,20 @@ export default async function Order({ params, searchParams }: PageProps) {
                 {order.manualPaymentStatus === 'verified'
                   ? ' The bakery has marked this payment as verified.'
                   : ' This still needs manual verification by the bakery before it is treated as paid.'}
+              </p>
+            </section>
+          ) : null}
+
+          {isPickupOrder ? (
+            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
+              <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
+                Payment
+              </p>
+              <p className="text-sm leading-6 text-[#4b421d]">
+                Pay at pickup.
+                {order.status === 'completed'
+                  ? ' This order has been handed over and settled.'
+                  : ' Nothing has been charged yet — settle by card, Venmo, or cash when you collect your order.'}
               </p>
             </section>
           ) : null}

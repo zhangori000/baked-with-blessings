@@ -34,8 +34,8 @@ export function AccountSceneryBanner() {
   }, [pathname])
 
   const routeSummary = useMemo(() => {
-    if (pathname === '/orders') return 'Review paid orders, pickup status, and bakery receipts.'
-    if (pathname.startsWith('/orders/')) return 'Payment went through and the bakery can prepare it.'
+    if (pathname === '/orders') return 'Review your orders, pickup status, and bakery receipts.'
+    if (pathname.startsWith('/orders/')) return 'Your order details, items, and pickup status.'
     if (pathname === '/account/addresses') return 'Manage optional delivery details for future orders.'
     if (pathname === '/account') return 'Update your storefront profile, email, phone, and password.'
 

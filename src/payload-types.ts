@@ -7,12 +7,12 @@
  */
 
 /**
- * Business owner workflow status. Paid checkout creates orders as Processing; update this as the order is fulfilled, cancelled, or refunded.
+ * Where this order is in your workflow. New orders arrive as Requested. Move it to Confirmed when you commit to baking it, Ready for pickup once it is packed, and Completed when it is handed over and paid.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "OrderStatus".
  */
-export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
+export type OrderStatus = ('processing' | 'confirmed' | 'ready' | 'completed' | 'cancelled' | 'refunded') | null;
 /**
  * Supported timezones in IANA format.
  *
@@ -330,7 +330,7 @@ export interface Customer {
   collection: 'customers';
 }
 /**
- * Paid customer orders. Open an order to update fulfillment status and review customer contact, items, and delivery details.
+ * Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
@@ -382,6 +382,10 @@ export interface Order {
    * Derived guest checkout contact value. This is app-level groundwork for a future email-or-phone guest flow.
    */
   guestContactValue?: string | null;
+  /**
+   * Copied from the customer account when the order is saved, so the orders list can show and search names at the market stand.
+   */
+  customerName?: string | null;
   accessToken?: string | null;
   /**
    * Set automatically after the new-order email is sent to the business owner.
@@ -3270,6 +3274,7 @@ export interface OrdersSelect<T extends boolean = true> {
   currency?: T;
   guestContactMethod?: T;
   guestContactValue?: T;
+  customerName?: T;
   accessToken?: T;
   ownerNotificationSentAt?: T;
   manualPaymentMethod?: T;

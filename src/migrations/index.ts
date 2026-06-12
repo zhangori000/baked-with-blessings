@@ -19,6 +19,8 @@ import * as migration_20260504_000000_default_disable_pages from './20260504_000
 import * as migration_20260611_000000_add_store_settings_global from './20260611_000000_add_store_settings_global';
 import * as migration_20260612_071216_snapshot_refresh from './20260612_071216_snapshot_refresh';
 import * as migration_20260612_072715_add_in_person_manual_payment from './20260612_072715_add_in_person_manual_payment';
+import * as migration_20260612_080233_add_order_lane_statuses from './20260612_080233_add_order_lane_statuses';
+import * as migration_20260612_081254_add_order_customer_name from './20260612_081254_add_order_customer_name';
 
 export const migrations = [
   {
@@ -124,6 +126,16 @@ export const migrations = [
   {
     up: migration_20260612_072715_add_in_person_manual_payment.up,
     down: migration_20260612_072715_add_in_person_manual_payment.down,
-    name: '20260612_072715_add_in_person_manual_payment'
+    name: '20260612_072715_add_in_person_manual_payment',
+  },
+  {
+    up: migration_20260612_080233_add_order_lane_statuses.up,
+    down: migration_20260612_080233_add_order_lane_statuses.down,
+    name: '20260612_080233_add_order_lane_statuses',
+  },
+  {
+    up: migration_20260612_081254_add_order_customer_name.up,
+    down: migration_20260612_081254_add_order_customer_name.down,
+    name: '20260612_081254_add_order_customer_name'
   },
 ];
