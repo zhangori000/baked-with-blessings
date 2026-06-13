@@ -514,7 +514,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'These are the product choices customers see when they expand this tray on /menu. For example, Cookie Tray can list every cookie; a future themed tray can list only the matching subset.',
+                  'The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors that are available right now (always-available + this month’s rotation), so rare and backlog flavors stay hidden until they return. One-flavor trays show every flavor selected here, including rare ones — that’s how customers order an out-of-season favorite.',
               },
               filterOptions: ({ id }) => {
                 if (id) {
