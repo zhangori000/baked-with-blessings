@@ -1,7 +1,7 @@
 'use client'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
-import { ChevronDownIcon, Minus, Plus } from 'lucide-react'
+import { ArrowRight, ChevronDownIcon, Minus, Plus } from 'lucide-react'
 import React, { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -24,6 +24,7 @@ import {
 } from './catering-menu-scenery'
 import { CookieSheepRig } from './cookie-sheep-rig'
 import type {
+  BundleSuggestions,
   MenuSceneryTone,
   RegularOrderItem,
   RegularOrderSize,
@@ -31,8 +32,12 @@ import type {
 
 const MAX_QUANTITY = 50
 
+const formatUSD = (cents: number) => `$${(cents / 100).toFixed(2)}`
+
 type RegularOrdersPanelProps = {
+  bundleSuggestions?: BundleSuggestions
   items: RegularOrderItem[]
+  onJumpToBundle?: (slug: string) => void
   sceneryTone: MenuSceneryTone
   seasonalLabel: string
 }
@@ -67,10 +72,14 @@ function RegularRowChevron() {
 }
 
 function RegularOrderRow({
+  bundleSuggestions,
   item,
+  onJumpToBundle,
   sceneryTone,
 }: {
+  bundleSuggestions?: BundleSuggestions
   item: RegularOrderItem
+  onJumpToBundle?: (slug: string) => void
   sceneryTone: MenuSceneryTone
 }) {
   const { addItem, isLoading } = useCart()
@@ -94,6 +103,57 @@ function RegularOrderRow({
     : item.priceInUSD
   const isCartPending = isLoading || isSubmitting
   const infoId = `${item.slug}-regular-info`
+
+  // Point customers stocking up toward the cheaper bundle: a 4-pack mix box
+  // (quantity 4–9) or a 10-pack one-flavor tray (quantity 10+). Below 4 we
+  // still show a quiet static hint so the option is always discoverable.
+  const bundleHint = useMemo(() => {
+    if (!selectedSize || !bundleSuggestions) {
+      return null
+    }
+
+    const group = bundleSuggestions[selectedSize.value === 'mini' ? 'mini' : 'large']
+    if (!group) {
+      return null
+    }
+
+    const perCookie = (bundle: { count: null | number; price: number }) =>
+      bundle.count ? `${formatUSD(Math.round(bundle.price / bundle.count))} a cookie` : null
+
+    if (quantity >= 10 && group.tray) {
+      const tray = group.tray
+      const each = perCookie(tray)
+      return {
+        detail: `${tray.count} for ${formatUSD(tray.price)}${each ? ` — ${each} vs ${formatUSD(selectedSize.priceInUSD)} each here` : ''}.`,
+        headline: `Want 10 of one flavor? The ${tray.title} is cheaper.`,
+        kind: 'strong' as const,
+        slug: tray.slug,
+      }
+    }
+
+    if (quantity >= 4 && group.box) {
+      const box = group.box
+      const each = perCookie(box)
+      return {
+        detail: `${box.count} for ${formatUSD(box.price)}${each ? ` — ${each} vs ${formatUSD(selectedSize.priceInUSD)} each here` : ''}. Mix any current flavors.`,
+        headline: `Stocking up? The ${box.title} saves you money.`,
+        kind: 'strong' as const,
+        slug: box.slug,
+      }
+    }
+
+    const fallback = group.box ?? group.tray
+    if (!fallback) {
+      return null
+    }
+
+    return {
+      detail: 'Build-your-own boxes and one-flavor trays cost less per cookie.',
+      headline: 'Buying a bunch?',
+      kind: 'quiet' as const,
+      slug: fallback.slug,
+    }
+  }, [bundleSuggestions, quantity, selectedSize])
 
   const handleAddToCart = async () => {
     if (!selectedSize || isCartPending) {
@@ -300,6 +360,46 @@ function RegularOrderRow({
                 ? `Add ${quantity} × ${selectedSize.label} to cart`
                 : 'Pick a size first'}
             </SceneButton>
+
+            {bundleHint ? (
+              <button
+                className={cn(
+                  'group flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left transition',
+                  bundleHint.kind === 'strong'
+                    ? 'border border-[rgba(126,161,47,0.34)] bg-[rgba(126,161,47,0.1)] hover:bg-[rgba(126,161,47,0.16)]'
+                    : 'border border-transparent bg-transparent px-1 py-1 hover:bg-[rgba(126,161,47,0.06)]',
+                )}
+                onClick={() => onJumpToBundle?.(bundleHint.slug)}
+                type="button"
+              >
+                {bundleHint.kind === 'strong' ? (
+                  <span aria-hidden="true" className="text-lg leading-none">
+                    💡
+                  </span>
+                ) : null}
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={cn(
+                      'block font-semibold',
+                      bundleHint.kind === 'strong'
+                        ? 'text-[0.86rem] text-[#3c4a22]'
+                        : 'text-[0.82rem] text-[rgba(60,74,34,0.92)]',
+                    )}
+                  >
+                    {bundleHint.headline}
+                  </span>
+                  <span className="block text-[0.78rem] leading-snug text-[rgba(23,21,16,0.6)]">
+                    {bundleHint.detail}
+                  </span>
+                </span>
+                <ArrowRight
+                  aria-hidden="true"
+                  className="shrink-0 text-[#5c7a1f] transition-transform group-hover:translate-x-0.5"
+                  size={18}
+                  strokeWidth={2.4}
+                />
+              </button>
+            ) : null}
           </BakeryCard>
         </div>
 
@@ -351,7 +451,9 @@ function RegularOrderRow({
  * rotation's flavors, each orderable in any published size and quantity.
  */
 export function RegularOrdersPanel({
+  bundleSuggestions,
   items,
+  onJumpToBundle,
   sceneryTone,
   seasonalLabel,
 }: RegularOrdersPanelProps) {
@@ -392,7 +494,13 @@ export function RegularOrdersPanel({
               <p className="regularGroupDescription">{group.description}</p>
             </div>
             {group.items.map((item) => (
-              <RegularOrderRow item={item} key={item.id} sceneryTone={sceneryTone} />
+              <RegularOrderRow
+                bundleSuggestions={bundleSuggestions}
+                item={item}
+                key={item.id}
+                onJumpToBundle={onJumpToBundle}
+                sceneryTone={sceneryTone}
+              />
             ))}
           </section>
         ))}

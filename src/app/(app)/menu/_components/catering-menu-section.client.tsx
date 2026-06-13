@@ -37,6 +37,7 @@ import {
 } from './catering-menu-scenery'
 import type {
   MenuPanelBackdrop,
+  BundleSuggestions,
   MenuSection,
   MenuSceneryTone,
   RegularOrderItem,
@@ -516,6 +517,7 @@ function CateringMenuRow({
   return (
     <AccordionItem
       className="cateringMenuAccordionItem border-b border-[rgba(23,21,16,0.14)]"
+      id={`bundle-${product.slug ?? `row-${index}`}`}
       value={product.slug ?? `row-${index}`}
     >
       <AccordionTrigger
@@ -620,6 +622,37 @@ export function CateringMenuSection({
     () => new Set(regularItems.map((item) => item.id)),
     [regularItems],
   )
+  // The 4-pack mix box and 10-pack one-flavor tray for each size, used to nudge
+  // a customer who is stacking up single cookies toward the cheaper bundle.
+  // Read from the live bundle products so the per-cookie math is always current.
+  const bundleSuggestions = useMemo<BundleSuggestions>(() => {
+    const bySlug = new Map(products.map((product) => [product.slug, product]))
+    const toSuggestion = (slug: string) => {
+      const product = bySlug.get(slug)
+      if (!product || typeof product.priceInUSD !== 'number') {
+        return null
+      }
+      return {
+        count:
+          typeof product.requiredSelectionCount === 'number'
+            ? product.requiredSelectionCount
+            : null,
+        price: product.priceInUSD,
+        slug,
+        title: product.title ?? slug,
+      }
+    }
+    return {
+      large: {
+        box: toSuggestion('build-your-own-cookie-box'),
+        tray: toSuggestion('cookie-tray'),
+      },
+      mini: {
+        box: toSuggestion('build-your-own-mini-box'),
+        tray: toSuggestion('mini-cookie-tray'),
+      },
+    }
+  }, [products])
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
@@ -627,6 +660,9 @@ export function CateringMenuSection({
   const [section, setSection] = useState<MenuSection>(
     hasRegularItems ? initialSection : 'catering',
   )
+  // Controlled value of the Bundles accordion so a nudge from Regular orders
+  // can open the matching bundle.
+  const [openBundleSlug, setOpenBundleSlug] = useState<string>('')
 
   useEffect(() => {
     for (const sceneryTone of menuSceneryTones) {
@@ -658,6 +694,20 @@ export function CateringMenuSection({
       }
 
       window.history.replaceState(null, '', url)
+    }
+  }
+
+  const handleJumpToBundle = (slug: string) => {
+    handleSectionChange('catering')
+    setOpenBundleSlug(slug)
+
+    if (typeof window !== 'undefined') {
+      // Let the tab switch + accordion open render before scrolling to it.
+      window.setTimeout(() => {
+        document
+          .getElementById(`bundle-${slug}`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 90)
     }
   }
 
@@ -723,7 +773,9 @@ export function CateringMenuSection({
               role="tabpanel"
             >
               <RegularOrdersPanel
+                bundleSuggestions={bundleSuggestions}
                 items={regularItems}
+                onJumpToBundle={handleJumpToBundle}
                 sceneryTone={heroSceneryTone}
                 seasonalLabel={seasonalLabel}
               />
@@ -740,7 +792,14 @@ export function CateringMenuSection({
           >
             <div className="cateringMenuPanel">
               {orderedProducts.length > 0 ? (
-                <Accordion collapsible type="single">
+                <Accordion
+                  collapsible
+                  onValueChange={(value) =>
+                    setOpenBundleSlug(typeof value === 'string' ? value : '')
+                  }
+                  type="single"
+                  value={openBundleSlug}
+                >
                   {orderedProducts.map((product, index) => (
                     <CateringMenuRow
                       currentFlavorIDs={currentFlavorIDs}

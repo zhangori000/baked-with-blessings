@@ -30,6 +30,21 @@ export type SelectableFlavor = {
 
 export type MenuSection = 'catering' | 'regular'
 
+/** A bundle the Regular-orders nudge can point a stocking-up customer toward. */
+export type BundleSuggestion = {
+  /** Cookies in the bundle (requiredSelectionCount), used for per-cookie math. */
+  count: number | null
+  price: number
+  slug: string
+  title: string
+}
+
+/** Per-size bundle options: a 4-pack mix box and a 10-pack one-flavor tray. */
+export type BundleSuggestions = {
+  large: { box: BundleSuggestion | null; tray: BundleSuggestion | null }
+  mini: { box: BundleSuggestion | null; tray: BundleSuggestion | null }
+}
+
 /**
  * 'scenery' = the full animated scene (sky, clouds, meadow, sheep, flowers)
  * as the panel container. 'tinted' = a clean container whose background is
