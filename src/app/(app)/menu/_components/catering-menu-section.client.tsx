@@ -143,7 +143,10 @@ const normalizeProductRelation = (value: number | Product | null | undefined): P
   return null
 }
 
-const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] => {
+const buildSelectableFlavors = (
+  product: Partial<Product>,
+  currentFlavorIDs: Set<number>,
+): SelectableFlavor[] => {
   const selectableProducts = Array.isArray(product.selectableProducts)
     ? product.selectableProducts
     : []
@@ -161,6 +164,10 @@ const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] =
         id: selectableProduct.id,
         image: posterAsset?.image ?? normalizeImage(selectableProduct),
         infoButtonLabel: posterAsset?.infoButtonLabel ?? 'Info',
+        // "Rare" = not individually orderable right now (off the standing menu
+        // and not in the active rotation). Derived from the same set Regular
+        // orders shows, so it stays in step with the rotation automatically.
+        isRare: !currentFlavorIDs.has(selectableProduct.id),
         receiptBody,
         summary: posterAsset?.summary ?? resolveSummary(selectableProduct),
         title: posterAsset?.title ?? selectableProduct.title,
@@ -211,6 +218,7 @@ function TrayChevronIndicator() {
 }
 
 function CateringMenuRow({
+  currentFlavorIDs,
   isSceneryPickerOpen,
   isSceneChanging,
   index,
@@ -219,6 +227,7 @@ function CateringMenuRow({
   product,
   sceneryTone,
 }: {
+  currentFlavorIDs: Set<number>
   isSceneryPickerOpen: boolean
   isSceneChanging: boolean
   index: number
@@ -244,7 +253,17 @@ function CateringMenuRow({
     isBatchBuilder && typeof product.requiredSelectionCount === 'number'
       ? product.requiredSelectionCount
       : 0
-  const selectableFlavors = useMemo(() => buildSelectableFlavors(product), [product])
+  const selectableFlavors = useMemo(
+    () => buildSelectableFlavors(product, currentFlavorIDs),
+    [product, currentFlavorIDs],
+  )
+  // Mix-and-match boxes only offer currently-available flavors (the baker can't
+  // batch legacy flavors on demand); one-flavor binge trays offer everything,
+  // marking rare flavors with a badge.
+  const offeredFlavors = useMemo(
+    () => (isMixAndMatch ? selectableFlavors.filter((flavor) => !flavor.isRare) : selectableFlavors),
+    [isMixAndMatch, selectableFlavors],
+  )
   const boxTotal = useMemo(
     () => Object.values(boxCounts).reduce((sum, count) => sum + count, 0),
     [boxCounts],
@@ -552,7 +571,7 @@ function CateringMenuRow({
             renderPersuasionPanel={renderPersuasionPanel}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
             sceneryTone={sceneryTone}
-            selectableFlavors={selectableFlavors}
+            selectableFlavors={offeredFlavors}
           />
         ) : isBatchBuilder ? (
           <BatchBuilderPanel
@@ -593,6 +612,14 @@ export function CateringMenuSection({
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
   const hasRegularItems = regularItems.length > 0
+  // The set of flavors that are individually orderable right now (standing menu
+  // + active rotation). Mix-and-match boxes are limited to these; binge trays
+  // mark anything outside this set as "Rare". Same source as the Regular tab,
+  // so the two never drift.
+  const currentFlavorIDs = useMemo(
+    () => new Set(regularItems.map((item) => item.id)),
+    [regularItems],
+  )
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
@@ -716,6 +743,7 @@ export function CateringMenuSection({
                 <Accordion collapsible type="single">
                   {orderedProducts.map((product, index) => (
                     <CateringMenuRow
+                      currentFlavorIDs={currentFlavorIDs}
                       isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
                       isSceneChanging={isSceneChanging}
                       index={index}

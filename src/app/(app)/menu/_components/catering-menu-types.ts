@@ -16,6 +16,13 @@ export type SelectableFlavor = {
   id: number
   image: MediaType | null
   infoButtonLabel?: string
+  /**
+   * True when this flavor is NOT individually available right now (not on the
+   * standing menu and not in the active rotation). Rare flavors are excluded
+   * from mix-and-match boxes and shown with a "Rare — trays only" badge in the
+   * one-flavor binge trays, which are the only way to order them.
+   */
+  isRare?: boolean
   receiptBody?: CookieInfoRichText
   summary: string
   title: string

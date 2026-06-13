@@ -167,6 +167,12 @@ export function TrayFlavorCard({
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
         {sceneryTone === 'moonlit' ? <TrayFlavorMoonlitLinework /> : null}
 
+        {flavor.isRare ? (
+          <span className="cateringMenuRoundHeading pointer-events-none absolute left-2.5 top-2.5 z-[4] inline-flex items-center gap-1 rounded-full border border-[rgba(125,85,18,0.32)] bg-[linear-gradient(180deg,#ffe7a6_0%,#f6c95c_100%)] px-2.5 py-1 text-[0.66rem] uppercase tracking-[0.08em] text-[#5a3d0c] shadow-[0_6px_16px_rgba(90,61,12,0.28)]">
+            ✨ Rare flavor
+          </span>
+        ) : null}
+
         {hasInfo ? (
           <div className="absolute bottom-2.5 right-2.5 z-[4]">
             <BakeryPressable

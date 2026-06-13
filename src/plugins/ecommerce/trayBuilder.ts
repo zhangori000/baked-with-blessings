@@ -36,6 +36,7 @@ type ProductConfigLike = {
   categories?:
     | (DefaultDocumentIDType | CategoryConfigLike | null)[]
     | null
+  flavorSelection?: null | string
   id?: DefaultDocumentIDType
   individualAvailability?: null | string
   menuBehavior?: 'batchBuilder' | 'simple' | string | null
@@ -302,10 +303,12 @@ const validateBatchSelections = async ({
 
   const validateIndividualCookieAvailability = async ({
     label,
+    onUnavailable,
     product,
     productID,
   }: {
     label: string
+    onUnavailable?: (label: string) => string
     product: ProductConfigLike | undefined
     productID: DefaultDocumentIDType
   }) => {
@@ -340,7 +343,9 @@ const validateBatchSelections = async ({
 
     if (!activeRotationFlavorIDs.has(String(productID))) {
       throw new Error(
-        `${label} is catering-only during the current cookie rotation. Order it through a cookie tray on the menu.`,
+        onUnavailable
+          ? onUnavailable(label)
+          : `${label} is catering-only during the current cookie rotation. Order it through a cookie tray on the menu.`,
       )
     }
   }
@@ -401,6 +406,12 @@ const validateBatchSelections = async ({
       throw new Error(`${label} is misconfigured. Add selectable products for this tray.`)
     }
 
+    // Mix-and-match boxes (build-your-own) only allow flavors that are
+    // individually available right now (standing menu + active rotation).
+    // One-flavor "binge" trays (flavorSelection !== 'mixAndMatch') allow any
+    // flavor, including rare/legacy ones — that is their whole purpose.
+    const isMixAndMatch = product?.flavorSelection === 'mixAndMatch'
+
     let selectedTotal = 0
 
     for (const [selectionIndex, selection] of batchSelections.entries()) {
@@ -414,6 +425,17 @@ const validateBatchSelections = async ({
 
       if (!allowedProductIDs.has(String(selectionProductID))) {
         throw new Error(`${label} includes a product that is not allowed for this tray.`)
+      }
+
+      if (isMixAndMatch) {
+        const selectionProduct = await loadProduct(selection?.product)
+        await validateIndividualCookieAvailability({
+          label: getProductLabel(selectionProduct, selectionProductID),
+          onUnavailable: (selectionLabel) =>
+            `${selectionLabel} is a rare flavor and isn’t available in build-your-own boxes right now. You can still order ten of it in a one-flavor cookie tray.`,
+          product: selectionProduct,
+          productID: selectionProductID,
+        })
       }
 
       const quantity = typeof selection?.quantity === 'number' ? selection.quantity : NaN
