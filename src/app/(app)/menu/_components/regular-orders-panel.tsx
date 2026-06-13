@@ -2,7 +2,6 @@
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { ChevronDownIcon, Minus, Plus } from 'lucide-react'
-import Image from 'next/image'
 import React, { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -15,12 +14,9 @@ import {
 } from '@/components/ui/accordion'
 import { BakeryCard, BakeryPressable, SceneButton } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
-import {
-  isPayloadMediaFileURL,
-  resolveMediaDisplayURL,
-} from '@/utilities/resolveMediaDisplayURL'
 
 import { CookieInfoNote } from './CookieInfoNote'
+import { CookieSheepRig } from './cookie-sheep-rig'
 import type { RegularOrderItem, RegularOrderSize } from './catering-menu-types'
 
 const MAX_QUANTITY = 50
@@ -74,7 +70,6 @@ function RegularOrderRow({ item }: { item: RegularOrderItem }) {
     ? Math.min(...sizes.map((size) => size.priceInUSD))
     : item.priceInUSD
   const isCartPending = isLoading || isSubmitting
-  const resolvedImageSrc = resolveMediaDisplayURL(item.image)
   const infoId = `${item.slug}-regular-info`
 
   const handleAddToCart = async () => {
@@ -157,27 +152,13 @@ function RegularOrderRow({ item }: { item: RegularOrderItem }) {
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
         <div className="regularOrderCardGrid">
           <div className="regularOrderVisual">
-            {resolvedImageSrc ? (
-              <Image
-                alt={item.title}
-                className="regularOrderVisualImage"
-                fill
-                quality={92}
-                sizes="(min-width: 768px) 24rem, 92vw"
-                src={resolvedImageSrc}
-                unoptimized={isPayloadMediaFileURL(resolvedImageSrc)}
+            <div className="regularOrderCookieStage">
+              <CookieSheepRig
+                bodyFallbackSrc={item.bodyFallbackSrc}
+                image={item.image}
+                title={item.title}
               />
-            ) : (
-              <Image
-                alt=""
-                aria-hidden="true"
-                className="regularOrderVisualFallback"
-                height={320}
-                src={item.bodyFallbackSrc}
-                unoptimized
-                width={320}
-              />
-            )}
+            </div>
 
             {item.receiptBody ? (
               <BakeryPressable
@@ -441,28 +422,33 @@ export function RegularOrdersPanel({ items, seasonalLabel }: RegularOrdersPanelP
         }
 
         .regularOrderVisual {
+          --cookie-bottom: 1.85rem;
+          --cookie-size: clamp(9.5rem, 62%, 11.5rem);
           background:
             radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.55), transparent 58%),
             linear-gradient(180deg, #dbeeff 0%, #f3ede2 100%);
           border: 1px solid rgba(91, 70, 37, 0.14);
           border-radius: 1.15rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 15rem;
+          min-height: 16.5rem;
           overflow: hidden;
           position: relative;
         }
 
-        .regularOrderVisualImage {
-          object-fit: cover;
+        .regularOrderCookieStage {
+          position: absolute;
+          inset: 0;
         }
 
-        .regularOrderVisualFallback {
-          height: min(13rem, 70%);
-          object-fit: contain;
-          width: auto;
-          filter: drop-shadow(0 14px 22px rgba(23, 21, 16, 0.16));
+        .regularOrderVisual:hover .cookieSheepBodyImage,
+        .regularOrderVisual:focus-within .cookieSheepBodyImage {
+          transform: scale(1.18);
+        }
+
+        .regularOrderVisual:hover .cookieSheepBurstPart,
+        .regularOrderVisual:focus-within .cookieSheepBurstPart {
+          opacity: 0;
+          transform: translate3d(var(--sheep-burst-x, 0), var(--sheep-burst-y, 0), 0)
+            rotate(var(--sheep-burst-rotate, 0deg)) scale(var(--sheep-burst-scale, 0.72));
         }
 
         .regularOrderInfoButton {
