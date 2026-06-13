@@ -27,6 +27,7 @@ export const metadata = buildStaticMetadata({
 
 const cateringProductSelect = {
   categories: true,
+  flavorSelection: true,
   gallery: true,
   id: true,
   menuBehavior: true,

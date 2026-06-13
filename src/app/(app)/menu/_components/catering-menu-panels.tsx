@@ -1,10 +1,12 @@
 'use client'
 
 import { Price } from '@/components/Price'
+import { ProgressGarden } from '@/components/ProgressGarden'
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { BakeryCard, BakeryPressable, SceneButton } from '@/design-system/bakery'
 import type { Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import { Minus, Plus } from 'lucide-react'
 import React from 'react'
 
 import { CookieInfoNote } from './CookieInfoNote'
@@ -86,6 +88,8 @@ function SelectedFlavorButton() {
 
 type TrayFlavorCardProps = {
   actionLabel: string
+  /** When set, replaces the single-select Choose/Selected button (e.g. a box stepper). */
+  actionSlot?: React.ReactNode
   clouds: readonly StaticSceneCloud[]
   flavor: SelectableFlavor
   isIngredientNoteOpen: boolean
@@ -101,6 +105,7 @@ type TrayFlavorCardProps = {
 
 export function TrayFlavorCard({
   actionLabel,
+  actionSlot,
   clouds,
   flavor,
   isIngredientNoteOpen,
@@ -199,7 +204,9 @@ export function TrayFlavorCard({
             </p>
           ) : null}
 
-          {isSelected ? (
+          {actionSlot ? (
+            actionSlot
+          ) : isSelected ? (
             <SelectedFlavorButton />
           ) : (
             <BakeryPressable
@@ -528,6 +535,182 @@ export function BatchBuilderPanel({
             : 'Choose a tray flavor first'}
         </SceneButton>
       </div>,
+      )}
+    </>
+  )
+}
+
+function BoxFlavorStepper({
+  canIncrement,
+  count,
+  flavorTitle,
+  onDecrement,
+  onIncrement,
+}: {
+  canIncrement: boolean
+  count: number
+  flavorTitle: string
+  onDecrement: () => void
+  onIncrement: () => void
+}) {
+  const stepButton =
+    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(28,46,16,0.16)] bg-[rgba(28,46,16,0.06)] text-[#1c2e10] transition duration-150 hover:bg-[#1c2e10] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(25,56,34,0.6)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[rgba(28,46,16,0.06)] disabled:hover:text-[#1c2e10]'
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-full border border-[rgba(91,70,37,0.16)] bg-white px-1.5 py-1">
+      <button
+        aria-label={`Remove one ${flavorTitle}`}
+        className={stepButton}
+        disabled={count === 0}
+        onClick={onDecrement}
+        type="button"
+      >
+        <Minus aria-hidden="true" size={16} strokeWidth={2.6} />
+      </button>
+      <span
+        aria-live="polite"
+        className="cateringMenuRoundHeading min-w-[2.25rem] text-center text-[1rem] text-[#171510]"
+      >
+        {count}
+      </span>
+      <button
+        aria-label={`Add one ${flavorTitle}`}
+        className={stepButton}
+        disabled={!canIncrement}
+        onClick={onIncrement}
+        type="button"
+      >
+        <Plus aria-hidden="true" size={16} strokeWidth={2.6} />
+      </button>
+    </div>
+  )
+}
+
+type MiniBoxBuilderPanelProps = {
+  boxCounts: Record<number, number>
+  boxTotal: number
+  capacity: number
+  flavorCardCloudsForScenery: readonly StaticSceneCloud[]
+  flavorCardMeadowForScenery: string
+  flavorCardMobileSkyForScenery?: string
+  flavorCardSkyForScenery: string
+  isBoxPending: boolean
+  onAddBox: () => void
+  onClearBox: () => void
+  onDecrement: (flavorID: number) => void
+  onIncrement: (flavorID: number) => void
+  priceInUSD?: number | null
+  renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
+  renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
+  sceneryTone: MenuSceneryTone
+  selectableFlavors: SelectableFlavor[]
+}
+
+export function MiniBoxBuilderPanel({
+  boxCounts,
+  boxTotal,
+  capacity,
+  flavorCardCloudsForScenery,
+  flavorCardMeadowForScenery,
+  flavorCardMobileSkyForScenery,
+  flavorCardSkyForScenery,
+  isBoxPending,
+  onAddBox,
+  onClearBox,
+  onDecrement,
+  onIncrement,
+  priceInUSD,
+  renderPersuasionPanel,
+  renderSceneImage,
+  sceneryTone,
+  selectableFlavors,
+}: MiniBoxBuilderPanelProps) {
+  const [areIngredientReceiptsOpen, setAreIngredientReceiptsOpen] = React.useState(false)
+  const isFull = boxTotal >= capacity
+  const remaining = Math.max(0, capacity - boxTotal)
+
+  return (
+    <>
+      {renderPersuasionPanel(
+        <div className="space-y-4">
+          <ProgressGarden
+            aside={
+              typeof priceInUSD === 'number' ? (
+                <Price
+                  amount={priceInUSD}
+                  className="cateringMenuRoundHeading text-[1.02rem] tracking-[-0.02em] text-[#171510]"
+                />
+              ) : undefined
+            }
+            currentCount={boxTotal}
+            label="Build your box"
+            title={`${boxTotal} of ${capacity} cookies`}
+            totalCount={capacity}
+          />
+
+          <div aria-label="Mini box flavor picker" className="cateringFlavorRail" role="region">
+            <div className="cateringFlavorRailInner">
+              {selectableFlavors.map((flavor) => {
+                const count = boxCounts[flavor.id] ?? 0
+
+                return (
+                  <div className="cateringFlavorRailItem" key={flavor.id}>
+                    <TrayFlavorCard
+                      actionLabel={`Add ${flavor.title}`}
+                      actionSlot={
+                        <BoxFlavorStepper
+                          canIncrement={!isFull}
+                          count={count}
+                          flavorTitle={flavor.title}
+                          onDecrement={() => onDecrement(flavor.id)}
+                          onIncrement={() => onIncrement(flavor.id)}
+                        />
+                      }
+                      clouds={flavorCardCloudsForScenery}
+                      flavor={flavor}
+                      isIngredientNoteOpen={areIngredientReceiptsOpen}
+                      isSelected={count > 0}
+                      meadowSrc={flavorCardMeadowForScenery}
+                      mobileSkySrc={flavorCardMobileSkyForScenery}
+                      onChoose={() => onIncrement(flavor.id)}
+                      onToggleIngredientNotes={() =>
+                        setAreIngredientReceiptsOpen((current) => !current)
+                      }
+                      renderSceneImage={renderSceneImage}
+                      sceneryTone={sceneryTone}
+                      skySrc={flavorCardSkyForScenery}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <SceneButton
+              className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] flex-1 text-[0.98rem] tracking-[-0.02em]"
+              disabled={!isFull}
+              loading={isBoxPending}
+              loadingLabel="Adding box to cart"
+              onClick={onAddBox}
+              variant="primary"
+            >
+              {isFull
+                ? 'Add box to cart'
+                : `Pick ${remaining} more cookie${remaining === 1 ? '' : 's'}`}
+            </SceneButton>
+
+            {boxTotal > 0 ? (
+              <BakeryPressable
+                className="inline-flex min-h-[3rem] items-center justify-center rounded-full border border-[rgba(244,237,226,0.28)] bg-[rgba(244,237,226,0.08)] px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#f4ede2] transition duration-200 hover:bg-[rgba(244,237,226,0.16)]"
+                onClick={onClearBox}
+                type="button"
+              >
+                Clear
+              </BakeryPressable>
+            ) : null}
+          </div>
+        </div>,
       )}
     </>
   )

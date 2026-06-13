@@ -22,7 +22,7 @@ import Image from 'next/image'
 import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { BatchBuilderPanel, SimpleItemPanel } from './catering-menu-panels'
+import { BatchBuilderPanel, MiniBoxBuilderPanel, SimpleItemPanel } from './catering-menu-panels'
 import {
   DecorativeSceneImage,
   MenuHero,
@@ -79,6 +79,7 @@ const menuPersuasionPanelClassNames = {
 } satisfies PersuasionGardenPanelClassNames
 
 const cateringDisplayOrder = [
+  'build-your-own-mini-box',
   'cookie-tray',
   'mini-cookie-tray',
   'banana-pudding-10-pack',
@@ -234,13 +235,19 @@ function CateringMenuRow({
   const traySummaryPulseFrameRef = useRef<number | null>(null)
   const traySummaryPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const triggerScrollFrameRef = useRef<number | null>(null)
+  const [boxCounts, setBoxCounts] = useState<Record<number, number>>({})
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
+  const isMixAndMatch = isBatchBuilder && product.flavorSelection === 'mixAndMatch'
   const requiredSelectionCount =
     isBatchBuilder && typeof product.requiredSelectionCount === 'number'
       ? product.requiredSelectionCount
       : 0
   const selectableFlavors = useMemo(() => buildSelectableFlavors(product), [product])
+  const boxTotal = useMemo(
+    () => Object.values(boxCounts).reduce((sum, count) => sum + count, 0),
+    [boxCounts],
+  )
 
   const selectedFlavor = useMemo(
     () => selectableFlavors.find((flavor) => flavor.id === selectedFlavorID) ?? null,
@@ -306,6 +313,66 @@ function CateringMenuRow({
   }
 
   const isCartPending = isLoading || isSubmittingToCart
+
+  const handleBoxIncrement = (flavorID: number) => {
+    setBoxCounts((current) => {
+      const total = Object.values(current).reduce((sum, count) => sum + count, 0)
+
+      if (requiredSelectionCount > 0 && total >= requiredSelectionCount) {
+        return current
+      }
+
+      return { ...current, [flavorID]: (current[flavorID] ?? 0) + 1 }
+    })
+  }
+
+  const handleBoxDecrement = (flavorID: number) => {
+    setBoxCounts((current) => {
+      const next = (current[flavorID] ?? 0) - 1
+      const updated = { ...current }
+
+      if (next <= 0) {
+        delete updated[flavorID]
+      } else {
+        updated[flavorID] = next
+      }
+
+      return updated
+    })
+  }
+
+  const handleClearBox = () => setBoxCounts({})
+
+  const handleAddBox = async () => {
+    if (!product.id || isCartPending) {
+      return
+    }
+
+    if (requiredSelectionCount <= 0 || boxTotal !== requiredSelectionCount) {
+      toast.info(`Fill the box with ${requiredSelectionCount} cookies first.`)
+      return
+    }
+
+    const batchSelections = Object.entries(boxCounts).map(([flavorID, quantity]) => ({
+      product: Number(flavorID),
+      quantity,
+    }))
+
+    setIsSubmittingToCart(true)
+
+    try {
+      await addItem({
+        batchSelections,
+        product: product.id,
+      } as Parameters<typeof addItem>[0])
+      toast.success('Box added — build another?')
+      setBoxCounts({})
+    } catch {
+      toast.error('Unable to add the box to cart right now.')
+    } finally {
+      setIsSubmittingToCart(false)
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -409,6 +476,23 @@ function CateringMenuRow({
     }
   }
 
+  const renderPersuasionPanel = (children: React.ReactNode) => (
+    <PersuasionGardenPanel
+      backdrop={CATERING_PANEL_BACKDROP}
+      classNames={menuPersuasionPanelClassNames}
+      isSceneryPickerOpen={isSceneryPickerOpen}
+      isSceneChanging={isSceneChanging}
+      onSelectScenery={onSelectScenery}
+      onToggleSceneryPicker={onToggleSceneryPicker}
+      product={product}
+      key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
+      sceneryTone={sceneryTone}
+      summary={resolveSummary(product)}
+    >
+      {children}
+    </PersuasionGardenPanel>
+  )
+
   return (
     <AccordionItem
       className="cateringMenuAccordionItem border-b border-[rgba(23,21,16,0.14)]"
@@ -449,7 +533,27 @@ function CateringMenuRow({
       </AccordionTrigger>
 
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
-        {isBatchBuilder ? (
+        {isMixAndMatch ? (
+          <MiniBoxBuilderPanel
+            boxCounts={boxCounts}
+            boxTotal={boxTotal}
+            capacity={requiredSelectionCount}
+            flavorCardCloudsForScenery={flavorCardCloudsForScenery}
+            flavorCardMeadowForScenery={flavorCardMeadowForScenery}
+            flavorCardMobileSkyForScenery={flavorCardMobileSkyForScenery}
+            flavorCardSkyForScenery={flavorCardSkyForScenery}
+            isBoxPending={isCartPending}
+            onAddBox={handleAddBox}
+            onClearBox={handleClearBox}
+            onDecrement={handleBoxDecrement}
+            onIncrement={handleBoxIncrement}
+            priceInUSD={product.priceInUSD}
+            renderPersuasionPanel={renderPersuasionPanel}
+            renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
+            sceneryTone={sceneryTone}
+            selectableFlavors={selectableFlavors}
+          />
+        ) : isBatchBuilder ? (
           <BatchBuilderPanel
             flavorCardCloudsForScenery={flavorCardCloudsForScenery}
             flavorCardMeadowForScenery={flavorCardMeadowForScenery}
@@ -458,22 +562,7 @@ function CateringMenuRow({
             isTrayPending={isCartPending}
             onAddFlavor={handleAddFlavor}
             onAddToCart={handleAddToCart}
-            renderPersuasionPanel={(children) => (
-              <PersuasionGardenPanel
-                backdrop={CATERING_PANEL_BACKDROP}
-                classNames={menuPersuasionPanelClassNames}
-                isSceneryPickerOpen={isSceneryPickerOpen}
-                isSceneChanging={isSceneChanging}
-                onSelectScenery={onSelectScenery}
-                onToggleSceneryPicker={onToggleSceneryPicker}
-                product={product}
-                key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
-                sceneryTone={sceneryTone}
-                summary={resolveSummary(product)}
-              >
-                {children}
-              </PersuasionGardenPanel>
-            )}
+            renderPersuasionPanel={renderPersuasionPanel}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
             sceneryTone={sceneryTone}
             selectedFlavor={selectedFlavor}
@@ -484,22 +573,7 @@ function CateringMenuRow({
           <SimpleItemPanel
             isCartPending={isCartPending}
             onAddToCart={handleAddToCart}
-            renderPersuasionPanel={(children) => (
-              <PersuasionGardenPanel
-                backdrop={CATERING_PANEL_BACKDROP}
-                classNames={menuPersuasionPanelClassNames}
-                isSceneryPickerOpen={isSceneryPickerOpen}
-                isSceneChanging={isSceneChanging}
-                onSelectScenery={onSelectScenery}
-                onToggleSceneryPicker={onToggleSceneryPicker}
-                product={product}
-                key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
-                sceneryTone={sceneryTone}
-                summary={resolveSummary(product)}
-              >
-                {children}
-              </PersuasionGardenPanel>
-            )}
+            renderPersuasionPanel={renderPersuasionPanel}
             priceInUSD={product.priceInUSD}
             product={product}
           />
@@ -863,8 +937,7 @@ export function CateringMenuSection({
 
         .cateringPanelDark .cateringPersuasionHeading,
         .cateringPanelDark .cateringPitch :is(p, li, h1, h2, h3, h4),
-        .cateringPanelDark .cateringPersuasionBody :is(p, li),
-        .cateringPanelDark .cateringMenuEyebrow {
+        .cateringPanelDark .cateringPersuasionBody :is(p, li) {
           color: #f1e9dc !important;
         }
 
