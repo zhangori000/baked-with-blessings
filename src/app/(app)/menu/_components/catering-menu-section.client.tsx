@@ -931,7 +931,8 @@ export function CateringMenuSection({
 
         /* Fixed dark container scheme (one look for every scenery). */
         .cateringPanelDark.cateringPersuasionPanel {
-          background: linear-gradient(165deg, #2c2720 0%, #1b1712 100%);
+          background: linear-gradient(165deg, #45543b 0%, #36432d 100%);
+          border-color: rgba(244, 237, 226, 0.14);
         }
 
         .cateringPanelDark .cateringPersuasionHeading,
