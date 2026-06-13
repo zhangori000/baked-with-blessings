@@ -154,10 +154,27 @@ const run = async () => {
       return product
     }
 
+    // Per-flavor try/catch: a single product that can't be provisioned (e.g. an
+    // environment missing its catalog/variant groundwork) is logged and skipped
+    // instead of aborting the whole sync.
+    const ensureFlavorSafely = async (
+      spec: FlavorSpec,
+      individualAvailability: 'always' | 'rotation',
+    ) => {
+      try {
+        return await ensureFlavor(spec, individualAvailability)
+      } catch (error) {
+        payload.logger.error(
+          `- Failed ${spec.slug}: ${error instanceof Error ? error.message : String(error)} (skipping, continuing)`,
+        )
+        return null
+      }
+    }
+
     const alwaysProducts = []
 
     for (const spec of ALWAYS_AVAILABLE_FLAVORS) {
-      const product = await ensureFlavor(spec, 'always')
+      const product = await ensureFlavorSafely(spec, 'always')
 
       if (product) {
         alwaysProducts.push(product)
@@ -167,7 +184,7 @@ const run = async () => {
     const seasonalProducts = []
 
     for (const spec of SEASONAL_ROTATION_FLAVORS) {
-      const product = await ensureFlavor(spec, 'rotation')
+      const product = await ensureFlavorSafely(spec, 'rotation')
 
       if (product) {
         seasonalProducts.push(product)
