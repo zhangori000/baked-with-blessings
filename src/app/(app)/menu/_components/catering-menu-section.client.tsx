@@ -80,6 +80,7 @@ const menuPersuasionPanelClassNames = {
 
 const cateringDisplayOrder = [
   'build-your-own-mini-box',
+  'build-your-own-cookie-box',
   'cookie-tray',
   'mini-cookie-tray',
   'banana-pudding-10-pack',

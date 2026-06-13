@@ -27,7 +27,7 @@
     "ii": "cross-env NODE_OPTIONS=--no-deprecation pnpm --ignore-workspace install",
     "import:cookie-media": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-cookie-media.ts",
     "update:cookie-prices": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/update-cookie-prices.ts",
-    "seed:mini-box": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-mini-box.ts",
+    "seed:mix-boxes": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-mix-boxes.ts",
     "update:flavor-lineup": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/update-flavor-lineup.ts",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation eslint . --fix",
