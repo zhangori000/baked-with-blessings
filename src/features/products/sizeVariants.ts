@@ -18,6 +18,18 @@ export const SIZE_OPTIONS = [
 
 export type SizeOptionValue = (typeof SIZE_OPTIONS)[number]['value']
 
+/**
+ * Default Mini price as a share of the Large price, rounded to the nearest
+ * quarter. 0.6 mirrors the owner's own tray pricing (mini tray $3/cookie vs
+ * jumbo tray $5/cookie).
+ */
+export const MINI_PRICE_RATIO = 0.6
+
+export const roundToQuarter = (cents: number) => Math.round(cents / 25) * 25
+
+export const defaultMiniPriceInUSD = (largePriceInUSD: number) =>
+  roundToQuarter(largePriceInUSD * MINI_PRICE_RATIO)
+
 const sizeDisplayOrder = new Map<string, number>(
   SIZE_OPTIONS.map((option, index) => [option.value, index]),
 )

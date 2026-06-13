@@ -1,6 +1,11 @@
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
+import {
+  applyMenuPlacementBeforeChange,
+  menuPlacementAfterRead,
+  syncMenuAutomationAfterChange,
+} from '@/collections/Products/menuAutomation'
 import { slugField } from 'payload'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
@@ -26,6 +31,11 @@ const hiddenProductDetailFields = new Set([
   'variantTypes',
   'variants',
 ])
+
+// Mirrors the ecommerce plugin's default currency setup so custom price
+// fields can reuse its dollar-formatted input and cell components.
+const USD_CURRENCY = { code: 'USD', decimals: 2, label: 'US Dollar', symbol: '$' }
+const CURRENCIES_CONFIG = { defaultCurrency: 'USD', supportedCurrencies: [USD_CURRENCY] }
 
 const productDetailsFields = (defaultFields: Field[]): Field[] =>
   defaultFields.map(transformProductDetailField)
@@ -72,7 +82,8 @@ const transformProductDetailField = (field: Field): Field => {
       admin: {
         ...(nextField.admin ?? {}),
         condition: () => true,
-        description: 'Customer-facing price in USD.',
+        description:
+          'Customer-facing price. For cookie flavors sold individually, this is the Large size price.',
       },
       label: 'Price',
     } as Field
@@ -85,7 +96,14 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
   ...defaultCollection,
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'categories', 'menuBehavior', 'priceInUSD', '_status'],
+    defaultColumns: [
+      'title',
+      'menuPlacement',
+      'priceInUSD',
+      'miniPriceInUSD',
+      'categories',
+      '_status',
+    ],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -321,6 +339,33 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
           fields: [
             ...productDetailsFields(defaultCollection.fields as Field[]),
             {
+              name: 'miniPriceInUSD',
+              label: 'Mini size price',
+              type: 'number',
+              admin: {
+                components: {
+                  Cell: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/client#PriceCell',
+                  },
+                  Field: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/rsc#PriceInput',
+                  },
+                },
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description:
+                  'Only used for cookie flavors sold individually. Leave it empty and it fills in at 60% of the main price when you save. The sizes customers see update automatically.',
+              },
+              min: 0,
+            },
+            {
               name: 'menuPortionLabel',
               label: 'Menu Quantity Label',
               type: 'text',
@@ -361,12 +406,11 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
             },
             {
               name: 'individualAvailability',
-              label: 'When can customers order this flavor by itself?',
               type: 'select',
               admin: {
-                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
                 description:
-                  'Only matters for individual cookie flavors. "Always available" keeps the flavor on the menu year-round (the standing lineup). "Rotation only" means customers can buy it by itself only while it is part of the active cookie rotation — otherwise it stays catering-only. Trays and catering packs ignore this setting.',
+                  'Stored availability flag. Edit "Where does this flavor live right now?" instead — it sets this automatically.',
+                hidden: true,
               },
               defaultValue: 'rotation',
               options: [
@@ -379,6 +423,35 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   value: 'always',
                 },
               ],
+            },
+            {
+              name: 'menuPlacement',
+              label: 'Where does this flavor live right now?',
+              type: 'select',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description:
+                  'Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.',
+              },
+              defaultValue: 'backlog',
+              hooks: {
+                afterRead: [menuPlacementAfterRead],
+              },
+              options: [
+                {
+                  label: 'Backlog — catering trays only',
+                  value: 'backlog',
+                },
+                {
+                  label: 'In the current rotation',
+                  value: 'currentRotation',
+                },
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
+              virtual: true,
             },
             {
               name: 'requiredSelectionCount',
@@ -540,4 +613,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
     },
     slugField(),
   ],
+  hooks: {
+    ...defaultCollection?.hooks,
+    afterChange: [...(defaultCollection?.hooks?.afterChange ?? []), syncMenuAutomationAfterChange],
+    beforeChange: [
+      ...(defaultCollection?.hooks?.beforeChange ?? []),
+      applyMenuPlacementBeforeChange,
+    ],
+  },
 })

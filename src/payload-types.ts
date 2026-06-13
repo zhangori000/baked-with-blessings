@@ -520,9 +520,13 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   /**
-   * Customer-facing price in USD.
+   * Customer-facing price. For cookie flavors sold individually, this is the Large size price.
    */
   priceInUSD?: number | null;
+  /**
+   * Only used for cookie flavors sold individually. Leave it empty and it fills in at 60% of the main price when you save. The sizes customers see update automatically.
+   */
+  miniPriceInUSD?: number | null;
   /**
    * Short quantity label shown on menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".
    */
@@ -532,9 +536,13 @@ export interface Product {
    */
   menuBehavior?: ('simple' | 'batchBuilder') | null;
   /**
-   * Only matters for individual cookie flavors. "Always available" keeps the flavor on the menu year-round (the standing lineup). "Rotation only" means customers can buy it by itself only while it is part of the active cookie rotation — otherwise it stays catering-only. Trays and catering packs ignore this setting.
+   * Stored availability flag. Edit "Where does this flavor live right now?" instead — it sets this automatically.
    */
   individualAvailability?: ('rotation' | 'always') | null;
+  /**
+   * Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.
+   */
+  menuPlacement?: ('backlog' | 'currentRotation' | 'always') | null;
   /**
    * How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.
    */
@@ -3186,9 +3194,11 @@ export interface ProductsSelect<T extends boolean = true> {
   variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
+  miniPriceInUSD?: T;
   menuPortionLabel?: T;
   menuBehavior?: T;
   individualAvailability?: T;
+  menuPlacement?: T;
   requiredSelectionCount?: T;
   selectableProducts?: T;
   relatedProducts?: T;
