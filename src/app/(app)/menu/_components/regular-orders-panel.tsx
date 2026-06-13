@@ -117,29 +117,25 @@ function RegularOrderRow({
       return null
     }
 
-    const perCookie = (bundle: { count: null | number; price: number }) =>
-      bundle.count ? `${formatUSD(Math.round(bundle.price / bundle.count))} a cookie` : null
-
-    if (quantity >= 10 && group.tray) {
-      const tray = group.tray
-      const each = perCookie(tray)
+    // Lead with the dollars: how much they save and the deal in one glance.
+    const dealFor = (bundle: { count: number; price: number; slug: string; title: string }) => {
+      const singlesPrice = bundle.count * selectedSize.priceInUSD
+      const savings = singlesPrice - bundle.price
+      const shortName = bundle.title.replace(/^Build-Your-Own\s+/i, '')
       return {
-        detail: `${tray.count} for ${formatUSD(tray.price)}${each ? ` — ${each} vs ${formatUSD(selectedSize.priceInUSD)} each here` : ''}.`,
-        headline: `Want 10 of one flavor? The ${tray.title} is cheaper.`,
+        detail: `${bundle.count} for ${formatUSD(bundle.price)} instead of ${formatUSD(singlesPrice)}.`,
+        headline: savings > 0 ? `Save ${formatUSD(savings)} with a ${shortName}` : `Try a ${shortName}`,
         kind: 'strong' as const,
-        slug: tray.slug,
+        slug: bundle.slug,
       }
     }
 
-    if (quantity >= 4 && group.box) {
-      const box = group.box
-      const each = perCookie(box)
-      return {
-        detail: `${box.count} for ${formatUSD(box.price)}${each ? ` — ${each} vs ${formatUSD(selectedSize.priceInUSD)} each here` : ''}. Mix any current flavors.`,
-        headline: `Stocking up? The ${box.title} saves you money.`,
-        kind: 'strong' as const,
-        slug: box.slug,
-      }
+    if (quantity >= 10 && group.tray?.count) {
+      return dealFor(group.tray as { count: number; price: number; slug: string; title: string })
+    }
+
+    if (quantity >= 4 && group.box?.count) {
+      return dealFor(group.box as { count: number; price: number; slug: string; title: string })
     }
 
     const fallback = group.box ?? group.tray
@@ -148,7 +144,7 @@ function RegularOrderRow({
     }
 
     return {
-      detail: 'Build-your-own boxes and one-flavor trays cost less per cookie.',
+      detail: 'Boxes and one-flavor trays cost less per cookie.',
       headline: 'Buying a bunch?',
       kind: 'quiet' as const,
       slug: fallback.slug,
@@ -364,9 +360,9 @@ function RegularOrderRow({
             {bundleHint ? (
               <button
                 className={cn(
-                  'group flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left transition',
+                  'group flex w-full cursor-pointer items-center gap-3 rounded-2xl px-3.5 py-3 text-left transition',
                   bundleHint.kind === 'strong'
-                    ? 'border border-[rgba(126,161,47,0.34)] bg-[rgba(126,161,47,0.1)] hover:bg-[rgba(126,161,47,0.16)]'
+                    ? 'border border-[rgba(126,161,47,0.34)] bg-[rgba(126,161,47,0.1)] hover:border-[rgba(126,161,47,0.5)] hover:bg-[rgba(126,161,47,0.18)]'
                     : 'border border-transparent bg-transparent px-1 py-1 hover:bg-[rgba(126,161,47,0.06)]',
                 )}
                 onClick={() => onJumpToBundle?.(bundleHint.slug)}
@@ -529,7 +525,7 @@ export function RegularOrdersPanel({
         </div>
         {onJumpToBundle ? (
           <button
-            className="cateringMenuRoundHeading group inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full border border-[rgba(125,85,18,0.28)] bg-[rgba(125,85,18,0.06)] px-5 py-2.5 text-[0.86rem] tracking-[-0.01em] text-[#5d4119] transition hover:bg-[rgba(125,85,18,0.12)] sm:self-center"
+            className="cateringMenuRoundHeading group inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 self-start rounded-full border border-[rgba(125,85,18,0.28)] bg-[rgba(125,85,18,0.06)] px-5 py-2.5 text-[0.86rem] tracking-[-0.01em] text-[#5d4119] transition hover:border-[rgba(125,85,18,0.45)] hover:bg-[rgba(125,85,18,0.12)] sm:self-center"
             onClick={() => onJumpToBundle('cookie-tray')}
             type="button"
           >

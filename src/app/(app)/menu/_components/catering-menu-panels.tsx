@@ -562,7 +562,7 @@ function BoxFlavorStepper({
   onIncrement: () => void
 }) {
   const stepButton =
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(28,46,16,0.16)] bg-[rgba(28,46,16,0.06)] text-[#1c2e10] transition duration-150 hover:bg-[#1c2e10] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(25,56,34,0.6)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[rgba(28,46,16,0.06)] disabled:hover:text-[#1c2e10]'
+    'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[rgba(28,46,16,0.16)] bg-[rgba(28,46,16,0.06)] text-[#1c2e10] transition duration-150 hover:bg-[#1c2e10] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(25,56,34,0.6)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[rgba(28,46,16,0.06)] disabled:hover:text-[#1c2e10]'
 
   return (
     <div className="flex items-center justify-between gap-2 rounded-full border border-[rgba(91,70,37,0.16)] bg-white px-1.5 py-1">
