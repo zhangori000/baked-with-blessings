@@ -6,6 +6,7 @@ import {
   menuPlacementAfterRead,
   syncMenuAutomationAfterChange,
 } from '@/collections/Products/menuAutomation'
+import { MINI_PRICE_RATIO } from '@/features/products/sizeVariants'
 import { slugField } from 'payload'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
@@ -360,8 +361,9 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   },
                 },
                 condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
-                description:
-                  'Only used for cookie flavors sold individually. Leave it empty and it fills in at 60% of the main price when you save. The sizes customers see update automatically.',
+                description: `Only used for cookie flavors sold individually. Leave it empty and it fills in at ${Math.round(
+                  MINI_PRICE_RATIO * 100,
+                )}% of the main price when you save. The sizes customers see update automatically.`,
               },
               min: 0,
             },
