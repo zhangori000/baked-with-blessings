@@ -36,6 +36,7 @@ import {
   type PersuasionGardenPanelClassNames,
 } from './catering-menu-scenery'
 import type {
+  MenuPanelBackdrop,
   MenuSection,
   MenuSceneryTone,
   RegularOrderItem,
@@ -58,6 +59,15 @@ const menuSectionTabDefs: MenuSectionTabDef[] = [
 ]
 
 const MENU_TABS_ID_BASE = 'menu-section'
+
+/**
+ * Feature flag for the catering ordering panel's container.
+ * - 'tinted' (default): a clean container tinted to the active scenery tone,
+ *   no decorative scene art (avoids scenery-inside-scenery nesting).
+ * - 'scenery': the original full animated scene as the container.
+ * Flip to 'scenery' to restore the old look; the scene code is intact.
+ */
+const CATERING_PANEL_BACKDROP: MenuPanelBackdrop = 'tinted'
 
 type SceneryPickerAnchor = 'hero' | 'panel'
 
@@ -450,6 +460,7 @@ function CateringMenuRow({
             onAddToCart={handleAddToCart}
             renderPersuasionPanel={(children) => (
               <PersuasionGardenPanel
+                backdrop={CATERING_PANEL_BACKDROP}
                 classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
                 isSceneChanging={isSceneChanging}
@@ -476,6 +487,7 @@ function CateringMenuRow({
             onAddToCart={handleAddToCart}
             renderPersuasionPanel={(children) => (
               <PersuasionGardenPanel
+                backdrop={CATERING_PANEL_BACKDROP}
                 classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
                 isSceneChanging={isSceneChanging}
@@ -1799,11 +1811,11 @@ export function CateringMenuSection({
             object-position: 28% top;
           }
 
-          .cateringPersuasionFrame {
+          .cateringPersuasionFrame[data-backdrop='scenery'] {
             --catering-persuasion-panel-min-height: 35rem;
           }
 
-          .cateringPersuasionFrame[data-has-gallery='true'] {
+          .cateringPersuasionFrame[data-backdrop='scenery'][data-has-gallery='true'] {
             --catering-persuasion-panel-min-height: 37rem;
           }
 
@@ -1892,11 +1904,11 @@ export function CateringMenuSection({
         }
 
         @media (max-width: 430px) {
-          .cateringPersuasionFrame {
+          .cateringPersuasionFrame[data-backdrop='scenery'] {
             --catering-persuasion-panel-min-height: 36.25rem;
           }
 
-          .cateringPersuasionFrame[data-has-gallery='true'] {
+          .cateringPersuasionFrame[data-backdrop='scenery'][data-has-gallery='true'] {
             --catering-persuasion-panel-min-height: 38.25rem;
           }
 

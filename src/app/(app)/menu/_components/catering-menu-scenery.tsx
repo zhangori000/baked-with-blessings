@@ -22,7 +22,7 @@ import { withPayloadMediaCacheTag } from '@/utilities/resolveMediaDisplayURL'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { MenuSceneryTone } from './catering-menu-types'
+import type { MenuPanelBackdrop, MenuSceneryTone } from './catering-menu-types'
 
 type SpawnedCloud = {
   id: number
@@ -95,6 +95,8 @@ type MenuHeroProps = {
 }
 
 type PersuasionGardenPanelProps = {
+  /** 'scenery' = full scene art container; 'tinted' = clean tone-tinted container. */
+  backdrop?: MenuPanelBackdrop
   /** Ordering UI rendered inside the scene, between the pitch and the meadow. */
   children?: React.ReactNode
   classNames?: PersuasionGardenPanelClassNames
@@ -1446,6 +1448,7 @@ export function MenuHero({
 }
 
 export function PersuasionGardenPanel({
+  backdrop = 'tinted',
   children,
   classNames,
   isSceneryPickerOpen,
@@ -1582,11 +1585,21 @@ export function PersuasionGardenPanel({
   // would collapse the gallery. It just turns invisible underneath.
   const isDetailsDormant = isGalleryFace && !isPanelTransitioning
   const showGalleryFace = hasGallery && (isGalleryFace || isPanelTransitioning)
-  const panelMinHeight = hasGallery ? '29rem' : '26rem'
+  // 'scenery' keeps the full animated scene; 'tinted' drops the scene art for
+  // a clean tone-tinted container (no scenery-inside-scenery nesting).
+  const isScenery = backdrop === 'scenery'
+  const panelMinHeight = isScenery
+    ? hasGallery
+      ? '29rem'
+      : '26rem'
+    : hasGallery
+      ? '20rem'
+      : '17rem'
   const panelMinHeightValue = `var(--catering-persuasion-panel-min-height, ${panelMinHeight})`
 
   return (
     <div
+      data-backdrop={backdrop}
       data-has-gallery={hasGallery ? 'true' : 'false'}
       data-scene={sceneryTone}
       data-panel-transition={panelTransition}
@@ -1623,36 +1636,41 @@ export function PersuasionGardenPanel({
             style={{ minHeight: panelMinHeightValue, ...styles?.detailFace }}
             tone="transparent"
           >
-            <DecorativeSceneImage
-              className={cn('cateringSceneSky cateringPersuasionSky', classNames?.sky)}
-              fit="cover"
-              mobileSrc={mobileSkySrc}
-              sizes="100vw"
-              src={skySrc}
-              style={styles?.sky}
-            />
-            {sceneClouds.map((cloud) => (
-              <DecorativeSceneImage
-                className={cn('cateringPersuasionCloud', cloud.className, classNames?.cloud)}
-                key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
-                sizes="24vw"
-                src={cloud.src}
-                style={{ ...cloud.style, ...styles?.cloud }}
-              />
-            ))}
-            {spawnedClouds.map((cloud) => (
-              <DecorativeSceneImage
-                className={cn('cateringPersuasionCloud', classNames?.cloud)}
-                key={cloud.id}
-                src={cloud.src}
-                style={{ left: cloud.left, top: cloud.top, width: cloud.width, ...styles?.cloud }}
-              />
-            ))}
+            {isScenery ? (
+              <>
+                <DecorativeSceneImage
+                  className={cn('cateringSceneSky cateringPersuasionSky', classNames?.sky)}
+                  fit="cover"
+                  mobileSrc={mobileSkySrc}
+                  sizes="100vw"
+                  src={skySrc}
+                  style={styles?.sky}
+                />
+                {sceneClouds.map((cloud) => (
+                  <DecorativeSceneImage
+                    className={cn('cateringPersuasionCloud', cloud.className, classNames?.cloud)}
+                    key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
+                    sizes="24vw"
+                    src={cloud.src}
+                    style={{ ...cloud.style, ...styles?.cloud }}
+                  />
+                ))}
+                {spawnedClouds.map((cloud) => (
+                  <DecorativeSceneImage
+                    className={cn('cateringPersuasionCloud', classNames?.cloud)}
+                    key={cloud.id}
+                    src={cloud.src}
+                    style={{ left: cloud.left, top: cloud.top, width: cloud.width, ...styles?.cloud }}
+                  />
+                ))}
+              </>
+            ) : null}
 
             <div
               className={cn(
-                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pr-0 md:pr-[10rem]',
-                children ? 'pb-2 md:pb-3' : 'pb-16 md:pb-20',
+                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pr-0',
+                isScenery && 'md:pr-[10rem]',
+                children ? 'pb-2 md:pb-3' : isScenery ? 'pb-16 md:pb-20' : 'pb-4',
                 classNames?.foreground,
               )}
               style={styles?.foreground}
@@ -1733,7 +1751,8 @@ export function PersuasionGardenPanel({
             {children ? (
               <div
                 className={cn(
-                  'cateringPanelOrderArea relative z-[2] pt-3 pb-[6.6rem] md:pt-4 md:pb-[7rem]',
+                  'cateringPanelOrderArea relative z-[2] pt-3 md:pt-4',
+                  isScenery ? 'pb-[6.6rem] md:pb-[7rem]' : 'pb-1 md:pb-2',
                   classNames?.orderArea,
                 )}
                 style={styles?.orderArea}
@@ -1742,6 +1761,7 @@ export function PersuasionGardenPanel({
               </div>
             ) : null}
 
+            {isScenery ? (
             <div
               className={cn(
                 'pointer-events-none absolute inset-x-0 bottom-0 h-[5.9rem] overflow-hidden',
@@ -1845,6 +1865,7 @@ export function PersuasionGardenPanel({
                 />
               ))}
             </div>
+            ) : null}
           </BakeryCard>
 
         {hasGallery && showGalleryFace ? (

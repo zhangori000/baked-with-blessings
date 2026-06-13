@@ -23,6 +23,14 @@ export type SelectableFlavor = {
 
 export type MenuSection = 'catering' | 'regular'
 
+/**
+ * 'scenery' = the full animated scene (sky, clouds, meadow, sheep, flowers)
+ * as the panel container. 'tinted' = a clean container whose background is
+ * tinted to the active scenery tone, with no decorative scene art (avoids
+ * scenery-inside-scenery nesting). Flagged in catering-menu-section.client.
+ */
+export type MenuPanelBackdrop = 'scenery' | 'tinted'
+
 export type RegularOrderSize = {
   label: string
   priceInUSD: number
