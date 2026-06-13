@@ -216,20 +216,17 @@ export function TrayFlavorCard({
       {hasInfo ? (
         <div
           aria-hidden={!isIngredientNoteOpen}
-          className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ${
+          className={`overflow-hidden transition-[max-height,opacity,transform] duration-300 ${
             isIngredientNoteOpen
-              ? 'max-h-[26rem] translate-y-0 px-3 pb-3 opacity-100'
-              : 'max-h-0 -translate-y-2 px-3 pb-0 opacity-0'
+              ? 'max-h-[26rem] translate-y-0 opacity-100'
+              : 'max-h-0 -translate-y-2 opacity-0'
           }`}
         >
-          <BakeryCard
+          <div
             aria-label={`${flavor.title} info`}
-            className="relative rounded-b-[1.15rem] rounded-t-[0.72rem] border border-t-0 border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
+            className="relative border-t border-[rgba(121,92,47,0.18)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3"
             id={receiptId}
-            radius="none"
             role="dialog"
-            spacing="none"
-            tone="transparent"
           >
             <BakeryPressable
               aria-label={`Close info for ${flavor.title}`}
@@ -252,12 +249,7 @@ export function TrayFlavorCard({
                 className="cookieInfoNote--menu"
               />
             ) : null}
-
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 -bottom-[1px] h-4 bg-[linear-gradient(-45deg,transparent_33%,#f8efd9_33%,#f8efd9_66%,transparent_66%),linear-gradient(45deg,transparent_33%,#f8efd9_33%,#f8efd9_66%,transparent_66%)] bg-[length:14px_16px] bg-[position:left_bottom] bg-repeat-x"
-            />
-          </BakeryCard>
+          </div>
         </div>
       ) : null}
     </BakeryCard>
