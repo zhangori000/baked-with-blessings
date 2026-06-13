@@ -506,6 +506,44 @@ export function RegularOrdersPanel({
         ))}
       </Accordion>
 
+      <BakeryCard
+        className="regularOffSeasonBanner mt-8 flex flex-col gap-3 border-[rgba(125,85,18,0.2)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] p-5 shadow-[0_12px_26px_rgba(23,21,16,0.07)] sm:flex-row sm:items-center sm:justify-between"
+        radius="lg"
+        spacing="none"
+        tone="outline"
+      >
+        <div className="flex items-start gap-3">
+          <span aria-hidden="true" className="text-2xl leading-none">
+            🍪
+          </span>
+          <div>
+            <p className="cateringMenuRoundHeading text-[1.02rem] tracking-[-0.01em] text-[#5d4119]">
+              Don’t see your favorite?
+            </p>
+            <p className="mt-1 max-w-[40rem] text-[0.9rem] leading-6 text-[rgba(23,21,16,0.66)]">
+              Seasonal and retired flavors leave the individual menu when they’re off rotation —
+              but you can still order ten of <em>any</em> flavor, even rare ones, in a one-flavor
+              Cookie Tray.
+            </p>
+          </div>
+        </div>
+        {onJumpToBundle ? (
+          <button
+            className="cateringMenuRoundHeading group inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full border border-[rgba(125,85,18,0.28)] bg-[rgba(125,85,18,0.06)] px-5 py-2.5 text-[0.86rem] tracking-[-0.01em] text-[#5d4119] transition hover:bg-[rgba(125,85,18,0.12)] sm:self-center"
+            onClick={() => onJumpToBundle('cookie-tray')}
+            type="button"
+          >
+            Browse one-flavor trays
+            <ArrowRight
+              aria-hidden="true"
+              className="transition-transform group-hover:translate-x-0.5"
+              size={16}
+              strokeWidth={2.4}
+            />
+          </button>
+        ) : null}
+      </BakeryCard>
+
       <style>{`
         .regularGroupHeader {
           align-items: baseline;
