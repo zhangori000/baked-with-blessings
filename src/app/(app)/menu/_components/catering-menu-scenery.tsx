@@ -95,6 +95,8 @@ type MenuHeroProps = {
 }
 
 type PersuasionGardenPanelProps = {
+  /** Ordering UI rendered inside the scene, between the pitch and the meadow. */
+  children?: React.ReactNode
   classNames?: PersuasionGardenPanelClassNames
   isSceneryPickerOpen: boolean
   isSceneChanging: boolean
@@ -120,6 +122,7 @@ export const persuasionGardenPanelSlots = [
   'actionRow',
   'actionButtonWrap',
   'actionButton',
+  'orderArea',
   'photosButton',
   'sceneryButton',
   'meadowLayer',
@@ -1443,6 +1446,7 @@ export function MenuHero({
 }
 
 export function PersuasionGardenPanel({
+  children,
   classNames,
   isSceneryPickerOpen,
   isSceneChanging,
@@ -1573,7 +1577,10 @@ export function PersuasionGardenPanel({
   const isPanelTransitioning = panelTransition !== 'idle'
   const isPaintingToGallery = panelTransition === 'to-gallery'
   const isPaintingToDetails = panelTransition === 'to-details'
-  const showDetailsFace = !isGalleryFace || isPanelTransitioning
+  // The details face stays mounted even while the gallery shows: it sits in
+  // normal flow and is what gives the panel its height, so unmounting it
+  // would collapse the gallery. It just turns invisible underneath.
+  const isDetailsDormant = isGalleryFace && !isPanelTransitioning
   const showGalleryFace = hasGallery && (isGalleryFace || isPanelTransitioning)
   const panelMinHeight = hasGallery ? '29rem' : '26rem'
   const panelMinHeightValue = `var(--catering-persuasion-panel-min-height, ${panelMinHeight})`
@@ -1599,12 +1606,13 @@ export function PersuasionGardenPanel({
         className={cn('relative h-full overflow-hidden rounded-[1.45rem]', classNames?.viewport)}
         style={{ minHeight: panelMinHeightValue, ...styles?.viewport }}
       >
-        {showDetailsFace ? (
-          <BakeryCard
+        <BakeryCard
+            aria-hidden={isDetailsDormant}
             className={cn(
-              'cateringPanelLayer cateringPersuasionPanel absolute inset-0 overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
+              'cateringPanelLayer cateringPersuasionPanel relative overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               `cateringScene-${sceneryTone}`,
               !isGalleryFace && panelTransition === 'idle' && 'cateringPanelLayerActive',
+              isDetailsDormant && 'cateringPanelFaceDormant',
               isPaintingToGallery && 'cateringPanelLayerBase',
               isPaintingToDetails &&
                 'cateringPanelLayerPaintIn cateringPanelLayerPaintInFromBottom',
@@ -1612,7 +1620,7 @@ export function PersuasionGardenPanel({
             )}
             radius="xl"
             spacing="none"
-            style={styles?.detailFace}
+            style={{ minHeight: panelMinHeightValue, ...styles?.detailFace }}
             tone="transparent"
           >
             <DecorativeSceneImage
@@ -1643,7 +1651,8 @@ export function PersuasionGardenPanel({
 
             <div
               className={cn(
-                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pb-16 pr-0 md:pb-20 md:pr-[10rem]',
+                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pr-0 md:pr-[10rem]',
+                children ? 'pb-2 md:pb-3' : 'pb-16 md:pb-20',
                 classNames?.foreground,
               )}
               style={styles?.foreground}
@@ -1720,6 +1729,18 @@ export function PersuasionGardenPanel({
                 </SceneActionRow>
               </BakeryPopoverPanel>
             </div>
+
+            {children ? (
+              <div
+                className={cn(
+                  'cateringPanelOrderArea relative z-[2] pt-3 pb-[6.6rem] md:pt-4 md:pb-[7rem]',
+                  classNames?.orderArea,
+                )}
+                style={styles?.orderArea}
+              >
+                {children}
+              </div>
+            ) : null}
 
             <div
               className={cn(
@@ -1825,7 +1846,6 @@ export function PersuasionGardenPanel({
               ))}
             </div>
           </BakeryCard>
-        ) : null}
 
         {hasGallery && showGalleryFace ? (
           <BakeryCard

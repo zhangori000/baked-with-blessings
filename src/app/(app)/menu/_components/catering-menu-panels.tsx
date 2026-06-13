@@ -281,7 +281,8 @@ function TrayFlavorMoonlitLinework() {
 type SimpleItemPanelProps = {
   isCartPending: boolean
   onAddToCart: () => void
-  persuasionPanel: React.ReactNode
+  /** Wraps the ordering UI inside the scenery container. */
+  renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
   priceInUSD?: number | null
   product: Partial<Product>
 }
@@ -289,49 +290,49 @@ type SimpleItemPanelProps = {
 export function SimpleItemPanel({
   isCartPending,
   onAddToCart,
-  persuasionPanel,
+  renderPersuasionPanel,
   priceInUSD,
   product,
 }: SimpleItemPanelProps) {
   return (
-    <div className="space-y-5">
-      {persuasionPanel}
+    <>
+      {renderPersuasionPanel(
+        <BakeryCard
+          className="space-y-4 border-[rgba(91,70,37,0.16)] bg-[rgba(255,248,242,0.94)] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.08)]"
+          radius="lg"
+          spacing="none"
+          tone="outline"
+        >
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
+                Order summary
+              </p>
+              <p className="mt-1 text-[1rem] leading-7 text-[rgba(23,21,16,0.74)]">
+                {product.menuPortionLabel ?? 'Menu item'}
+              </p>
+            </div>
 
-      <BakeryCard
-        className="space-y-4 border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)]"
-        radius="lg"
-        spacing="none"
-        tone="outline"
-      >
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-              Order summary
-            </p>
-            <p className="mt-1 text-[1rem] leading-7 text-[rgba(23,21,16,0.74)]">
-              {product.menuPortionLabel ?? 'Menu item'}
-            </p>
+            {typeof priceInUSD === 'number' ? (
+              <Price
+                amount={priceInUSD}
+                className="cateringMenuRoundHeading text-[1.28rem] tracking-[-0.03em] text-[#171510]"
+              />
+            ) : null}
           </div>
 
-          {typeof priceInUSD === 'number' ? (
-            <Price
-              amount={priceInUSD}
-              className="cateringMenuRoundHeading text-[1.28rem] tracking-[-0.03em] text-[#171510]"
-            />
-          ) : null}
-        </div>
-
-        <SceneButton
-          className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
-          loading={isCartPending}
-          loadingLabel={`Adding ${product.title ?? 'item'} to cart`}
-          onClick={onAddToCart}
-          variant="primary"
-        >
-          Add to cart
-        </SceneButton>
-      </BakeryCard>
-    </div>
+          <SceneButton
+            className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+            loading={isCartPending}
+            loadingLabel={`Adding ${product.title ?? 'item'} to cart`}
+            onClick={onAddToCart}
+            variant="primary"
+          >
+            Add to cart
+          </SceneButton>
+        </BakeryCard>,
+      )}
+    </>
   )
 }
 
@@ -343,7 +344,8 @@ type BatchBuilderPanelProps = {
   isTrayPending: boolean
   onAddFlavor: (flavorID: number) => void
   onAddToCart: () => void
-  persuasionPanel: React.ReactNode
+  /** Wraps the ordering UI inside the scenery container. */
+  renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
   renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
   sceneryTone: MenuSceneryTone
   selectedFlavor: SelectableFlavor | null
@@ -360,7 +362,7 @@ export function BatchBuilderPanel({
   isTrayPending,
   onAddFlavor,
   onAddToCart,
-  persuasionPanel,
+  renderPersuasionPanel,
   renderSceneImage,
   sceneryTone,
   selectedFlavor,
@@ -407,13 +409,12 @@ export function BatchBuilderPanel({
   }, [])
 
   return (
-    <div className="space-y-5">
-      {persuasionPanel}
-
+    <>
+      {renderPersuasionPanel(
       <div className="space-y-4">
         <BakeryCard
           className={cn(
-            'border-[rgba(91,70,37,0.1)] bg-[rgba(255,255,255,0.7)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.03)] transition-[transform,box-shadow,border-color] duration-200',
+            'border-[rgba(91,70,37,0.14)] bg-[rgba(255,255,255,0.88)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.05)] transition-[transform,box-shadow,border-color] duration-200',
             shouldPulseTraySummary && 'cateringTraySummaryPulse',
           )}
           radius="md"
@@ -558,7 +559,8 @@ export function BatchBuilderPanel({
             ? `Add ${selectedFlavor.title} Tray to cart`
             : 'Choose a tray flavor first'}
         </SceneButton>
-      </div>
-    </div>
+      </div>,
+      )}
+    </>
   )
 }

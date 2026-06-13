@@ -448,7 +448,7 @@ function CateringMenuRow({
             isTrayPending={isCartPending}
             onAddFlavor={handleAddFlavor}
             onAddToCart={handleAddToCart}
-            persuasionPanel={
+            renderPersuasionPanel={(children) => (
               <PersuasionGardenPanel
                 classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
@@ -459,8 +459,10 @@ function CateringMenuRow({
                 key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
                 sceneryTone={sceneryTone}
                 summary={resolveSummary(product)}
-              />
-            }
+              >
+                {children}
+              </PersuasionGardenPanel>
+            )}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
             priceInUSD={product.priceInUSD}
             sceneryTone={sceneryTone}
@@ -472,7 +474,7 @@ function CateringMenuRow({
           <SimpleItemPanel
             isCartPending={isCartPending}
             onAddToCart={handleAddToCart}
-            persuasionPanel={
+            renderPersuasionPanel={(children) => (
               <PersuasionGardenPanel
                 classNames={menuPersuasionPanelClassNames}
                 isSceneryPickerOpen={isSceneryPickerOpen}
@@ -483,8 +485,10 @@ function CateringMenuRow({
                 key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
                 sceneryTone={sceneryTone}
                 summary={resolveSummary(product)}
-              />
-            }
+              >
+                {children}
+              </PersuasionGardenPanel>
+            )}
             priceInUSD={product.priceInUSD}
             product={product}
           />
@@ -716,6 +720,11 @@ export function CateringMenuSection({
           z-index: 2;
         }
 
+        .cateringPanelFaceDormant {
+          pointer-events: none;
+          visibility: hidden;
+        }
+
         .cateringPanelLayerBase {
           pointer-events: none;
           z-index: 1;
@@ -872,6 +881,15 @@ export function CateringMenuSection({
               90deg,
               rgba(255, 255, 255, 0) 0%,
               rgba(255, 255, 255, 0.74) 12%,
+              rgba(255, 224, 138, 0.88) 50%,
+              rgba(255, 255, 255, 0.74) 88%,
+              rgba(255, 255, 255, 0) 100%
+          );
+          background:
+            linear-gradient(
+              90deg,
+              rgba(255, 255, 255, 0) 0%,
+              rgba(255, 255, 255, 0.74) 12%,
               color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 78%, white 22%) 50%,
               rgba(255, 255, 255, 0.74) 88%,
               rgba(255, 255, 255, 0) 100%
@@ -882,12 +900,23 @@ export function CateringMenuSection({
           transform: translate3d(0, -50%, 0);
           transform-origin: center;
           box-shadow:
+            0 -0.72rem 1.85rem rgba(255, 220, 124, 0.16),
+            0 0.72rem 1.85rem rgba(255, 220, 124, 0.2);
+          box-shadow:
             0 -0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, transparent),
             0 0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 24%, transparent);
           will-change: opacity, transform;
         }
 
         .cateringPanelTearLine::before {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 244, 204, 0.7) 44%,
+            rgba(255, 255, 255, 0.48) 50%,
+            rgba(255, 242, 196, 0.56) 56%,
+            rgba(255, 255, 255, 0) 100%
+          );
           background: linear-gradient(
             180deg,
             rgba(255, 255, 255, 0) 0%,
@@ -1782,10 +1811,6 @@ export function CateringMenuSection({
             padding-inline: 1rem;
           }
 
-          .cateringPanelForeground {
-            padding-bottom: 9.6rem;
-          }
-
           .cateringPanelActionRow {
             display: grid !important;
             gap: 0.5rem;
@@ -1884,10 +1909,6 @@ export function CateringMenuSection({
           .cateringPersuasionBody :is(p, li) {
             font-size: 0.9rem;
             line-height: 1.62;
-          }
-
-          .cateringPanelForeground {
-            padding-bottom: 9.8rem;
           }
         }
       `}</style>
