@@ -544,7 +544,11 @@ export interface Product {
    */
   menuPlacement?: ('backlog' | 'currentRotation' | 'always') | null;
   /**
-   * How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.
+   * One flavor: the customer picks a single flavor and the whole tray is that flavor. Mix and match: the customer fills the box with any combination of flavors up to the quantity below (good for a build-your-own box).
+   */
+  flavorSelection?: ('single' | 'mixAndMatch') | null;
+  /**
+   * How many cookies belong in the tray or box. For single-flavor trays this is the quantity of the chosen flavor; for a mix-and-match box it is the box capacity (e.g. 4).
    */
   requiredSelectionCount?: number | null;
   /**
@@ -3199,6 +3203,7 @@ export interface ProductsSelect<T extends boolean = true> {
   menuBehavior?: T;
   individualAvailability?: T;
   menuPlacement?: T;
+  flavorSelection?: T;
   requiredSelectionCount?: T;
   selectableProducts?: T;
   relatedProducts?: T;

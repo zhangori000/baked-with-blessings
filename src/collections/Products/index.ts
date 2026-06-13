@@ -454,13 +454,34 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               virtual: true,
             },
             {
+              name: 'flavorSelection',
+              label: 'How do customers pick the flavors?',
+              type: 'select',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
+                description:
+                  'One flavor: the customer picks a single flavor and the whole tray is that flavor. Mix and match: the customer fills the box with any combination of flavors up to the quantity below (good for a build-your-own box).',
+              },
+              defaultValue: 'single',
+              options: [
+                {
+                  label: 'One flavor for the whole tray',
+                  value: 'single',
+                },
+                {
+                  label: 'Mix and match (build-your-own box)',
+                  value: 'mixAndMatch',
+                },
+              ],
+            },
+            {
               name: 'requiredSelectionCount',
               label: 'Tray quantity',
               type: 'number',
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.',
+                  'How many cookies belong in the tray or box. For single-flavor trays this is the quantity of the chosen flavor; for a mix-and-match box it is the box capacity (e.g. 4).',
               },
               min: 1,
               validate: (
