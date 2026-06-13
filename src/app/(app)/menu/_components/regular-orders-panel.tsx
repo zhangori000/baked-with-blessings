@@ -596,6 +596,7 @@ export function RegularOrdersPanel({ items, seasonalLabel }: RegularOrdersPanelP
         }
 
         .regularQuantityCount {
+          color: #171510;
           font-size: 1.15rem;
           min-width: 2.6rem;
           text-align: center;
