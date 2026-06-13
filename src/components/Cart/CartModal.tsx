@@ -568,6 +568,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             box-shadow:
               inset 0 1px 0 rgba(255, 255, 255, 0.22),
               0 10px 24px rgba(8, 16, 27, 0.28);
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
           }
 
@@ -576,6 +577,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             border-radius: 0.9rem;
             background: rgba(255, 253, 248, 0.94);
             box-shadow: 0 16px 32px rgba(19, 30, 46, 0.14);
+            -webkit-backdrop-filter: blur(9px);
             backdrop-filter: blur(9px);
           }
 

@@ -1894,6 +1894,9 @@ export function HomeCookieCarousel({
         .homeCookieSceneButton {
           align-items: center;
           background:
+            linear-gradient(90deg, rgba(255, 227, 132, 0.9) 0%, rgba(255, 221, 105, 0.92) 100%),
+            rgba(255, 248, 242, 0.9);
+          background:
             linear-gradient(
               90deg,
               color-mix(in srgb, var(--home-scene-charge, rgba(255, 215, 79, 0.86)) 70%, white 30%) 0%,
@@ -2103,6 +2106,7 @@ export function HomeCookieCarousel({
 
         .homeCookieInfoButton {
           align-items: center;
+          -webkit-backdrop-filter: blur(10px);
           backdrop-filter: blur(10px);
           background: rgba(255, 251, 236, 0.9);
           border: 1px solid rgba(97, 74, 37, 0.16);
@@ -2331,6 +2335,7 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieCartPrompt {
+          -webkit-backdrop-filter: blur(14px);
           backdrop-filter: blur(14px);
           background: rgba(255, 252, 242, 0.96);
           border: 1px solid rgba(92, 67, 31, 0.12);
