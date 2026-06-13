@@ -55,7 +55,7 @@ type CateringMenuSectionProps = {
 
 const menuSectionTabDefs: MenuSectionTabDef[] = [
   { detail: 'Single cookies · large or mini', label: 'Regular orders', value: 'regular' },
-  { detail: 'Trays & 10-packs', label: 'Catering', value: 'catering' },
+  { detail: 'Boxes, trays & packs', label: 'Bundles', value: 'catering' },
 ]
 
 const MENU_TABS_ID_BASE = 'menu-section'
@@ -665,7 +665,7 @@ export function CateringMenuSection({
         sceneryTone={heroSceneryTone}
         summary={
           hasRegularItems
-            ? 'Order the always-available lineup and this season’s flavors as single cookies — large or mini, as many as you like. Catering trays and ten-packs are one tab away.'
+            ? 'Order the always-available lineup and this season’s flavors as single cookies — large or mini, as many as you like. Build-your-own boxes, trays, and ten-packs are one tab away.'
             : undefined
         }
         title="Menu"
@@ -932,7 +932,6 @@ export function CateringMenuSection({
         /* Fixed dark container scheme (one look for every scenery). */
         .cateringPanelDark.cateringPersuasionPanel {
           background: linear-gradient(165deg, #2c2720 0%, #1b1712 100%);
-          border-color: rgba(244, 237, 226, 0.12);
         }
 
         .cateringPanelDark .cateringPersuasionHeading,

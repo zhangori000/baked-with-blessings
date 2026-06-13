@@ -376,8 +376,8 @@ export function RegularOrdersPanel({
   if (groups.length === 0) {
     return (
       <p className="py-12 text-base leading-8 text-[rgba(23,21,16,0.72)]">
-        Individual flavors are being restocked — check the catering tab for trays, or come back
-        soon.
+        Individual flavors are being restocked — check the Bundles tab for boxes and trays, or
+        come back soon.
       </p>
     )
   }

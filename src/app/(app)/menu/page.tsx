@@ -20,7 +20,7 @@ const cateringSerif = Cormorant_Garamond({
 
 export const metadata = buildStaticMetadata({
   description:
-    'Order always-available and seasonal cookie flavors individually in large or mini sizes, or browse catering trays with transparent pricing and tray builders.',
+    'Order always-available and seasonal cookie flavors individually in large or mini sizes, or build your own boxes and trays with transparent pricing.',
   path: '/menu',
   title: 'Menu',
 })

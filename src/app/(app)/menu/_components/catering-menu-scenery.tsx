@@ -1229,7 +1229,7 @@ export function MenuHero({
   onSelectScenery,
   onToggleSceneryPicker,
   sceneryTone,
-  summary = 'Single cookies in large or mini, plus catering trays with clear portions and honest descriptions — so you know exactly what you are ordering.',
+  summary = 'Single cookies in large or mini, plus build-your-own boxes and trays with clear portions and honest descriptions — so you know exactly what you are ordering.',
   title = 'Menu',
 }: MenuHeroProps) {
   const flowerSeedCount = useResponsiveFlowerSeedCount()
