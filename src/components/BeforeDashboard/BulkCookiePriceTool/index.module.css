@@ -110,6 +110,28 @@
   line-height: 1.45;
 }
 
+.warning {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  border: 1px solid var(--theme-warning-200, #e7c66a);
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--theme-warning-50, #fbf3da);
+  color: var(--theme-warning-800, #7a5d11);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.warningTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.warningItem {
+  margin: 0;
+}
+
 .error {
   color: var(--theme-error-600);
 }
