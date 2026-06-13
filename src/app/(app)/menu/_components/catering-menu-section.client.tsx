@@ -670,6 +670,22 @@ export function CateringMenuSection({
     }
   }, [])
 
+  // Keep the active tab in sync when the customer uses the browser Back/Forward
+  // buttons (e.g. after a nudge pushed them to the Bundles tab).
+  useEffect(() => {
+    const handlePopState = () => {
+      const param = new URLSearchParams(window.location.search).get('section')
+      const nextSection: MenuSection = param === 'catering' ? 'catering' : 'regular'
+      setSection(hasRegularItems ? nextSection : 'catering')
+      if (nextSection !== 'catering') {
+        setOpenBundleSlug('')
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [hasRegularItems])
+
   if (orderedProducts.length === 0 && !hasRegularItems) {
     return null
   }
@@ -698,10 +714,18 @@ export function CateringMenuSection({
   }
 
   const handleJumpToBundle = (slug: string) => {
-    handleSectionChange('catering')
+    setSection('catering')
     setOpenBundleSlug(slug)
+    announce('Showing the catering menu.')
 
     if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      url.searchParams.set('section', 'catering')
+      // pushState (not replaceState) so the browser Back button returns the
+      // customer to the Regular-orders view they jumped from, instead of
+      // skipping past /menu to wherever they were before.
+      window.history.pushState(null, '', url)
+
       // Let the tab switch + accordion open render before scrolling to it.
       window.setTimeout(() => {
         document
