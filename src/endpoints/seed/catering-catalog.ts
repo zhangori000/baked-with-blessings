@@ -94,6 +94,7 @@ export const cateringCatalog: CateringSeedSpec[] = [
     expandedPitchParagraphs: [
       'Sticky toffee pudding in a ten-cup catering format is an easy dessert upgrade when you want something warm, comforting, and a little more special than the usual sheet-pan option.',
       'The format keeps serving simple, and the flavor feels homemade instead of generic party dessert.',
+      'A little family note: sticky toffee pudding is my brother’s favorite dessert in the whole world — warm, gooey, toffee-soaked, and so good he asks for it every single time. If you only try one thing off this menu, make it this one. 🍮',
     ],
     galleryImageSlugs: ['sticky-toffee-pudding'],
     imageSlug: 'sticky-toffee-pudding',
@@ -102,7 +103,7 @@ export const cateringCatalog: CateringSeedSpec[] = [
     metaDescription: 'Ten sticky toffee pudding cups prepared for catering pickup.',
     priceInUSD: 3500,
     slug: 'sticky-toffee-pudding-10-pack',
-    summary: 'Ten sticky toffee pudding cups for a warm, comforting dessert option.',
+    summary: 'Ten sticky toffee pudding cups — my brother’s all-time favorite, and honestly so good.',
     title: 'Sticky Toffee Pudding 10-Pack',
   },
   {
