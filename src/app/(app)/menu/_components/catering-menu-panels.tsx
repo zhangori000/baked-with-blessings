@@ -125,7 +125,7 @@ export function TrayFlavorCard({
     <BakeryCard
       as="article"
       className={cn(
-        'cateringFlavorCard flex flex-col',
+        'cateringFlavorCard flex h-full flex-col',
         isSelected && 'cateringFlavorCardSelected',
       )}
       radius="lg"
@@ -191,7 +191,7 @@ export function TrayFlavorCard({
         </div>
       </div>
 
-      <div className="px-1.5 pb-1 pt-3">
+      <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
         <div className="min-w-0 space-y-3">
           <div className="flex items-start gap-3">
             <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[1.04rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
@@ -203,7 +203,9 @@ export function TrayFlavorCard({
               {flavor.summary}
             </p>
           ) : null}
+        </div>
 
+        <div className="mt-auto pt-3">
           {actionSlot ? (
             actionSlot
           ) : isSelected ? (

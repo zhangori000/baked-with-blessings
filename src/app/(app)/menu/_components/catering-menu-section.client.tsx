@@ -1609,7 +1609,7 @@ export function CateringMenuSection({
         }
 
         .cateringFlavorRailInner {
-          align-items: flex-start;
+          align-items: stretch;
           display: flex;
           gap: 1rem;
           padding-bottom: 0.2rem;
