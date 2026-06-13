@@ -170,13 +170,14 @@ describe('applyMenuPlacementBeforeChange (mapping + prechecks)', () => {
     ).rejects.toThrow(/only cookie in the current rotation/i)
   })
 
-  it('fills an empty mini price with the 60% default for cookie flavors', async () => {
+  it('fills an empty mini price with the half-of-large default for cookie flavors', async () => {
     const { req } = makeEnv()
     const data = cookieDoc({ miniPriceInUSD: undefined })
 
     await applyMenuPlacementBeforeChange({ data, originalDoc: undefined, req } as never)
 
-    expect(data.miniPriceInUSD).toBe(425)
+    // 50% of the 700 large price, rounded to the nearest quarter.
+    expect(data.miniPriceInUSD).toBe(350)
   })
 
   it('never overwrites a mini price the owner already set', async () => {

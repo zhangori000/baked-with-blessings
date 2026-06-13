@@ -20,10 +20,9 @@ export type SizeOptionValue = (typeof SIZE_OPTIONS)[number]['value']
 
 /**
  * Default Mini price as a share of the Large price, rounded to the nearest
- * quarter. 0.6 mirrors the owner's own tray pricing (mini tray $3/cookie vs
- * jumbo tray $5/cookie).
+ * quarter. 0.5 = half the large price (a $7 cookie's mini is $3.50).
  */
-export const MINI_PRICE_RATIO = 0.6
+export const MINI_PRICE_RATIO = 0.5
 
 export const roundToQuarter = (cents: number) => Math.round(cents / 25) * 25
 
