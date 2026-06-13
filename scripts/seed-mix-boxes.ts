@@ -46,7 +46,7 @@ const BOX_SPECS: BoxSpec[] = [
     portionLabel: '4 large cookies · mix & match',
     priceCents: 2000,
     slug: 'build-your-own-cookie-box',
-    title: 'Build-Your-Own Cookie Box (Mix & Match)',
+    title: 'Build-Your-Own Cookie Box',
     pitchParagraphs: [
       'Build a box of four full-size cookies and mix the flavors however you like — sample four different ones or stock up on a favorite.',
       'Add the box to your cart, then build another. Each box is its own order line, so the kitchen knows exactly what to bake.',
