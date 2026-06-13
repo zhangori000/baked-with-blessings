@@ -4,6 +4,7 @@ import React, { type FormEvent, useCallback, useState } from 'react'
 import { toast } from '@payloadcms/ui'
 
 import { BakeryPressable } from '@/design-system/bakery'
+import { defaultMiniPriceInUSD, MINI_PRICE_RATIO } from '@/features/products/sizeVariants'
 
 import styles from './index.module.css'
 
@@ -14,6 +15,7 @@ type BulkCookiePriceToolProps = {
 type BulkCookiePriceResponse = {
   error?: string
   matchedCount?: number
+  miniPriceInUSD?: null | number
   priceInUSD?: number
   skippedCount?: number
   success?: boolean
@@ -28,11 +30,15 @@ const formatUSDFromCents = (value: number) =>
 
 const formatSuccessMessage = ({
   matchedCount = 0,
+  miniPriceInUSD = null,
   priceInUSD = 0,
   skippedCount = 0,
   updatedCount = 0,
 }: BulkCookiePriceResponse): string => {
-  const priceLabel = formatUSDFromCents(priceInUSD)
+  const priceLabel =
+    typeof miniPriceInUSD === 'number'
+      ? `${formatUSDFromCents(priceInUSD)} (mini ${formatUSDFromCents(miniPriceInUSD)})`
+      : formatUSDFromCents(priceInUSD)
 
   if (matchedCount === 0) {
     return 'No cookie products were found.'
@@ -49,6 +55,8 @@ const formatSuccessMessage = ({
   return `Updated ${updatedCount} cookies to ${priceLabel}.`
 }
 
+const MINI_PERCENT_LABEL = `${Math.round(MINI_PRICE_RATIO * 100)}%`
+
 export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
   messageClassName,
 }) => {
@@ -56,9 +64,13 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [price, setPrice] = useState('7.00')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [updateMiniPrices, setUpdateMiniPrices] = useState(true)
 
   const parsedPrice = Number(price)
   const isValidPrice = Number.isFinite(parsedPrice) && parsedPrice > 0
+  const miniPreviewLabel = isValidPrice
+    ? formatUSDFromCents(defaultMiniPriceInUSD(Math.round(parsedPrice * 100)))
+    : null
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -83,7 +95,7 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
 
       try {
         const response = await fetch('/next/admin-cookie-prices', {
-          body: JSON.stringify({ priceInUSD: parsedPrice }),
+          body: JSON.stringify({ priceInUSD: parsedPrice, updateMiniPrices }),
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -123,7 +135,7 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
         setIsSubmitting(false)
       }
     },
-    [isSubmitting, isValidPrice, parsedPrice],
+    [isSubmitting, isValidPrice, parsedPrice, updateMiniPrices],
   )
 
   const statusMessage =
@@ -159,6 +171,20 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
           {isSubmitting ? 'Updating...' : 'Set all cookies'}
         </BakeryPressable>
       </div>
+      <label className={styles.checkboxRow} htmlFor="bulk-cookie-mini-prices">
+        <input
+          checked={updateMiniPrices}
+          className={styles.checkbox}
+          disabled={isSubmitting}
+          id="bulk-cookie-mini-prices"
+          onChange={(event) => setUpdateMiniPrices(event.target.checked)}
+          type="checkbox"
+        />
+        <span>
+          Also set every mini price to {MINI_PERCENT_LABEL} of the new price
+          {updateMiniPrices && miniPreviewLabel ? ` (${miniPreviewLabel})` : ''}
+        </span>
+      </label>
       <p
         className={[
           styles.message,
