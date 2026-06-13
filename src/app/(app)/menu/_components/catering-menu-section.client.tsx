@@ -1300,27 +1300,28 @@ export function CateringMenuSection({
           min-width: 6.75rem;
         }
 
-        /* A lighter warm-dark card surface so the card reads on the dark
-           container, with the cookie scene framed as a tile inside it.
-           No white body, no border. */
+        /* Whitish card surface (matches the simple-item order card) on the
+           dark container, framing the cookie scene tile. The selected state
+           uses a uniform reserved border so it never shifts layout. */
         .cateringFlavorCard {
-          background: linear-gradient(180deg, #453b2d 0%, #392f24 100%);
+          background: rgba(255, 248, 242, 0.95);
+          border: 3px solid transparent;
           border-radius: 1.3rem;
           padding: 0.5rem;
           touch-action: pan-x pinch-zoom;
           transition:
             transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 180ms ease,
             box-shadow 220ms ease;
         }
 
         .cateringFlavorCardSelected {
-          box-shadow:
-            0 0 0 2px rgba(152, 192, 92, 0.85),
-            0 16px 34px rgba(0, 0, 0, 0.34);
+          border-color: #7ea12f;
+          box-shadow: 0 14px 30px rgba(46, 76, 27, 0.2);
         }
 
         .cateringFlavorScene {
-          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+          box-shadow: 0 6px 14px rgba(23, 21, 16, 0.12);
           transition:
             box-shadow 220ms ease,
             transform 220ms cubic-bezier(0.22, 1, 0.36, 1);

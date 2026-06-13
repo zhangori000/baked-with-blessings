@@ -30,7 +30,7 @@ function SelectedFlavorButton() {
   return (
     <BakeryPressable
       aria-pressed="true"
-      className="cateringMenuRoundHeading relative inline-flex min-h-[2.5rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[rgba(126,161,47,0.5)] bg-[rgba(126,161,47,0.18)] px-4 text-[0.84rem] tracking-[-0.01em] text-[#e9f4d8]"
+      className="cateringMenuRoundHeading relative inline-flex min-h-[2.5rem] w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[rgba(31,43,20,0.16)] bg-[rgba(31,43,20,0.08)] px-4 text-[0.84rem] tracking-[-0.01em] text-[#1f2b14]"
       type="button"
     >
       <span className="pointer-events-none absolute inset-x-0 bottom-[-1px] h-[1.05rem] overflow-visible">
@@ -189,12 +189,12 @@ export function TrayFlavorCard({
       <div className="px-1.5 pb-1 pt-3">
         <div className="min-w-0 space-y-3">
           <div className="flex items-start gap-3">
-            <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[1.04rem] leading-[1.04] tracking-[-0.03em] text-[#f4ede2]">
+            <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[1.04rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
               <span className="block line-clamp-2">{flavor.title}</span>
             </h4>
           </div>
           {flavor.summary ? (
-            <p className="line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(244,237,226,0.62)]">
+            <p className="line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
               {flavor.summary}
             </p>
           ) : null}
@@ -203,7 +203,7 @@ export function TrayFlavorCard({
             <SelectedFlavorButton />
           ) : (
             <BakeryPressable
-              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(244,237,226,0.26)] bg-[rgba(244,237,226,0.08)] px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#f4ede2] transition duration-200 hover:border-[rgba(244,237,226,0.45)] hover:bg-[rgba(244,237,226,0.16)]"
+              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.16)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
               onClick={onChoose}
               type="button"
             >
@@ -224,7 +224,7 @@ export function TrayFlavorCard({
         >
           <div
             aria-label={`${flavor.title} info`}
-            className="relative mt-2 rounded-[1.1rem] border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_12px_26px_rgba(0,0,0,0.28)]"
+            className="relative mt-2 rounded-[1.1rem] border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_10px_22px_rgba(23,21,16,0.1)]"
             id={receiptId}
             role="dialog"
           >
