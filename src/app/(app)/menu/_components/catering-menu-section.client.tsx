@@ -1300,25 +1300,30 @@ export function CateringMenuSection({
           min-width: 6.75rem;
         }
 
-        /* Cards blend into the dark container — no white body or border.
-           The cookie scene is the only framed element. */
+        /* A lighter warm-dark card surface so the card reads on the dark
+           container, with the cookie scene framed as a tile inside it.
+           No white body, no border. */
         .cateringFlavorCard {
-          background: transparent;
+          background: linear-gradient(180deg, #453b2d 0%, #392f24 100%);
+          border-radius: 1.3rem;
+          padding: 0.5rem;
           touch-action: pan-x pinch-zoom;
-          transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+          transition:
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 220ms ease;
+        }
+
+        .cateringFlavorCardSelected {
+          box-shadow:
+            0 0 0 2px rgba(152, 192, 92, 0.85),
+            0 16px 34px rgba(0, 0, 0, 0.34);
         }
 
         .cateringFlavorScene {
-          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32);
+          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
           transition:
             box-shadow 220ms ease,
             transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .cateringFlavorSceneSelected {
-          box-shadow:
-            0 0 0 2px rgba(152, 192, 92, 0.85),
-            0 16px 34px rgba(46, 76, 27, 0.32);
         }
 
         .cateringFlavorCard button {

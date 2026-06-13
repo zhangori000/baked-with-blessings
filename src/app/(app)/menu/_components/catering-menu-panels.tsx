@@ -120,7 +120,7 @@ export function TrayFlavorCard({
     <BakeryCard
       as="article"
       className={cn(
-        'cateringFlavorCard flex flex-col bg-transparent',
+        'cateringFlavorCard flex flex-col',
         isSelected && 'cateringFlavorCardSelected',
       )}
       radius="lg"
@@ -128,10 +128,7 @@ export function TrayFlavorCard({
       tone="transparent"
     >
       <div
-        className={cn(
-          'cateringFlavorScene relative overflow-hidden rounded-[1.15rem] bg-[#dbeeff]',
-          isSelected && 'cateringFlavorSceneSelected',
-        )}
+        className="cateringFlavorScene relative overflow-hidden rounded-[0.85rem] bg-[#dbeeff]"
         style={
           {
             '--cookie-bottom': '1.75rem',
@@ -189,7 +186,7 @@ export function TrayFlavorCard({
         </div>
       </div>
 
-      <div className="px-2 pb-1 pt-3">
+      <div className="px-1.5 pb-1 pt-3">
         <div className="min-w-0 space-y-3">
           <div className="flex items-start gap-3">
             <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[1.04rem] leading-[1.04] tracking-[-0.03em] text-[#f4ede2]">
