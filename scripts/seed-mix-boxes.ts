@@ -163,6 +163,7 @@ const run = async () => {
         priceInUSDEnabled: true,
         requiredSelectionCount: BOX_CAPACITY,
         selectableProducts: flavorIDs,
+        title: spec.title,
       }
 
       const existing = await payload.find({
@@ -188,7 +189,7 @@ const run = async () => {
       } else {
         const created = await payload.create({
           collection: 'products',
-          data: { ...coreData, slug: spec.slug, title: spec.title },
+          data: { ...coreData, slug: spec.slug },
           overrideAccess: true,
         })
         console.log(
