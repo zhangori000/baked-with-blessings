@@ -16,13 +16,24 @@ import { BakeryCard, BakeryPressable, SceneButton } from '@/design-system/bakery
 import { cn } from '@/utilities/cn'
 
 import { CookieInfoNote } from './CookieInfoNote'
+import {
+  DecorativeSceneImage,
+  meadowByScenery,
+  mobileSkyByScenery,
+  skyByScenery,
+} from './catering-menu-scenery'
 import { CookieSheepRig } from './cookie-sheep-rig'
-import type { RegularOrderItem, RegularOrderSize } from './catering-menu-types'
+import type {
+  MenuSceneryTone,
+  RegularOrderItem,
+  RegularOrderSize,
+} from './catering-menu-types'
 
 const MAX_QUANTITY = 50
 
 type RegularOrdersPanelProps = {
   items: RegularOrderItem[]
+  sceneryTone: MenuSceneryTone
   seasonalLabel: string
 }
 
@@ -55,9 +66,21 @@ function RegularRowChevron() {
   )
 }
 
-function RegularOrderRow({ item }: { item: RegularOrderItem }) {
+function RegularOrderRow({
+  item,
+  sceneryTone,
+}: {
+  item: RegularOrderItem
+  sceneryTone: MenuSceneryTone
+}) {
   const { addItem, isLoading } = useCart()
   const sizes = useMemo(() => resolveSizes(item), [item])
+  const skySrc = skyByScenery[sceneryTone] ?? skyByScenery.classic
+  const mobileSkySrc = mobileSkyByScenery[sceneryTone]
+  const meadowSrc =
+    sceneryTone === 'blossom'
+      ? '/sceneries/blossom-grass-mound.svg'
+      : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
   const [selectedSizeValue, setSelectedSizeValue] = useState<string | null>(
     sizes[0]?.value ?? null,
   )
@@ -152,6 +175,20 @@ function RegularOrderRow({ item }: { item: RegularOrderItem }) {
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
         <div className="regularOrderCardGrid">
           <div className="regularOrderVisual">
+            <DecorativeSceneImage
+              className="absolute inset-0"
+              fit="cover"
+              mobileSrc={mobileSkySrc}
+              sizes="24rem"
+              src={skySrc}
+            />
+            <DecorativeSceneImage
+              className="absolute inset-x-0 bottom-[-0.15rem] z-[1] h-[34%]"
+              fit="cover"
+              sizes="24rem"
+              src={meadowSrc}
+            />
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
             <div className="regularOrderCookieStage">
               <CookieSheepRig
                 bodyFallbackSrc={item.bodyFallbackSrc}
@@ -313,7 +350,11 @@ function RegularOrderRow({ item }: { item: RegularOrderItem }) {
  * The Regular orders tab: every always-available flavor plus the current
  * rotation's flavors, each orderable in any published size and quantity.
  */
-export function RegularOrdersPanel({ items, seasonalLabel }: RegularOrdersPanelProps) {
+export function RegularOrdersPanel({
+  items,
+  sceneryTone,
+  seasonalLabel,
+}: RegularOrdersPanelProps) {
   const alwaysItems = items.filter((item) => item.availability === 'always')
   const seasonalItems = items.filter((item) => item.availability === 'seasonal')
 
@@ -351,7 +392,7 @@ export function RegularOrdersPanel({ items, seasonalLabel }: RegularOrdersPanelP
               <p className="regularGroupDescription">{group.description}</p>
             </div>
             {group.items.map((item) => (
-              <RegularOrderRow item={item} key={item.id} />
+              <RegularOrderRow item={item} key={item.id} sceneryTone={sceneryTone} />
             ))}
           </section>
         ))}

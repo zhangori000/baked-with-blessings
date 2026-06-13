@@ -475,7 +475,6 @@ function CateringMenuRow({
               </PersuasionGardenPanel>
             )}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
-            priceInUSD={product.priceInUSD}
             sceneryTone={sceneryTone}
             selectedFlavor={selectedFlavor}
             selectableFlavors={selectableFlavors}
@@ -621,7 +620,11 @@ export function CateringMenuSection({
               id={`${MENU_TABS_ID_BASE}-panel-regular`}
               role="tabpanel"
             >
-              <RegularOrdersPanel items={regularItems} seasonalLabel={seasonalLabel} />
+              <RegularOrdersPanel
+                items={regularItems}
+                sceneryTone={heroSceneryTone}
+                seasonalLabel={seasonalLabel}
+              />
             </div>
           ) : null}
 
@@ -850,6 +853,41 @@ export function CateringMenuSection({
         .cateringAddToCartButton.bakerySceneButton:focus-visible {
           outline: 3px solid rgba(25, 56, 34, 0.28);
           outline-offset: 3px;
+        }
+
+        /* Fixed dark container scheme (one look for every scenery). */
+        .cateringPanelDark.cateringPersuasionPanel {
+          background: linear-gradient(165deg, #2c2720 0%, #1b1712 100%);
+          border-color: rgba(244, 237, 226, 0.12);
+        }
+
+        .cateringPanelDark .cateringPersuasionHeading,
+        .cateringPanelDark .cateringPitch :is(p, li, h1, h2, h3, h4),
+        .cateringPanelDark .cateringPersuasionBody :is(p, li),
+        .cateringPanelDark .cateringMenuEyebrow {
+          color: #f1e9dc !important;
+        }
+
+        .cateringTraySelectionHint {
+          color: rgba(23, 21, 16, 0.72);
+        }
+
+        .cateringPanelDark .cateringTraySelectionHint {
+          color: rgba(244, 237, 226, 0.82);
+        }
+
+        .cateringTraySelectionHintPulse {
+          animation: cateringTraySummaryPulse 260ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton {
+          background: #2c7548;
+          color: #fffaf0;
+        }
+
+        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton:hover,
+        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          background: #338353;
         }
 
         .cateringPersuasionMeadow {
@@ -1482,6 +1520,7 @@ export function CateringMenuSection({
         }
 
         .cateringFlavorRailInner {
+          align-items: flex-start;
           display: flex;
           gap: 1rem;
           padding-bottom: 0.2rem;

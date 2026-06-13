@@ -51,10 +51,10 @@ function SelectedFlavorButton() {
             '--flower-bob': '0.05rem',
             '--flower-delay': '0.04s',
             '--flower-grow-delay': '260ms',
-            '--flower-scale': '1.9',
+            '--flower-scale': '1.3',
             '--flower-tilt': '-2deg',
-            left: '16.5%',
-            width: '2.75rem',
+            left: '17.5%',
+            width: '1.95rem',
             bottom: '-0.02rem',
           } as React.CSSProperties
         }
@@ -70,10 +70,10 @@ function SelectedFlavorButton() {
             '--flower-bob': '0.05rem',
             '--flower-delay': '0.1s',
             '--flower-grow-delay': '320ms',
-            '--flower-scale': '1.9',
+            '--flower-scale': '1.3',
             '--flower-tilt': '3deg',
-            left: '83.5%',
-            width: '2.75rem',
+            left: '82.5%',
+            width: '1.95rem',
             bottom: '-0.02rem',
           } as React.CSSProperties
         }
@@ -120,42 +120,15 @@ export function TrayFlavorCard({
     <BakeryCard
       as="article"
       className={cn(
-        'cateringFlavorCard flex h-full flex-col overflow-hidden border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]',
+        'cateringFlavorCard flex flex-col overflow-hidden border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]',
         isSelected && 'border-[rgba(34,84,32,0.22)] shadow-[0_16px_30px_rgba(46,76,27,0.12)]',
       )}
       radius="lg"
       spacing="none"
       tone="transparent"
     >
-      <div className="px-4 pt-3.5">
-        <div className="min-w-0 space-y-3">
-          <div className="flex items-start gap-3">
-            <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[0.98rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
-              <span className="block line-clamp-2">{flavor.title}</span>
-            </h4>
-          </div>
-          {flavor.summary ? (
-            <p className="mt-1 line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
-              {flavor.summary}
-            </p>
-          ) : null}
-
-          {isSelected ? (
-            <SelectedFlavorButton />
-          ) : (
-            <BakeryPressable
-              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.14)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
-              onClick={onChoose}
-              type="button"
-            >
-              {actionLabel}
-            </BakeryPressable>
-          )}
-        </div>
-      </div>
-
       <div
-        className="relative mt-2.5 overflow-hidden bg-[#dbeeff]"
+        className="relative overflow-hidden bg-[#dbeeff]"
         style={
           {
             '--cookie-bottom': '1.75rem',
@@ -210,6 +183,33 @@ export function TrayFlavorCard({
             image={flavor.image}
             title={flavor.title}
           />
+        </div>
+      </div>
+
+      <div className="px-4 py-3.5">
+        <div className="min-w-0 space-y-3">
+          <div className="flex items-start gap-3">
+            <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[1.04rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
+              <span className="block line-clamp-2">{flavor.title}</span>
+            </h4>
+          </div>
+          {flavor.summary ? (
+            <p className="line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
+              {flavor.summary}
+            </p>
+          ) : null}
+
+          {isSelected ? (
+            <SelectedFlavorButton />
+          ) : (
+            <BakeryPressable
+              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.14)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
+              onClick={onChoose}
+              type="button"
+            >
+              {actionLabel}
+            </BakeryPressable>
+          )}
         </div>
       </div>
 
@@ -343,7 +343,6 @@ type BatchBuilderPanelProps = {
   selectedFlavor: SelectableFlavor | null
   selectableFlavors: SelectableFlavor[]
   shouldPulseTraySummary: boolean
-  priceInUSD?: number | null
 }
 
 export function BatchBuilderPanel({
@@ -360,7 +359,6 @@ export function BatchBuilderPanel({
   selectedFlavor,
   selectableFlavors,
   shouldPulseTraySummary,
-  priceInUSD,
 }: BatchBuilderPanelProps) {
   const canAddTray = Boolean(selectedFlavor)
   const [areIngredientReceiptsOpen, setAreIngredientReceiptsOpen] = React.useState(false)
@@ -404,38 +402,16 @@ export function BatchBuilderPanel({
     <>
       {renderPersuasionPanel(
       <div className="space-y-4">
-        <BakeryCard
+        <p
           className={cn(
-            'border-[rgba(91,70,37,0.14)] bg-[rgba(255,255,255,0.88)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.05)] transition-[transform,box-shadow,border-color] duration-200',
-            shouldPulseTraySummary && 'cateringTraySummaryPulse',
+            'cateringTraySelectionHint text-[0.96rem] leading-7',
+            shouldPulseTraySummary && 'cateringTraySelectionHintPulse',
           )}
-          radius="md"
-          spacing="none"
-          tone="outline"
         >
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="cateringMenuEyebrow">Cookie tray</p>
-              <p className="mt-1 text-[0.98rem] leading-7 text-[rgba(23,21,16,0.72)]">
-                {selectedFlavor
-                  ? `${selectedFlavor.title} is selected. Pick a different cookie only if you want to switch.`
-                  : 'Tray price is $30. Pick one cookie flavor.'}
-              </p>
-            </div>
-
-            {typeof priceInUSD === 'number' ? (
-              <div className="text-left md:text-right">
-                <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-                  Tray price
-                </p>
-                <Price
-                  amount={priceInUSD}
-                  className="cateringMenuRoundHeading mt-0.5 text-[1.02rem] tracking-[-0.02em] text-[#171510]"
-                />
-              </div>
-            ) : null}
-          </div>
-        </BakeryCard>
+          {selectedFlavor
+            ? `${selectedFlavor.title} is selected — pick another below only if you want to switch.`
+            : 'Pick one cookie flavor for your tray below.'}
+        </p>
 
         <div
           aria-label="Cookie flavor chooser"

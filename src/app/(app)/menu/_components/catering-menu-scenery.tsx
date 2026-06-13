@@ -1624,6 +1624,7 @@ export function PersuasionGardenPanel({
             className={cn(
               'cateringPanelLayer cateringPersuasionPanel relative overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
               `cateringScene-${sceneryTone}`,
+              !isScenery && 'cateringPanelDark',
               !isGalleryFace && panelTransition === 'idle' && 'cateringPanelLayerActive',
               isDetailsDormant && 'cateringPanelFaceDormant',
               isPaintingToGallery && 'cateringPanelLayerBase',
