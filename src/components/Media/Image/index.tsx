@@ -43,6 +43,7 @@ export const Image: React.FC<MediaProps> = (props) => {
   const {
     alt: altFromProps,
     fill,
+    fullResolution,
     height: heightFromProps,
     imgClassName,
     onClick,
@@ -71,7 +72,10 @@ export const Image: React.FC<MediaProps> = (props) => {
       url,
       width: fullWidth,
     } = resource
-    const sizedImage = resolveResourceImage(resource)
+    // fullResolution: hand the original to the Next optimizer (below) so it can
+    // emit a sharp, right-sized image for high-DPR screens. Otherwise use
+    // Payload's largest pre-generated variant (max 1024px wide).
+    const sizedImage = fullResolution ? null : resolveResourceImage(resource)
 
     width = widthFromProps ?? sizedImage?.width ?? fullWidth
     height = heightFromProps ?? sizedImage?.height ?? fullHeight
@@ -82,7 +86,11 @@ export const Image: React.FC<MediaProps> = (props) => {
     )
   }
 
-  const shouldBypassOptimizer = typeof src === 'string' && isPayloadMediaFileURL(src)
+  // Payload's pre-sized variants are served as-is (no Next optimization). For
+  // fullResolution we DO want Next to optimize the original down to the
+  // displayed size, so only bypass the optimizer when not opting in.
+  const shouldBypassOptimizer =
+    typeof src === 'string' && isPayloadMediaFileURL(src) && !fullResolution
 
   // NOTE: this is used by the browser to determine which image to download at different screen sizes
   const sizes = sizeFromProps

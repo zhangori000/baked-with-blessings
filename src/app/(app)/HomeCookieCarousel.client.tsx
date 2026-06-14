@@ -1964,8 +1964,14 @@ export function HomeCookieCarousel({
           height: var(--cookie-size);
           opacity: 1;
           pointer-events: none;
-          transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
-          will-change: transform, opacity;
+          /* A plain 2D translate centers the rig WITHOUT promoting it to its own
+             GPU layer. iOS Safari rasterizes a promoted layer once into a
+             memory-capped texture and upscales that snapshot to the DPR-3 retina
+             panel, which is what made the resting cookie look blurry on iPhone
+             (WebKit #27684) while desktop Safari/Chrome re-rasterize at full
+             resolution. will-change is applied only on the transient jump states
+             below, where fast motion hides any snapshot softness. */
+          transform: translate(-50%, -50%);
           width: var(--cookie-size);
         }
 
@@ -1976,6 +1982,9 @@ export function HomeCookieCarousel({
         .homeCookieRigShell--incoming,
         .homeCookieRigShell--outgoing {
           pointer-events: none;
+          /* Promote only while a cookie is mid-jump; the layer is dropped again
+             once it settles into --active, so the resting cookie stays sharp. */
+          will-change: transform, opacity;
         }
 
         .homeCookieRigShell--preload {
@@ -2052,7 +2061,9 @@ export function HomeCookieCarousel({
           pointer-events: none;
           position: absolute;
           transform-origin: center bottom;
-          will-change: transform;
+          /* No animation targets these wrappers, so will-change here only forced
+             a permanent GPU layer that blurred the rig on iOS. The jump is driven
+             by .homeCookieRigShell--incoming/--outgoing above. */
         }
 
         .homeCookieJumpArc {
@@ -2071,7 +2082,12 @@ export function HomeCookieCarousel({
 
         .homeCookieShowcase .cookieSheepBurstPart {
           opacity: 1;
-          transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+          /* Was translate3d(0,0,0): an identity transform whose only effect was
+             to promote each sheep part (head/tail) to its own capped GPU layer,
+             which is why the head was the blurriest piece on iPhone. Positioning
+             is handled by the wrapper span, so dropping it changes nothing
+             visually on desktop but lets iOS paint the parts at native res. */
+          transform: none;
         }
 
         .homeCookieInfoDock {
