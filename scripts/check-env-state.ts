@@ -91,7 +91,7 @@ const run = async () => {
     })
     console.log(`\nsize variantType '${SIZE_VARIANT_TYPE.name}' exists: ${Boolean(sizeType.docs[0])}`)
 
-    console.log(`\nkey product slugs present:`)
+    console.log(`\nkey product slugs (✓ present): slug  $price  avail  behavior  status  #variants`)
     for (const slug of KEY_SLUGS) {
       let found
       try {
@@ -101,7 +101,13 @@ const run = async () => {
           limit: 1,
           overrideAccess: true,
           pagination: false,
-          select: { priceInUSD: true, slug: true },
+          select: {
+            _status: true,
+            individualAvailability: true,
+            menuBehavior: true,
+            priceInUSD: true,
+            slug: true,
+          },
           where: { slug: { equals: slug } },
         })
       } catch (error) {
@@ -109,8 +115,15 @@ const run = async () => {
         console.log(`  ? ${slug} (query failed: ${message.slice(0, 60)})`)
         continue
       }
-      const doc = found.docs[0]
-      console.log(`  ${doc ? '✓' : '—'} ${slug}${doc ? ` ($${((doc.priceInUSD ?? 0) / 100).toFixed(2)})` : ''}`)
+      const doc = found.docs[0] as Record<string, unknown> | undefined
+      if (!doc) {
+        console.log(`  — ${slug}`)
+        continue
+      }
+      const variantCount = await count('variants', { product: { equals: doc.id } })
+      console.log(
+        `  ✓ ${slug}  $${(((doc.priceInUSD as number) ?? 0) / 100).toFixed(2)}  avail=${doc.individualAvailability ?? 'null'}  behavior=${doc.menuBehavior ?? 'null'}  status=${doc._status ?? 'null'}  variants=${variantCount}`,
+      )
     }
     console.log(`\n=== END ===\n`)
   } finally {

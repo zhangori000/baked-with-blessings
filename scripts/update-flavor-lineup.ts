@@ -77,6 +77,33 @@ const run = async () => {
     await ensureSizeAxis({ payload })
     payload.logger.info('- Ensured size variant axis (large / mini)')
 
+    // Ensure an active rotation exists before any 'currentRotation' placement
+    // below (the product beforeChange hook throws if none is active). Its exact
+    // flavor list is set at the end; no-op when a rotation already exists.
+    const activeRotationCheck = await payload.find({
+      collection: 'flavor-rotations',
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      sort: '-updatedAt',
+      where: { status: { equals: 'active' } },
+    })
+    if (!activeRotationCheck.docs[0]) {
+      await payload.create({
+        collection: 'flavor-rotations',
+        data: {
+          individualFlavors: [],
+          rotationType: 'seasonal',
+          showcaseProducts: [],
+          status: 'active',
+          title: 'Seasonal rotation (set by update:flavor-lineup)',
+        },
+        overrideAccess: true,
+      })
+      payload.logger.info('- Created an empty active rotation (populated below)')
+    }
+
     const resolveProduct = async (spec: FlavorSpec) => {
       const bySlug = await payload.find({
         collection: 'products',
@@ -105,7 +132,7 @@ const run = async () => {
 
     const ensureFlavor = async (
       spec: FlavorSpec,
-      individualAvailability: 'always' | 'rotation',
+      placement: 'always' | 'currentRotation',
     ) => {
       const product = await resolveProduct(spec)
 
@@ -132,23 +159,17 @@ const run = async () => {
           ? product.miniPriceInUSD
           : defaultMiniPriceInUSD(largePrice))
 
-      const needsUpdate =
-        product.individualAvailability !== individualAvailability ||
-        product.priceInUSD !== largePrice ||
-        product.miniPriceInUSD !== miniPrice
-
-      if (!needsUpdate) {
-        payload.logger.info(`- Skipped ${spec.slug}: already up to date`)
-        return product
-      }
-
-      // A plain product update; the products afterChange hook provisions
-      // and prices the size variants, exactly like an admin-panel save.
+      // Write through menuPlacement — the owner-facing field the product hooks
+      // key off — NOT individualAvailability directly. The beforeChange hook
+      // re-derives individualAvailability from menuPlacement, so setting the
+      // stored field directly silently reverts to 'rotation'. Running the
+      // update every time (no skip) also guarantees the afterChange provisions
+      // the Large/Mini variants, even when price/availability already match.
       await payload.update({
         id: product.id,
         collection: 'products',
         data: {
-          individualAvailability,
+          menuPlacement: placement,
           miniPriceInUSD: miniPrice,
           priceInUSD: largePrice,
         },
@@ -157,7 +178,7 @@ const run = async () => {
       })
 
       payload.logger.info(
-        `- Updated ${spec.slug}: ${individualAvailability}, large ${largePrice}, mini ${miniPrice}`,
+        `- Synced ${spec.slug}: ${placement}, large ${largePrice}, mini ${miniPrice}`,
       )
 
       return product
@@ -168,10 +189,10 @@ const run = async () => {
     // instead of aborting the whole sync.
     const ensureFlavorSafely = async (
       spec: FlavorSpec,
-      individualAvailability: 'always' | 'rotation',
+      placement: 'always' | 'currentRotation',
     ) => {
       try {
-        return await ensureFlavor(spec, individualAvailability)
+        return await ensureFlavor(spec, placement)
       } catch (error) {
         payload.logger.error(
           `- Failed ${spec.slug}: ${error instanceof Error ? error.message : String(error)} (skipping, continuing)`,
@@ -193,7 +214,7 @@ const run = async () => {
     const seasonalProducts = []
 
     for (const spec of SEASONAL_ROTATION_FLAVORS) {
-      const product = await ensureFlavorSafely(spec, 'rotation')
+      const product = await ensureFlavorSafely(spec, 'currentRotation')
 
       if (product) {
         seasonalProducts.push(product)
