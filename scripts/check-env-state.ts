@@ -43,16 +43,25 @@ const run = async () => {
   const count = async (
     collection: string,
     where?: import('payload').Where,
-  ) => {
-    const result = await payload.find({
-      collection: collection as Parameters<typeof payload.find>[0]['collection'],
-      depth: 0,
-      limit: 0,
-      overrideAccess: true,
-      pagination: false,
-      ...(where ? { where } : {}),
-    })
-    return result.totalDocs
+  ): Promise<number | string> => {
+    try {
+      const result = await payload.find({
+        collection: collection as Parameters<typeof payload.find>[0]['collection'],
+        depth: 0,
+        limit: 0,
+        overrideAccess: true,
+        pagination: false,
+        ...(where ? { where } : {}),
+      })
+      return result.totalDocs
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      // A missing column means this env hasn't been migrated yet.
+      if (/column .* does not exist/i.test(message)) {
+        return 'ERROR: table is behind migrations (run sync-db for this env)'
+      }
+      return `ERROR: ${message.slice(0, 80)}`
+    }
   }
 
   try {
@@ -84,15 +93,22 @@ const run = async () => {
 
     console.log(`\nkey product slugs present:`)
     for (const slug of KEY_SLUGS) {
-      const found = await payload.find({
-        collection: 'products',
-        depth: 0,
-        limit: 1,
-        overrideAccess: true,
-        pagination: false,
-        select: { priceInUSD: true, slug: true },
-        where: { slug: { equals: slug } },
-      })
+      let found
+      try {
+        found = await payload.find({
+          collection: 'products',
+          depth: 0,
+          limit: 1,
+          overrideAccess: true,
+          pagination: false,
+          select: { priceInUSD: true, slug: true },
+          where: { slug: { equals: slug } },
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.log(`  ? ${slug} (query failed: ${message.slice(0, 60)})`)
+        continue
+      }
       const doc = found.docs[0]
       console.log(`  ${doc ? '✓' : '—'} ${slug}${doc ? ` ($${((doc.priceInUSD ?? 0) / 100).toFixed(2)})` : ''}`)
     }
