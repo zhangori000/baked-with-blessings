@@ -38,6 +38,7 @@ import {
   Handshake,
   Lightbulb,
   LoaderCircle,
+  MapPin,
   Megaphone,
   MessageSquareText,
   PanelsTopLeft,
@@ -155,6 +156,7 @@ const appIconByKey: Record<HeaderAppPageIcon, LucideIcon> = {
   'clipboard-check': ClipboardCheck,
   handshake: Handshake,
   lightbulb: Lightbulb,
+  'map-pin': MapPin,
   'message-square-text': MessageSquareText,
   'sticky-note': StickyNote,
 }

@@ -3,8 +3,9 @@
 import { CMSLink } from '@/components/Link'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { BakeryAction, BakeryCard, SceneSurface } from '@/design-system/bakery'
-import { contactHref, isContactLinkHint } from '@/utilities/routes'
-import { Instagram, Linkedin } from 'lucide-react'
+import { cottageFoodDisclosure, locationTagline } from '@/utilities/businessInfo'
+import { aboutHref, contactHref, isContactLinkHint } from '@/utilities/routes'
+import { Instagram, Linkedin, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
@@ -164,6 +165,11 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                     width={176}
                   />
                 </BakeryCard>
+
+                <p className="mt-4 flex max-w-[30rem] items-start gap-2 text-[0.95rem] leading-6 text-[var(--bakery-footer-fg)]">
+                  <MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 opacity-70" />
+                  <span>{locationTagline}</span>
+                </p>
               </section>
 
               <section className="mt-auto flex max-w-[34rem] flex-col gap-4 md:items-end">
@@ -201,6 +207,17 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                         </li>
                       )
                     })}
+                    <li>
+                      <BakeryAction
+                        as={Link}
+                        className={footerPillClassName}
+                        href={aboutHref}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        About
+                      </BakeryAction>
+                    </li>
                     <li>
                       <BakeryAction
                         as={Link}
@@ -252,6 +269,7 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                 {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights
                 reserved.
               </p>
+              <p className="mt-1 text-[0.82rem] font-medium opacity-80">{cottageFoodDisclosure}</p>
             </BakeryCard>
           </BakeryCard>
         </div>
