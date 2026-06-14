@@ -19,6 +19,10 @@ const textureNoteBySlug: Record<string, string> = {
   'strawberry-cheesecake': 'Berry cheesecake cookie',
   'strawberry-matcha': 'Matcha berry swirl',
   'strawberry-matcha-marble': 'Marbled berry matcha cookie',
+  'red-velvet-cheesecake': 'Red velvet cheesecake cookie',
+  'toasted-and-tasseled': 'S’more graduation cookie',
+  'sticky-mango-rice-krispy-treats': 'Mango mochi krispy cookie',
+  'freshly-baked-dirty-chai-cookie': 'Chai espresso cookie',
 }
 
 const allergyNoteBySlug: Record<string, string> = {
@@ -53,7 +57,7 @@ export const buildPosterData = (spec: CookieSeedSpec) => {
   }
 }
 
-const buildCookieProductData = ({
+export const buildCookieProductData = ({
   category,
   image,
   spec,
