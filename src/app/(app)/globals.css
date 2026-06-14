@@ -584,6 +584,8 @@
     justify-self: start;
     padding: 0.22rem 0.42rem;
     width: max-content;
+    -webkit-backdrop-filter: blur(6px);
+
     backdrop-filter: blur(6px);
   }
 
@@ -2333,6 +2335,8 @@ body:has(.accountSceneryRoute) .siteHeaderBrand.has-logo {
   justify-self: start;
   padding: 0.22rem 0.42rem;
   width: max-content;
+  -webkit-backdrop-filter: blur(6px);
+
   backdrop-filter: blur(6px);
 }
 
@@ -2489,6 +2493,7 @@ body:has(.accountSceneryRoute) .siteHeaderBannerList {
 .accountSceneryBannerChoice:hover,
 .accountSceneryBannerChoice[aria-pressed='true'] {
   border-color: rgba(25, 57, 95, 0.3);
+  background: linear-gradient(90deg, rgba(255, 238, 186, 0.92), rgba(255, 253, 246, 0.94));
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--account-scene-aura, rgba(255, 220, 124, 0.82)) 38%, white 62%),
@@ -2807,6 +2812,8 @@ html[data-menu-scene='fairy-castle'] body:has(.accountSceneryRoute) .siteHeaderB
   box-shadow:
     0 18px 44px rgba(15, 27, 16, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(8px);
+
   backdrop-filter: blur(8px);
 }
 
@@ -2975,6 +2982,8 @@ html[data-menu-scene='fairy-castle'] .accountSceneryBannerTitleCard {
   box-shadow:
     0 18px 38px rgba(23, 21, 16, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+
   backdrop-filter: blur(10px);
 }
 

@@ -1,6 +1,12 @@
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
+import {
+  applyMenuPlacementBeforeChange,
+  menuPlacementAfterRead,
+  syncMenuAutomationAfterChange,
+} from '@/collections/Products/menuAutomation'
+import { MINI_PRICE_RATIO } from '@/features/products/sizeVariants'
 import { slugField } from 'payload'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
@@ -26,6 +32,11 @@ const hiddenProductDetailFields = new Set([
   'variantTypes',
   'variants',
 ])
+
+// Mirrors the ecommerce plugin's default currency setup so custom price
+// fields can reuse its dollar-formatted input and cell components.
+const USD_CURRENCY = { code: 'USD', decimals: 2, label: 'US Dollar', symbol: '$' }
+const CURRENCIES_CONFIG = { defaultCurrency: 'USD', supportedCurrencies: [USD_CURRENCY] }
 
 const productDetailsFields = (defaultFields: Field[]): Field[] =>
   defaultFields.map(transformProductDetailField)
@@ -72,7 +83,8 @@ const transformProductDetailField = (field: Field): Field => {
       admin: {
         ...(nextField.admin ?? {}),
         condition: () => true,
-        description: 'Customer-facing price in USD.',
+        description:
+          'Customer-facing price. For cookie flavors sold individually, this is the Large size price.',
       },
       label: 'Price',
     } as Field
@@ -85,7 +97,14 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
   ...defaultCollection,
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'categories', 'menuBehavior', 'priceInUSD', '_status'],
+    defaultColumns: [
+      'title',
+      'menuPlacement',
+      'priceInUSD',
+      'miniPriceInUSD',
+      'categories',
+      '_status',
+    ],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -321,6 +340,34 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
           fields: [
             ...productDetailsFields(defaultCollection.fields as Field[]),
             {
+              name: 'miniPriceInUSD',
+              label: 'Mini size price',
+              type: 'number',
+              admin: {
+                components: {
+                  Cell: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/client#PriceCell',
+                  },
+                  Field: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/rsc#PriceInput',
+                  },
+                },
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description: `Only used for cookie flavors sold individually. Leave it empty and it fills in at ${Math.round(
+                  MINI_PRICE_RATIO * 100,
+                )}% of the main price when you save. The sizes customers see update automatically.`,
+              },
+              min: 0,
+            },
+            {
               name: 'menuPortionLabel',
               label: 'Menu Quantity Label',
               type: 'text',
@@ -360,13 +407,83 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               },
             },
             {
+              name: 'individualAvailability',
+              type: 'select',
+              admin: {
+                description:
+                  'Stored availability flag. Edit "Where does this flavor live right now?" instead — it sets this automatically.',
+                hidden: true,
+              },
+              defaultValue: 'rotation',
+              options: [
+                {
+                  label: 'Rotation only (default)',
+                  value: 'rotation',
+                },
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
+            },
+            {
+              name: 'menuPlacement',
+              label: 'Where does this flavor live right now?',
+              type: 'select',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description:
+                  'Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.',
+              },
+              defaultValue: 'backlog',
+              hooks: {
+                afterRead: [menuPlacementAfterRead],
+              },
+              options: [
+                {
+                  label: 'Backlog — catering trays only',
+                  value: 'backlog',
+                },
+                {
+                  label: 'In the current rotation',
+                  value: 'currentRotation',
+                },
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
+              virtual: true,
+            },
+            {
+              name: 'flavorSelection',
+              label: 'How do customers pick the flavors?',
+              type: 'select',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
+                description:
+                  'One flavor: the customer picks a single flavor and the whole tray is that flavor. Mix and match: the customer fills the box with any combination of flavors up to the quantity below (good for a build-your-own box).',
+              },
+              defaultValue: 'single',
+              options: [
+                {
+                  label: 'One flavor for the whole tray',
+                  value: 'single',
+                },
+                {
+                  label: 'Mix and match (build-your-own box)',
+                  value: 'mixAndMatch',
+                },
+              ],
+            },
+            {
               name: 'requiredSelectionCount',
               label: 'Tray quantity',
               type: 'number',
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.',
+                  'How many cookies belong in the tray or box. For single-flavor trays this is the quantity of the chosen flavor; for a mix-and-match box it is the box capacity (e.g. 4).',
               },
               min: 1,
               validate: (
@@ -397,7 +514,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'These are the product choices customers see when they expand this tray on /menu. For example, Cookie Tray can list every cookie; a future themed tray can list only the matching subset.',
+                  'The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors that are available right now (always-available + this month’s rotation), so rare and backlog flavors stay hidden until they return. One-flavor trays show every flavor selected here, including rare ones — that’s how customers order an out-of-season favorite.',
               },
               filterOptions: ({ id }) => {
                 if (id) {
@@ -519,4 +636,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
     },
     slugField(),
   ],
+  hooks: {
+    ...defaultCollection?.hooks,
+    afterChange: [...(defaultCollection?.hooks?.afterChange ?? []), syncMenuAutomationAfterChange],
+    beforeChange: [
+      ...(defaultCollection?.hooks?.beforeChange ?? []),
+      applyMenuPlacementBeforeChange,
+    ],
+  },
 })

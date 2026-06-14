@@ -164,6 +164,9 @@
 .cateringSpawnButton {
   align-items: center;
   background:
+    linear-gradient(90deg, rgba(255, 233, 158, 0.92) 0%, rgba(255, 226, 132, 0.94) 100%) no-repeat,
+    rgba(255, 248, 242, 0.84);
+  background:
     linear-gradient(
         90deg,
         color-mix(
@@ -276,6 +279,7 @@
 }
 
 .cateringSceneryChooserBubble {
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(25, 57, 95, 0.14);
@@ -361,6 +365,7 @@
 }
 
 .cateringSceneryChoiceActive {
+  background: linear-gradient(135deg, rgba(255, 238, 190, 0.95) 0%, #ffffff 100%);
   background: linear-gradient(
     135deg,
     color-mix(

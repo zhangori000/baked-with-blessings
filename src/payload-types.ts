@@ -520,9 +520,13 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   /**
-   * Customer-facing price in USD.
+   * Customer-facing price. For cookie flavors sold individually, this is the Large size price.
    */
   priceInUSD?: number | null;
+  /**
+   * Only used for cookie flavors sold individually. Leave it empty and it fills in at 50% of the main price when you save. The sizes customers see update automatically.
+   */
+  miniPriceInUSD?: number | null;
   /**
    * Short quantity label shown on menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".
    */
@@ -532,11 +536,23 @@ export interface Product {
    */
   menuBehavior?: ('simple' | 'batchBuilder') | null;
   /**
-   * How many items belong in the tray. For the current single-flavor trays, this becomes the quantity of the chosen flavor.
+   * Stored availability flag. Edit "Where does this flavor live right now?" instead — it sets this automatically.
+   */
+  individualAvailability?: ('rotation' | 'always') | null;
+  /**
+   * Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.
+   */
+  menuPlacement?: ('backlog' | 'currentRotation' | 'always') | null;
+  /**
+   * One flavor: the customer picks a single flavor and the whole tray is that flavor. Mix and match: the customer fills the box with any combination of flavors up to the quantity below (good for a build-your-own box).
+   */
+  flavorSelection?: ('single' | 'mixAndMatch') | null;
+  /**
+   * How many cookies belong in the tray or box. For single-flavor trays this is the quantity of the chosen flavor; for a mix-and-match box it is the box capacity (e.g. 4).
    */
   requiredSelectionCount?: number | null;
   /**
-   * These are the product choices customers see when they expand this tray on /menu. For example, Cookie Tray can list every cookie; a future themed tray can list only the matching subset.
+   * The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors that are available right now (always-available + this month’s rotation), so rare and backlog flavors stay hidden until they return. One-flavor trays show every flavor selected here, including rare ones — that’s how customers order an out-of-season favorite.
    */
   selectableProducts?: (number | Product)[] | null;
   /**
@@ -3182,8 +3198,12 @@ export interface ProductsSelect<T extends boolean = true> {
   variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
+  miniPriceInUSD?: T;
   menuPortionLabel?: T;
   menuBehavior?: T;
+  individualAvailability?: T;
+  menuPlacement?: T;
+  flavorSelection?: T;
   requiredSelectionCount?: T;
   selectableProducts?: T;
   relatedProducts?: T;

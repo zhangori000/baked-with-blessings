@@ -16,12 +16,17 @@ export type CookiePosterMeta = {
 }
 
 export type CookiePosterAsset = CookiePosterMeta & {
+  /** Variant added when a surface adds to cart without a size picker (the carousel). */
+  addToCartSizeLabel?: null | string
+  addToCartVariantId?: null | number
   allergens: string[]
   amount: string
   canBuyCatering?: boolean
   canBuyIndividually?: boolean
   href: string
   image: Media | null
+  /** Mirrors products.individualAvailability: 'always' = standing menu, 'rotation' = gated by the active rotation. */
+  individualAvailability?: Product['individualAvailability'] | null
   infoButtonLabel: string
   isMonthlyFlavor?: boolean
   lockedDescription?: string
@@ -274,13 +279,14 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
     canBuyCatering: true,
     canBuyIndividually: true,
     href: `/cookies/${meta.slug}`,
+    individualAvailability: product.individualAvailability ?? null,
     image: normalizeImage(product),
     infoButtonLabel: defaultInfoButtonLabel,
     isMonthlyFlavor: true,
     lockedDescription:
       'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
     lockedLabel: 'Catering only this month',
-    menuHref: '/menu',
+    menuHref: '/menu?section=catering',
     menuLinkLabel: 'View menu',
     monthlyFlavorLabel: "This month's flavor",
     productId: typeof product.id === 'number' ? product.id : undefined,

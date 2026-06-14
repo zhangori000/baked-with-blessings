@@ -1,10 +1,12 @@
 'use client'
 
 import { Price } from '@/components/Price'
+import { ProgressGarden } from '@/components/ProgressGarden'
 import { FlowerSprite } from '@/components/flowers/FlowerSprite'
 import { BakeryCard, BakeryPressable, SceneButton } from '@/design-system/bakery'
 import type { Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
+import { Minus, Plus } from 'lucide-react'
 import React from 'react'
 
 import { CookieInfoNote } from './CookieInfoNote'
@@ -51,10 +53,10 @@ function SelectedFlavorButton() {
             '--flower-bob': '0.05rem',
             '--flower-delay': '0.04s',
             '--flower-grow-delay': '260ms',
-            '--flower-scale': '1.9',
+            '--flower-scale': '1.3',
             '--flower-tilt': '-2deg',
-            left: '16.5%',
-            width: '2.75rem',
+            left: '17.5%',
+            width: '1.95rem',
             bottom: '-0.02rem',
           } as React.CSSProperties
         }
@@ -70,10 +72,10 @@ function SelectedFlavorButton() {
             '--flower-bob': '0.05rem',
             '--flower-delay': '0.1s',
             '--flower-grow-delay': '320ms',
-            '--flower-scale': '1.9',
+            '--flower-scale': '1.3',
             '--flower-tilt': '3deg',
-            left: '83.5%',
-            width: '2.75rem',
+            left: '82.5%',
+            width: '1.95rem',
             bottom: '-0.02rem',
           } as React.CSSProperties
         }
@@ -86,6 +88,8 @@ function SelectedFlavorButton() {
 
 type TrayFlavorCardProps = {
   actionLabel: string
+  /** When set, replaces the single-select Choose/Selected button (e.g. a box stepper). */
+  actionSlot?: React.ReactNode
   clouds: readonly StaticSceneCloud[]
   flavor: SelectableFlavor
   isIngredientNoteOpen: boolean
@@ -101,6 +105,7 @@ type TrayFlavorCardProps = {
 
 export function TrayFlavorCard({
   actionLabel,
+  actionSlot,
   clouds,
   flavor,
   isIngredientNoteOpen,
@@ -120,42 +125,15 @@ export function TrayFlavorCard({
     <BakeryCard
       as="article"
       className={cn(
-        'cateringFlavorCard flex h-full flex-col overflow-hidden border border-[rgba(91,70,37,0.14)] bg-[rgba(255,250,242,0.98)]',
-        isSelected && 'border-[rgba(34,84,32,0.22)] shadow-[0_16px_30px_rgba(46,76,27,0.12)]',
+        'cateringFlavorCard flex h-full flex-col',
+        isSelected && 'cateringFlavorCardSelected',
       )}
       radius="lg"
       spacing="none"
       tone="transparent"
     >
-      <div className="px-4 pt-3.5">
-        <div className="min-w-0 space-y-3">
-          <div className="flex items-start gap-3">
-            <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[0.98rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
-              <span className="block line-clamp-2">{flavor.title}</span>
-            </h4>
-          </div>
-          {flavor.summary ? (
-            <p className="mt-1 line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
-              {flavor.summary}
-            </p>
-          ) : null}
-
-          {isSelected ? (
-            <SelectedFlavorButton />
-          ) : (
-            <BakeryPressable
-              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.14)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
-              onClick={onChoose}
-              type="button"
-            >
-              {actionLabel}
-            </BakeryPressable>
-          )}
-        </div>
-      </div>
-
       <div
-        className="relative mt-2.5 overflow-hidden bg-[#dbeeff]"
+        className="cateringFlavorScene relative overflow-hidden rounded-[0.85rem] bg-[#dbeeff]"
         style={
           {
             '--cookie-bottom': '1.75rem',
@@ -189,6 +167,12 @@ export function TrayFlavorCard({
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
         {sceneryTone === 'moonlit' ? <TrayFlavorMoonlitLinework /> : null}
 
+        {flavor.isRare ? (
+          <span className="cateringMenuRoundHeading pointer-events-none absolute left-2.5 top-2.5 z-[4] inline-flex items-center gap-1 rounded-full border border-[rgba(125,85,18,0.32)] bg-[linear-gradient(180deg,#ffe7a6_0%,#f6c95c_100%)] px-2.5 py-1 text-[0.66rem] uppercase tracking-[0.08em] text-[#5a3d0c] shadow-[0_6px_16px_rgba(90,61,12,0.28)]">
+            ✨ Rare flavor
+          </span>
+        ) : null}
+
         {hasInfo ? (
           <div className="absolute bottom-2.5 right-2.5 z-[4]">
             <BakeryPressable
@@ -213,23 +197,51 @@ export function TrayFlavorCard({
         </div>
       </div>
 
+      <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3">
+        <div className="min-w-0 space-y-3">
+          <div className="flex items-start gap-3">
+            <h4 className="cateringMenuRoundHeading min-w-0 flex-1 text-[1.04rem] leading-[1.04] tracking-[-0.03em] text-[#171510]">
+              <span className="block line-clamp-2">{flavor.title}</span>
+            </h4>
+          </div>
+          {flavor.summary ? (
+            <p className="line-clamp-2 max-w-none text-[0.77rem] leading-[1.45] tracking-[-0.012em] text-[rgba(23,21,16,0.58)]">
+              {flavor.summary}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="mt-auto pt-3">
+          {actionSlot ? (
+            actionSlot
+          ) : isSelected ? (
+            <SelectedFlavorButton />
+          ) : (
+            <BakeryPressable
+              className="inline-flex min-h-[2.5rem] w-full items-center justify-center rounded-full border border-[rgba(91,70,37,0.16)] bg-white px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#171510] transition duration-200 hover:border-[rgba(31,43,20,0.24)] hover:bg-[rgba(245,250,239,0.92)]"
+              onClick={onChoose}
+              type="button"
+            >
+              {actionLabel}
+            </BakeryPressable>
+          )}
+        </div>
+      </div>
+
       {hasInfo ? (
         <div
           aria-hidden={!isIngredientNoteOpen}
-          className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ${
+          className={`overflow-hidden transition-[max-height,opacity,transform] duration-300 ${
             isIngredientNoteOpen
-              ? 'max-h-[26rem] translate-y-0 px-3 pb-3 opacity-100'
-              : 'max-h-0 -translate-y-2 px-3 pb-0 opacity-0'
+              ? 'max-h-[26rem] translate-y-0 opacity-100'
+              : 'max-h-0 -translate-y-2 opacity-0'
           }`}
         >
-          <BakeryCard
+          <div
             aria-label={`${flavor.title} info`}
-            className="relative rounded-b-[1.15rem] rounded-t-[0.72rem] border border-t-0 border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
+            className="relative mt-2 rounded-[1.1rem] border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_10px_22px_rgba(23,21,16,0.1)]"
             id={receiptId}
-            radius="none"
             role="dialog"
-            spacing="none"
-            tone="transparent"
           >
             <BakeryPressable
               aria-label={`Close info for ${flavor.title}`}
@@ -252,12 +264,7 @@ export function TrayFlavorCard({
                 className="cookieInfoNote--menu"
               />
             ) : null}
-
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 -bottom-[1px] h-4 bg-[linear-gradient(-45deg,transparent_33%,#f8efd9_33%,#f8efd9_66%,transparent_66%),linear-gradient(45deg,transparent_33%,#f8efd9_33%,#f8efd9_66%,transparent_66%)] bg-[length:14px_16px] bg-[position:left_bottom] bg-repeat-x"
-            />
-          </BakeryCard>
+          </div>
         </div>
       ) : null}
     </BakeryCard>
@@ -281,7 +288,8 @@ function TrayFlavorMoonlitLinework() {
 type SimpleItemPanelProps = {
   isCartPending: boolean
   onAddToCart: () => void
-  persuasionPanel: React.ReactNode
+  /** Wraps the ordering UI inside the scenery container. */
+  renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
   priceInUSD?: number | null
   product: Partial<Product>
 }
@@ -289,49 +297,49 @@ type SimpleItemPanelProps = {
 export function SimpleItemPanel({
   isCartPending,
   onAddToCart,
-  persuasionPanel,
+  renderPersuasionPanel,
   priceInUSD,
   product,
 }: SimpleItemPanelProps) {
   return (
-    <div className="space-y-5">
-      {persuasionPanel}
+    <>
+      {renderPersuasionPanel(
+        <BakeryCard
+          className="space-y-4 border-[rgba(91,70,37,0.16)] bg-[rgba(255,248,242,0.94)] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.08)]"
+          radius="lg"
+          spacing="none"
+          tone="outline"
+        >
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
+                Order summary
+              </p>
+              <p className="mt-1 text-[1rem] leading-7 text-[rgba(23,21,16,0.74)]">
+                {product.menuPortionLabel ?? 'Menu item'}
+              </p>
+            </div>
 
-      <BakeryCard
-        className="space-y-4 border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)]"
-        radius="lg"
-        spacing="none"
-        tone="outline"
-      >
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-              Order summary
-            </p>
-            <p className="mt-1 text-[1rem] leading-7 text-[rgba(23,21,16,0.74)]">
-              {product.menuPortionLabel ?? 'Menu item'}
-            </p>
+            {typeof priceInUSD === 'number' ? (
+              <Price
+                amount={priceInUSD}
+                className="cateringMenuRoundHeading text-[1.28rem] tracking-[-0.03em] text-[#171510]"
+              />
+            ) : null}
           </div>
 
-          {typeof priceInUSD === 'number' ? (
-            <Price
-              amount={priceInUSD}
-              className="cateringMenuRoundHeading text-[1.28rem] tracking-[-0.03em] text-[#171510]"
-            />
-          ) : null}
-        </div>
-
-        <SceneButton
-          className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
-          loading={isCartPending}
-          loadingLabel={`Adding ${product.title ?? 'item'} to cart`}
-          onClick={onAddToCart}
-          variant="primary"
-        >
-          Add to cart
-        </SceneButton>
-      </BakeryCard>
-    </div>
+          <SceneButton
+            className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+            loading={isCartPending}
+            loadingLabel={`Adding ${product.title ?? 'item'} to cart`}
+            onClick={onAddToCart}
+            variant="primary"
+          >
+            Add to cart
+          </SceneButton>
+        </BakeryCard>,
+      )}
+    </>
   )
 }
 
@@ -343,13 +351,13 @@ type BatchBuilderPanelProps = {
   isTrayPending: boolean
   onAddFlavor: (flavorID: number) => void
   onAddToCart: () => void
-  persuasionPanel: React.ReactNode
+  /** Wraps the ordering UI inside the scenery container. */
+  renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
   renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
   sceneryTone: MenuSceneryTone
   selectedFlavor: SelectableFlavor | null
   selectableFlavors: SelectableFlavor[]
   shouldPulseTraySummary: boolean
-  priceInUSD?: number | null
 }
 
 export function BatchBuilderPanel({
@@ -360,13 +368,12 @@ export function BatchBuilderPanel({
   isTrayPending,
   onAddFlavor,
   onAddToCart,
-  persuasionPanel,
+  renderPersuasionPanel,
   renderSceneImage,
   sceneryTone,
   selectedFlavor,
   selectableFlavors,
   shouldPulseTraySummary,
-  priceInUSD,
 }: BatchBuilderPanelProps) {
   const canAddTray = Boolean(selectedFlavor)
   const [areIngredientReceiptsOpen, setAreIngredientReceiptsOpen] = React.useState(false)
@@ -407,42 +414,19 @@ export function BatchBuilderPanel({
   }, [])
 
   return (
-    <div className="space-y-5">
-      {persuasionPanel}
-
+    <>
+      {renderPersuasionPanel(
       <div className="space-y-4">
-        <BakeryCard
+        <p
           className={cn(
-            'border-[rgba(91,70,37,0.1)] bg-[rgba(255,255,255,0.7)] px-4 py-3 shadow-[0_8px_16px_rgba(23,21,16,0.03)] transition-[transform,box-shadow,border-color] duration-200',
-            shouldPulseTraySummary && 'cateringTraySummaryPulse',
+            'cateringTraySelectionHint text-[0.96rem] leading-7',
+            shouldPulseTraySummary && 'cateringTraySelectionHintPulse',
           )}
-          radius="md"
-          spacing="none"
-          tone="outline"
         >
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="cateringMenuEyebrow">Cookie tray</p>
-              <p className="mt-1 text-[0.98rem] leading-7 text-[rgba(23,21,16,0.72)]">
-                {selectedFlavor
-                  ? `${selectedFlavor.title} is selected. Pick a different cookie only if you want to switch.`
-                  : 'Tray price is $30. Pick one cookie flavor.'}
-              </p>
-            </div>
-
-            {typeof priceInUSD === 'number' ? (
-              <div className="text-left md:text-right">
-                <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-                  Tray price
-                </p>
-                <Price
-                  amount={priceInUSD}
-                  className="cateringMenuRoundHeading mt-0.5 text-[1.02rem] tracking-[-0.02em] text-[#171510]"
-                />
-              </div>
-            ) : null}
-          </div>
-        </BakeryCard>
+          {selectedFlavor
+            ? `${selectedFlavor.title} is selected — pick another below only if you want to switch.`
+            : 'Pick one cookie flavor for your tray below.'}
+        </p>
 
         <div
           aria-label="Cookie flavor chooser"
@@ -558,7 +542,184 @@ export function BatchBuilderPanel({
             ? `Add ${selectedFlavor.title} Tray to cart`
             : 'Choose a tray flavor first'}
         </SceneButton>
-      </div>
+      </div>,
+      )}
+    </>
+  )
+}
+
+function BoxFlavorStepper({
+  canIncrement,
+  count,
+  flavorTitle,
+  onDecrement,
+  onIncrement,
+}: {
+  canIncrement: boolean
+  count: number
+  flavorTitle: string
+  onDecrement: () => void
+  onIncrement: () => void
+}) {
+  const stepButton =
+    'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[rgba(28,46,16,0.16)] bg-[rgba(28,46,16,0.06)] text-[#1c2e10] transition duration-150 hover:bg-[#1c2e10] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(25,56,34,0.6)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[rgba(28,46,16,0.06)] disabled:hover:text-[#1c2e10]'
+
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-full border border-[rgba(91,70,37,0.16)] bg-white px-1.5 py-1">
+      <button
+        aria-label={`Remove one ${flavorTitle}`}
+        className={stepButton}
+        disabled={count === 0}
+        onClick={onDecrement}
+        type="button"
+      >
+        <Minus aria-hidden="true" size={16} strokeWidth={2.6} />
+      </button>
+      <span
+        aria-live="polite"
+        className="cateringMenuRoundHeading min-w-[2.25rem] text-center text-[1rem] text-[#171510]"
+      >
+        {count}
+      </span>
+      <button
+        aria-label={`Add one ${flavorTitle}`}
+        className={stepButton}
+        disabled={!canIncrement}
+        onClick={onIncrement}
+        type="button"
+      >
+        <Plus aria-hidden="true" size={16} strokeWidth={2.6} />
+      </button>
     </div>
+  )
+}
+
+type MiniBoxBuilderPanelProps = {
+  boxCounts: Record<number, number>
+  boxTotal: number
+  capacity: number
+  flavorCardCloudsForScenery: readonly StaticSceneCloud[]
+  flavorCardMeadowForScenery: string
+  flavorCardMobileSkyForScenery?: string
+  flavorCardSkyForScenery: string
+  isBoxPending: boolean
+  onAddBox: () => void
+  onClearBox: () => void
+  onDecrement: (flavorID: number) => void
+  onIncrement: (flavorID: number) => void
+  priceInUSD?: number | null
+  renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
+  renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
+  sceneryTone: MenuSceneryTone
+  selectableFlavors: SelectableFlavor[]
+}
+
+export function MiniBoxBuilderPanel({
+  boxCounts,
+  boxTotal,
+  capacity,
+  flavorCardCloudsForScenery,
+  flavorCardMeadowForScenery,
+  flavorCardMobileSkyForScenery,
+  flavorCardSkyForScenery,
+  isBoxPending,
+  onAddBox,
+  onClearBox,
+  onDecrement,
+  onIncrement,
+  priceInUSD,
+  renderPersuasionPanel,
+  renderSceneImage,
+  sceneryTone,
+  selectableFlavors,
+}: MiniBoxBuilderPanelProps) {
+  const [areIngredientReceiptsOpen, setAreIngredientReceiptsOpen] = React.useState(false)
+  const isFull = boxTotal >= capacity
+  const remaining = Math.max(0, capacity - boxTotal)
+
+  return (
+    <>
+      {renderPersuasionPanel(
+        <div className="space-y-4">
+          <ProgressGarden
+            aside={
+              typeof priceInUSD === 'number' ? (
+                <Price
+                  amount={priceInUSD}
+                  className="cateringMenuRoundHeading text-[1.02rem] tracking-[-0.02em] text-[#171510]"
+                />
+              ) : undefined
+            }
+            currentCount={boxTotal}
+            label="Build your box"
+            title={`${boxTotal} of ${capacity} cookies`}
+            totalCount={capacity}
+          />
+
+          <div aria-label="Mini box flavor picker" className="cateringFlavorRail" role="region">
+            <div className="cateringFlavorRailInner">
+              {selectableFlavors.map((flavor) => {
+                const count = boxCounts[flavor.id] ?? 0
+
+                return (
+                  <div className="cateringFlavorRailItem" key={flavor.id}>
+                    <TrayFlavorCard
+                      actionLabel={`Add ${flavor.title}`}
+                      actionSlot={
+                        <BoxFlavorStepper
+                          canIncrement={!isFull}
+                          count={count}
+                          flavorTitle={flavor.title}
+                          onDecrement={() => onDecrement(flavor.id)}
+                          onIncrement={() => onIncrement(flavor.id)}
+                        />
+                      }
+                      clouds={flavorCardCloudsForScenery}
+                      flavor={flavor}
+                      isIngredientNoteOpen={areIngredientReceiptsOpen}
+                      isSelected={count > 0}
+                      meadowSrc={flavorCardMeadowForScenery}
+                      mobileSkySrc={flavorCardMobileSkyForScenery}
+                      onChoose={() => onIncrement(flavor.id)}
+                      onToggleIngredientNotes={() =>
+                        setAreIngredientReceiptsOpen((current) => !current)
+                      }
+                      renderSceneImage={renderSceneImage}
+                      sceneryTone={sceneryTone}
+                      skySrc={flavorCardSkyForScenery}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <SceneButton
+              className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] flex-1 text-[0.98rem] tracking-[-0.02em]"
+              disabled={!isFull}
+              loading={isBoxPending}
+              loadingLabel="Adding box to cart"
+              onClick={onAddBox}
+              variant="primary"
+            >
+              {isFull
+                ? 'Add box to cart'
+                : `Pick ${remaining} more cookie${remaining === 1 ? '' : 's'}`}
+            </SceneButton>
+
+            {boxTotal > 0 ? (
+              <BakeryPressable
+                className="inline-flex min-h-[3rem] items-center justify-center rounded-full border border-[rgba(244,237,226,0.28)] bg-[rgba(244,237,226,0.08)] px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#f4ede2] transition duration-200 hover:bg-[rgba(244,237,226,0.16)]"
+                onClick={onClearBox}
+                type="button"
+              >
+                Clear
+              </BakeryPressable>
+            ) : null}
+          </div>
+        </div>,
+      )}
+    </>
   )
 }

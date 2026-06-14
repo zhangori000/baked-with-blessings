@@ -189,6 +189,53 @@ describe('createManualOrderFromCart (pay-at-pickup and Venmo order engine)', () 
     expect(freeResult).toMatchObject({ status: 400, type: 'error' })
   })
 
+  it('keeps the size variant on order items so receipts stay unambiguous', async () => {
+    const create = vi.fn().mockResolvedValue({ accessToken: 'order-token', id: 23 })
+    const payload = {
+      create,
+      find: vi.fn().mockResolvedValue({ docs: [] }),
+      findByID: vi.fn().mockResolvedValue(
+        makeActiveCart({
+          items: [
+            {
+              product: 5,
+              quantity: 2,
+              variant: 41,
+            },
+            {
+              product: { id: 6 } as never,
+              quantity: 1,
+              variant: { id: 52 } as never,
+            },
+          ],
+          subtotal: 1825,
+        }),
+      ),
+      logger: makeLogger(),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await createManualOrderFromCart({
+      cartID: 9,
+      customerID: 3,
+      method: 'in_person',
+      payload: payload as never,
+      reference: 'pickup-cart-9-sized',
+    })
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          amount: 1825,
+          items: [
+            expect.objectContaining({ product: 5, quantity: 2, variant: 41 }),
+            expect.objectContaining({ product: 6, quantity: 1, variant: 52 }),
+          ],
+        }),
+      }),
+    )
+  })
+
   it('passes Venmo report extras through to the order', async () => {
     const create = vi.fn().mockResolvedValue({ accessToken: 'order-token', id: 22 })
     const payload = {

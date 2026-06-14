@@ -59,6 +59,7 @@
 }
 
 .eyebrowDot {
+  background: var(--signup-accent);
   background: color-mix(in srgb, var(--signup-accent) 68%, white);
   border-radius: 999px;
   display: inline-block;
@@ -68,6 +69,7 @@
 
 .pill {
   background: var(--signup-pill-bg);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border: 1px solid color-mix(in srgb, var(--signup-accent) 28%, transparent);
   border-radius: 999px;
   color: var(--signup-pill-text);
@@ -195,6 +197,7 @@
     var(--signup-verification-bg-top) 0%,
     var(--signup-verification-bg-bottom) 100%
   );
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border: 1px solid color-mix(in srgb, var(--signup-accent) 28%, transparent);
   border-radius: 1.25rem;
   padding: 1rem;

@@ -146,4 +146,52 @@ export const cookieCatalog: CookieSeedSpec[] = [
     summary: 'A marbled cookie with strawberry brightness and matcha depth baked together.',
     title: 'Strawberry Matcha Marble',
   },
+  // Signature flavors the owner created in the admin panel (captured here so
+  // every environment can reproduce them). Priced at their real $7.00 rather
+  // than the $5 seed default; sourceFilename matches the live media filename so
+  // the importer is a no-op on environments that already have them.
+  {
+    mediaAlt: 'Red Velvet Cheesecake cookie',
+    metaDescription:
+      'Red velvet cookie with a cheesecake-rich center — soft, a little tangy, and not too sweet.',
+    priceInUSD: 700,
+    slug: 'red-velvet-cheesecake',
+    sourceFilename: 'red-velvet-cheesecake.png',
+    summary:
+      'Red velvet cookie with a cheesecake-rich center — soft, a little tangy, and not too sweet.',
+    title: 'Red Velvet Cheesecake',
+  },
+  {
+    mediaAlt: 'Toasted and Tasseled graduation cookie',
+    metaDescription:
+      'A cookie with a graduation hat created out of chocolate. Grad Hat: chocolate covered graham cracker and marshmallow and fruit roll up.',
+    priceInUSD: 700,
+    slug: 'toasted-and-tasseled',
+    sourceFilename: 'toasted-and-tasseled.png',
+    summary:
+      'A cookie with a graduation hat created out of chocolate. Grad Hat: chocolate covered graham cracker and marshmallow and fruit roll up.',
+    title: 'Toasted and Tasseled',
+  },
+  {
+    mediaAlt: 'Sticky Mango Rice Krispy Treats cookie',
+    metaDescription:
+      'Sticky Mango Rice Krispy Treats with homemade mochi pieces, dried mango, rice krispy treats, marshmallow.',
+    priceInUSD: 700,
+    slug: 'sticky-mango-rice-krispy-treats',
+    sourceFilename: 'sticky-mango-rice-krispy-treats.png',
+    summary:
+      'Sticky Mango Rice Krispy Treats with homemade mochi pieces, dried mango, rice krispy treats, marshmallow.',
+    title: 'Sticky Mango Rice Krispy Treats',
+  },
+  {
+    mediaAlt: 'Dirty Chai cookie',
+    metaDescription:
+      'Freshly baked Dirty Chai with a brown butter chai-infused base, espresso white chocolate, caramelized white chocolate, and flaky sea salt. The sophisticated way to handle your morning caffeine fix.',
+    priceInUSD: 700,
+    slug: 'freshly-baked-dirty-chai-cookie',
+    sourceFilename: 'dirty-chai.png',
+    summary:
+      'Freshly baked Dirty Chai with a brown butter chai-infused base, espresso white chocolate, caramelized white chocolate, and flaky sea salt. The sophisticated way to handle your morning caffeine fix.',
+    title: 'Dirty Chai Cookie',
+  },
 ]

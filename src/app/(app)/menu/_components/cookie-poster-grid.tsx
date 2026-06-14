@@ -867,6 +867,9 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
         .cookiePosterSceneButton {
           align-items: center;
           background:
+            linear-gradient(90deg, rgba(255, 227, 132, 0.9) 0%, rgba(255, 221, 105, 0.92) 100%),
+            rgba(255, 248, 242, 0.9);
+          background:
             linear-gradient(
               90deg,
               color-mix(in srgb, var(--poster-scene-charge, rgba(255, 215, 79, 0.85)) 70%, white 30%) 0%,
@@ -1010,6 +1013,7 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
 
         .cookiePosterInfoButton {
           align-items: center;
+          -webkit-backdrop-filter: blur(10px);
           backdrop-filter: blur(10px);
           background: rgba(246, 251, 255, 0.2);
           border: 1px solid rgba(235, 246, 255, 0.34);

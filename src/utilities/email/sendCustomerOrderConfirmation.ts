@@ -1,7 +1,8 @@
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 
-import type { Order, Product } from '@/payload-types'
+import type { Order, Product, Variant } from '@/payload-types'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
+import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
 import { getServerSideURL } from '@/utilities/getURL'
 
 export const SKIP_CUSTOMER_ORDER_CONFIRMATION = 'skipCustomerOrderConfirmation'
@@ -37,10 +38,13 @@ const getOrderItemLines = (order: Order): string[] => {
   for (const item of order.items || []) {
     const product =
       item.product && typeof item.product === 'object' ? (item.product as Product) : null
+    const variant =
+      item.variant && typeof item.variant === 'object' ? (item.variant as Variant) : null
     const title = product?.title || 'Bakery item'
+    const variantLabel = getVariantDisplayLabel(product?.title, variant)
     const quantity = typeof item.quantity === 'number' ? item.quantity : 1
 
-    lines.push(`${title} × ${quantity}`)
+    lines.push(`${variantLabel ? `${title} (${variantLabel})` : title} × ${quantity}`)
 
     for (const selection of item.batchSelections || []) {
       const selectionProduct =

@@ -12,8 +12,13 @@ import {
   getCookieAllergens,
   type CookiePosterAsset,
 } from '@/features/products/cookieDisplayData'
+import {
+  pickDefaultSizeVariant,
+  summarizeSizeVariants,
+} from '@/features/products/sizeVariants'
+import type { Variant } from '@/payload-types'
 import { measureServerStep } from '@/utilities/devTiming'
-import { menuHref } from '@/utilities/routes'
+import { cateringMenuHref } from '@/utilities/routes'
 
 type ProductRelationship = DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null | undefined
 
@@ -31,6 +36,7 @@ type ActiveFlavorRotation = {
 const productSelect = {
   gallery: true,
   id: true,
+  individualAvailability: true,
   meta: true,
   poster: true,
   priceInUSD: true,
@@ -87,7 +93,7 @@ const queryActiveFlavorRotation = async (payload: Payload) => {
   return (rotationResult.docs[0] as ActiveFlavorRotation | undefined) ?? null
 }
 
-const applyRotationAvailability = ({
+export const applyRotationAvailability = ({
   activeRotation,
   posters,
 }: {
@@ -111,23 +117,29 @@ const applyRotationAvailability = ({
     .map((poster) => {
       const productID = typeof poster.productId === 'number' ? String(poster.productId) : null
       const isMonthlyFlavor = Boolean(productID && monthlyFlavorIDs.has(productID))
+      // Standing-menu flavors stay individually orderable even when the
+      // active rotation does not feature them.
+      const isAlwaysAvailable = poster.individualAvailability === 'always'
+      const canBuyIndividually = isMonthlyFlavor || isAlwaysAvailable
 
       return {
         ...poster,
-        amount: isMonthlyFlavor ? poster.amount : 'Catering only',
+        amount: canBuyIndividually ? poster.amount : 'Catering only',
         canBuyCatering: true,
-        canBuyIndividually: isMonthlyFlavor,
+        canBuyIndividually,
         isMonthlyFlavor,
         lockedDescription:
           activeRotation.lockedDescription?.trim() ||
           'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
         lockedLabel: activeRotation.lockedLabel?.trim() || 'Catering only this month',
-        menuHref,
+        menuHref: cateringMenuHref,
         menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View menu',
         monthlyFlavorLabel:
-          activeRotation.monthlyFlavorLabel?.trim() ||
-          activeRotation.displayLabel?.trim() ||
-          "This month's flavor",
+          !isMonthlyFlavor && isAlwaysAvailable
+            ? 'Always available'
+            : activeRotation.monthlyFlavorLabel?.trim() ||
+              activeRotation.displayLabel?.trim() ||
+              "This month's flavor",
       }
     })
     .sort((left, right) => {
@@ -154,6 +166,113 @@ const applyRotationAvailability = ({
 
       return 0
     })
+}
+
+/**
+ * Published size variants for a set of products, keyed by product ID.
+ * Shared by the rotation surfaces (default size for one-tap add to cart)
+ * and reusable by any surface that needs a size picker.
+ */
+export const queryPublishedSizeVariantsByProduct = async ({
+  payload,
+  productIDs,
+}: {
+  payload: Payload
+  productIDs: DefaultDocumentIDType[]
+}) => {
+  const variantsByProduct = new Map<string, Variant[]>()
+
+  if (productIDs.length === 0) {
+    return variantsByProduct
+  }
+
+  const variantsResult = await measureServerStep('payload.find variants: size variants', () =>
+    payload.find({
+      collection: 'variants' as CollectionSlug,
+      depth: 1,
+      limit: 0,
+      overrideAccess: false,
+      pagination: false,
+      where: {
+        and: [
+          {
+            product: {
+              in: productIDs,
+            },
+          },
+          {
+            _status: {
+              equals: 'published',
+            },
+          },
+        ],
+      },
+    }),
+  )
+
+  for (const variant of variantsResult.docs as Variant[]) {
+    const productID = getRelationshipID(variant.product as ProductRelationship)
+
+    if (productID == null) {
+      continue
+    }
+
+    const key = String(productID)
+    const existing = variantsByProduct.get(key)
+
+    if (existing) {
+      existing.push(variant)
+    } else {
+      variantsByProduct.set(key, [variant])
+    }
+  }
+
+  return variantsByProduct
+}
+
+/**
+ * Gives each buyable poster the variant that one-tap surfaces should add
+ * to the cart, so carousel orders carry an explicit size instead of an
+ * ambiguous bare product line.
+ */
+const attachDefaultSizeVariants = async ({
+  payload,
+  posters,
+}: {
+  payload: Payload
+  posters: CookiePosterAsset[]
+}) => {
+  const productIDs = posters
+    .map((poster) => poster.productId)
+    .filter((productID): productID is number => typeof productID === 'number')
+
+  if (productIDs.length === 0) {
+    return posters
+  }
+
+  const variantsByProduct = await queryPublishedSizeVariantsByProduct({ payload, productIDs })
+
+  if (variantsByProduct.size === 0) {
+    return posters
+  }
+
+  return posters.map((poster) => {
+    const variants =
+      typeof poster.productId === 'number'
+        ? variantsByProduct.get(String(poster.productId))
+        : undefined
+    const defaultSize = pickDefaultSizeVariant(summarizeSizeVariants(variants ?? []))
+
+    if (!defaultSize) {
+      return poster
+    }
+
+    return {
+      ...poster,
+      addToCartSizeLabel: defaultSize.label,
+      addToCartVariantId: defaultSize.id,
+    }
+  })
 }
 
 export const buildFallbackHomeCookiePosters = (): CookiePosterAsset[] =>
@@ -355,9 +474,11 @@ export const queryHomeCookiePosters = async () => {
     posters,
   })
 
-  return postersWithAvailability.length > 0
-    ? postersWithAvailability
-    : buildFallbackHomeCookiePosters()
+  if (postersWithAvailability.length === 0) {
+    return buildFallbackHomeCookiePosters()
+  }
+
+  return attachDefaultSizeVariants({ payload, posters: postersWithAvailability })
 }
 
 export const queryPublicRotationCookiePosters = async () => {
@@ -376,9 +497,10 @@ export const queryPublicRotationCookiePosters = async () => {
   })
 
   const posters = buildCookiePosterAssets(products)
-
-  return applyRotationAvailability({
+  const postersWithAvailability = applyRotationAvailability({
     activeRotation,
     posters,
   })
+
+  return attachDefaultSizeVariants({ payload, posters: postersWithAvailability })
 }

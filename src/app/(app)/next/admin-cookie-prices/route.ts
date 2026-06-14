@@ -3,12 +3,14 @@ import { headers } from 'next/headers'
 import { createLocalReq, getPayload, type DefaultDocumentIDType, type Payload } from 'payload'
 
 import { isAdminUser } from '@/access/utilities'
+import { defaultMiniPriceInUSD } from '@/features/products/sizeVariants'
 import type { Product } from '@/payload-types'
 
 export const maxDuration = 300
 
 type BulkCookiePriceRequest = {
   priceInUSD?: unknown
+  updateMiniPrices?: unknown
 }
 
 type UpdatedCookieProduct = {
@@ -71,6 +73,7 @@ const findCookieProducts = async ({
       pagination: true,
       select: {
         id: true,
+        miniPriceInUSD: true,
         priceInUSD: true,
         priceInUSDEnabled: true,
         slug: true,
@@ -135,6 +138,11 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 
+  // The owner's one-checkbox shortcut: when on, every cookie also gets the
+  // standard mini price derived from the new large price.
+  const updateMiniPrices = body.updateMiniPrices === true
+  const miniPriceInUSD = updateMiniPrices ? defaultMiniPriceInUSD(priceInUSD) : null
+
   const cookieCategoryID = await getCookieCategoryID(payload)
 
   if (!cookieCategoryID) {
@@ -158,7 +166,12 @@ export async function POST(request: Request): Promise<Response> {
     let skippedCount = 0
 
     for (const product of products) {
-      if (product.priceInUSD === priceInUSD && product.priceInUSDEnabled === true) {
+      const priceAlreadySet =
+        product.priceInUSD === priceInUSD && product.priceInUSDEnabled === true
+      const miniAlreadySet =
+        miniPriceInUSD === null || product.miniPriceInUSD === miniPriceInUSD
+
+      if (priceAlreadySet && miniAlreadySet) {
         skippedCount += 1
         continue
       }
@@ -169,6 +182,7 @@ export async function POST(request: Request): Promise<Response> {
         data: {
           priceInUSD,
           priceInUSDEnabled: true,
+          ...(miniPriceInUSD === null ? {} : { miniPriceInUSD }),
         },
         depth: 0,
         overrideAccess: true,
@@ -186,6 +200,7 @@ export async function POST(request: Request): Promise<Response> {
 
     return Response.json({
       matchedCount: products.length,
+      miniPriceInUSD,
       priceInUSD,
       products: updatedProducts,
       skippedCount,

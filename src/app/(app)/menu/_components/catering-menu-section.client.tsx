@@ -22,7 +22,7 @@ import Image from 'next/image'
 import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { BatchBuilderPanel, SimpleItemPanel } from './catering-menu-panels'
+import { BatchBuilderPanel, MiniBoxBuilderPanel, SimpleItemPanel } from './catering-menu-panels'
 import {
   DecorativeSceneImage,
   MenuHero,
@@ -35,12 +35,40 @@ import {
   skyByScenery,
   type PersuasionGardenPanelClassNames,
 } from './catering-menu-scenery'
-import type { MenuSceneryTone, SelectableFlavor } from './catering-menu-types'
+import type {
+  MenuPanelBackdrop,
+  BundleSuggestions,
+  MenuSection,
+  MenuSceneryTone,
+  RegularOrderItem,
+  SelectableFlavor,
+} from './catering-menu-types'
+import { MenuSectionTabs, type MenuSectionTabDef } from './menu-section-tabs'
+import { RegularOrdersPanel } from './regular-orders-panel'
 
 type CateringMenuSectionProps = {
   initialSceneryTone?: MenuSceneryTone
+  initialSection?: MenuSection
   products: Partial<Product>[]
+  regularItems?: RegularOrderItem[]
+  seasonalLabel?: string
 }
+
+const menuSectionTabDefs: MenuSectionTabDef[] = [
+  { detail: 'Single cookies · large or mini', label: 'Regular orders', value: 'regular' },
+  { detail: 'Boxes, trays & packs', label: 'Bundles', value: 'catering' },
+]
+
+const MENU_TABS_ID_BASE = 'menu-section'
+
+/**
+ * Feature flag for the catering ordering panel's container.
+ * - 'tinted' (default): a clean container tinted to the active scenery tone,
+ *   no decorative scene art (avoids scenery-inside-scenery nesting).
+ * - 'scenery': the original full animated scene as the container.
+ * Flip to 'scenery' to restore the old look; the scene code is intact.
+ */
+const CATERING_PANEL_BACKDROP: MenuPanelBackdrop = 'tinted'
 
 type SceneryPickerAnchor = 'hero' | 'panel'
 
@@ -52,6 +80,8 @@ const menuPersuasionPanelClassNames = {
 } satisfies PersuasionGardenPanelClassNames
 
 const cateringDisplayOrder = [
+  'build-your-own-mini-box',
+  'build-your-own-cookie-box',
   'cookie-tray',
   'mini-cookie-tray',
   'banana-pudding-10-pack',
@@ -114,7 +144,10 @@ const normalizeProductRelation = (value: number | Product | null | undefined): P
   return null
 }
 
-const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] => {
+const buildSelectableFlavors = (
+  product: Partial<Product>,
+  currentFlavorIDs: Set<number>,
+): SelectableFlavor[] => {
   const selectableProducts = Array.isArray(product.selectableProducts)
     ? product.selectableProducts
     : []
@@ -132,6 +165,10 @@ const buildSelectableFlavors = (product: Partial<Product>): SelectableFlavor[] =
         id: selectableProduct.id,
         image: posterAsset?.image ?? normalizeImage(selectableProduct),
         infoButtonLabel: posterAsset?.infoButtonLabel ?? 'Info',
+        // "Rare" = not individually orderable right now (off the standing menu
+        // and not in the active rotation). Derived from the same set Regular
+        // orders shows, so it stays in step with the rotation automatically.
+        isRare: !currentFlavorIDs.has(selectableProduct.id),
         receiptBody,
         summary: posterAsset?.summary ?? resolveSummary(selectableProduct),
         title: posterAsset?.title ?? selectableProduct.title,
@@ -182,6 +219,7 @@ function TrayChevronIndicator() {
 }
 
 function CateringMenuRow({
+  currentFlavorIDs,
   isSceneryPickerOpen,
   isSceneChanging,
   index,
@@ -190,6 +228,7 @@ function CateringMenuRow({
   product,
   sceneryTone,
 }: {
+  currentFlavorIDs: Set<number>
   isSceneryPickerOpen: boolean
   isSceneChanging: boolean
   index: number
@@ -207,13 +246,29 @@ function CateringMenuRow({
   const traySummaryPulseFrameRef = useRef<number | null>(null)
   const traySummaryPulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const triggerScrollFrameRef = useRef<number | null>(null)
+  const [boxCounts, setBoxCounts] = useState<Record<number, number>>({})
   const summary = resolveSummary(product)
   const isBatchBuilder = product.menuBehavior === 'batchBuilder'
+  const isMixAndMatch = isBatchBuilder && product.flavorSelection === 'mixAndMatch'
   const requiredSelectionCount =
     isBatchBuilder && typeof product.requiredSelectionCount === 'number'
       ? product.requiredSelectionCount
       : 0
-  const selectableFlavors = useMemo(() => buildSelectableFlavors(product), [product])
+  const selectableFlavors = useMemo(
+    () => buildSelectableFlavors(product, currentFlavorIDs),
+    [product, currentFlavorIDs],
+  )
+  // Mix-and-match boxes only offer currently-available flavors (the baker can't
+  // batch legacy flavors on demand); one-flavor binge trays offer everything,
+  // marking rare flavors with a badge.
+  const offeredFlavors = useMemo(
+    () => (isMixAndMatch ? selectableFlavors.filter((flavor) => !flavor.isRare) : selectableFlavors),
+    [isMixAndMatch, selectableFlavors],
+  )
+  const boxTotal = useMemo(
+    () => Object.values(boxCounts).reduce((sum, count) => sum + count, 0),
+    [boxCounts],
+  )
 
   const selectedFlavor = useMemo(
     () => selectableFlavors.find((flavor) => flavor.id === selectedFlavorID) ?? null,
@@ -279,6 +334,66 @@ function CateringMenuRow({
   }
 
   const isCartPending = isLoading || isSubmittingToCart
+
+  const handleBoxIncrement = (flavorID: number) => {
+    setBoxCounts((current) => {
+      const total = Object.values(current).reduce((sum, count) => sum + count, 0)
+
+      if (requiredSelectionCount > 0 && total >= requiredSelectionCount) {
+        return current
+      }
+
+      return { ...current, [flavorID]: (current[flavorID] ?? 0) + 1 }
+    })
+  }
+
+  const handleBoxDecrement = (flavorID: number) => {
+    setBoxCounts((current) => {
+      const next = (current[flavorID] ?? 0) - 1
+      const updated = { ...current }
+
+      if (next <= 0) {
+        delete updated[flavorID]
+      } else {
+        updated[flavorID] = next
+      }
+
+      return updated
+    })
+  }
+
+  const handleClearBox = () => setBoxCounts({})
+
+  const handleAddBox = async () => {
+    if (!product.id || isCartPending) {
+      return
+    }
+
+    if (requiredSelectionCount <= 0 || boxTotal !== requiredSelectionCount) {
+      toast.info(`Fill the box with ${requiredSelectionCount} cookies first.`)
+      return
+    }
+
+    const batchSelections = Object.entries(boxCounts).map(([flavorID, quantity]) => ({
+      product: Number(flavorID),
+      quantity,
+    }))
+
+    setIsSubmittingToCart(true)
+
+    try {
+      await addItem({
+        batchSelections,
+        product: product.id,
+      } as Parameters<typeof addItem>[0])
+      toast.success('Box added — build another?')
+      setBoxCounts({})
+    } catch {
+      toast.error('Unable to add the box to cart right now.')
+    } finally {
+      setIsSubmittingToCart(false)
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -382,9 +497,27 @@ function CateringMenuRow({
     }
   }
 
+  const renderPersuasionPanel = (children: React.ReactNode) => (
+    <PersuasionGardenPanel
+      backdrop={CATERING_PANEL_BACKDROP}
+      classNames={menuPersuasionPanelClassNames}
+      isSceneryPickerOpen={isSceneryPickerOpen}
+      isSceneChanging={isSceneChanging}
+      onSelectScenery={onSelectScenery}
+      onToggleSceneryPicker={onToggleSceneryPicker}
+      product={product}
+      key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
+      sceneryTone={sceneryTone}
+      summary={resolveSummary(product)}
+    >
+      {children}
+    </PersuasionGardenPanel>
+  )
+
   return (
     <AccordionItem
       className="cateringMenuAccordionItem border-b border-[rgba(23,21,16,0.14)]"
+      id={`bundle-${product.slug ?? `row-${index}`}`}
       value={product.slug ?? `row-${index}`}
     >
       <AccordionTrigger
@@ -422,7 +555,27 @@ function CateringMenuRow({
       </AccordionTrigger>
 
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
-        {isBatchBuilder ? (
+        {isMixAndMatch ? (
+          <MiniBoxBuilderPanel
+            boxCounts={boxCounts}
+            boxTotal={boxTotal}
+            capacity={requiredSelectionCount}
+            flavorCardCloudsForScenery={flavorCardCloudsForScenery}
+            flavorCardMeadowForScenery={flavorCardMeadowForScenery}
+            flavorCardMobileSkyForScenery={flavorCardMobileSkyForScenery}
+            flavorCardSkyForScenery={flavorCardSkyForScenery}
+            isBoxPending={isCartPending}
+            onAddBox={handleAddBox}
+            onClearBox={handleClearBox}
+            onDecrement={handleBoxDecrement}
+            onIncrement={handleBoxIncrement}
+            priceInUSD={product.priceInUSD}
+            renderPersuasionPanel={renderPersuasionPanel}
+            renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
+            sceneryTone={sceneryTone}
+            selectableFlavors={offeredFlavors}
+          />
+        ) : isBatchBuilder ? (
           <BatchBuilderPanel
             flavorCardCloudsForScenery={flavorCardCloudsForScenery}
             flavorCardMeadowForScenery={flavorCardMeadowForScenery}
@@ -431,21 +584,8 @@ function CateringMenuRow({
             isTrayPending={isCartPending}
             onAddFlavor={handleAddFlavor}
             onAddToCart={handleAddToCart}
-            persuasionPanel={
-              <PersuasionGardenPanel
-                classNames={menuPersuasionPanelClassNames}
-                isSceneryPickerOpen={isSceneryPickerOpen}
-                isSceneChanging={isSceneChanging}
-                onSelectScenery={onSelectScenery}
-                onToggleSceneryPicker={onToggleSceneryPicker}
-                product={product}
-                key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
-                sceneryTone={sceneryTone}
-                summary={resolveSummary(product)}
-              />
-            }
+            renderPersuasionPanel={renderPersuasionPanel}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
-            priceInUSD={product.priceInUSD}
             sceneryTone={sceneryTone}
             selectedFlavor={selectedFlavor}
             selectableFlavors={selectableFlavors}
@@ -455,19 +595,7 @@ function CateringMenuRow({
           <SimpleItemPanel
             isCartPending={isCartPending}
             onAddToCart={handleAddToCart}
-            persuasionPanel={
-              <PersuasionGardenPanel
-                classNames={menuPersuasionPanelClassNames}
-                isSceneryPickerOpen={isSceneryPickerOpen}
-                isSceneChanging={isSceneChanging}
-                onSelectScenery={onSelectScenery}
-                onToggleSceneryPicker={onToggleSceneryPicker}
-                product={product}
-                key={`${product.id ?? product.slug ?? 'panel'}-${sceneryTone}`}
-                sceneryTone={sceneryTone}
-                summary={resolveSummary(product)}
-              />
-            }
+            renderPersuasionPanel={renderPersuasionPanel}
             priceInUSD={product.priceInUSD}
             product={product}
           />
@@ -479,13 +607,62 @@ function CateringMenuRow({
 
 export function CateringMenuSection({
   initialSceneryTone = 'dawn',
+  initialSection = 'regular',
   products,
+  regularItems = [],
+  seasonalLabel = "This month's flavor",
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
+  const hasRegularItems = regularItems.length > 0
+  // The set of flavors that are individually orderable right now (standing menu
+  // + active rotation). Mix-and-match boxes are limited to these; binge trays
+  // mark anything outside this set as "Rare". Same source as the Regular tab,
+  // so the two never drift.
+  const currentFlavorIDs = useMemo(
+    () => new Set(regularItems.map((item) => item.id)),
+    [regularItems],
+  )
+  // The 4-pack mix box and 10-pack one-flavor tray for each size, used to nudge
+  // a customer who is stacking up single cookies toward the cheaper bundle.
+  // Read from the live bundle products so the per-cookie math is always current.
+  const bundleSuggestions = useMemo<BundleSuggestions>(() => {
+    const bySlug = new Map(products.map((product) => [product.slug, product]))
+    const toSuggestion = (slug: string) => {
+      const product = bySlug.get(slug)
+      if (!product || typeof product.priceInUSD !== 'number') {
+        return null
+      }
+      return {
+        count:
+          typeof product.requiredSelectionCount === 'number'
+            ? product.requiredSelectionCount
+            : null,
+        price: product.priceInUSD,
+        slug,
+        title: product.title ?? slug,
+      }
+    }
+    return {
+      large: {
+        box: toSuggestion('build-your-own-cookie-box'),
+        tray: toSuggestion('cookie-tray'),
+      },
+      mini: {
+        box: toSuggestion('build-your-own-mini-box'),
+        tray: toSuggestion('mini-cookie-tray'),
+      },
+    }
+  }, [products])
   const [heroSceneryTone, setHeroSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
   const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
+  const [section, setSection] = useState<MenuSection>(
+    hasRegularItems ? initialSection : 'catering',
+  )
+  // Controlled value of the Bundles accordion so a nudge from Regular orders
+  // can open the matching bundle.
+  const [openBundleSlug, setOpenBundleSlug] = useState<string>('')
 
   useEffect(() => {
     for (const sceneryTone of menuSceneryTones) {
@@ -493,8 +670,69 @@ export function CateringMenuSection({
     }
   }, [])
 
-  if (orderedProducts.length === 0) {
+  // Keep the active tab in sync when the customer uses the browser Back/Forward
+  // buttons (e.g. after a nudge pushed them to the Bundles tab).
+  useEffect(() => {
+    const handlePopState = () => {
+      const param = new URLSearchParams(window.location.search).get('section')
+      const nextSection: MenuSection = param === 'catering' ? 'catering' : 'regular'
+      setSection(hasRegularItems ? nextSection : 'catering')
+      if (nextSection !== 'catering') {
+        setOpenBundleSlug('')
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [hasRegularItems])
+
+  if (orderedProducts.length === 0 && !hasRegularItems) {
     return null
+  }
+
+  const handleSectionChange = (nextSection: MenuSection) => {
+    if (nextSection === section) {
+      return
+    }
+
+    setSection(nextSection)
+    announce(
+      nextSection === 'regular' ? 'Showing regular orders.' : 'Showing the catering menu.',
+    )
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+
+      if (nextSection === 'catering') {
+        url.searchParams.set('section', 'catering')
+      } else {
+        url.searchParams.delete('section')
+      }
+
+      window.history.replaceState(null, '', url)
+    }
+  }
+
+  const handleJumpToBundle = (slug: string) => {
+    setSection('catering')
+    setOpenBundleSlug(slug)
+    announce('Showing the catering menu.')
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      url.searchParams.set('section', 'catering')
+      // pushState (not replaceState) so the browser Back button returns the
+      // customer to the Regular-orders view they jumped from, instead of
+      // skipping past /menu to wherever they were before.
+      window.history.pushState(null, '', url)
+
+      // Let the tab switch + accordion open render before scrolling to it.
+      window.setTimeout(() => {
+        document
+          .getElementById(`bundle-${slug}`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 90)
+    }
   }
 
   const toggleSceneryPicker = (anchor: SceneryPickerAnchor) => {
@@ -527,6 +765,12 @@ export function CateringMenuSection({
         onSelectScenery={handleSelectHeroScenery}
         onToggleSceneryPicker={() => toggleSceneryPicker('hero')}
         sceneryTone={heroSceneryTone}
+        summary={
+          hasRegularItems
+            ? 'Order the always-available lineup and this season’s flavors as single cookies — large or mini, as many as you like. Build-your-own boxes, trays, and ten-packs are one tab away.'
+            : undefined
+        }
+        title="Menu"
       />
 
       <section
@@ -534,21 +778,73 @@ export function CateringMenuSection({
         id="catering-menu-items"
       >
         <div className="container pt-0 pb-6 md:pt-0 md:pb-10">
-          <div className="cateringMenuPanel">
-            <Accordion collapsible type="single">
-              {orderedProducts.map((product, index) => (
-                <CateringMenuRow
-                  isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
-                  isSceneChanging={isSceneChanging}
-                  index={index}
-                  key={product.id ?? product.slug ?? index}
-                  onSelectScenery={handleSelectHeroScenery}
-                  onToggleSceneryPicker={() => toggleSceneryPicker('panel')}
-                  product={product}
-                  sceneryTone={heroSceneryTone}
-                />
-              ))}
-            </Accordion>
+          {hasRegularItems ? (
+            <div className="pt-6 md:pt-8">
+              <MenuSectionTabs
+                active={section}
+                idBase={MENU_TABS_ID_BASE}
+                onChange={handleSectionChange}
+                tabs={menuSectionTabDefs}
+              />
+            </div>
+          ) : null}
+
+          {hasRegularItems ? (
+            <div
+              aria-labelledby={`${MENU_TABS_ID_BASE}-tab-regular`}
+              hidden={section !== 'regular'}
+              id={`${MENU_TABS_ID_BASE}-panel-regular`}
+              role="tabpanel"
+            >
+              <RegularOrdersPanel
+                bundleSuggestions={bundleSuggestions}
+                items={regularItems}
+                onJumpToBundle={handleJumpToBundle}
+                sceneryTone={heroSceneryTone}
+                seasonalLabel={seasonalLabel}
+              />
+            </div>
+          ) : null}
+
+          <div
+            aria-labelledby={
+              hasRegularItems ? `${MENU_TABS_ID_BASE}-tab-catering` : undefined
+            }
+            hidden={hasRegularItems ? section !== 'catering' : undefined}
+            id={`${MENU_TABS_ID_BASE}-panel-catering`}
+            role={hasRegularItems ? 'tabpanel' : undefined}
+          >
+            <div className="cateringMenuPanel">
+              {orderedProducts.length > 0 ? (
+                <Accordion
+                  collapsible
+                  onValueChange={(value) =>
+                    setOpenBundleSlug(typeof value === 'string' ? value : '')
+                  }
+                  type="single"
+                  value={openBundleSlug}
+                >
+                  {orderedProducts.map((product, index) => (
+                    <CateringMenuRow
+                      currentFlavorIDs={currentFlavorIDs}
+                      isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
+                      isSceneChanging={isSceneChanging}
+                      index={index}
+                      key={product.id ?? product.slug ?? index}
+                      onSelectScenery={handleSelectHeroScenery}
+                      onToggleSceneryPicker={() => toggleSceneryPicker('panel')}
+                      product={product}
+                      sceneryTone={heroSceneryTone}
+                    />
+                  ))}
+                </Accordion>
+              ) : (
+                <p className="py-12 text-base leading-8 text-[rgba(23,21,16,0.72)]">
+                  Catering items are being restocked — check the regular orders tab, or come
+                  back soon.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -623,6 +919,11 @@ export function CateringMenuSection({
 
         .cateringPanelLayerActive {
           z-index: 2;
+        }
+
+        .cateringPanelFaceDormant {
+          pointer-events: none;
+          visibility: hidden;
         }
 
         .cateringPanelLayerBase {
@@ -740,6 +1041,40 @@ export function CateringMenuSection({
           outline-offset: 3px;
         }
 
+        /* Fixed dark container scheme (one look for every scenery). */
+        .cateringPanelDark.cateringPersuasionPanel {
+          background: linear-gradient(165deg, #45543b 0%, #36432d 100%);
+          border-color: rgba(244, 237, 226, 0.14);
+        }
+
+        .cateringPanelDark .cateringPersuasionHeading,
+        .cateringPanelDark .cateringPitch :is(p, li, h1, h2, h3, h4),
+        .cateringPanelDark .cateringPersuasionBody :is(p, li) {
+          color: #f1e9dc !important;
+        }
+
+        .cateringTraySelectionHint {
+          color: rgba(23, 21, 16, 0.72);
+        }
+
+        .cateringPanelDark .cateringTraySelectionHint {
+          color: rgba(244, 237, 226, 0.82);
+        }
+
+        .cateringTraySelectionHintPulse {
+          animation: cateringTraySummaryPulse 260ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton {
+          background: #2c7548;
+          color: #fffaf0;
+        }
+
+        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton:hover,
+        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          background: #338353;
+        }
+
         .cateringPersuasionMeadow {
           bottom: -0.4rem;
           height: 100%;
@@ -781,6 +1116,15 @@ export function CateringMenuSection({
               90deg,
               rgba(255, 255, 255, 0) 0%,
               rgba(255, 255, 255, 0.74) 12%,
+              rgba(255, 224, 138, 0.88) 50%,
+              rgba(255, 255, 255, 0.74) 88%,
+              rgba(255, 255, 255, 0) 100%
+          );
+          background:
+            linear-gradient(
+              90deg,
+              rgba(255, 255, 255, 0) 0%,
+              rgba(255, 255, 255, 0.74) 12%,
               color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 78%, white 22%) 50%,
               rgba(255, 255, 255, 0.74) 88%,
               rgba(255, 255, 255, 0) 100%
@@ -791,12 +1135,23 @@ export function CateringMenuSection({
           transform: translate3d(0, -50%, 0);
           transform-origin: center;
           box-shadow:
+            0 -0.72rem 1.85rem rgba(255, 220, 124, 0.16),
+            0 0.72rem 1.85rem rgba(255, 220, 124, 0.2);
+          box-shadow:
             0 -0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 18%, transparent),
             0 0.72rem 1.85rem color-mix(in srgb, var(--catering-scene-charge, var(--scene-action-aura, rgba(255, 220, 124, 0.82))) 24%, transparent);
           will-change: opacity, transform;
         }
 
         .cateringPanelTearLine::before {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 244, 204, 0.7) 44%,
+            rgba(255, 255, 255, 0.48) 50%,
+            rgba(255, 242, 196, 0.56) 56%,
+            rgba(255, 255, 255, 0) 100%
+          );
           background: linear-gradient(
             180deg,
             rgba(255, 255, 255, 0) 0%,
@@ -1130,15 +1485,31 @@ export function CateringMenuSection({
           min-width: 6.75rem;
         }
 
+        /* Whitish card surface (matches the simple-item order card) on the
+           dark container, framing the cookie scene tile. The selected state
+           uses a uniform reserved border so it never shifts layout. */
         .cateringFlavorCard {
-          background: #fff8f2;
-          border: 1px solid rgba(91, 70, 37, 0.14);
-          box-shadow: 0 10px 24px rgba(23, 21, 16, 0.06);
+          background: rgba(255, 248, 242, 0.95);
+          border: 3px solid transparent;
+          border-radius: 1.3rem;
+          padding: 0.5rem;
           touch-action: pan-x pinch-zoom;
           transition:
             transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 180ms ease,
+            box-shadow 220ms ease;
+        }
+
+        .cateringFlavorCardSelected {
+          border-color: #7ea12f;
+          box-shadow: 0 14px 30px rgba(46, 76, 27, 0.2);
+        }
+
+        .cateringFlavorScene {
+          box-shadow: 0 6px 14px rgba(23, 21, 16, 0.12);
+          transition:
             box-shadow 220ms ease,
-            border-color 220ms ease;
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .cateringFlavorCard button {
@@ -1350,6 +1721,7 @@ export function CateringMenuSection({
         }
 
         .cateringFlavorRailInner {
+          align-items: stretch;
           display: flex;
           gap: 1rem;
           padding-bottom: 0.2rem;
@@ -1679,20 +2051,16 @@ export function CateringMenuSection({
             object-position: 28% top;
           }
 
-          .cateringPersuasionFrame {
+          .cateringPersuasionFrame[data-backdrop='scenery'] {
             --catering-persuasion-panel-min-height: 35rem;
           }
 
-          .cateringPersuasionFrame[data-has-gallery='true'] {
+          .cateringPersuasionFrame[data-backdrop='scenery'][data-has-gallery='true'] {
             --catering-persuasion-panel-min-height: 37rem;
           }
 
           .cateringPersuasionPanel {
             padding-inline: 1rem;
-          }
-
-          .cateringPanelForeground {
-            padding-bottom: 9.6rem;
           }
 
           .cateringPanelActionRow {
@@ -1776,11 +2144,11 @@ export function CateringMenuSection({
         }
 
         @media (max-width: 430px) {
-          .cateringPersuasionFrame {
+          .cateringPersuasionFrame[data-backdrop='scenery'] {
             --catering-persuasion-panel-min-height: 36.25rem;
           }
 
-          .cateringPersuasionFrame[data-has-gallery='true'] {
+          .cateringPersuasionFrame[data-backdrop='scenery'][data-has-gallery='true'] {
             --catering-persuasion-panel-min-height: 38.25rem;
           }
 
@@ -1793,10 +2161,6 @@ export function CateringMenuSection({
           .cateringPersuasionBody :is(p, li) {
             font-size: 0.9rem;
             line-height: 1.62;
-          }
-
-          .cateringPanelForeground {
-            padding-bottom: 9.8rem;
           }
         }
       `}</style>
