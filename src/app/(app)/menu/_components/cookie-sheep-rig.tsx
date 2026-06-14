@@ -274,7 +274,12 @@ export function CookieSheepRig({
           <AssetPartImage
             alt=""
             className="block h-full w-full object-contain"
-            src="/singular-sheep-head.svg"
+            // Flat 640px PNG (rendered from singular-sheep-head.svg). The SVG
+            // built its alpha with feColorMatrix + a luminance <mask>, which iOS
+            // Safari rasterizes at a low, capped resolution and upscales to the
+            // DPR-3 panel — that was the fuzzy-edged head. A plain raster has no
+            // filter buffer, so iOS paints it at device resolution.
+            src="/singular-sheep-head.png"
             style={placePartArt(headPlacement)}
           />
         </span>
