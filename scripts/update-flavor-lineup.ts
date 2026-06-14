@@ -3,6 +3,7 @@ import { loadScriptEnv } from './lib/load-script-env'
 loadScriptEnv()
 
 import { defaultMiniPriceInUSD } from '../src/features/products/sizeVariants'
+import { ensureSizeAxis } from '../src/features/products/sizeVariantProvisioning'
 
 /**
  * Syncs the owner's flavor lineup: which cookie flavors are always available
@@ -68,6 +69,14 @@ const run = async () => {
   const payload = await getPayload({ config })
 
   try {
+    // Make sure the size axis (variant type + Large/Mini options) exists and is
+    // COMMITTED before any product save. On a fresh environment the product's
+    // afterChange would otherwise create it inside its own transaction, which
+    // the ecommerce variant hook can't see (it looks options up without that
+    // transaction) -> NotFound. Pre-committing here unblocks first-run sizing.
+    await ensureSizeAxis({ payload })
+    payload.logger.info('- Ensured size variant axis (large / mini)')
+
     const resolveProduct = async (spec: FlavorSpec) => {
       const bySlug = await payload.find({
         collection: 'products',
