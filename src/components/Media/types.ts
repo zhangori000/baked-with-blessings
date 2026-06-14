@@ -7,6 +7,13 @@ export interface Props {
   alt?: string
   className?: string
   fill?: boolean // for NextImage only
+  /**
+   * Serve the original upload and let the Next optimizer downscale it, instead
+   * of using Payload's largest pre-generated variant (1024px wide). Use for
+   * focal/hero imagery that must stay crisp on high-DPR screens (e.g. iPhone
+   * DPR 3), where the small variant gets visibly upscaled.
+   */
+  fullResolution?: boolean
   height?: number
   htmlElement?: ElementType | null
   imgClassName?: string
