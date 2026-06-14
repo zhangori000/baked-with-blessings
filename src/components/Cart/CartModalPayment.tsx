@@ -1,6 +1,7 @@
 'use client'
 
 import { CheckoutForm } from '@/components/forms/CheckoutForm'
+import { FulfillmentNote } from '@/components/checkout/FulfillmentNote'
 import { Message } from '@/components/Message'
 import { BakeryAction, BakeryCard } from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
@@ -514,6 +515,8 @@ export function CartModalPayment({ onOrderComplete }: Props) {
           </p>
         </div>
 
+        <FulfillmentNote className="mt-4" />
+
         <Message className="mb-0 mt-4" error={error} onDismiss={() => setError(null)} />
 
         <div className="mt-5 overflow-hidden rounded-[14px] border border-[#e4d7bd] bg-[#fff8e8] p-4 text-[#3f351f]">
@@ -555,6 +558,8 @@ export function CartModalPayment({ onOrderComplete }: Props) {
           this site.
         </p>
       </div>
+
+      <FulfillmentNote className="mt-4" />
 
       <Message className="mb-0 mt-4" error={error} onDismiss={() => setError(null)} />
 

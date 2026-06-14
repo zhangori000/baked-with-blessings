@@ -1,6 +1,7 @@
 import type { Header } from '@/payload-types'
 import type { SitePagesFlags } from '@/utilities/getSitePages'
 import {
+  aboutHref,
   blessingsNetworkHref,
   blogHref,
   communityHref,
@@ -32,6 +33,7 @@ export type HeaderAppPageIcon =
   | 'clipboard-check'
   | 'handshake'
   | 'lightbulb'
+  | 'map-pin'
   | 'message-square-text'
   | 'sticky-note'
 
@@ -63,6 +65,19 @@ export type HeaderNavigationItem = {
 }
 
 export const headerAppPages: HeaderAppPage[] = [
+  {
+    description:
+      'Who we are, where we bake, and how ordering, pickup, and meetup hand-offs work for our Plymouth, MN home kitchen.',
+    eyebrow: 'Our story',
+    href: aboutHref,
+    icon: 'map-pin',
+    id: 'about',
+    mobileDescription:
+      'Meet the home kitchen behind the cookies, see where we are in Plymouth, MN, and learn how ordering and pickup work.',
+    mobileTitle: 'About & how it works',
+    title: 'About',
+    tone: 'light',
+  },
   {
     description:
       'Send a note to the bakery owner for custom orders, pickup questions, event details, or anything that needs a real reply.',
@@ -368,6 +383,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, contactHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, aboutHref)) {
     return item.id === 'more'
   }
 

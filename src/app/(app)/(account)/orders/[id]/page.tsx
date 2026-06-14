@@ -16,6 +16,7 @@ import { getPayload } from 'payload'
 import { OrderStatus } from '@/components/OrderStatus'
 import { AddressItem } from '@/components/addresses/AddressItem'
 import { NewOrderNotePrompt } from '@/components/community/NewOrderNotePrompt'
+import { FulfillmentNote } from '@/components/checkout/FulfillmentNote'
 import { findExistingNoteForOrder } from '@/features/community/services'
 import { communityHref } from '@/utilities/routes'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
@@ -386,19 +387,17 @@ export default async function Order({ params, searchParams }: PageProps) {
 
         <section className="rounded-[1.6rem] border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
           <h2 className="mb-4 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
-            Delivery details
+            Pickup &amp; hand-off
           </h2>
+
+          <FulfillmentNote variant="confirmed" />
+
           {hasShippingAddress ? (
-            <>
+            <div className="mt-4">
               {/* @ts-expect-error - some kind of type hell */}
               <AddressItem address={order.shippingAddress} hideActions />
-            </>
-          ) : (
-            <p className="max-w-2xl rounded-2xl border border-dashed border-[#d8c9a5] bg-[#fff8e8] p-4 text-sm leading-6 text-[#5f5632]">
-              No delivery address was collected for this order. Treat this as a pickup or manually
-              coordinated order unless delivery is added later.
-            </p>
-          )}
+            </div>
+          ) : null}
         </section>
       </BakeryPageSurface>
     </div>
