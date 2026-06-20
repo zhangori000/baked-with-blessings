@@ -1,5 +1,6 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 
+import { seedAnnouncements } from './announcements'
 import { seedBlogPosts } from './blog-posts'
 import { ensureBlessingsNetworkStarterContent } from '@/features/blessings-network/services/networkData'
 import { importCateringMedia } from './catering-media'
@@ -93,6 +94,10 @@ export const seed = async ({
     payload,
     req,
   })
+
+  payload.logger.info('- Seeding announcements...')
+
+  await seedAnnouncements({ payload, req })
 
   payload.logger.info('- Seeding blog posts...')
 
