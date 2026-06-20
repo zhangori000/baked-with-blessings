@@ -20,6 +20,7 @@ const getRelationshipIDs = (values?: ProductRelationship[] | null) =>
     .filter((id): id is DefaultDocumentIDType => id != null)
 
 const regularProductSelect = {
+  categories: true,
   description: true,
   gallery: true,
   id: true,
@@ -167,11 +168,21 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
       // featured this rotation reads as featured, and stays orderable later.
       const isSeasonal = rotationFlavorOrder.has(String(product.id))
 
+      const firstCategory = (Array.isArray(product.categories) ? product.categories : [])
+        .map((category) => (category && typeof category === 'object' ? category : null))
+        .find(Boolean) as { slug?: null | string; title?: null | string } | null | undefined
+      const categorySlug = firstCategory?.slug ?? undefined
+      const categoryLabel = firstCategory?.title
+        ? firstCategory.title.replace(/s$/i, '')
+        : undefined
+
       return {
         allergens: poster.allergens,
         availability: isSeasonal ? 'seasonal' : 'always',
         badgeLabel: isSeasonal ? seasonalLabel : 'Always available',
         bodyFallbackSrc: poster.bodyFallbackSrc,
+        categoryLabel,
+        categorySlug,
         id: product.id,
         image: poster.image,
         infoButtonLabel: poster.infoButtonLabel,

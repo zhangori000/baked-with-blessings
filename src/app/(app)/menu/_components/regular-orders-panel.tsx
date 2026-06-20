@@ -108,7 +108,13 @@ function RegularOrderRow({
   // (quantity 4–9) or a 10-pack one-flavor tray (quantity 10+). Below 4 we
   // still show a quiet static hint so the option is always discoverable.
   const bundleHint = useMemo(() => {
-    if (!selectedSize || !bundleSuggestions) {
+    // Box/tray deals are cookies-only; a bread (or other non-cookie) can't go in
+    // a build-your-own cookie box, so don't nudge it toward one.
+    if (
+      !selectedSize ||
+      !bundleSuggestions ||
+      (item.categorySlug && item.categorySlug !== 'cookies')
+    ) {
       return null
     }
 
@@ -149,7 +155,7 @@ function RegularOrderRow({
       kind: 'quiet' as const,
       slug: fallback.slug,
     }
-  }, [bundleSuggestions, quantity, selectedSize])
+  }, [bundleSuggestions, item.categorySlug, quantity, selectedSize])
 
   const handleAddToCart = async () => {
     if (!selectedSize || isCartPending) {
@@ -169,7 +175,9 @@ function RegularOrderRow({
         quantity,
       )
       toast.success(
-        `${quantity} × ${selectedSize.label} ${item.title} added to cart.`,
+        sizes.length > 1
+          ? `${quantity} × ${selectedSize.label} ${item.title} added to cart.`
+          : `${quantity} × ${item.title} added to cart.`,
       )
       setQuantity(1)
     } catch {
@@ -208,6 +216,11 @@ function RegularOrderRow({
               >
                 {item.badgeLabel}
               </span>
+              {item.categoryLabel ? (
+                <span className="regularFlavorBadge regularFlavorBadgeCategory">
+                  {item.categoryLabel}
+                </span>
+              ) : null}
             </div>
             <p className="max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)] md:text-[1.05rem]">
               {item.summary}
@@ -273,34 +286,33 @@ function RegularOrderRow({
             spacing="none"
             tone="outline"
           >
-            <div>
-              <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-                Pick a size
-              </p>
-              <div aria-label={`${item.title} size`} className="regularSizePicker" role="group">
-                {sizes.map((size) => {
-                  const isSelected = selectedSize?.value === size.value
+            {sizes.length > 1 ? (
+              <div>
+                <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
+                  Pick a size
+                </p>
+                <div aria-label={`${item.title} size`} className="regularSizePicker" role="group">
+                  {sizes.map((size) => {
+                    const isSelected = selectedSize?.value === size.value
 
-                  return (
-                    <BakeryPressable
-                      aria-pressed={isSelected}
-                      className={cn(
-                        'regularSizeChoice',
-                        isSelected && 'regularSizeChoiceActive',
-                      )}
-                      key={size.value}
-                      onClick={() => setSelectedSizeValue(size.value)}
-                      type="button"
-                    >
-                      <span className="regularSizeChoiceLabel cateringMenuRoundHeading">
-                        {size.label}
-                      </span>
-                      <Price amount={size.priceInUSD} className="regularSizeChoicePrice" />
-                    </BakeryPressable>
-                  )
-                })}
+                    return (
+                      <BakeryPressable
+                        aria-pressed={isSelected}
+                        className={cn('regularSizeChoice', isSelected && 'regularSizeChoiceActive')}
+                        key={size.value}
+                        onClick={() => setSelectedSizeValue(size.value)}
+                        type="button"
+                      >
+                        <span className="regularSizeChoiceLabel cateringMenuRoundHeading">
+                          {size.label}
+                        </span>
+                        <Price amount={size.priceInUSD} className="regularSizeChoicePrice" />
+                      </BakeryPressable>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -353,7 +365,9 @@ function RegularOrderRow({
               variant="primary"
             >
               {selectedSize
-                ? `Add ${quantity} × ${selectedSize.label} to cart`
+                ? sizes.length > 1
+                  ? `Add ${quantity} × ${selectedSize.label} to cart`
+                  : `Add ${quantity} to cart`
                 : 'Pick a size first'}
             </SceneButton>
 
@@ -610,6 +624,11 @@ export function RegularOrdersPanel({
         .regularFlavorBadgeSeasonal {
           background: #ffe9c2;
           color: #6b4a12;
+        }
+
+        .regularFlavorBadgeCategory {
+          background: #ece3d6;
+          color: #6b5a45;
         }
 
         .regularOrderCardGrid {
