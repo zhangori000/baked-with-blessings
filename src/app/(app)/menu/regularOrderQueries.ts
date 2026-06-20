@@ -81,9 +81,11 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
   const seasonalLabel =
     activeRotation?.monthlyFlavorLabel?.trim() ||
     activeRotation?.displayLabel?.trim() ||
-    "This month's flavor"
+    "This week's special"
 
-  const cookieCategoryResult = await measureServerStep(
+  // Regular orders = every individually-orderable single item, whatever its
+  // category (cookies, breads, future bakery items) — just not catering bundles.
+  const cateringCategoryResult = await measureServerStep(
     'payload.find categories: regular order menu',
     () =>
       payload.find({
@@ -94,16 +96,12 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
         pagination: false,
         where: {
           slug: {
-            equals: 'cookies',
+            equals: 'catering',
           },
         },
       }),
   )
-  const cookieCategoryID = cookieCategoryResult.docs[0]?.id
-
-  if (cookieCategoryID == null) {
-    return { items: [], seasonalLabel }
-  }
+  const cateringCategoryID = cateringCategoryResult.docs[0]?.id
 
   const availabilityOr: Where[] = [
     {
@@ -136,11 +134,9 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
               equals: 'published',
             },
           },
-          {
-            categories: {
-              contains: cookieCategoryID,
-            },
-          },
+          ...(cateringCategoryID != null
+            ? [{ categories: { not_in: [cateringCategoryID] } }]
+            : []),
           {
             menuBehavior: {
               not_equals: 'batchBuilder',

@@ -458,16 +458,16 @@ export function RegularOrdersPanel({
 
   const groups = [
     {
+      description: 'Featured this week, straight from the rotation.',
+      heading: seasonalLabel,
+      items: seasonalItems,
+      key: 'seasonal',
+    },
+    {
       description: 'The standing lineup — baked all year, order any time.',
       heading: 'Always available',
       items: alwaysItems,
       key: 'always',
-    },
-    {
-      description: 'Featured for a limited time, straight from the rotation.',
-      heading: seasonalLabel,
-      items: seasonalItems,
-      key: 'seasonal',
     },
   ].filter((group) => group.items.length > 0)
 
@@ -483,10 +483,12 @@ export function RegularOrdersPanel({
   return (
     <div className="regularOrdersPanel">
       <Accordion collapsible type="single">
-        {groups.map((group) => (
+        {groups.map((group, groupIndex) => (
           <section aria-label={group.heading} key={group.key}>
             <div className="regularGroupHeader">
-              <h2 className="cateringMenuRoundHeading regularGroupHeading">{group.heading}</h2>
+              <h2 className="cateringMenuRoundHeading regularGroupHeading">
+                {group.heading} <span className="regularGroupCount">({group.items.length})</span>
+              </h2>
               <p className="regularGroupDescription">{group.description}</p>
             </div>
             {group.items.map((item) => (
@@ -498,6 +500,11 @@ export function RegularOrdersPanel({
                 sceneryTone={sceneryTone}
               />
             ))}
+            {groupIndex < groups.length - 1 ? (
+              <p aria-hidden="true" className="regularGroupMore">
+                ↓ Keep scrolling for more
+              </p>
+            ) : null}
           </section>
         ))}
       </Accordion>
@@ -565,6 +572,20 @@ export function RegularOrdersPanel({
           color: rgba(23, 21, 16, 0.55);
           font-size: 0.86rem;
           line-height: 1.5;
+        }
+
+        .regularGroupCount {
+          color: rgba(23, 21, 16, 0.4);
+          font-weight: 500;
+        }
+
+        .regularGroupMore {
+          color: rgba(23, 21, 16, 0.5);
+          font-size: 0.82rem;
+          letter-spacing: 0.06em;
+          padding: 1.6rem 0 0.2rem;
+          text-align: center;
+          text-transform: uppercase;
         }
 
         .regularFlavorBadge {
