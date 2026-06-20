@@ -44,8 +44,9 @@ const RIG_SOURCES = {
   },
 } as const
 
-// Real photos preserved in the gallery for "See photos", uploaded from /public.
-// On hosted envs the owner's matching media already exist (matched by filename).
+// Real photos preserved in the gallery for "See photos", re-uploaded from /public
+// on each run (uploadFreshFromPublic) so they always sit on the active storage
+// adapter — Blob when run via `vercel env run`, local disk otherwise.
 const GALLERY_PHOTOS = [
   { alt: 'Angie holding the roasted pesto focaccia', filename: 'roasted-pesto-focaccia.jpeg' },
   {
@@ -112,16 +113,18 @@ const findMediaByFilename = async (payload: Payload, filename: string) => {
   return res.docs[0]
 }
 
-// Reuse a media doc by filename, else upload it from /public when the file is
-// present. Returns null when neither exists, so a missing photo just gets skipped.
-const findOrUploadMedia = async (payload: Payload, filename: string, alt: string) => {
-  const existing = await findMediaByFilename(payload, filename)
-  if (existing) {
-    return existing
-  }
+// Always (re)upload from /public, replacing any prior copy of the same filename.
+// This keeps media in step with /public AND with the active storage adapter — so
+// running via `vercel env run` (Blob) re-homes media that a prior local run put
+// on disk. Returns null only when the /public file is missing.
+const uploadFreshFromPublic = async (payload: Payload, filename: string, alt: string) => {
   const file = await readPublicImage(filename)
   if (!file) {
     return null
+  }
+  const prior = await findMediaByFilename(payload, filename)
+  if (prior) {
+    await payload.delete({ collection: 'media', id: prior.id, overrideAccess: true })
   }
   return payload.create({ collection: 'media', data: { alt }, file, overrideAccess: true })
 }
@@ -153,27 +156,16 @@ const run = async () => {
         })
       ).id
 
-    // Rig image (gallery[0]). Always re-upload from /public so re-running picks
-    // up image tweaks; delete any prior copy first so the rig never goes stale.
-    const rigFile = await readPublicImage(rig.filename)
-    if (!rigFile) {
+    // Rig image (gallery[0]). Always re-uploaded from /public.
+    const rigMedia = await uploadFreshFromPublic(payload, rig.filename, rig.alt)
+    if (!rigMedia) {
       throw new Error(`Rig image /public/${rig.filename} is missing.`)
     }
-    const priorRig = await findMediaByFilename(payload, rig.filename)
-    if (priorRig) {
-      await payload.delete({ collection: 'media', id: priorRig.id, overrideAccess: true })
-    }
-    const rigMedia = await payload.create({
-      collection: 'media',
-      data: { alt: rig.alt },
-      file: rigFile,
-      overrideAccess: true,
-    })
 
     // Real photos preserved for "See photos".
     const photoImages: { image: number }[] = []
     for (const photo of GALLERY_PHOTOS) {
-      const media = await findOrUploadMedia(payload, photo.filename, photo.alt)
+      const media = await uploadFreshFromPublic(payload, photo.filename, photo.alt)
       if (media) {
         photoImages.push({ image: Number(media.id) })
       } else {
