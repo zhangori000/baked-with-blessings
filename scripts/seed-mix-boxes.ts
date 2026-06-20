@@ -21,10 +21,6 @@ loadScriptEnv()
  * against preview/prod when explicitly asked.
  */
 
-// Products parked in the Cookies category that are NOT cookies, so they are never
-// selectable inside a build-your-own cookie box.
-const NON_COOKIE_SLUGS = ['roasted-pesto-focaccia']
-
 type BoxSpec = {
   capacity: number
   portionLabel: string
@@ -139,9 +135,8 @@ const run = async () => {
     }
 
     // Every cookie flavor is a candidate; the storefront narrows mix boxes to
-    // the currently-available ones at render/validation time. Non-cookie items
-    // that live in the Cookies category (e.g. the focaccia, parked here so the
-    // flavor rotation accepts it) must never be pickable inside a cookie box.
+    // the currently-available ones at render/validation time. (Non-cookie bakery
+    // items live in their own category, so they never show up here.)
     const flavorResult = await payload.find({
       collection: 'products',
       depth: 0,
@@ -149,12 +144,7 @@ const run = async () => {
       overrideAccess: true,
       pagination: false,
       select: { slug: true },
-      where: {
-        and: [
-          { categories: { contains: cookieCategoryID } },
-          { slug: { not_in: NON_COOKIE_SLUGS } },
-        ],
-      },
+      where: { categories: { contains: cookieCategoryID } },
     })
     const flavorIDs = flavorResult.docs.map((flavor) => flavor.id)
 

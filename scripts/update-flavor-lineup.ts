@@ -60,8 +60,8 @@ const SEASONAL_ROTATION_FLAVORS: FlavorSpec[] = [
     title: 'Sticky Mango Rice Krispy Treats',
   },
   {
+    // Single-size bread (no mini) — see bootstrap-focaccia-product.ts.
     largePriceInUSD: 700,
-    miniPriceInUSD: 300,
     slug: 'roasted-pesto-focaccia',
     title: 'Roasted Pesto Focaccia',
   },

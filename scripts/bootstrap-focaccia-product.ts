@@ -132,34 +132,43 @@ const run = async () => {
   const payload = await getPayload({ config })
 
   try {
-    // Cookies category so the rotation accepts it — rotation eligibility excludes
-    // the catering category (see FlavorRotations buildRotationEligibleProductWhere).
-    // Focaccia is filtered out of the build-your-own cookie boxes by slug in
-    // seed-mix-boxes, so it never becomes a pickable "cookie".
+    // Breads category: rotation-eligible (not catering) but NOT cookies, so the
+    // size-variant automation skips it (single price) and it never lands in the
+    // build-your-own cookie boxes. Created if it does not exist yet.
     const cat = await payload.find({
       collection: 'categories',
       depth: 0,
       limit: 1,
       overrideAccess: true,
       pagination: false,
-      where: { slug: { equals: 'cookies' } },
+      where: { slug: { equals: 'breads' } },
     })
     const categoryId =
       cat.docs[0]?.id ??
       (
         await payload.create({
           collection: 'categories',
-          data: { menuOrder: 0, slug: 'cookies', title: 'Cookies' },
+          data: { menuOrder: 1, slug: 'breads', title: 'Breads' },
           overrideAccess: true,
         })
       ).id
 
-    // Rig image (gallery[0]). Find-or-create by filename so re-running with
-    // `cutout` simply repoints the gallery at the approved cut-out media.
-    const rigMedia = await findOrUploadMedia(payload, rig.filename, rig.alt)
-    if (!rigMedia) {
+    // Rig image (gallery[0]). Always re-upload from /public so re-running picks
+    // up image tweaks; delete any prior copy first so the rig never goes stale.
+    const rigFile = await readPublicImage(rig.filename)
+    if (!rigFile) {
       throw new Error(`Rig image /public/${rig.filename} is missing.`)
     }
+    const priorRig = await findMediaByFilename(payload, rig.filename)
+    if (priorRig) {
+      await payload.delete({ collection: 'media', id: priorRig.id, overrideAccess: true })
+    }
+    const rigMedia = await payload.create({
+      collection: 'media',
+      data: { alt: rig.alt },
+      file: rigFile,
+      overrideAccess: true,
+    })
 
     // Real photos preserved for "See photos".
     const photoImages: { image: number }[] = []
@@ -206,22 +215,45 @@ const run = async () => {
       where: { slug: { equals: SLUG } },
     })
 
-    if (existing.docs[0]?.id) {
-      const updated = await payload.update({
-        id: existing.docs[0].id,
-        collection: 'products',
-        data,
-        overrideAccess: true,
-      })
-      console.log(`Updated ${updated.title} (${SLUG}) — rig=${rigChoice}, gallery=${gallery.length}`)
-    } else {
-      const created = await payload.create({
-        collection: 'products',
-        data: { ...data, slug: SLUG },
-        overrideAccess: true,
-      })
-      console.log(`Created ${created.title} (${SLUG}) — rig=${rigChoice}, gallery=${gallery.length}`)
+    const product = existing.docs[0]?.id
+      ? await payload.update({
+          id: existing.docs[0].id,
+          collection: 'products',
+          data,
+          overrideAccess: true,
+        })
+      : await payload.create({
+          collection: 'products',
+          data: { ...data, slug: SLUG },
+          overrideAccess: true,
+        })
+
+    // Single size: focaccia is a bread, not a cookie, so strip any Large/Mini
+    // variants left from when it lived in the Cookies category and turn the
+    // variant flag off, so it sells at its one base price.
+    const staleVariants = await payload.find({
+      collection: 'variants',
+      depth: 0,
+      limit: 100,
+      overrideAccess: true,
+      pagination: false,
+      where: { product: { equals: product.id } },
+    })
+    for (const variant of staleVariants.docs) {
+      await payload.delete({ collection: 'variants', id: variant.id, overrideAccess: true })
     }
+    if (staleVariants.docs.length > 0) {
+      await payload.update({
+        collection: 'products',
+        data: { enableVariants: false, variantTypes: [] },
+        id: product.id,
+        overrideAccess: true,
+      })
+    }
+
+    console.log(
+      `Upserted ${product.title} (${SLUG}) — rig=${rigChoice}, gallery=${gallery.length}, removed ${staleVariants.docs.length} variant(s)`,
+    )
   } finally {
     await destroyWithTimeout(() => payload.destroy())
   }
