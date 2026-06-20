@@ -4,6 +4,17 @@ import type { Product } from '@/payload-types'
 
 import { cookieCatalog } from './cookie-catalog'
 
+// Customer-facing rotation copy, stored on the active rotation doc so the owner
+// can edit it in admin. Shared with update-flavor-lineup so re-running keeps the
+// labels in sync.
+export const WEEKLY_ROTATION_LABELS = {
+  lockedDescription:
+    'Outside the current rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
+  lockedLabel: 'Catering only',
+  menuLinkLabel: 'View on menu',
+  monthlyFlavorLabel: "This week's special",
+} as const
+
 export const seedFlavorRotation = async ({
   cookieProductsBySlug,
   payload,
@@ -26,16 +37,12 @@ export const seedFlavorRotation = async ({
   await payload.create({
     collection: 'flavor-rotations',
     data: {
+      ...WEEKLY_ROTATION_LABELS,
       individualFlavors: initialMonthlyFlavors,
-      lockedDescription:
-        'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
-      lockedLabel: 'Catering only this month',
-      menuLinkLabel: 'View menu',
-      monthlyFlavorLabel: "This month's flavor",
       rotationType: 'monthly',
       showcaseProducts: Object.values(cookieProductsBySlug),
       status: 'active',
-      title: 'Current Monthly Cookie Rotation',
+      title: 'Current Weekly Specials',
     },
     depth: 0,
     req,

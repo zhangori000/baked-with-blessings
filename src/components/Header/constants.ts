@@ -198,26 +198,26 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
   {
     href: rotationsHref,
     id: 'cookies-of-the-month',
-    label: 'Cookies of the Month',
+    label: 'Specials of the Week',
     panel: {
-      eyebrow: 'Rotating lineup',
+      eyebrow: 'Weekly specials',
       description:
-        'Start with the current cookie lineup. This is the page we can rotate weekly, monthly, or whenever the bakery decides to change the featured flavors.',
+        'Start with this week’s specials — the featured lineup we rotate whenever the bakery picks new favorites.',
       cards: [
         {
           description:
-            'See the featured cookie lineup first, with the current flavors and direct add-to-cart actions in one place.',
+            'See this week’s featured specials first, with direct add-to-cart actions in one place.',
           eyebrow: 'Featured first',
           href: rotationsHref,
-          title: 'View rotating cookie flavors',
+          title: 'View this week’s specials',
           tone: 'dark',
         },
       ],
       links: [
         {
-          description: 'Open the current cookie lineup.',
+          description: 'Open this week’s specials.',
           href: rotationsHref,
-          label: 'View rotating cookie flavors',
+          label: 'View this week’s specials',
         },
       ],
     },

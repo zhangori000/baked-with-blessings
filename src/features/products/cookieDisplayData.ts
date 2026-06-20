@@ -284,11 +284,13 @@ export const buildCookiePosterAsset = (product: Partial<Product>): CookiePosterA
     infoButtonLabel: defaultInfoButtonLabel,
     isMonthlyFlavor: true,
     lockedDescription:
-      'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
-    lockedLabel: 'Catering only this month',
-    menuHref: '/menu?section=catering',
-    menuLinkLabel: 'View menu',
-    monthlyFlavorLabel: "This month's flavor",
+      'Outside the current rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
+    lockedLabel: 'Catering only',
+    // Where "on the menu" / "View on menu" points. Focaccia lives on the menu as
+    // its tray; everything else lands on the menu (regular orders) tab.
+    menuHref: meta.slug === 'roasted-pesto-focaccia' ? '/menu#bundle-focaccia-tray' : '/menu',
+    menuLinkLabel: 'View on menu',
+    monthlyFlavorLabel: "This week's special",
     productId: typeof product.id === 'number' ? product.id : undefined,
     receiptBody: resolveInfoBody(product, meta.receiptBody),
     summary: resolveSummary(product, meta),

@@ -1631,22 +1631,30 @@ export function HomeCookieCarousel({
                     </BakeryPressable>
                     <p className="homeCookieCartPromptText">
                       {activePosterIsCateringOnly
-                        ? (activePoster.lockedLabel ?? 'Catering only this month')
+                        ? (activePoster.lockedLabel ?? 'Catering only')
                         : activePosterPromptPhase === 'loading'
-                          ? 'Adding cookie to cart...'
+                          ? 'Adding to cart...'
                           : activePosterPromptPhase === 'added'
-                            ? 'Cookie added to cart.'
-                            : 'Add this cookie to cart?'}
+                            ? 'Added to cart.'
+                            : 'Add this to cart?'}
                     </p>
                     {activePosterIsCateringOnly ? (
                       <p className="homeCookieCartPromptSubtext">
                         {activePoster.lockedDescription ??
-                          'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'}
+                          'Outside the current rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'}
                       </p>
                     ) : activePoster.addToCartSizeLabel && activePosterPromptPhase === 'open' ? (
                       <p className="homeCookieCartPromptSubtext">
                         Adds the {activePoster.addToCartSizeLabel.toLowerCase()} size — every size
-                        and quantity is on the menu.
+                        and quantity is{' '}
+                        <Link
+                          href={activePosterMenuHref}
+                          onClick={handleCloseCartPrompt}
+                          style={{ color: 'inherit', textDecoration: 'underline' }}
+                        >
+                          on the menu
+                        </Link>
+                        .
                       </p>
                     ) : null}
                     {activePosterPromptPhase === 'open' ? (
