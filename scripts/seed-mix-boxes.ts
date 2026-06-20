@@ -4,8 +4,8 @@ loadScriptEnv()
 
 /**
  * Provisions the two "Build-Your-Own" mix-and-match boxes:
- *   - Build-Your-Own Mini Box   (4 mini cookies,  $10)
- *   - Build-Your-Own Cookie Box (4 large cookies, $20)
+ *   - Build-Your-Own Mini Box   (6 mini cookies,  $14)
+ *   - Build-Your-Own Cookie Box (4 large cookies, $25)
  *
  *   pnpm seed:mix-boxes            (local Docker database)
  *
@@ -21,9 +21,12 @@ loadScriptEnv()
  * against preview/prod when explicitly asked.
  */
 
-const BOX_CAPACITY = 4
+// Products parked in the Cookies category that are NOT cookies, so they are never
+// selectable inside a build-your-own cookie box.
+const NON_COOKIE_SLUGS = ['roasted-pesto-focaccia']
 
 type BoxSpec = {
+  capacity: number
   portionLabel: string
   priceCents: number
   slug: string
@@ -33,18 +36,20 @@ type BoxSpec = {
 
 const BOX_SPECS: BoxSpec[] = [
   {
-    portionLabel: '4 mini cookies · mix & match',
-    priceCents: 1000,
+    capacity: 6,
+    portionLabel: '6 mini cookies · mix & match',
+    priceCents: 1400,
     slug: 'build-your-own-mini-box',
     title: 'Build-Your-Own Mini Box',
     pitchParagraphs: [
-      'Build a box of four mini cookies and mix the flavors however you like — all four the same or four different, your call.',
+      'Build a box of six mini cookies and mix the flavors however you like — all six the same or six different, your call.',
       'Add the box to your cart, then build another. Each box is its own order line, so the kitchen sees exactly which minis to bake.',
     ],
   },
   {
+    capacity: 4,
     portionLabel: '4 large cookies · mix & match',
-    priceCents: 2000,
+    priceCents: 2500,
     slug: 'build-your-own-cookie-box',
     title: 'Build-Your-Own Cookie Box',
     pitchParagraphs: [
@@ -134,7 +139,9 @@ const run = async () => {
     }
 
     // Every cookie flavor is a candidate; the storefront narrows mix boxes to
-    // the currently-available ones at render/validation time.
+    // the currently-available ones at render/validation time. Non-cookie items
+    // that live in the Cookies category (e.g. the focaccia, parked here so the
+    // flavor rotation accepts it) must never be pickable inside a cookie box.
     const flavorResult = await payload.find({
       collection: 'products',
       depth: 0,
@@ -142,7 +149,12 @@ const run = async () => {
       overrideAccess: true,
       pagination: false,
       select: { slug: true },
-      where: { categories: { contains: cookieCategoryID } },
+      where: {
+        and: [
+          { categories: { contains: cookieCategoryID } },
+          { slug: { not_in: NON_COOKIE_SLUGS } },
+        ],
+      },
     })
     const flavorIDs = flavorResult.docs.map((flavor) => flavor.id)
 
@@ -161,7 +173,7 @@ const run = async () => {
         menuPortionLabel: spec.portionLabel,
         priceInUSD: spec.priceCents,
         priceInUSDEnabled: true,
-        requiredSelectionCount: BOX_CAPACITY,
+        requiredSelectionCount: spec.capacity,
         selectableProducts: flavorIDs,
         title: spec.title,
       }
@@ -184,7 +196,7 @@ const run = async () => {
           overrideAccess: true,
         })
         console.log(
-          `- Updated ${spec.slug} (#${existing.docs[0].id}): ${flavorIDs.length} flavors, ${BOX_CAPACITY} for ${spec.priceCents} cents`,
+          `- Updated ${spec.slug} (#${existing.docs[0].id}): ${flavorIDs.length} flavors, ${spec.capacity} for ${spec.priceCents} cents`,
         )
       } else {
         const created = await payload.create({
@@ -193,7 +205,7 @@ const run = async () => {
           overrideAccess: true,
         })
         console.log(
-          `- Created ${spec.slug} (#${created.id}): ${flavorIDs.length} flavors, ${BOX_CAPACITY} for ${spec.priceCents} cents`,
+          `- Created ${spec.slug} (#${created.id}): ${flavorIDs.length} flavors, ${spec.capacity} for ${spec.priceCents} cents`,
         )
       }
     }

@@ -1,7 +1,12 @@
 import type { Category, Media, Product } from '@/payload-types'
 import { type Payload, type PayloadRequest, RequiredDataFromCollectionSlug } from 'payload'
 
-import { cookieCatalog, cookieCategory, type CookieSeedSpec } from './cookie-catalog'
+import {
+  cookieCatalog,
+  cookieCategory,
+  type CookieSeedSpec,
+  defaultCookieMiniPriceInUSD,
+} from './cookie-catalog'
 import { createParagraphRichText, createSegmentedParagraphsRichText } from './richText'
 
 const textureNoteBySlug: Record<string, string> = {
@@ -77,6 +82,7 @@ export const buildCookieProductData = ({
       image,
       title: `${spec.title} | Baked with Blessings`,
     },
+    miniPriceInUSD: spec.miniPriceInUSD ?? defaultCookieMiniPriceInUSD,
     poster: buildPosterData(spec),
     priceInUSD: spec.priceInUSD,
     priceInUSDEnabled: true,
