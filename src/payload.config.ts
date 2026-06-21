@@ -175,6 +175,12 @@ export default buildConfig({
     ...(process.env.BLOB_READ_WRITE_TOKEN
       ? [
           vercelBlobStorage({
+            // dev/preview/prod share ONE Blob store, so re-syncing the same media
+            // to a second env would otherwise fail with "blob already exists" (the
+            // adapter has no allowOverwrite). A random suffix keeps every upload
+            // unique. Filenames are internal — media is referenced by id/URL — so
+            // the suffix is invisible to the storefront and the owner.
+            addRandomSuffix: true,
             collections: {
               media: true,
             },
