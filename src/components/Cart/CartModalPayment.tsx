@@ -582,13 +582,14 @@ export function CartModalPayment({ onOrderComplete }: Props) {
 
         <BakeryAction
           block
-          className="mt-5"
+          className="mt-5 bg-[#1f3d24] text-base text-white shadow-sm hover:bg-[#163019]"
           disabled={isConfirmingPickup || !canStartPayment}
           onClick={confirmPickupOrder}
+          size="lg"
           type="button"
           variant="primary"
         >
-          {isConfirmingPickup ? 'Sending your order' : 'Confirm order — pay at pickup'}
+          {isConfirmingPickup ? 'Placing your order…' : 'Place order — pay at pickup'}
         </BakeryAction>
       </BakeryCard>
     )
@@ -673,13 +674,13 @@ export function CartModalPayment({ onOrderComplete }: Props) {
                 </p>
                 <BakeryAction
                   block
-                  className="mt-4"
+                  className="mt-4 bg-[#1f3d24] text-white shadow-sm hover:bg-[#163019]"
                   disabled={isSubmittingVenmo || !canStartPayment}
                   onClick={markVenmoSent}
                   type="button"
                   variant="primary"
                 >
-                  {isSubmittingVenmo ? 'Recording Venmo order' : 'I sent it through Venmo'}
+                  {isSubmittingVenmo ? 'Recording Venmo order…' : 'I sent it through Venmo'}
                 </BakeryAction>
               </div>
             ) : null}
