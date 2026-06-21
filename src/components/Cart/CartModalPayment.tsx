@@ -613,13 +613,14 @@ export function CartModalPayment({ onOrderComplete }: Props) {
           {isInitiating ? <PaymentGardenLoader /> : null}
           <BakeryAction
             block
-            className="mt-5"
+            className="mt-5 bg-[#1f3d24] text-base text-white shadow-sm hover:bg-[#163019]"
             disabled={isInitiating || !canStartPayment}
             onClick={initiateModalPayment}
+            size="lg"
             type="button"
             variant="primary"
           >
-            {isInitiating ? 'Starting secure payment' : 'Start secure payment'}
+            {isInitiating ? 'Starting payment…' : 'Pay with card'}
           </BakeryAction>
 
           <div className="my-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-black/35">

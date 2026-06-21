@@ -1497,7 +1497,14 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
         </div>
 
         <div className="grid w-full max-w-[19rem] gap-2">
-          <BakeryAction as={Link} block href={orderHref} onClick={finishOrderFlow} variant="primary">
+          <BakeryAction
+            as={Link}
+            block
+            className="bg-[#1f3d24] text-white shadow-sm hover:bg-[#163019]"
+            href={orderHref}
+            onClick={finishOrderFlow}
+            variant="primary"
+          >
             View order
           </BakeryAction>
           <BakeryAction block onClick={finishOrderFlow} type="button" variant="secondary">
