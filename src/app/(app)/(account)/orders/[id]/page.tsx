@@ -244,7 +244,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         width="full"
       >
         <div className="grid gap-3 md:grid-cols-3">
-          <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4">
+          <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4">
             <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Order date
             </p>
@@ -255,7 +255,7 @@ export default async function Order({ params, searchParams }: PageProps) {
             </p>
           </section>
 
-          <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4">
+          <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4">
             <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Total
             </p>
@@ -265,7 +265,7 @@ export default async function Order({ params, searchParams }: PageProps) {
           </section>
 
           {order.status && (
-            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4">
+            <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4">
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
                 Status
               </p>
@@ -274,7 +274,7 @@ export default async function Order({ params, searchParams }: PageProps) {
           )}
 
           {isVenmoOrder ? (
-            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
+            <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
                 Payment
               </p>
@@ -288,7 +288,7 @@ export default async function Order({ params, searchParams }: PageProps) {
           ) : null}
 
           {isPickupOrder ? (
-            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
+            <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
                 Payment
               </p>
@@ -303,7 +303,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         </div>
 
         {order.items && (
-          <section className="rounded-[1.6rem] border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
+          <section className="rounded-xl border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-4">
               <h2 className="font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
                 What you ordered
@@ -334,7 +334,7 @@ export default async function Order({ params, searchParams }: PageProps) {
 
                 return (
                   <li
-                    className="rounded-2xl border border-[#eadfc8] bg-white/75 p-4 shadow-[0_10px_26px_rgba(63,53,31,0.06)]"
+                    className="border-b border-[#eadfc8]/70 pb-3 last:border-b-0 last:pb-0"
                     key={item.id}
                   >
                     <ProductItem
@@ -350,7 +350,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         )}
 
         {canPostNote ? (
-          <section className="rounded-[1.6rem] border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 sm:p-5">
+          <section className="rounded-xl border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 sm:p-5">
             <h2 className="mb-2 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Community Post-it Wall
             </h2>
@@ -385,8 +385,8 @@ export default async function Order({ params, searchParams }: PageProps) {
           </section>
         ) : null}
 
-        <section className="rounded-[1.6rem] border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
-          <h2 className="mb-4 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
+        <section>
+          <h2 className="mb-3 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
             Pickup &amp; hand-off
           </h2>
 
