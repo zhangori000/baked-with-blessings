@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "bootstrap:admin": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-first-admin.ts",
+    "bootstrap:focaccia": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-focaccia-product.ts",
     "bootstrap:page-content": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-page-content.ts",
     "bootstrap:test-customer": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-test-customer.ts",
     "bootstrap:test-product": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/bootstrap-test-product.ts",
@@ -134,10 +135,5 @@
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp"
-    ]
   }
 }

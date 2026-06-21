@@ -67,6 +67,10 @@ export type RegularOrderItem = {
   availability: 'always' | 'seasonal'
   badgeLabel: string
   bodyFallbackSrc: string
+  /** Category tag for the row, e.g. "Cookie" or "Bread". */
+  categoryLabel?: string
+  /** Category slug, e.g. 'cookies' | 'breads'. Box deals apply to cookies only. */
+  categorySlug?: string
   id: number
   image: MediaType | null
   infoButtonLabel?: string

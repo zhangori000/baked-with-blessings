@@ -2,7 +2,7 @@ import { loadScriptEnv } from './lib/load-script-env'
 
 loadScriptEnv()
 
-import { cookieCatalog } from '../src/endpoints/seed/cookie-catalog'
+import { cookieCatalog, defaultCookieMiniPriceInUSD } from '../src/endpoints/seed/cookie-catalog'
 
 const destroyWithTimeout = async (destroy: () => Promise<void>) => {
   await Promise.race([
@@ -43,8 +43,12 @@ const run = async () => {
         continue
       }
 
-      if (product.priceInUSD === spec.priceInUSD) {
-        payload.logger.info(`- Skipped ${spec.slug}: price already ${spec.priceInUSD}`)
+      const miniPriceInUSD = spec.miniPriceInUSD ?? defaultCookieMiniPriceInUSD
+
+      if (product.priceInUSD === spec.priceInUSD && product.miniPriceInUSD === miniPriceInUSD) {
+        payload.logger.info(
+          `- Skipped ${spec.slug}: large already ${spec.priceInUSD}, mini already ${miniPriceInUSD}`,
+        )
         continue
       }
 
@@ -52,6 +56,7 @@ const run = async () => {
         id: product.id,
         collection: 'products',
         data: {
+          miniPriceInUSD,
           priceInUSD: spec.priceInUSD,
           priceInUSDEnabled: true,
         },
@@ -60,7 +65,7 @@ const run = async () => {
       })
 
       payload.logger.info(
-        `- Updated ${spec.slug}: ${product.priceInUSD ?? 'unset'} -> ${spec.priceInUSD}`,
+        `- Updated ${spec.slug}: large ${product.priceInUSD ?? 'unset'} -> ${spec.priceInUSD}, mini ${product.miniPriceInUSD ?? 'unset'} -> ${miniPriceInUSD}`,
       )
     }
   } finally {

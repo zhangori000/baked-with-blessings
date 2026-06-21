@@ -130,16 +130,23 @@ export const applyRotationAvailability = ({
         isMonthlyFlavor,
         lockedDescription:
           activeRotation.lockedDescription?.trim() ||
-          'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
-        lockedLabel: activeRotation.lockedLabel?.trim() || 'Catering only this month',
-        menuHref: cateringMenuHref,
-        menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View menu',
+          'Outside the current rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
+        lockedLabel: activeRotation.lockedLabel?.trim() || 'Catering only',
+        // Focaccia lives on the menu as its tray; buyable singles land on the
+        // menu's regular-orders tab; catering-only flavors go to the bundles tab.
+        menuHref:
+          poster.slug === 'roasted-pesto-focaccia'
+            ? '/menu#bundle-focaccia-tray'
+            : canBuyIndividually
+              ? '/menu'
+              : cateringMenuHref,
+        menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View on menu',
         monthlyFlavorLabel:
           !isMonthlyFlavor && isAlwaysAvailable
             ? 'Always available'
             : activeRotation.monthlyFlavorLabel?.trim() ||
               activeRotation.displayLabel?.trim() ||
-              "This month's flavor",
+              "This week's special",
       }
     })
     .sort((left, right) => {

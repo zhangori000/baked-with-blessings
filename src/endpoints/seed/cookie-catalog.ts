@@ -1,6 +1,8 @@
 export type CookieSeedSpec = {
   mediaAlt: string
   metaDescription: string
+  /** Cents. Omit to use the flat mini default. */
+  miniPriceInUSD?: number
   priceInUSD: number
   slug: string
   sourceFilename: string
@@ -8,7 +10,13 @@ export type CookieSeedSpec = {
   title: string
 }
 
-const defaultCookiePriceInUSD = 500
+/**
+ * Flat single-cookie pricing the owner set: every large is $7.00, every mini is
+ * $3.00. Mini is its own stored value (NOT "half of large") so $3 is the source
+ * of truth — the 50% rule in sizeVariants is only a fallback for empty fields.
+ */
+const defaultCookiePriceInUSD = 700
+export const defaultCookieMiniPriceInUSD = 300
 
 export const cookieCategory = {
   menuOrder: 0,
@@ -147,9 +155,8 @@ export const cookieCatalog: CookieSeedSpec[] = [
     title: 'Strawberry Matcha Marble',
   },
   // Signature flavors the owner created in the admin panel (captured here so
-  // every environment can reproduce them). Priced at their real $7.00 rather
-  // than the $5 seed default; sourceFilename matches the live media filename so
-  // the importer is a no-op on environments that already have them.
+  // every environment can reproduce them). sourceFilename matches the live media
+  // filename so the importer is a no-op on environments that already have them.
   {
     mediaAlt: 'Red Velvet Cheesecake cookie',
     metaDescription:

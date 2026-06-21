@@ -2,6 +2,7 @@ import { loadScriptEnv } from './lib/load-script-env'
 
 loadScriptEnv()
 
+import { WEEKLY_ROTATION_LABELS } from '../src/endpoints/seed/flavor-rotations'
 import { defaultMiniPriceInUSD } from '../src/features/products/sizeVariants'
 import { ensureSizeAxis } from '../src/features/products/sizeVariantProvisioning'
 
@@ -46,9 +47,24 @@ const ALWAYS_AVAILABLE_FLAVORS: FlavorSpec[] = [
 ]
 
 const SEASONAL_ROTATION_FLAVORS: FlavorSpec[] = [
-  { slug: 'toasted-and-tasseled', title: 'Toasted and Tasseled' },
-  { slug: 'sticky-mango-rice-krispy-treats', title: 'Sticky Mango Rice Krispy Treats' },
-  { slug: 'freshly-baked-dirty-chai-cookie', title: 'Dirty Chai Cookie' },
+  {
+    largePriceInUSD: 700,
+    miniPriceInUSD: 300,
+    slug: 'freshly-baked-dirty-chai-cookie',
+    title: 'Dirty Chai Cookie',
+  },
+  {
+    largePriceInUSD: 700,
+    miniPriceInUSD: 300,
+    slug: 'sticky-mango-rice-krispy-treats',
+    title: 'Sticky Mango Rice Krispy Treats',
+  },
+  {
+    // Single-size bread (no mini) — see bootstrap-focaccia-product.ts.
+    largePriceInUSD: 700,
+    slug: 'roasted-pesto-focaccia',
+    title: 'Roasted Pesto Focaccia',
+  },
 ]
 
 const destroyWithTimeout = async (destroy: () => Promise<void>) => {
@@ -93,11 +109,12 @@ const run = async () => {
       await payload.create({
         collection: 'flavor-rotations',
         data: {
+          ...WEEKLY_ROTATION_LABELS,
           individualFlavors: [],
           rotationType: 'seasonal',
           showcaseProducts: [],
           status: 'active',
-          title: 'Seasonal rotation (set by update:flavor-lineup)',
+          title: 'Weekly specials (set by update:flavor-lineup)',
         },
         overrideAccess: true,
       })
@@ -245,6 +262,7 @@ const run = async () => {
         const created = await payload.create({
           collection: 'flavor-rotations',
           data: {
+            ...WEEKLY_ROTATION_LABELS,
             individualFlavors: seasonalIDs,
             rotationType: 'seasonal',
             showcaseProducts: [
@@ -252,7 +270,7 @@ const run = async () => {
               ...alwaysProducts.map((product) => product.id),
             ],
             status: 'active',
-            title: 'Seasonal rotation (set by update:flavor-lineup)',
+            title: 'Weekly specials (set by update:flavor-lineup)',
           },
           overrideAccess: true,
         })
@@ -261,37 +279,28 @@ const run = async () => {
         const currentShowcaseIDs = (
           Array.isArray(activeRotation.showcaseProducts) ? activeRotation.showcaseProducts : []
         ).map((entry) => (typeof entry === 'object' && entry ? entry.id : entry))
-        const currentIndividualIDs = (
-          Array.isArray(activeRotation.individualFlavors) ? activeRotation.individualFlavors : []
-        ).map((entry) => (typeof entry === 'object' && entry ? entry.id : entry))
         const showcaseWithSeasonal = Array.from(
           new Set([...currentShowcaseIDs, ...seasonalIDs]),
         )
-        const individualMatches =
-          currentIndividualIDs.length === seasonalIDs.length &&
-          seasonalIDs.every((id, index) => currentIndividualIDs[index] === id)
 
-        if (individualMatches && showcaseWithSeasonal.length === currentShowcaseIDs.length) {
-          payload.logger.info(
-            `- Skipped rotation #${activeRotation.id}: public cookies already match the seasonal lineup`,
-          )
-        } else {
-          await payload.update({
-            id: activeRotation.id,
-            collection: 'flavor-rotations',
-            data: {
-              individualFlavors: seasonalIDs,
-              showcaseProducts: showcaseWithSeasonal,
-            },
-            depth: 0,
-            overrideAccess: true,
-          })
-          payload.logger.info(
-            `- Updated rotation #${activeRotation.id}: public cookies -> [${seasonalProducts
-              .map((product) => product.title)
-              .join(', ')}]`,
-          )
-        }
+        // Always write — keeps the customer-facing labels and lineup in sync even
+        // when the public cookies already match.
+        await payload.update({
+          id: activeRotation.id,
+          collection: 'flavor-rotations',
+          data: {
+            ...WEEKLY_ROTATION_LABELS,
+            individualFlavors: seasonalIDs,
+            showcaseProducts: showcaseWithSeasonal,
+          },
+          depth: 0,
+          overrideAccess: true,
+        })
+        payload.logger.info(
+          `- Updated rotation #${activeRotation.id}: public cookies -> [${seasonalProducts
+            .map((product) => product.title)
+            .join(', ')}]`,
+        )
       }
     }
   } finally {

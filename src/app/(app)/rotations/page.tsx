@@ -5,9 +5,9 @@ import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
 import { queryPublicRotationCookiePosters } from '../cookiePosterQueries'
 
 export const metadata = buildStaticMetadata({
-  description: 'Browse the rotating cookie flavors in the animated Baked with Blessings showcase.',
+  description: 'Browse this week’s specials in the animated Baked with Blessings showcase.',
   path: '/rotations',
-  title: 'Rotating Cookie Flavors',
+  title: 'Specials of the Week',
 })
 
 export default async function RotationsPage() {

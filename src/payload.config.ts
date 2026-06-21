@@ -170,12 +170,18 @@ export default buildConfig({
     SitePages,
   ],
   plugins: [
-    vercelBlobStorage({
-      collections: {
-        media: true,
-      },
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    }),
+    // Vercel Blob in hosted envs; when no token is set (local dev) fall back to
+    // Payload's built-in local disk storage so media uploads work without a blob token.
+    ...(process.env.BLOB_READ_WRITE_TOKEN
+      ? [
+          vercelBlobStorage({
+            collections: {
+              media: true,
+            },
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+          }),
+        ]
+      : []),
     ...plugins,
   ],
   secret: process.env.PAYLOAD_SECRET || '',

@@ -1,0 +1,8 @@
+# pnpm 11 build-script approval (its replacement for package.json's
+# pnpm.onlyBuiltDependencies). Without this, `pnpm install` / `pnpm dev` fail
+# with ERR_PNPM_IGNORED_BUILDS for these native deps.
+allowBuilds:
+  '@vercel/git-hooks': true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
