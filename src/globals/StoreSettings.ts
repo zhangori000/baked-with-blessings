@@ -2,7 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { adminOnly } from '@/access/adminOnly'
 
-export type PaymentCollectionMode = 'payAtPickup' | 'payNow'
+export type PaymentCollectionMode = 'payAtPickup' | 'payNow' | 'both'
 
 export const defaultPaymentCollectionMode: PaymentCollectionMode = 'payNow'
 
@@ -24,7 +24,7 @@ export const StoreSettings: GlobalConfig = {
       type: 'select',
       admin: {
         description:
-          'Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over.',
+          'Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over. Let customers choose offers both, so each person picks at checkout.',
       },
       defaultValue: defaultPaymentCollectionMode,
       options: [
@@ -35,6 +35,10 @@ export const StoreSettings: GlobalConfig = {
         {
           label: 'Pay at pickup (order first, settle in person)',
           value: 'payAtPickup',
+        },
+        {
+          label: 'Let customers choose (pay online now, or pay at pickup)',
+          value: 'both',
         },
       ],
       required: true,

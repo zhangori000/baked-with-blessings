@@ -20,6 +20,8 @@ import { FulfillmentNote } from '@/components/checkout/FulfillmentNote'
 import { findExistingNoteForOrder } from '@/features/community/services'
 import { communityHref } from '@/utilities/routes'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { isPayNowAllowed } from '@/utilities/storeSettings'
+import { OrderPayPanel } from './OrderPayPanel.client'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,6 +113,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         manualPaymentMethod: true,
         manualPaymentReportedAt: true,
         manualPaymentStatus: true,
+        stripePaymentIntentID: true,
         createdAt: true,
         updatedAt: true,
         shippingAddress: true,
@@ -146,6 +149,17 @@ export default async function Order({ params, searchParams }: PageProps) {
   const hasShippingAddress = hasAddressContent(order.shippingAddress)
   const isVenmoOrder = order.manualPaymentMethod === 'venmo'
   const isPickupOrder = order.manualPaymentMethod === 'in_person'
+
+  const orderIsClosed =
+    order.status === 'completed' || order.status === 'cancelled' || order.status === 'refunded'
+  // Only the logged-in owner of an unsettled pickup order can pay it online.
+  const canPayOnline =
+    Boolean(user) &&
+    isPickupOrder &&
+    !order.stripePaymentIntentID &&
+    !orderIsClosed &&
+    (await isPayNowAllowed(payload))
+  const amountLabel = `$${((order.amount ?? 0) / 100).toFixed(2)}`
 
   const canPostNote = Boolean(user)
   const existingCommunityNote = canPostNote
@@ -244,7 +258,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         width="full"
       >
         <div className="grid gap-3 md:grid-cols-3">
-          <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4">
+          <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4">
             <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Order date
             </p>
@@ -255,7 +269,7 @@ export default async function Order({ params, searchParams }: PageProps) {
             </p>
           </section>
 
-          <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4">
+          <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4">
             <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Total
             </p>
@@ -265,7 +279,7 @@ export default async function Order({ params, searchParams }: PageProps) {
           </section>
 
           {order.status && (
-            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4">
+            <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4">
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
                 Status
               </p>
@@ -274,7 +288,7 @@ export default async function Order({ params, searchParams }: PageProps) {
           )}
 
           {isVenmoOrder ? (
-            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
+            <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
                 Payment
               </p>
@@ -288,22 +302,33 @@ export default async function Order({ params, searchParams }: PageProps) {
           ) : null}
 
           {isPickupOrder ? (
-            <section className="rounded-[1.4rem] border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
+            <section className="rounded-xl border border-[#eadfc8] bg-white/70 p-4 md:col-span-3">
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
                 Payment
               </p>
-              <p className="text-sm leading-6 text-[#4b421d]">
-                Pay at pickup.
-                {order.status === 'completed'
-                  ? ' This order has been handed over and settled.'
-                  : ' Nothing has been charged yet — settle by card, Venmo, or cash when you collect your order.'}
-              </p>
+              {order.stripePaymentIntentID ? (
+                <p className="text-sm font-semibold leading-6 text-[#1f3d24]">
+                  Paid online — thank you!
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm leading-6 text-[#4b421d]">
+                    Pay at pickup.
+                    {order.status === 'completed'
+                      ? ' This order has been handed over and settled.'
+                      : ' Nothing has been charged yet — settle by card, Venmo, or cash when you collect, or pay online now.'}
+                  </p>
+                  {canPayOnline ? (
+                    <OrderPayPanel amountLabel={amountLabel} orderId={Number(order.id)} />
+                  ) : null}
+                </>
+              )}
             </section>
           ) : null}
         </div>
 
         {order.items && (
-          <section className="rounded-[1.6rem] border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
+          <section className="rounded-xl border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-4">
               <h2 className="font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
                 What you ordered
@@ -334,7 +359,7 @@ export default async function Order({ params, searchParams }: PageProps) {
 
                 return (
                   <li
-                    className="rounded-2xl border border-[#eadfc8] bg-white/75 p-4 shadow-[0_10px_26px_rgba(63,53,31,0.06)]"
+                    className="border-b border-[#eadfc8]/70 pb-3 last:border-b-0 last:pb-0"
                     key={item.id}
                   >
                     <ProductItem
@@ -350,7 +375,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         )}
 
         {canPostNote ? (
-          <section className="rounded-[1.6rem] border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 sm:p-5">
+          <section className="rounded-xl border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 sm:p-5">
             <h2 className="mb-2 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
               Community Post-it Wall
             </h2>
@@ -385,8 +410,8 @@ export default async function Order({ params, searchParams }: PageProps) {
           </section>
         ) : null}
 
-        <section className="rounded-[1.6rem] border border-[#eadfc8] bg-[#fffdf6] p-4 sm:p-5">
-          <h2 className="mb-4 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
+        <section>
+          <h2 className="mb-3 font-mono text-sm font-bold tracking-[0.18em] text-[#9bad6a] uppercase">
             Pickup &amp; hand-off
           </h2>
 

@@ -20,7 +20,7 @@ const PICKUP_CONTACT_REQUIRED_ERROR =
   'Log in with an email or phone number before confirming your order.'
 const CART_LOADING_ERROR = 'Your cart is still loading. Try again in a moment.'
 
-type PaymentCollectionMode = 'payAtPickup' | 'payNow'
+type PaymentCollectionMode = 'payAtPickup' | 'payNow' | 'both'
 
 type CompleteOrder = {
   accessToken?: string
@@ -228,6 +228,8 @@ export function CartModalPayment({ onOrderComplete }: Props) {
   const [showVenmoInstructions, setShowVenmoInstructions] = useState(false)
   const [isConfirmingPickup, setIsConfirmingPickup] = useState(false)
   const [paymentMode, setPaymentMode] = useState<null | PaymentCollectionMode>(null)
+  // When the owner allows both, the customer picks one here (defaults to pay-now).
+  const [selectedMethod, setSelectedMethod] = useState<'payAtPickup' | 'payNow'>('payNow')
 
   const customerEmail = typeof user?.email === 'string' ? user.email : ''
   const customerPhone = typeof user?.phone === 'string' ? user.phone : ''
@@ -255,7 +257,10 @@ export function CartModalPayment({ onOrderComplete }: Props) {
         const settings = (await response.json()) as { paymentCollectionMode?: unknown }
 
         if (!cancelled) {
-          setPaymentMode(settings?.paymentCollectionMode === 'payAtPickup' ? 'payAtPickup' : 'payNow')
+          const mode = settings?.paymentCollectionMode
+          setPaymentMode(
+            mode === 'payAtPickup' ? 'payAtPickup' : mode === 'both' ? 'both' : 'payNow',
+          )
         }
       } catch {
         // The server enforces the real mode on every payment endpoint; the UI
@@ -504,14 +509,56 @@ export function CartModalPayment({ onOrderComplete }: Props) {
     )
   }
 
-  if (paymentMode === 'payAtPickup') {
+  const activeMethod: 'payAtPickup' | 'payNow' =
+    paymentMode === 'both' ? selectedMethod : paymentMode
+
+  const methodToggle =
+    paymentMode === 'both' ? (
+      <div
+        aria-label="Choose how to pay"
+        className="mb-5 grid grid-cols-2 gap-2 rounded-[14px] border border-[#e4d7bd] bg-[#fff8e8] p-1"
+        role="group"
+      >
+        {[
+          { key: 'payNow' as const, label: 'Pay now', sub: 'Card or Venmo' },
+          { key: 'payAtPickup' as const, label: 'Pay at pickup', sub: 'Settle in person' },
+        ].map((option) => {
+          const selected = selectedMethod === option.key
+          return (
+            <button
+              aria-pressed={selected}
+              className={`rounded-[10px] px-3 py-2 text-center transition ${
+                selected ? 'bg-[#1f3d24] text-white shadow-sm' : 'text-[#5f4a32] hover:bg-[#f5e6bf]'
+              }`}
+              key={option.key}
+              onClick={() => {
+                setError(null)
+                setSelectedMethod(option.key)
+              }}
+              type="button"
+            >
+              <span className="block text-sm font-bold leading-tight">{option.label}</span>
+              <span
+                className={`block text-[11px] font-semibold leading-tight ${
+                  selected ? 'text-white/80' : 'text-[#8b7a62]'
+                }`}
+              >
+                {option.sub}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    ) : null
+
+  if (activeMethod === 'payAtPickup') {
     return (
       <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
+        {methodToggle}
         <div className="space-y-2">
           <p className="text-2xl font-medium tracking-[-0.04em]">Confirm your order</p>
           <p className="text-sm leading-6 text-black/60">
-            Nothing is charged now. You pay when you pick up your order &#8212; card, Venmo, or
-            cash at the handoff.
+            Nothing’s charged now — you pay at pickup (card, Venmo, or cash).
           </p>
         </div>
 
@@ -524,26 +571,25 @@ export function CartModalPayment({ onOrderComplete }: Props) {
             Pay at pickup
           </p>
           <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
-            Confirming sends your order straight to the baker, who will personally message you
-            through the contact info on your account to arrange the pickup.
+            Confirming sends your order to the baker, who’ll message you to arrange pickup.
           </p>
           {!customerEmail && customerPhone ? (
             <p className="mt-2 text-sm font-semibold leading-6 text-[#1f3d24]">
-              You signed up with a phone number only, so there is no email receipt — the baker
-              will text you personally with every update.
+              Phone-only account: no email receipt — the baker texts you every update.
             </p>
           ) : null}
         </div>
 
         <BakeryAction
           block
-          className="mt-5"
+          className="mt-5 bg-[#1f3d24] text-base text-white shadow-sm hover:bg-[#163019]"
           disabled={isConfirmingPickup || !canStartPayment}
           onClick={confirmPickupOrder}
+          size="lg"
           type="button"
           variant="primary"
         >
-          {isConfirmingPickup ? 'Sending your order' : 'Confirm order — pay at pickup'}
+          {isConfirmingPickup ? 'Placing your order…' : 'Place order — pay at pickup'}
         </BakeryAction>
       </BakeryCard>
     )
@@ -551,11 +597,11 @@ export function CartModalPayment({ onOrderComplete }: Props) {
 
   return (
     <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
+      {methodToggle}
       <div className="space-y-2">
         <p className="text-2xl font-medium tracking-[-0.04em]">Payment</p>
         <p className="text-sm leading-6 text-black/60">
-          Pay securely without leaving the cart. Card details are handled by Stripe, not stored by
-          this site.
+          Pay securely with Stripe — your card never touches this site.
         </p>
       </div>
 
@@ -568,13 +614,14 @@ export function CartModalPayment({ onOrderComplete }: Props) {
           {isInitiating ? <PaymentGardenLoader /> : null}
           <BakeryAction
             block
-            className="mt-5"
+            className="mt-5 bg-[#1f3d24] text-base text-white shadow-sm hover:bg-[#163019]"
             disabled={isInitiating || !canStartPayment}
             onClick={initiateModalPayment}
+            size="lg"
             type="button"
             variant="primary"
           >
-            {isInitiating ? 'Starting secure payment' : 'Start secure payment'}
+            {isInitiating ? 'Starting payment…' : 'Pay with card'}
           </BakeryAction>
 
           <div className="my-5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em] text-black/35">
@@ -590,7 +637,7 @@ export function CartModalPayment({ onOrderComplete }: Props) {
                   Venmo instead
                 </p>
                 <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
-                  Use this only after sending the cart total to @bakedwithblessings.
+                  Send the cart total to @bakedwithblessings first.
                 </p>
               </div>
               <BakeryAction
@@ -619,22 +666,21 @@ export function CartModalPayment({ onOrderComplete }: Props) {
                   >
                     @bakedwithblessings
                   </a>
-                  . Add your account name or order note in Venmo if you can.
+                  , with your name or order note if you can.
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#6b5835]">
-                  This records the order, but it does not verify the payment automatically. Once the
-                  bakery sees the Venmo payment, they will contact you through the email or phone on
-                  your account and update the order manually.
+                  This records your order — it doesn’t confirm payment. The baker checks Venmo, then
+                  follows up to finalize.
                 </p>
                 <BakeryAction
                   block
-                  className="mt-4"
+                  className="mt-4 bg-[#1f3d24] text-white shadow-sm hover:bg-[#163019]"
                   disabled={isSubmittingVenmo || !canStartPayment}
                   onClick={markVenmoSent}
                   type="button"
                   variant="primary"
                 >
-                  {isSubmittingVenmo ? 'Recording Venmo order' : 'I sent it through Venmo'}
+                  {isSubmittingVenmo ? 'Recording Venmo order…' : 'I sent it through Venmo'}
                 </BakeryAction>
               </div>
             ) : null}

@@ -5,7 +5,7 @@ import Stripe from 'stripe'
 
 import { ALLOW_CUSTOMER_STRIPE_CUSTOMER_ID_WRITE } from '@/collections/Customers/hooks/customerPhoneIdentity'
 import { isUniqueConstraintError } from '@/utilities/idempotency'
-import { isPayAtPickupMode } from '@/utilities/storeSettings'
+import { isPayNowAllowed } from '@/utilities/storeSettings'
 
 type StripeAdapterArgs = Parameters<typeof stripeAdapter>[0]
 
@@ -563,6 +563,82 @@ export const finalizeOrderFromPaymentIntent = async ({
   }
 }
 
+// Phase 3: settle an EXISTING order (e.g. a pay-at-pickup order) that the
+// customer chose to pay online later. Its PaymentIntent carries `orderID`
+// metadata instead of `cartID`, so rather than creating a new order we mark the
+// existing one paid and flip its transaction to succeeded. Idempotent on the
+// order's stripePaymentIntentID.
+export const finalizeExistingOrderPayment = async ({
+  orderID,
+  ordersSlug,
+  paymentIntentID,
+  req,
+  transactionsSlug,
+}: {
+  orderID: string
+  ordersSlug: CollectionSlug
+  paymentIntentID: string
+  req: Parameters<PaymentAdapter['confirmOrder']>[0]['req']
+  transactionsSlug: CollectionSlug
+}): Promise<FinalizeOrderFromPaymentIntentResult> => {
+  const numericOrderID = Number.parseInt(orderID, 10)
+
+  const order = (await req.payload
+    .findByID({
+      id: numericOrderID,
+      collection: ordersSlug,
+      depth: 0,
+      overrideAccess: true,
+      req,
+    })
+    .catch(() => null)) as (OrderLike & { stripePaymentIntentID?: null | string }) | null
+
+  if (!order?.id) {
+    throw new Error(`Order ${String(orderID)} was not found while finalizing its online payment.`)
+  }
+
+  // Idempotent: already settled by this PaymentIntent.
+  if (order.stripePaymentIntentID === paymentIntentID) {
+    return { created: false, order }
+  }
+
+  const transaction = await findTransactionByPaymentIntentID({
+    paymentIntentID,
+    req,
+    transactionsSlug,
+  })
+
+  if (transaction?.id) {
+    await req.payload.update({
+      id: transaction.id,
+      collection: transactionsSlug,
+      data: { order: order.id, status: 'succeeded' },
+      overrideAccess: true,
+      req,
+    })
+  }
+
+  await req.payload.update({
+    id: order.id,
+    collection: ordersSlug,
+    data: {
+      stripePaymentIntentID: paymentIntentID,
+      ...(transaction?.id ? { transactions: [transaction.id] } : {}),
+    },
+    overrideAccess: true,
+    req,
+  })
+
+  req.payload.logger.info({
+    msg: 'stripe.finalize.existing_order_paid',
+    orderID: order.id,
+    paymentIntentID,
+    transactionID: transaction?.id,
+  })
+
+  return { created: true, order, transactionID: transaction?.id }
+}
+
 export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter => {
   const existingPaymentIntentSucceededWebhook = args.webhooks?.['payment_intent.succeeded']
   const adapter = stripeAdapter({
@@ -588,15 +664,26 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
           status: paymentIntent.status,
         })
 
-        const result = await finalizeOrderFromPaymentIntent({
-          cartsSlug: 'carts' as CollectionSlug,
-          ordersSlug: 'orders' as CollectionSlug,
-          paymentIntent,
-          paymentIntentID: paymentIntent.id,
-          req,
-          stripe,
-          transactionsSlug: 'transactions' as CollectionSlug,
-        })
+        // An existing-order payment (Phase 3) carries `orderID` metadata; the
+        // normal cart checkout carries `cartID`. Route accordingly.
+        const orderIDFromMetadata = getString(paymentIntent.metadata?.orderID)
+        const result = orderIDFromMetadata
+          ? await finalizeExistingOrderPayment({
+              orderID: orderIDFromMetadata,
+              ordersSlug: 'orders' as CollectionSlug,
+              paymentIntentID: paymentIntent.id,
+              req,
+              transactionsSlug: 'transactions' as CollectionSlug,
+            })
+          : await finalizeOrderFromPaymentIntent({
+              cartsSlug: 'carts' as CollectionSlug,
+              ordersSlug: 'orders' as CollectionSlug,
+              paymentIntent,
+              paymentIntentID: paymentIntent.id,
+              req,
+              stripe,
+              transactionsSlug: 'transactions' as CollectionSlug,
+            })
 
         req.payload.logger.info({
           created: result.created,
@@ -619,7 +706,7 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
 
       // Mode is enforced here (initiation) but never in confirmOrder or the
       // webhook: once Stripe has taken money, the order must be recorded.
-      if (await isPayAtPickupMode(payload)) {
+      if (!(await isPayNowAllowed(payload))) {
         throw new Error(
           'Online payment is turned off right now. Place your order and pay when you pick it up.',
         )

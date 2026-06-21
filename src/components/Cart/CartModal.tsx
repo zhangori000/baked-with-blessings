@@ -21,7 +21,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
-import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, ShoppingBag, StickyNote, UserPlus, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, ShoppingBag, UserPlus, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -1479,76 +1479,46 @@ function CartCompletePanel({ onClose, order }: { onClose: () => void; order: Com
   return (
     <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
       <BakeryCard
-        className="flex min-h-full flex-col items-center justify-center gap-5 bg-white px-6 py-8 text-center"
+        className="flex min-h-full flex-col items-center justify-center gap-6 bg-white px-6 py-10 text-center"
         radius="sm"
         spacing="none"
       >
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-black/10 bg-[#fffefa]">
-          <CheckCircle2 className="h-8 w-8 text-black/75" />
-        </div>
+        <CheckCircle2 className="h-12 w-12 text-[#1f3d24]" />
 
         <div className="space-y-2">
-          <p className="text-3xl font-medium tracking-[-0.05em]">Order received.</p>
-          <p className="text-sm leading-6 text-black/60">
+          <p className="text-3xl font-medium tracking-[-0.05em]">Order received</p>
+          <p className="mx-auto max-w-[19rem] text-sm leading-6 text-black/60">
             {isPickupOrder
-              ? 'Nothing was charged. You pay when you pick up your order - the baker will personally message you through the contact info on your account to arrange the handoff.'
+              ? 'Nothing was charged — you pay at pickup. The baker will message you to set up the handoff.'
               : isVenmoOrder
-                ? 'We recorded your Venmo report. The bakery will verify the payment to @bakedwithblessings and contact you through your account contact method.'
-                : 'Payment went through and a fresh cart will be started.'}
+                ? 'Your Venmo report is in. The baker will confirm the payment and follow up.'
+                : 'Payment went through. We’ll start you a fresh cart.'}
           </p>
         </div>
 
-        <div className="grid w-full max-w-[22rem] gap-3">
-          <div className="rounded-2xl border border-dashed border-[#d8c9a5] bg-[#fffaeb] p-4 text-left">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#ffd87a] text-[#4a421d]">
-                <StickyNote className="h-4 w-4" />
-              </span>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-[#4a421d]">
-                  Want to leave a note for the wall?
-                </p>
-                <p className="text-xs leading-5 text-[#5f5632]">
-                  Pin a tiny letter to the Community Post-it Wall — what you got, what you were
-                  thinking. You can stay anonymous.
-                </p>
-              </div>
-            </div>
-            <BakeryAction
-              as={Link}
-              block
-              className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#c14d2a] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#fff8e8] transition duration-200 hover:bg-[#a93b1d]"
-              href={postNoteHref}
-              onClick={finishOrderFlow}
-              size="sm"
-              variant="primary"
-            >
-              Post a note
-            </BakeryAction>
-          </div>
-
+        <div className="grid w-full max-w-[19rem] gap-2">
           <BakeryAction
             as={Link}
             block
-            className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+            className="bg-[#1f3d24] text-white shadow-sm hover:bg-[#163019]"
             href={orderHref}
             onClick={finishOrderFlow}
-            size="md"
             variant="primary"
           >
             View order
           </BakeryAction>
-          <BakeryAction
-            block
-            className="inline-flex w-full items-center justify-center rounded-full border border-black/10 bg-transparent px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-black transition duration-200 hover:border-black/20 hover:bg-white/70"
-            onClick={finishOrderFlow}
-            size="md"
-            type="button"
-            variant="secondary"
-          >
+          <BakeryAction block onClick={finishOrderFlow} type="button" variant="secondary">
             Close
           </BakeryAction>
         </div>
+
+        <Link
+          className="text-xs text-black/45 underline decoration-black/20 underline-offset-4 transition hover:text-black/70"
+          href={postNoteHref}
+          onClick={finishOrderFlow}
+        >
+          Leave a note on the Community Wall
+        </Link>
       </BakeryCard>
     </div>
   )

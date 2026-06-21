@@ -3416,9 +3416,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface StoreSetting {
   id: number;
   /**
-   * Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over.
+   * Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over. Let customers choose offers both, so each person picks at checkout.
    */
-  paymentCollectionMode: 'payNow' | 'payAtPickup';
+  paymentCollectionMode: 'payNow' | 'payAtPickup' | 'both';
   updatedAt?: string | null;
   createdAt?: string | null;
 }

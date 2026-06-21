@@ -5,6 +5,12 @@ import {
   type PaymentCollectionMode,
 } from '@/globals/StoreSettings'
 
+const PAYMENT_COLLECTION_MODES: readonly PaymentCollectionMode[] = [
+  'payNow',
+  'payAtPickup',
+  'both',
+]
+
 export const getPaymentCollectionMode = async (
   payload: Payload,
 ): Promise<PaymentCollectionMode> => {
@@ -15,7 +21,10 @@ export const getPaymentCollectionMode = async (
       overrideAccess: true,
     })
 
-    return settings?.paymentCollectionMode === 'payAtPickup' ? 'payAtPickup' : 'payNow'
+    const mode = settings?.paymentCollectionMode
+    return PAYMENT_COLLECTION_MODES.includes(mode as PaymentCollectionMode)
+      ? (mode as PaymentCollectionMode)
+      : defaultPaymentCollectionMode
   } catch (error) {
     payload.logger.warn({
       err: error,
@@ -26,5 +35,14 @@ export const getPaymentCollectionMode = async (
   }
 }
 
-export const isPayAtPickupMode = async (payload: Payload): Promise<boolean> =>
-  (await getPaymentCollectionMode(payload)) === 'payAtPickup'
+// Online payment (Stripe + Venmo) is available in 'payNow' and 'both'.
+export const isPayNowAllowed = async (payload: Payload): Promise<boolean> => {
+  const mode = await getPaymentCollectionMode(payload)
+  return mode === 'payNow' || mode === 'both'
+}
+
+// Pay-at-pickup ordering is available in 'payAtPickup' and 'both'.
+export const isPayAtPickupAllowed = async (payload: Payload): Promise<boolean> => {
+  const mode = await getPaymentCollectionMode(payload)
+  return mode === 'payAtPickup' || mode === 'both'
+}

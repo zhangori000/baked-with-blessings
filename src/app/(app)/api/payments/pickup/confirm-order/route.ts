@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { createManualOrderFromCart } from '@/utilities/manualOrders'
-import { isPayAtPickupMode } from '@/utilities/storeSettings'
+import { isPayAtPickupAllowed } from '@/utilities/storeSettings'
 
 type ConfirmOrderBody = {
   cartID?: number | string
@@ -20,9 +20,9 @@ const jsonError = (message: string, status = 400) =>
 export async function POST(request: Request) {
   const payload = await getPayload({ config })
 
-  // Mirror image of the Venmo route's guard: pickup ordering only exists
-  // while the owner has the store in pay-at-pickup mode.
-  if (!(await isPayAtPickupMode(payload))) {
+  // Mirror image of the Venmo route's guard: pickup ordering exists while the
+  // owner allows pay-at-pickup (the 'payAtPickup' or 'both' modes).
+  if (!(await isPayAtPickupAllowed(payload))) {
     return jsonError(
       'Pay-at-pickup ordering is not active right now. Pay online at checkout instead.',
       409,

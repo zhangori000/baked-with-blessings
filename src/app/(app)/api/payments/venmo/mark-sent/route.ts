@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { createManualOrderFromCart } from '@/utilities/manualOrders'
-import { isPayAtPickupMode } from '@/utilities/storeSettings'
+import { isPayNowAllowed } from '@/utilities/storeSettings'
 
 const VENMO_HANDLE = '@bakedwithblessings'
 
@@ -22,7 +22,7 @@ const jsonError = (message: string, status = 400) =>
 export async function POST(request: Request) {
   const payload = await getPayload({ config })
 
-  if (await isPayAtPickupMode(payload)) {
+  if (!(await isPayNowAllowed(payload))) {
     return jsonError(
       'Venmo at checkout is turned off right now. Place your order and pay when you pick it up.',
       409,

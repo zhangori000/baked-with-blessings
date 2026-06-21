@@ -27,6 +27,7 @@ import * as migration_20260612_091709_add_announcements_global from './20260612_
 import * as migration_20260612_233122_add_product_individual_availability from './20260612_233122_add_product_individual_availability';
 import * as migration_20260613_004258_add_product_mini_price from './20260613_004258_add_product_mini_price';
 import * as migration_20260613_074909_add_product_flavor_selection from './20260613_074909_add_product_flavor_selection';
+import * as migration_20260621_000000_add_both_payment_collection_mode from './20260621_000000_add_both_payment_collection_mode';
 
 export const migrations = [
   {
@@ -173,5 +174,10 @@ export const migrations = [
     up: migration_20260613_074909_add_product_flavor_selection.up,
     down: migration_20260613_074909_add_product_flavor_selection.down,
     name: '20260613_074909_add_product_flavor_selection'
+  },
+  {
+    up: migration_20260621_000000_add_both_payment_collection_mode.up,
+    down: migration_20260621_000000_add_both_payment_collection_mode.down,
+    name: '20260621_000000_add_both_payment_collection_mode',
   },
 ];
