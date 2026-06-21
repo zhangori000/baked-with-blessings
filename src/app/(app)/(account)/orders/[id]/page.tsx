@@ -20,6 +20,8 @@ import { FulfillmentNote } from '@/components/checkout/FulfillmentNote'
 import { findExistingNoteForOrder } from '@/features/community/services'
 import { communityHref } from '@/utilities/routes'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { isPayNowAllowed } from '@/utilities/storeSettings'
+import { OrderPayPanel } from './OrderPayPanel.client'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,6 +113,7 @@ export default async function Order({ params, searchParams }: PageProps) {
         manualPaymentMethod: true,
         manualPaymentReportedAt: true,
         manualPaymentStatus: true,
+        stripePaymentIntentID: true,
         createdAt: true,
         updatedAt: true,
         shippingAddress: true,
@@ -146,6 +149,17 @@ export default async function Order({ params, searchParams }: PageProps) {
   const hasShippingAddress = hasAddressContent(order.shippingAddress)
   const isVenmoOrder = order.manualPaymentMethod === 'venmo'
   const isPickupOrder = order.manualPaymentMethod === 'in_person'
+
+  const orderIsClosed =
+    order.status === 'completed' || order.status === 'cancelled' || order.status === 'refunded'
+  // Only the logged-in owner of an unsettled pickup order can pay it online.
+  const canPayOnline =
+    Boolean(user) &&
+    isPickupOrder &&
+    !order.stripePaymentIntentID &&
+    !orderIsClosed &&
+    (await isPayNowAllowed(payload))
+  const amountLabel = `$${((order.amount ?? 0) / 100).toFixed(2)}`
 
   const canPostNote = Boolean(user)
   const existingCommunityNote = canPostNote
@@ -292,12 +306,23 @@ export default async function Order({ params, searchParams }: PageProps) {
               <p className="mb-2 font-mono text-xs font-bold tracking-[0.18em] text-[#75853d] uppercase">
                 Payment
               </p>
-              <p className="text-sm leading-6 text-[#4b421d]">
-                Pay at pickup.
-                {order.status === 'completed'
-                  ? ' This order has been handed over and settled.'
-                  : ' Nothing has been charged yet — settle by card, Venmo, or cash when you collect your order.'}
-              </p>
+              {order.stripePaymentIntentID ? (
+                <p className="text-sm font-semibold leading-6 text-[#1f3d24]">
+                  Paid online — thank you!
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm leading-6 text-[#4b421d]">
+                    Pay at pickup.
+                    {order.status === 'completed'
+                      ? ' This order has been handed over and settled.'
+                      : ' Nothing has been charged yet — settle by card, Venmo, or cash when you collect, or pay online now.'}
+                  </p>
+                  {canPayOnline ? (
+                    <OrderPayPanel amountLabel={amountLabel} orderId={Number(order.id)} />
+                  ) : null}
+                </>
+              )}
             </section>
           ) : null}
         </div>
