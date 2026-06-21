@@ -5,7 +5,7 @@ import Stripe from 'stripe'
 
 import { ALLOW_CUSTOMER_STRIPE_CUSTOMER_ID_WRITE } from '@/collections/Customers/hooks/customerPhoneIdentity'
 import { isUniqueConstraintError } from '@/utilities/idempotency'
-import { isPayAtPickupMode } from '@/utilities/storeSettings'
+import { isPayNowAllowed } from '@/utilities/storeSettings'
 
 type StripeAdapterArgs = Parameters<typeof stripeAdapter>[0]
 
@@ -619,7 +619,7 @@ export const idempotentStripeAdapter = (args: StripeAdapterArgs): PaymentAdapter
 
       // Mode is enforced here (initiation) but never in confirmOrder or the
       // webhook: once Stripe has taken money, the order must be recorded.
-      if (await isPayAtPickupMode(payload)) {
+      if (!(await isPayNowAllowed(payload))) {
         throw new Error(
           'Online payment is turned off right now. Place your order and pay when you pick it up.',
         )

@@ -20,7 +20,7 @@ const PICKUP_CONTACT_REQUIRED_ERROR =
   'Log in with an email or phone number before confirming your order.'
 const CART_LOADING_ERROR = 'Your cart is still loading. Try again in a moment.'
 
-type PaymentCollectionMode = 'payAtPickup' | 'payNow'
+type PaymentCollectionMode = 'payAtPickup' | 'payNow' | 'both'
 
 type CompleteOrder = {
   accessToken?: string
@@ -228,6 +228,8 @@ export function CartModalPayment({ onOrderComplete }: Props) {
   const [showVenmoInstructions, setShowVenmoInstructions] = useState(false)
   const [isConfirmingPickup, setIsConfirmingPickup] = useState(false)
   const [paymentMode, setPaymentMode] = useState<null | PaymentCollectionMode>(null)
+  // When the owner allows both, the customer picks one here (defaults to pay-now).
+  const [selectedMethod, setSelectedMethod] = useState<'payAtPickup' | 'payNow'>('payNow')
 
   const customerEmail = typeof user?.email === 'string' ? user.email : ''
   const customerPhone = typeof user?.phone === 'string' ? user.phone : ''
@@ -255,7 +257,10 @@ export function CartModalPayment({ onOrderComplete }: Props) {
         const settings = (await response.json()) as { paymentCollectionMode?: unknown }
 
         if (!cancelled) {
-          setPaymentMode(settings?.paymentCollectionMode === 'payAtPickup' ? 'payAtPickup' : 'payNow')
+          const mode = settings?.paymentCollectionMode
+          setPaymentMode(
+            mode === 'payAtPickup' ? 'payAtPickup' : mode === 'both' ? 'both' : 'payNow',
+          )
         }
       } catch {
         // The server enforces the real mode on every payment endpoint; the UI
@@ -504,9 +509,52 @@ export function CartModalPayment({ onOrderComplete }: Props) {
     )
   }
 
-  if (paymentMode === 'payAtPickup') {
+  const activeMethod: 'payAtPickup' | 'payNow' =
+    paymentMode === 'both' ? selectedMethod : paymentMode
+
+  const methodToggle =
+    paymentMode === 'both' ? (
+      <div
+        aria-label="Choose how to pay"
+        className="mb-5 grid grid-cols-2 gap-2 rounded-[14px] border border-[#e4d7bd] bg-[#fff8e8] p-1"
+        role="group"
+      >
+        {[
+          { key: 'payNow' as const, label: 'Pay now', sub: 'Card or Venmo' },
+          { key: 'payAtPickup' as const, label: 'Pay at pickup', sub: 'Settle in person' },
+        ].map((option) => {
+          const selected = selectedMethod === option.key
+          return (
+            <button
+              aria-pressed={selected}
+              className={`rounded-[10px] px-3 py-2 text-center transition ${
+                selected ? 'bg-[#1f3d24] text-white shadow-sm' : 'text-[#5f4a32] hover:bg-[#f5e6bf]'
+              }`}
+              key={option.key}
+              onClick={() => {
+                setError(null)
+                setSelectedMethod(option.key)
+              }}
+              type="button"
+            >
+              <span className="block text-sm font-bold leading-tight">{option.label}</span>
+              <span
+                className={`block text-[11px] font-semibold leading-tight ${
+                  selected ? 'text-white/80' : 'text-[#8b7a62]'
+                }`}
+              >
+                {option.sub}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    ) : null
+
+  if (activeMethod === 'payAtPickup') {
     return (
       <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
+        {methodToggle}
         <div className="space-y-2">
           <p className="text-2xl font-medium tracking-[-0.04em]">Confirm your order</p>
           <p className="text-sm leading-6 text-black/60">
@@ -551,6 +599,7 @@ export function CartModalPayment({ onOrderComplete }: Props) {
 
   return (
     <BakeryCard className="bg-white px-5 py-5" radius="sm" spacing="none">
+      {methodToggle}
       <div className="space-y-2">
         <p className="text-2xl font-medium tracking-[-0.04em]">Payment</p>
         <p className="text-sm leading-6 text-black/60">
