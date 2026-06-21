@@ -558,8 +558,7 @@ export function CartModalPayment({ onOrderComplete }: Props) {
         <div className="space-y-2">
           <p className="text-2xl font-medium tracking-[-0.04em]">Confirm your order</p>
           <p className="text-sm leading-6 text-black/60">
-            Nothing is charged now. You pay when you pick up your order &#8212; card, Venmo, or
-            cash at the handoff.
+            Nothing’s charged now — you pay at pickup (card, Venmo, or cash).
           </p>
         </div>
 
@@ -572,13 +571,11 @@ export function CartModalPayment({ onOrderComplete }: Props) {
             Pay at pickup
           </p>
           <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
-            Confirming sends your order straight to the baker, who will personally message you
-            through the contact info on your account to arrange the pickup.
+            Confirming sends your order to the baker, who’ll message you to arrange pickup.
           </p>
           {!customerEmail && customerPhone ? (
             <p className="mt-2 text-sm font-semibold leading-6 text-[#1f3d24]">
-              You signed up with a phone number only, so there is no email receipt — the baker
-              will text you personally with every update.
+              Phone-only account: no email receipt — the baker texts you every update.
             </p>
           ) : null}
         </div>
@@ -603,8 +600,7 @@ export function CartModalPayment({ onOrderComplete }: Props) {
       <div className="space-y-2">
         <p className="text-2xl font-medium tracking-[-0.04em]">Payment</p>
         <p className="text-sm leading-6 text-black/60">
-          Pay securely without leaving the cart. Card details are handled by Stripe, not stored by
-          this site.
+          Pay securely with Stripe — your card never touches this site.
         </p>
       </div>
 
@@ -639,7 +635,7 @@ export function CartModalPayment({ onOrderComplete }: Props) {
                   Venmo instead
                 </p>
                 <p className="mt-1 text-sm leading-6 text-[#5f4a32]">
-                  Use this only after sending the cart total to @bakedwithblessings.
+                  Send the cart total to @bakedwithblessings first.
                 </p>
               </div>
               <BakeryAction
@@ -668,12 +664,11 @@ export function CartModalPayment({ onOrderComplete }: Props) {
                   >
                     @bakedwithblessings
                   </a>
-                  . Add your account name or order note in Venmo if you can.
+                  , with your name or order note if you can.
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#6b5835]">
-                  This records the order, but it does not verify the payment automatically. Once the
-                  bakery sees the Venmo payment, they will contact you through the email or phone on
-                  your account and update the order manually.
+                  This records your order — it doesn’t confirm payment. The baker checks Venmo, then
+                  follows up to finalize.
                 </p>
                 <BakeryAction
                   block
