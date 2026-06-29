@@ -159,28 +159,47 @@ const retireSiblingCartsOnAcquire = async ({
   customerID,
   keptCart,
   payload,
-  req,
 }: {
   customerID: number | string
   keptCart: CartDocLike
   payload: Payload
-  req?: PayloadRequest
 }): Promise<void> => {
   const keep = coerceCartID(keptCart.id)
 
   try {
+    // Deliberately run OUTSIDE the caller's create transaction (no `req`). This
+    // hook fires inside the create's open transaction; if a sibling update here
+    // were joined to it and failed, Payload would kill that transaction, and the
+    // swallowed error below would let `create` return a phantom (rolled-back)
+    // cart id that 404s forever. Isolating the cleanup keeps a failure here from
+    // ever breaking the cart create. `limit` caps the work on a messy account.
     const { docs: siblings } = await payload.find({
       collection: 'carts',
       depth: 0,
+      limit: 50,
       overrideAccess: true,
-      pagination: false,
-      req,
       where: {
         and: [
           { customer: { equals: customerID } },
           { id: { not_equals: keep } },
           { purchasedAt: { exists: false } },
-          ...(keptCart.createdAt ? [{ createdAt: { less_than_equal: keptCart.createdAt } }] : []),
+          // Strictly older, or an equal createdAt with a smaller id, so two carts
+          // sharing a millisecond timestamp can never abandon each other.
+          ...(keptCart.createdAt
+            ? [
+                {
+                  or: [
+                    { createdAt: { less_than: keptCart.createdAt } },
+                    {
+                      and: [
+                        { createdAt: { equals: keptCart.createdAt } },
+                        { id: { less_than: keep } },
+                      ],
+                    },
+                  ],
+                },
+              ]
+            : []),
         ],
       },
     })
@@ -199,7 +218,6 @@ const retireSiblingCartsOnAcquire = async ({
         },
         id: sibling.id,
         overrideAccess: true,
-        req,
       })
     }
   } catch (error) {
@@ -255,7 +273,6 @@ export const enforceOneActiveCartPerCustomer: CollectionAfterChangeHook = async 
       customerID,
       keptCart: cart,
       payload: req.payload,
-      req,
     })
   } finally {
     req.context.enforcingOneActiveCart = false

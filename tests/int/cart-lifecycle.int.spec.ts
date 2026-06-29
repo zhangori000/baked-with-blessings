@@ -177,4 +177,17 @@ describe('enforceOneActiveCartPerCustomer (one active cart at acquisition)', () 
 
     expect(find).not.toHaveBeenCalled()
   })
+
+  it('never throws when a sibling update fails; logs a warning and returns the doc', async () => {
+    const logger = makeLogger()
+    const find = vi.fn().mockResolvedValue({ docs: [empty(1, 3)] })
+    const update = vi.fn().mockRejectedValue(new Error('deadlock'))
+    const req = { context: {} as Record<string, unknown>, payload: { find, logger, update } }
+    const doc = withItems(2, 3)
+
+    await expect(
+      enforceOneActiveCartPerCustomer({ doc, operation: 'create', req } as never),
+    ).resolves.toBe(doc)
+    expect(logger.warn).toHaveBeenCalled()
+  })
 })
