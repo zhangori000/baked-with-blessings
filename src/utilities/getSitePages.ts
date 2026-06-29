@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import type { SitePage } from '@/payload-types'
 
 export type SitePagesFlags = {
+  aboutEnabled: boolean
   blogEnabled: boolean
   communityEnabled: boolean
   discussionBoardEnabled: boolean
@@ -13,6 +14,7 @@ export type SitePagesFlags = {
 }
 
 const SITE_PAGES_DEFAULTS: SitePagesFlags = {
+  aboutEnabled: true,
   blessingsNetworkEnabled: false,
   blogEnabled: false,
   communityEnabled: true,
@@ -33,6 +35,7 @@ export const getSitePages = async (): Promise<SitePagesFlags> => {
     })) as Partial<SitePage>
 
     return {
+      aboutEnabled: coerce(doc.aboutEnabled, SITE_PAGES_DEFAULTS.aboutEnabled),
       blessingsNetworkEnabled: coerce(
         doc.blessingsNetworkEnabled,
         SITE_PAGES_DEFAULTS.blessingsNetworkEnabled,

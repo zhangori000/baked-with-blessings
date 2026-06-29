@@ -68,6 +68,7 @@ export const headerAppPages: HeaderAppPage[] = [
   {
     description:
       'Who we are, where we bake, and how ordering, pickup, and meetup hand-offs work for our Plymouth, MN home kitchen.',
+    enabledFlag: 'aboutEnabled',
     eyebrow: 'Our story',
     href: aboutHref,
     icon: 'map-pin',

@@ -3,6 +3,7 @@ import type { GlobalConfig } from 'payload'
 import { adminOnly } from '@/access/adminOnly'
 
 export const SITE_PAGES_DEFAULTS = {
+  aboutEnabled: true,
   blessingsNetworkEnabled: false,
   blogEnabled: false,
   communityEnabled: true,
@@ -23,6 +24,16 @@ export const SitePages: GlobalConfig = {
       'Toggle individual public pages on or off. Disabling a page hides it from the Other Pages menu and 404s the route (and any sub-routes). New pages default to enabled.',
   },
   fields: [
+    {
+      name: 'aboutEnabled',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'About (/about)',
+      admin: {
+        description:
+          'Untick to hide About from the Other Pages menu and 404 the /about route.',
+      },
+    },
     {
       name: 'communityEnabled',
       type: 'checkbox',
