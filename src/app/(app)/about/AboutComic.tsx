@@ -111,7 +111,7 @@ function MeetScene() {
 
 const panels = [
   { bubble: 'One box of cookies, please!', Scene: OrderScene, step: 'You order' },
-  { bubble: 'Fresh batch — coming right up!', Scene: BakeScene, step: 'We bake' },
+  { bubble: 'Fresh batch, coming right up!', Scene: BakeScene, step: 'We bake' },
   { bubble: 'See you nearby. Enjoy!', Scene: MeetScene, step: 'We meet up' },
 ]
 

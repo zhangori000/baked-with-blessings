@@ -43,7 +43,7 @@ export function AboutSceneryHero({ initialSceneryTone = 'dawn' }: AboutSceneryHe
       onSelectScenery={handleSelectScenery}
       onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
       sceneryTone={sceneryTone}
-      summary="No storefront, no fixed hours — you order, we bake a small batch, and we meet up to hand it over."
+      summary="No storefront, no fixed hours. You order, we bake a small batch, and we meet up to hand it over."
       title="Baked in our home kitchen"
     />
   )

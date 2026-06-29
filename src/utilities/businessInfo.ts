@@ -27,7 +27,7 @@ export const serviceAreaShort = 'Plymouth and much of the Twin Cities metro'
 
 /** Warm one-liner for the footer and other ambient spots. */
 export const locationTagline =
-  'A small home kitchen in Plymouth, MN — order ahead for local pickup or a friendly meetup hand-off across the Twin Cities metro.'
+  'A small home kitchen in Plymouth, MN. Order ahead for local pickup or a friendly meetup hand-off across the Twin Cities metro.'
 
 /**
  * Towns we can realistically reach for a pickup or meetup hand-off (roughly a

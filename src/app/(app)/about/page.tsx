@@ -82,8 +82,9 @@ export default async function AboutPage() {
                 Ever get one of those random cravings for a sweet treat?
               </h2>
               <p className="aboutHookSub">
-                Same. Here&apos;s how we fix it — homemade from scratch with real ingredients (no
-                preservatives, no factory shortcuts), straight from our kitchen to your hands.
+                Same, so we bake the fix. Everything&apos;s homemade from scratch with real
+                ingredients (no preservatives, no factory shortcuts), straight from our kitchen to
+                your hands.
               </p>
             </div>
             <AboutComic />
@@ -91,17 +92,17 @@ export default async function AboutPage() {
             <div className="aboutGist">
               <div className="aboutGistCopy">
                 <h2 className="aboutHeading">We&apos;re just getting started</h2>
-                <p>A real home kitchen — small batches, real ingredients, baked the day they go out.</p>
+                <p>It&apos;s a real home kitchen, not a factory. Small batches, real ingredients, baked the day they go out.</p>
                 <p>
                   We&apos;re figuring it out as we grow, with farmers markets and pop-ups on the way.
                   Thanks for being early.
                 </p>
               </div>
               <ul className="aboutFacts" aria-label="The basics">
-                <li>Homemade from scratch — real ingredients</li>
+                <li>Homemade from scratch with real ingredients</li>
                 <li>Home kitchen in {businessCity}, {businessState}</li>
-                <li>Pickup &amp; meetup — no shipping</li>
-                <li>Last-minute or planned ahead — we&apos;re flexible</li>
+                <li>Local pickup and meetup, no shipping</li>
+                <li>Last-minute or planned ahead, we&apos;re flexible</li>
               </ul>
             </div>
 
@@ -115,8 +116,8 @@ export default async function AboutPage() {
             </div>
 
             <p className="aboutFinePrint">
-              Baked in a home kitchen that also handles wheat, eggs, dairy, nuts &amp; soy — please
-              tell us about allergies. {cottageFoodDisclosure}
+              Baked in a home kitchen that also handles wheat, eggs, dairy, nuts, and soy, so
+              please tell us about any allergies. {cottageFoodDisclosure}
             </p>
           </div>
         </section>
@@ -124,7 +125,7 @@ export default async function AboutPage() {
         <section className="aboutCta">
           <div className="container aboutCtaInner">
             <h2 className="aboutCtaTitle">Hungry yet?</h2>
-            <p className="aboutCtaSub">Go pick out some cookies — we&apos;ll handle the rest.</p>
+            <p className="aboutCtaSub">Go pick out some cookies and we&apos;ll handle the rest.</p>
             <div className="aboutActions">
               <BakeryAction as={Link} href={menuHref} size="lg" variant="primary">
                 <ShoppingBag className="h-4 w-4" />
