@@ -66,6 +66,38 @@ describe('createManualOrderFromCart (pay-at-pickup and Venmo order engine)', () 
     )
   })
 
+  it("retires the customer's other non-purchased carts when the order is placed", async () => {
+    const find = vi.fn().mockResolvedValue({ docs: [] })
+    const findByID = vi.fn().mockResolvedValue(makeActiveCart())
+    const create = vi.fn().mockResolvedValue({ accessToken: 'order-token', id: 24 })
+    const update = vi.fn().mockResolvedValue({})
+    const payload = { create, find, findByID, logger: makeLogger(), update }
+
+    await createManualOrderFromCart({
+      cartID: 9,
+      customerID: 3,
+      method: 'in_person',
+      payload: payload as never,
+      reference: 'pickup-cart-9-retire',
+    })
+
+    // The purchased cart (9) is kept; the customer's other non-purchased carts
+    // are abandoned so they cannot resurface after checkout clears the cart.
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'carts',
+        data: expect.objectContaining({ status: 'abandoned' }),
+        where: expect.objectContaining({
+          and: expect.arrayContaining([
+            { customer: { equals: 3 } },
+            { id: { not_equals: 9 } },
+            { purchasedAt: { exists: false } },
+          ]),
+        }),
+      }),
+    )
+  })
+
   it('returns the existing order when the same reference is submitted again', async () => {
     const existingOrder = { accessToken: 'order-token', id: 21 }
     const find = vi.fn().mockResolvedValue({ docs: [existingOrder] })
