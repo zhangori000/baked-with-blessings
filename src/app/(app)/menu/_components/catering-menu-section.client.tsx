@@ -16,7 +16,7 @@ import {
 import { buildCookiePosterAsset, hasReceiptBody } from '@/features/products/cookieDisplayData'
 import type { Product } from '@/payload-types'
 import { extractRichTextPlainText } from '@/utilities/extractRichTextPlainText'
-import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { useStorefrontCart } from '@/providers/Ecommerce'
 import { ChevronDownIcon, LoaderCircle } from 'lucide-react'
 import Image from 'next/image'
 import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react'
@@ -237,7 +237,7 @@ function CateringMenuRow({
   product: Partial<Product>
   sceneryTone: MenuSceneryTone
 }) {
-  const { addItem, isLoading } = useCart()
+  const { addItem, isLoading } = useStorefrontCart()
   const [selectedFlavorID, setSelectedFlavorID] = useState<number | null>(null)
   const [isSubmittingToCart, setIsSubmittingToCart] = useState(false)
   const [showOpeningIndicator, setShowOpeningIndicator] = useState(false)

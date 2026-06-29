@@ -1,6 +1,6 @@
 'use client'
 
-import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { useStorefrontCart } from '@/providers/Ecommerce'
 import { ArrowRight, ChevronDownIcon, Minus, Plus } from 'lucide-react'
 import React, { useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -82,7 +82,7 @@ function RegularOrderRow({
   onJumpToBundle?: (slug: string) => void
   sceneryTone: MenuSceneryTone
 }) {
-  const { addItem, isLoading } = useCart()
+  const { addItem, isLoading } = useStorefrontCart()
   const sizes = useMemo(() => resolveSizes(item), [item])
   const skySrc = skyByScenery[sceneryTone] ?? skyByScenery.classic
   const mobileSkySrc = mobileSkyByScenery[sceneryTone]
