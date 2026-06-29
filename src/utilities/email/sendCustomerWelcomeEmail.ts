@@ -1,5 +1,6 @@
 import type { Payload } from 'payload'
 
+import { getCustomerContactEmails } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -42,10 +43,11 @@ export async function sendCustomerWelcomeEmail({
 
   await payload.sendEmail(
     decorateEmailEnvelope({
-      to: email,
-      subject: `Welcome to ${companyName}`,
       html,
+      replyTo: getCustomerContactEmails(),
+      subject: `Welcome to ${companyName}`,
       text,
+      to: email,
     }),
   )
 }
