@@ -325,6 +325,12 @@ export const CheckoutForm: React.FC<Props> = ({
             },
           })
 
+          // The charge already succeeded and the webhook owns order creation, so
+          // empty the cart now even if confirmOrder did not echo back an orderID
+          // (on a live deployment the webhook can finalize first, leaving
+          // confirmResult without one). clearSession() is client-only and safe.
+          clearSession()
+
           if (
             confirmResult &&
             typeof confirmResult === 'object' &&
@@ -345,8 +351,6 @@ export const CheckoutForm: React.FC<Props> = ({
 
             const queryString = queryParams.toString()
             const redirectUrl = `/orders/${confirmResult.orderID}${queryString ? `?${queryString}` : ''}`
-
-            clearSession()
 
             if (onOrderComplete) {
               onOrderComplete({
