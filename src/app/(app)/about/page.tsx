@@ -13,10 +13,12 @@ import {
 } from '@/utilities/businessInfo'
 import { contactHref, menuHref } from '@/utilities/routes'
 import { getServerSideURL } from '@/utilities/getURL'
+import { getSitePages } from '@/utilities/getSitePages'
 import { siteName } from '@/utilities/siteMetadata'
 import { MessageCircle, ShoppingBag } from 'lucide-react'
 import { Cormorant_Garamond } from 'next/font/google'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 
 import { AboutComic } from './AboutComic'
 import { AboutSceneryHero } from './AboutSceneryHero.client'
@@ -36,6 +38,11 @@ export const metadata: Metadata = {
 }
 
 export default async function AboutPage() {
+  const sitePages = await getSitePages()
+  if (!sitePages.aboutEnabled) {
+    notFound()
+  }
+
   const initialSceneryTone = await getMenuSceneToneFromCookies()
   const siteURL = getServerSideURL()
 

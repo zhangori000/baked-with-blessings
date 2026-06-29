@@ -3647,6 +3647,10 @@ export interface FeatureRequestsContent {
 export interface SitePage {
   id: number;
   /**
+   * Turn this off to hide About from the site's navigation (and 404 the /about route).
+   */
+  aboutEnabled?: boolean | null;
+  /**
    * Untick to hide the Community Post-it Wall from the Other Pages menu and 404 the /community route.
    */
   communityEnabled?: boolean | null;
@@ -3814,6 +3818,7 @@ export interface FeatureRequestsContentSelect<T extends boolean = true> {
  * via the `definition` "site-pages_select".
  */
 export interface SitePagesSelect<T extends boolean = true> {
+  aboutEnabled?: T;
   communityEnabled?: T;
   reviewsEnabled?: T;
   blogEnabled?: T;
