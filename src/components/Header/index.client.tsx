@@ -1122,7 +1122,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                     </div>
                   ) : (
                     <p className="siteHeaderAnnouncementsEmpty">
-                      Nothing new right now — check back soon.
+                      Nothing new right now. Check back soon.
                     </p>
                   )}
                 </div>
@@ -1184,7 +1184,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                     >
                       <p className="siteHeaderAuthIntro">
                         {accountAuthMode === 'create'
-                          ? 'Create a customer account without leaving this page. Send a code to your email or phone, then finish your password while it arrives. Phone-only works — the baker texts you personally — but automatic emails (receipts, announcements) need an email on file.'
+                          ? 'Create a customer account without leaving this page. Send a code to your email or phone, then finish your password while it arrives. Phone-only works too (the baker texts you personally), but automatic emails like receipts and announcements need an email on file.'
                           : 'Use the email or phone number connected to your account. We will keep you on this page unless your account opens a management workspace.'}
                       </p>
 
