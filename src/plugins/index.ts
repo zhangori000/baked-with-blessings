@@ -20,7 +20,10 @@ import {
   extendCollectionItemsWithBatchSelections,
   trayAwareCartItemMatcher,
 } from '@/plugins/ecommerce/trayBuilder'
-import { preventPurchasedCartItemChanges } from '@/plugins/ecommerce/cartLifecycle'
+import {
+  enforceOneActiveCartPerCustomer,
+  preventPurchasedCartItemChanges,
+} from '@/plugins/ecommerce/cartLifecycle'
 import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAdapter'
 import { getRelationshipID } from '@/utilities/manualOrders'
 import { sendCustomerOrderConfirmationAfterChange } from '@/utilities/email/sendCustomerOrderConfirmation'
@@ -292,6 +295,10 @@ export const plugins: Plugin[] = [
         }),
         hooks: {
           ...defaultCollection.hooks,
+          afterChange: [
+            ...(defaultCollection.hooks?.afterChange ?? []),
+            enforceOneActiveCartPerCustomer,
+          ],
           beforeChange: [
             ...(defaultCollection.hooks?.beforeChange ?? []),
             preventPurchasedCartItemChanges,

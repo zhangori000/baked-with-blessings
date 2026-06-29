@@ -19,6 +19,7 @@ export const ConfirmOrder: React.FC = () => {
   useEffect(() => {
     const paymentIntentID = searchParams.get('payment_intent')
     const email = searchParams.get('email')
+    const redirectStatus = searchParams.get('redirect_status')
 
     if (!paymentIntentID) {
       // If no payment intent ID is found, redirect to the home
@@ -39,6 +40,14 @@ export const ConfirmOrder: React.FC = () => {
       },
     })
       .then((result) => {
+        // Stripe only redirects here after the charge resolves, and the webhook
+        // owns order creation, so empty the cart on a successful charge even if
+        // confirmOrder did not echo back an orderID. Gate on Stripe's
+        // redirect_status so a failed redirect never clears a still-unpaid cart.
+        if (redirectStatus === 'succeeded') {
+          clearSession()
+        }
+
         if (result && typeof result === 'object' && 'orderID' in result && result.orderID) {
           const accessToken = 'accessToken' in result ? (result.accessToken as string) : ''
           const queryParams = new URLSearchParams()
@@ -54,7 +63,6 @@ export const ConfirmOrder: React.FC = () => {
           const queryString = queryParams.toString()
           const redirectUrl = `/orders/${result.orderID}${queryString ? `?${queryString}` : ''}`
 
-          clearSession()
           window.dispatchEvent(new Event(ECOMMERCE_SESSION_RESET_EVENT))
           window.location.assign(redirectUrl)
           return

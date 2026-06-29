@@ -3,7 +3,7 @@
 import { ArrowLeft, ArrowRight, Lock, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { useStorefrontCart } from '@/providers/Ecommerce'
 import {
   type AnimationEvent,
   type CSSProperties,
@@ -708,7 +708,7 @@ export function HomeCookieCarousel({
   posters,
   sceneVariant = 'grassland',
 }: HomeCookieCarouselProps) {
-  const { addItem, isLoading: cartIsLoading } = useCart()
+  const { addItem, isLoading: cartIsLoading } = useStorefrontCart()
   const prefersReducedMotion = usePrefersReducedMotion()
   const isMobileViewport = useIsMobileViewport()
   const [activeIndex, setActiveIndex] = useState(0)

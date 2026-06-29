@@ -1,6 +1,7 @@
 import type { Cart, Order } from '@/payload-types'
 import type { Payload } from 'payload'
 
+import { retireSiblingCartsOnPurchase } from '@/plugins/ecommerce/cartLifecycle'
 import { isUniqueConstraintError } from '@/utilities/idempotency'
 
 export const getRelationshipID = (value: unknown): null | number | string => {
@@ -203,6 +204,10 @@ export const createManualOrderFromCart = async ({
     id: cart.id,
     overrideAccess: true,
   })
+
+  // Retire the customer's other non-purchased carts so an abandoned one cannot
+  // resurface after this order clears the active cart (same fix as the card path).
+  await retireSiblingCartsOnPurchase({ customerID, keepCartID: cart.id, payload })
 
   payload.logger.info({
     cartID: cart.id,

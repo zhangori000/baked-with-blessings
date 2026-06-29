@@ -7,6 +7,8 @@ import { ALLOW_CUSTOMER_STRIPE_CUSTOMER_ID_WRITE } from '@/collections/Customers
 import { isUniqueConstraintError } from '@/utilities/idempotency'
 import { isPayNowAllowed } from '@/utilities/storeSettings'
 
+import { retireSiblingCartsOnPurchase } from './cartLifecycle'
+
 type StripeAdapterArgs = Parameters<typeof stripeAdapter>[0]
 
 type CartItemLike = Record<string, unknown> & {
@@ -478,15 +480,15 @@ export const finalizeOrderFromPaymentIntent = async ({
     throw new Error('Cart items snapshot not found or invalid in the transaction snapshot')
   }
 
+  const transactionCustomerID = getRelationshipID(transaction.customer)
+  const requestCustomerID = req.user?.id
+  const orderCustomerID = transactionCustomerID || requestCustomerID
+  const orderCustomerEmail =
+    transaction.customerEmail || customerEmail || paymentIntent.metadata.customerEmail
+
   let order: OrderLike
 
   try {
-    const transactionCustomerID = getRelationshipID(transaction.customer)
-    const requestCustomerID = req.user?.id
-    const orderCustomerID = transactionCustomerID || requestCustomerID
-    const orderCustomerEmail =
-      transaction.customerEmail || customerEmail || paymentIntent.metadata.customerEmail
-
     order = (await req.payload.create({
       collection: ordersSlug,
       data: {
@@ -537,6 +539,19 @@ export const finalizeOrderFromPaymentIntent = async ({
     overrideAccess: true,
     req,
   })
+
+  // Retire the customer's OTHER non-purchased carts so an abandoned one cannot
+  // resurface after this purchase clears the active cart. Guests have no
+  // customer relationship, so nothing can resurface for them.
+  if (orderCustomerID) {
+    await retireSiblingCartsOnPurchase({
+      customerID: orderCustomerID,
+      keepCartID: cartID,
+      payload: req.payload,
+      req,
+    })
+  }
+
   await req.payload.update({
     id: transaction.id,
     collection: transactionsSlug,

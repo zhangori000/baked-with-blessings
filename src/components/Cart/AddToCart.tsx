@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import type { Product, Variant } from '@/payload-types'
 
-import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { useStorefrontCart } from '@/providers/Ecommerce'
 import clsx from 'clsx'
 import { useSearchParams } from 'next/navigation'
 import React, { useCallback, useMemo } from 'react'
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export function AddToCart({ product }: Props) {
-  const { addItem, isLoading } = useCart()
+  const { addItem, isLoading } = useStorefrontCart()
   const searchParams = useSearchParams()
 
   const variants = product.variants?.docs || []

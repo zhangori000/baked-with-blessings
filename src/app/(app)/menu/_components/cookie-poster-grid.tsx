@@ -11,7 +11,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import React, { useState } from 'react'
 
-import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { useStorefrontCart } from '@/providers/Ecommerce'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { toast } from 'sonner'
 
@@ -514,7 +514,7 @@ function CookiePosterSketchFrame({ children, slug, style }: CookiePosterSketchFr
 }
 
 function CookiePosterAddToCartButton({ poster }: { poster: CookiePosterAsset }) {
-  const { addItem, isLoading } = useCart()
+  const { addItem, isLoading } = useStorefrontCart()
   const isCateringOnly = poster.canBuyIndividually === false
   const canAdd = typeof poster.productId === 'number'
 
