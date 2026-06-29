@@ -8,6 +8,7 @@ import {
   getOwnerNotificationRecipients,
 } from '@/utilities/email/contactChannels'
 import { buildCustomerOrderConfirmation } from '@/utilities/email/sendCustomerOrderConfirmation'
+import { classifyOrderPayment } from '@/utilities/orderPayment'
 
 const makeOrder = (overrides: Partial<Order>): Order =>
   ({ amount: 700, id: 2, ...overrides }) as Partial<Order> as Order
@@ -62,5 +63,47 @@ describe('buildCustomerOrderConfirmation', () => {
 
     expect(text).toMatch(/nothing has been charged/i)
     expect(text).toMatch(/pick up your order/i)
+  })
+
+  it('tells a pickup order paid online that payment went through, not "pay at pickup"', () => {
+    // A pickup order later paid via the online "pay now" flow carries both
+    // manualPaymentMethod and a Stripe intent; the receipt must agree with the
+    // owner email (paid), not contradict it.
+    const { text } = build(
+      makeOrder({ manualPaymentMethod: 'in_person', stripePaymentIntentID: 'pi_9' }),
+    )
+
+    expect(text).toMatch(/payment went through/i)
+    expect(text).not.toMatch(/nothing has been charged/i)
+  })
+})
+
+describe('classifyOrderPayment', () => {
+  it('treats a recorded Stripe intent as paid online, even with a manual method set', () => {
+    const paid = classifyOrderPayment({
+      manualPaymentMethod: 'in_person',
+      stripePaymentIntentID: 'pi_1',
+    })
+
+    expect(paid).toBe('paid_online')
+  })
+
+  it('falls back to the manual method when there is no Stripe intent', () => {
+    const venmo = classifyOrderPayment({
+      manualPaymentMethod: 'venmo',
+      stripePaymentIntentID: null,
+    })
+    const pickup = classifyOrderPayment({
+      manualPaymentMethod: 'in_person',
+      stripePaymentIntentID: null,
+    })
+    const unknown = classifyOrderPayment({
+      manualPaymentMethod: null,
+      stripePaymentIntentID: null,
+    })
+
+    expect(venmo).toBe('venmo')
+    expect(pickup).toBe('pickup')
+    expect(unknown).toBe('unknown')
   })
 })

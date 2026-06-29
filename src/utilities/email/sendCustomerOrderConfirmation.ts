@@ -5,6 +5,7 @@ import { BAKERY_INBOX, getCustomerContactEmails } from '@/utilities/email/contac
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
 import { getServerSideURL } from '@/utilities/getURL'
+import { classifyOrderPayment } from '@/utilities/orderPayment'
 
 export const SKIP_CUSTOMER_ORDER_CONFIRMATION = 'skipCustomerOrderConfirmation'
 
@@ -96,14 +97,14 @@ export const buildCustomerOrderConfirmation = ({
 }: BuildCustomerOrderConfirmationArgs) => {
   const total = formatMoney(order.amount, order.currency || 'USD')
   const itemLines = getOrderItemLines(order)
-  const isPickupOrder = order.manualPaymentMethod === 'in_person'
-  const isVenmoOrder = order.manualPaymentMethod === 'venmo'
+  const paymentKind = classifyOrderPayment(order)
 
-  const paymentParagraph = isPickupOrder
-    ? 'Nothing has been charged. You pay when you pick up your order: card, Venmo, or cash at the handoff. The baker will personally message you through the contact info on your account to arrange the pickup.'
-    : isVenmoOrder
-      ? 'You reported a Venmo payment for this order. The baker will verify it and personally message you through the contact info on your account.'
-      : 'Your payment went through, and the baker can start preparing your order.'
+  const paymentParagraph =
+    paymentKind === 'pickup'
+      ? 'Nothing has been charged. You pay when you pick up your order: card, Venmo, or cash at the handoff. The baker will personally message you through the contact info on your account to arrange the pickup.'
+      : paymentKind === 'venmo'
+        ? 'You reported a Venmo payment for this order. The baker will verify it and personally message you through the contact info on your account.'
+        : 'Your payment went through, and the baker can start preparing your order.'
 
   const contactList = contactEmails.join(', ')
   const contactNote =

@@ -5,6 +5,7 @@ import { getOwnerNotificationRecipients } from '@/utilities/email/contactChannel
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
 import { getServerSideURL } from '@/utilities/getURL'
+import { classifyOrderPayment } from '@/utilities/orderPayment'
 
 export const SKIP_OWNER_ORDER_NOTIFICATION = 'skipOwnerOrderNotification'
 
@@ -161,10 +162,11 @@ type OwnerPaymentSummary = {
  * the trailing fallback is a defensive "something looks off" case.
  */
 export const getOwnerPaymentSummary = (order: Order): OwnerPaymentSummary => {
-  // A recorded Stripe PaymentIntent means money was actually collected online,
-  // so it wins over any manual method the order also carries (e.g. a pickup
-  // order later paid through the online "pay now" flow).
-  if (order.stripePaymentIntentID) {
+  // Shared classifier so this email and the customer receipt never disagree
+  // about the same order (a Stripe payment wins over a manual method).
+  const kind = classifyOrderPayment(order)
+
+  if (kind === 'paid_online') {
     return {
       devNotes: [
         `manualPaymentMethod: ${order.manualPaymentMethod || '(none)'}`,
@@ -178,7 +180,7 @@ export const getOwnerPaymentSummary = (order: Order): OwnerPaymentSummary => {
     }
   }
 
-  if (order.manualPaymentMethod === 'venmo') {
+  if (kind === 'venmo') {
     const reportedAt = order.manualPaymentReportedAt
       ? new Date(order.manualPaymentReportedAt).toLocaleString('en-US')
       : 'not recorded'
@@ -199,7 +201,7 @@ export const getOwnerPaymentSummary = (order: Order): OwnerPaymentSummary => {
     }
   }
 
-  if (order.manualPaymentMethod === 'in_person') {
+  if (kind === 'pickup') {
     return {
       devNotes: [
         'manualPaymentMethod: in_person',

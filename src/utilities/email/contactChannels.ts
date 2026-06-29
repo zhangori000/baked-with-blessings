@@ -9,20 +9,6 @@ import { parseEmailRecipients } from '@/utilities/email/recipients'
  */
 export const BAKERY_INBOX = 'bakedwithblessings@gmail.com'
 
-const dedupeEmails = (emails: string[]): string[] => {
-  const seen = new Set<string>()
-
-  return emails.filter((email) => {
-    const key = email.trim().toLowerCase()
-    if (!key || seen.has(key)) {
-      return false
-    }
-
-    seen.add(key)
-    return true
-  })
-}
-
 /**
  * Addresses a customer's reply should reach. Defaults to the bakery inbox;
  * override with the CUSTOMER_CONTACT_EMAILS env var (comma/semicolon/newline
@@ -45,5 +31,6 @@ export const getOwnerNotificationRecipients = (): string[] => {
     return []
   }
 
-  return dedupeEmails([...configured, BAKERY_INBOX])
+  // Reuse the parser's trim-aware, case-insensitive dedup instead of a second copy.
+  return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
 }
