@@ -1,8 +1,71 @@
 import type { Payload } from 'payload'
 
-import { getCustomerContactEmails } from '@/utilities/email/contactChannels'
+import { businessCity, businessState } from '@/utilities/businessInfo'
+import { BAKERY_INBOX, getCustomerContactEmails } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getServerSideURL } from '@/utilities/getURL'
+
+const escapeHTML = (value: unknown) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+type BuildCustomerWelcomeEmailArgs = {
+  accountURL: string
+  companyName: string
+  name?: string
+}
+
+/**
+ * Pure builder for the customer welcome email, so it can be unit-tested and
+ * previewed without sending. Replaces the old "this is a placeholder welcome
+ * email" copy that was going out to every real signup.
+ */
+export const buildCustomerWelcomeEmail = ({
+  accountURL,
+  companyName,
+  name,
+}: BuildCustomerWelcomeEmailArgs) => {
+  const greeting = name?.trim() ? `Hi ${name.trim()},` : 'Hi,'
+  const subject = `Welcome to ${companyName}!`
+
+  const intro = `Thanks so much for creating an account. We're a small, family-run home bakery in ${businessCity}, ${businessState}, baking small-batch cookies and treats to order for local pickup and friendly meetup hand-offs around the Twin Cities.`
+  const how =
+    "Here's how it works: browse the menu and place an order, we bake it fresh, and we reach out to arrange your pickup."
+  const closing = `Questions? Just reply to this email, or reach us anytime at ${BAKERY_INBOX}. We can't wait to bake for you.`
+
+  const text = [
+    `Welcome to ${companyName}!`,
+    '',
+    greeting,
+    '',
+    intro,
+    '',
+    how,
+    '',
+    `Your account lives here: ${accountURL}`,
+    '',
+    closing,
+    '',
+    'Warmly,',
+    companyName,
+  ].join('\n')
+
+  const html = `
+    <h1>Welcome to ${escapeHTML(companyName)}!</h1>
+    <p>${escapeHTML(greeting)}</p>
+    <p>${escapeHTML(intro)}</p>
+    <p>${escapeHTML(how)}</p>
+    <p>Your account lives <a href="${escapeHTML(accountURL)}">here</a>.</p>
+    <p>Questions? Just reply to this email, or reach us anytime at <a href="mailto:${escapeHTML(BAKERY_INBOX)}">${escapeHTML(BAKERY_INBOX)}</a>. We can't wait to bake for you.</p>
+    <p>Warmly,<br/>${escapeHTML(companyName)}</p>
+  `
+
+  return { html, subject, text }
+}
 
 type SendCustomerWelcomeEmailArgs = {
   email: string
@@ -19,33 +82,13 @@ export async function sendCustomerWelcomeEmail({
     process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
   const serverURL = getServerSideURL()
   const accountURL = `${serverURL}/account`
-  const greeting = name?.trim() ? `Hi ${name.trim()},` : 'Hi,'
-
-  const html = `
-    <h1>Welcome to ${companyName}</h1>
-    <p>${greeting}</p>
-    <p>Your account has been created successfully.</p>
-    <p>This is a placeholder welcome email while we finish the full ordering and account-notification flow.</p>
-    <p>You can review your account here: <a href="${accountURL}">${accountURL}</a></p>
-    <p>Thanks for joining ${companyName}.</p>
-  `
-
-  const text = [
-    `Welcome to ${companyName}`,
-    '',
-    greeting,
-    'Your account has been created successfully.',
-    'This is a placeholder welcome email while we finish the full ordering and account-notification flow.',
-    `You can review your account here: ${accountURL}`,
-    '',
-    `Thanks for joining ${companyName}.`,
-  ].join('\n')
+  const { html, subject, text } = buildCustomerWelcomeEmail({ accountURL, companyName, name })
 
   await payload.sendEmail(
     decorateEmailEnvelope({
       html,
       replyTo: getCustomerContactEmails(),
-      subject: `Welcome to ${companyName}`,
+      subject,
       text,
       to: email,
     }),
