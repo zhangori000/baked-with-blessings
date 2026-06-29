@@ -142,6 +142,173 @@ const getItemLines = (order: Order) => {
 const getHTMLList = (lines: string[]) =>
   `<ul>${lines.map((line) => `<li>${escapeHTML(line)}</li>`).join('')}</ul>`
 
+type OwnerPaymentSummary = {
+  devNotes: string[]
+  ownerSummary: string[]
+  subjectTag: string
+}
+
+/**
+ * Splits an order's payment situation for the TWO people who read this email:
+ *   - ownerSummary → plain language for the baker: did money arrive, and what
+ *     to do now. No Stripe/PaymentIntent jargon.
+ *   - devNotes     → the raw fields for the developer, fenced off at the bottom.
+ *   - subjectTag   → the headline that lands in the inbox subject line.
+ *
+ * Mirrors the three checkout paths the customer confirmation email already
+ * distinguishes. The afterChange guard only fires when a manual method OR a
+ * Stripe PaymentIntent is present, so the branches are exhaustive in practice;
+ * the trailing fallback is a defensive "something looks off" case.
+ */
+export const getOwnerPaymentSummary = (order: Order): OwnerPaymentSummary => {
+  // A recorded Stripe PaymentIntent means money was actually collected online,
+  // so it wins over any manual method the order also carries (e.g. a pickup
+  // order later paid through the online "pay now" flow).
+  if (order.stripePaymentIntentID) {
+    return {
+      devNotes: [
+        `manualPaymentMethod: ${order.manualPaymentMethod || '(none)'}`,
+        `stripePaymentIntentID: ${order.stripePaymentIntentID}`,
+      ],
+      ownerSummary: [
+        'How they paid: card, online through Stripe. The payment already went through.',
+        'What to do: nothing for payment. Just start preparing the order.',
+      ],
+      subjectTag: 'paid online',
+    }
+  }
+
+  if (order.manualPaymentMethod === 'venmo') {
+    const reportedAt = order.manualPaymentReportedAt
+      ? new Date(order.manualPaymentReportedAt).toLocaleString('en-US')
+      : 'not recorded'
+
+    return {
+      devNotes: [
+        'manualPaymentMethod: venmo',
+        `manualPaymentStatus: ${order.manualPaymentStatus || 'reported_sent'}`,
+        `manualPaymentHandle: ${order.manualPaymentHandle || '@bakedwithblessings'}`,
+        `manualPaymentReportedAt: ${reportedAt}`,
+        'stripePaymentIntentID: (none)',
+      ],
+      ownerSummary: [
+        'How they paid: Venmo. The customer says they already sent it.',
+        'What to do: open Venmo and confirm the money actually arrived before you treat this order as paid.',
+      ],
+      subjectTag: 'Venmo, please verify',
+    }
+  }
+
+  if (order.manualPaymentMethod === 'in_person') {
+    return {
+      devNotes: [
+        'manualPaymentMethod: in_person',
+        `manualPaymentStatus: ${order.manualPaymentStatus || '(unset)'}`,
+        'stripePaymentIntentID: (none, not paid online)',
+      ],
+      ownerSummary: [
+        'How they paid: not yet. This is a pay-at-pickup order, so nothing has been charged.',
+        'What to do: collect payment (cash, card, or Venmo) when you hand the order over.',
+      ],
+      subjectTag: 'pay at pickup, not paid yet',
+    }
+  }
+
+  return {
+    devNotes: [
+      'manualPaymentMethod: (none)',
+      'stripePaymentIntentID: (none)',
+      'No payment signal was recorded on this order.',
+    ],
+    ownerSummary: [
+      'How they paid: unknown. No payment information was recorded on this order.',
+      'What to do: open the order in the admin and check before fulfilling it.',
+    ],
+    subjectTag: 'check payment',
+  }
+}
+
+/** Bold the "Label:" prefix of a "Label: value" line for the HTML body. */
+const boldLabel = (line: string) => {
+  const idx = line.indexOf(':')
+  return idx === -1
+    ? escapeHTML(line)
+    : `<strong>${escapeHTML(line.slice(0, idx + 1))}</strong>${escapeHTML(line.slice(idx + 1))}`
+}
+
+type BuildOwnerOrderEmailArgs = {
+  adminURL: string
+  companyName: string
+  order: Order
+}
+
+/**
+ * Pure builder for the owner notification. Returns the rendered envelope so it
+ * can be unit-tested and previewed without sending; the send wrapper below only
+ * adds recipients and the non-production banner.
+ */
+export const buildOwnerOrderEmail = ({ adminURL, companyName, order }: BuildOwnerOrderEmailArgs) => {
+  const total = formatMoney(order.amount, order.currency || 'USD')
+  const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString('en-US') : 'Unknown'
+  const contactLines = getCustomerContactLines(order)
+  const addressLines = getAddressLines(order)
+  const itemLines = getItemLines(order)
+  const { devNotes, ownerSummary, subjectTag } = getOwnerPaymentSummary(order)
+  const devNotesWithMeta = [`order.id: ${order.id}`, `order.status: ${order.status || 'unknown'}`, ...devNotes]
+
+  const subject = `${companyName} order #${order.id} · ${total} · ${subjectTag}`
+
+  const text = [
+    `New order #${order.id}`,
+    '',
+    `Total: ${total}`,
+    `Placed: ${createdAt}`,
+    '',
+    'PAYMENT',
+    ...ownerSummary,
+    '',
+    'Customer',
+    ...contactLines,
+    '',
+    'Items',
+    ...itemLines,
+    '',
+    'Delivery details',
+    ...addressLines,
+    '',
+    'Dev notes (technical):',
+    ...devNotesWithMeta,
+    `Open in admin: ${adminURL}`,
+  ].join('\n')
+
+  const html = `
+    <h1 style="margin:0 0 4px;">New order #${escapeHTML(order.id)}</h1>
+    <p style="margin:0 0 16px;font-size:15px;color:#5b5347;"><strong>${escapeHTML(total)}</strong> · placed ${escapeHTML(createdAt)}</p>
+
+    <div style="background:#f6f3ee;border:1px solid #e7e0d4;border-radius:10px;padding:14px 16px;margin:0 0 20px;">
+      ${ownerSummary.map((line) => `<p style="margin:0 0 6px;font-size:15px;line-height:1.45;">${boldLabel(line)}</p>`).join('')}
+    </div>
+
+    <h2 style="font-size:15px;margin:16px 0 4px;">Customer</h2>
+    ${getHTMLList(contactLines)}
+
+    <h2 style="font-size:15px;margin:16px 0 4px;">Items</h2>
+    ${getHTMLList(itemLines)}
+
+    <h2 style="font-size:15px;margin:16px 0 4px;">Delivery details</h2>
+    ${getHTMLList(addressLines)}
+
+    <hr style="border:none;border-top:1px solid #e7e0d4;margin:24px 0 12px;" />
+    <p style="margin:0 0 6px;font-size:12px;color:#8a8275;"><strong>🛠 Dev notes (technical)</strong></p>
+    <ul style="margin:0;padding-left:18px;font-size:12px;color:#8a8275;">${devNotesWithMeta
+      .map((line) => `<li>${escapeHTML(line)}</li>`)
+      .join('')}</ul>
+    <p style="margin:10px 0 0;font-size:12px;"><a href="${escapeHTML(adminURL)}">Open this order in Payload admin</a></p>
+  `
+
+  return { html, subject, text }
+}
+
 export const sendOwnerOrderNotification = async ({
   order,
   payload,
@@ -159,67 +326,7 @@ export const sendOwnerOrderNotification = async ({
     process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
   const serverURL = getServerSideURL()
   const adminURL = `${serverURL}/admin/collections/orders/${order.id}`
-  const total = formatMoney(order.amount, order.currency || 'USD')
-  const contactLines = getCustomerContactLines(order)
-  const addressLines = getAddressLines(order)
-  const itemLines = getItemLines(order)
-  const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString('en-US') : 'Unknown'
-  const isManualVenmoOrder = order.manualPaymentMethod === 'venmo'
-  const paymentLines = isManualVenmoOrder
-    ? [
-        'Payment method: Venmo',
-        `Venmo handle shown to customer: ${order.manualPaymentHandle || '@bakedwithblessings'}`,
-        `Manual payment status: ${order.manualPaymentStatus || 'reported_sent'}`,
-        `Customer clicked sent at: ${
-          order.manualPaymentReportedAt
-            ? new Date(order.manualPaymentReportedAt).toLocaleString('en-US')
-            : 'Not recorded'
-        }`,
-        'Important: verify the Venmo payment manually before treating this as paid.',
-      ]
-    : [`Stripe PaymentIntent: ${order.stripePaymentIntentID || 'Not recorded'}`]
-  const subjectPrefix = isManualVenmoOrder ? 'Venmo order reported' : 'New order'
-  const subject = `${companyName} ${subjectPrefix.toLowerCase()} #${order.id} - ${total}`
-
-  const text = [
-    `${subjectPrefix} #${order.id}`,
-    '',
-    `Total: ${total}`,
-    `Status: ${order.status || 'unknown'}`,
-    `Created: ${createdAt}`,
-    ...paymentLines,
-    '',
-    'Customer contact',
-    ...contactLines,
-    '',
-    'Items',
-    ...itemLines,
-    '',
-    'Delivery details',
-    ...addressLines,
-    '',
-    `Open in Payload admin: ${adminURL}`,
-  ].join('\n')
-
-  const html = `
-    <h1>${escapeHTML(subjectPrefix)} #${escapeHTML(order.id)}</h1>
-    <p><strong>Total:</strong> ${escapeHTML(total)}</p>
-    <p><strong>Status:</strong> ${escapeHTML(order.status || 'unknown')}</p>
-    <p><strong>Created:</strong> ${escapeHTML(createdAt)}</p>
-    <h2>Payment</h2>
-    ${getHTMLList(paymentLines)}
-
-    <h2>Customer contact</h2>
-    ${getHTMLList(contactLines)}
-
-    <h2>Items</h2>
-    ${getHTMLList(itemLines)}
-
-    <h2>Delivery details</h2>
-    ${getHTMLList(addressLines)}
-
-    <p><a href="${escapeHTML(adminURL)}">Open this order in Payload admin</a></p>
-  `
+  const { html, subject, text } = buildOwnerOrderEmail({ adminURL, companyName, order })
 
   await payload.sendEmail(
     decorateEmailEnvelope({
