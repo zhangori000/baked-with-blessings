@@ -1,6 +1,7 @@
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 
 import type { Order, Product, Variant } from '@/payload-types'
+import { BAKERY_INBOX, getCustomerContactEmails } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -75,6 +76,79 @@ const getCustomerEmail = (order: Order): null | string => {
   return null
 }
 
+type BuildCustomerOrderConfirmationArgs = {
+  companyName: string
+  contactEmails: string[]
+  order: Order
+  orderURL: string
+}
+
+/**
+ * Pure builder for the customer receipt. Returns the rendered envelope body so
+ * it can be unit-tested and previewed without sending; the send wrapper adds the
+ * recipient, the bakery BCC, the Reply-To, and the non-production banner.
+ */
+export const buildCustomerOrderConfirmation = ({
+  companyName,
+  contactEmails,
+  order,
+  orderURL,
+}: BuildCustomerOrderConfirmationArgs) => {
+  const total = formatMoney(order.amount, order.currency || 'USD')
+  const itemLines = getOrderItemLines(order)
+  const isPickupOrder = order.manualPaymentMethod === 'in_person'
+  const isVenmoOrder = order.manualPaymentMethod === 'venmo'
+
+  const paymentParagraph = isPickupOrder
+    ? 'Nothing has been charged. You pay when you pick up your order: card, Venmo, or cash at the handoff. The baker will personally message you through the contact info on your account to arrange the pickup.'
+    : isVenmoOrder
+      ? 'You reported a Venmo payment for this order. The baker will verify it and personally message you through the contact info on your account.'
+      : 'Your payment went through, and the baker can start preparing your order.'
+
+  const contactList = contactEmails.join(', ')
+  const contactNote =
+    "We're a brand-new family bakery (just Kayla and Orien for now), so you'll always hear back from us personally. Thanks so much for supporting a small business as we get started."
+
+  const subject = `Your ${companyName} order #${order.id} · ${total}`
+
+  const text = [
+    'Thank you for your order!',
+    '',
+    `Order #${order.id}`,
+    `Total: ${total}`,
+    '',
+    paymentParagraph,
+    '',
+    'What you ordered:',
+    ...itemLines,
+    '',
+    `View your order (log in with your account): ${orderURL}`,
+    '',
+    `Questions about your order? Reply to this email, or reach us anytime at ${contactList}.`,
+    contactNote,
+    '',
+    'Thanks again,',
+    companyName,
+  ].join('\n')
+
+  const contactLinks = contactEmails
+    .map((email) => `<a href="mailto:${escapeHTML(email)}">${escapeHTML(email)}</a>`)
+    .join(', ')
+
+  const html = `
+    <h1>Thank you for your order!</h1>
+    <p><strong>Order #${escapeHTML(order.id)}</strong> · ${escapeHTML(total)}</p>
+    <p>${escapeHTML(paymentParagraph)}</p>
+    <h2>What you ordered</h2>
+    <ul>${itemLines.map((line) => `<li>${escapeHTML(line.trim())}</li>`).join('')}</ul>
+    <p><a href="${escapeHTML(orderURL)}">View your order</a> (log in with your account).</p>
+    <p style="font-size:14px;color:#5b5347;">Questions about your order? Reply to this email, or reach us anytime at ${contactLinks}. ${escapeHTML(contactNote)}</p>
+    <p>Thanks again,<br/>${escapeHTML(companyName)}</p>
+  `
+
+  return { html, subject, text }
+}
+
 export const sendCustomerOrderConfirmation = async ({
   order,
   payload,
@@ -99,48 +173,19 @@ export const sendCustomerOrderConfirmation = async ({
     process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
   const serverURL = getServerSideURL()
   const orderURL = `${serverURL}/orders/${order.id}`
-  const total = formatMoney(order.amount, order.currency || 'USD')
-  const itemLines = getOrderItemLines(order)
-  const isPickupOrder = order.manualPaymentMethod === 'in_person'
-  const isVenmoOrder = order.manualPaymentMethod === 'venmo'
-
-  const paymentParagraph = isPickupOrder
-    ? 'Nothing has been charged. You pay when you pick up your order — card, Venmo, or cash at the handoff. The baker will personally message you through the contact info on your account to arrange the pickup.'
-    : isVenmoOrder
-      ? 'You reported a Venmo payment for this order. The baker will verify it and personally message you through the contact info on your account.'
-      : 'Your payment went through, and the baker can start preparing your order.'
-
-  const subject = `Your ${companyName} order #${order.id} — ${total}`
-
-  const text = [
-    `Thank you for your order!`,
-    '',
-    `Order #${order.id}`,
-    `Total: ${total}`,
-    '',
-    paymentParagraph,
-    '',
-    'What you ordered:',
-    ...itemLines,
-    '',
-    `View your order (log in with your account): ${orderURL}`,
-    '',
-    `— ${companyName}`,
-  ].join('\n')
-
-  const html = `
-    <h1>Thank you for your order!</h1>
-    <p><strong>Order #${escapeHTML(order.id)}</strong> — ${escapeHTML(total)}</p>
-    <p>${escapeHTML(paymentParagraph)}</p>
-    <h2>What you ordered</h2>
-    <ul>${itemLines.map((line) => `<li>${escapeHTML(line.trim())}</li>`).join('')}</ul>
-    <p><a href="${escapeHTML(orderURL)}">View your order</a> (log in with your account).</p>
-    <p>— ${escapeHTML(companyName)}</p>
-  `
+  const contactEmails = getCustomerContactEmails()
+  const { html, subject, text } = buildCustomerOrderConfirmation({
+    companyName,
+    contactEmails,
+    order,
+    orderURL,
+  })
 
   await payload.sendEmail(
     decorateEmailEnvelope({
+      bcc: BAKERY_INBOX,
       html,
+      replyTo: contactEmails,
       subject,
       text,
       to,

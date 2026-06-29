@@ -1,9 +1,9 @@
 import type { CollectionAfterChangeHook, Payload } from 'payload'
 
 import type { Order, Product, Variant } from '@/payload-types'
+import { getOwnerNotificationRecipients } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
-import { parseEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
 export const SKIP_OWNER_ORDER_NOTIFICATION = 'skipOwnerOrderNotification'
@@ -313,7 +313,7 @@ export const sendOwnerOrderNotification = async ({
   order,
   payload,
 }: SendOwnerOrderNotificationArgs) => {
-  const to = parseEmailRecipients(process.env.ORDER_NOTIFICATION_TO)
+  const to = getOwnerNotificationRecipients()
 
   if (!to.length) {
     payload.logger.warn(
