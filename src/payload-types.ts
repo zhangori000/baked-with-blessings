@@ -3647,7 +3647,7 @@ export interface FeatureRequestsContent {
 export interface SitePage {
   id: number;
   /**
-   * Turn this off to hide About from the site's navigation (and 404 the /about route).
+   * Untick to hide About from the Other Pages menu and 404 the /about route.
    */
   aboutEnabled?: boolean | null;
   /**
