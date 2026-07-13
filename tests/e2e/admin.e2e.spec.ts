@@ -81,6 +81,56 @@ test.describe('Admin Panel', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Orders' })).toBeVisible()
   })
 
+  test('reviews a bulk price change before sending it', async () => {
+    let updateRequests = 0
+    const productsPattern = '**/api/products?*'
+    const updatePattern = '**/next/admin-cookie-prices'
+
+    await page.route(productsPattern, async (route) => {
+      await route.fulfill({ body: 'Unavailable', status: 503 })
+    })
+    await page.route(updatePattern, async (route) => {
+      updateRequests += 1
+      expect(route.request().postDataJSON()).toEqual({ priceInUSD: 8, updateMiniPrices: true })
+      await route.fulfill({
+        json: {
+          matchedCount: 4,
+          miniPriceInUSD: 400,
+          priceInUSD: 800,
+          success: true,
+          updatedCount: 4,
+        },
+        status: 200,
+      })
+    })
+
+    try {
+      await page.goto('http://localhost:3000/admin')
+      const bulkTools = page.locator('section[aria-labelledby="admin-tools-heading"]')
+      await expect(bulkTools.getByText('Bundle price check unavailable')).toBeVisible()
+      await bulkTools.getByLabel('Cookie price').fill('8.00')
+      await bulkTools.getByRole('button', { name: 'Set all cookies' }).click()
+
+      const confirmationHeading = page.getByRole('heading', { name: 'Set every cookie price?' })
+      await expect(confirmationHeading).toBeVisible()
+      await expect(page.getByText('Bundle prices have not been verified.')).toBeVisible()
+      expect(updateRequests).toBe(0)
+
+      await page.getByRole('button', { name: 'Cancel' }).click()
+      await expect(confirmationHeading).toBeHidden()
+      expect(updateRequests).toBe(0)
+
+      await bulkTools.getByRole('button', { name: 'Set all cookies' }).click()
+      await page.getByRole('button', { name: 'Set all cookie prices' }).click()
+
+      await expect.poll(() => updateRequests).toBe(1)
+      await expect(bulkTools.getByText('Updated 4 cookies to $8.00 (mini $4.00).')).toBeVisible()
+    } finally {
+      await page.unroute(productsPattern)
+      await page.unroute(updatePattern)
+    }
+  })
+
   test('keeps the dashboard usable at a mobile viewport', async () => {
     await page.setViewportSize({ height: 844, width: 390 })
     await page.goto('http://localhost:3000/admin')
