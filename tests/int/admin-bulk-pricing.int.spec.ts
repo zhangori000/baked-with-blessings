@@ -71,8 +71,31 @@ describe('admin bulk pricing safety check', () => {
   it.each([
     { docs: [validBundle], hasNextPage: true, totalDocs: 2 },
     { docs: [validBundle], hasNextPage: false, totalDocs: 2 },
+    { docs: [validBundle], totalDocs: 1 },
+    { docs: [validBundle], hasNextPage: false },
+    { docs: [validBundle] },
   ])('marks pagination or a count mismatch unverified', (response) => {
     expect(parseBundlePricingResponse(response).complete).toBe(false)
+  })
+
+  it('rejects duplicate slugs without producing duplicate warnings', () => {
+    expect(
+      parseBundlePricingResponse({
+        docs: [validBundle, { ...validBundle, priceInUSD: 3600 }],
+        hasNextPage: false,
+        totalDocs: 2,
+      }),
+    ).toEqual({
+      bundles: [
+        {
+          count: 4,
+          price: 3200,
+          size: 'large',
+          title: 'Cookie tray',
+        },
+      ],
+      complete: false,
+    })
   })
 
   it('does not warn about unchanged mini prices', () => {

@@ -29,21 +29,13 @@ export const parseBundlePricingResponse = (value: unknown): BundlePricingCheck =
     return { bundles: [], complete: false }
   }
 
-  let complete = true
+  let complete =
+    value.hasNextPage === false &&
+    typeof value.totalDocs === 'number' &&
+    Number.isInteger(value.totalDocs) &&
+    value.totalDocs === value.docs.length
   const bundles: BundlePricing[] = []
-
-  if ('hasNextPage' in value && typeof value.hasNextPage !== 'boolean') {
-    complete = false
-  } else if (value.hasNextPage === true) {
-    complete = false
-  }
-
-  if (
-    'totalDocs' in value &&
-    (!Number.isInteger(value.totalDocs) || value.totalDocs !== value.docs.length)
-  ) {
-    complete = false
-  }
+  const seenSlugs = new Set<string>()
 
   for (const doc of value.docs) {
     if (!isRecord(doc)) {
@@ -52,6 +44,13 @@ export const parseBundlePricingResponse = (value: unknown): BundlePricingCheck =
     }
 
     const slug = typeof doc.slug === 'string' ? doc.slug : ''
+
+    if (seenSlugs.has(slug)) {
+      complete = false
+      continue
+    }
+
+    seenSlugs.add(slug)
     const size = BUNDLE_SIZE_BY_SLUG[slug as keyof typeof BUNDLE_SIZE_BY_SLUG]
     const count = doc.requiredSelectionCount
     const price = doc.priceInUSD
