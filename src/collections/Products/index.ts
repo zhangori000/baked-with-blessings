@@ -119,6 +119,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         collection: 'products',
         req,
       }),
+    listSearchableFields: ['title', 'slug'],
     useAsTitle: 'title',
   },
   defaultPopulate: {
@@ -172,8 +173,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'ui',
               admin: {
                 components: {
-                  Field:
-                    '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
+                  Field: '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
                 },
               },
             },
@@ -326,8 +326,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   type: 'ui',
                   admin: {
                     components: {
-                      Field:
-                        '@/components/admin/ProductWritingGenerators#GenerateProductInfoPopup',
+                      Field: '@/components/admin/ProductWritingGenerators#GenerateProductInfoPopup',
                     },
                   },
                 },
