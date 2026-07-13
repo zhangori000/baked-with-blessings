@@ -6,6 +6,12 @@ import { ConfirmationModal, toast, useModal } from '@payloadcms/ui'
 import { BakeryPressable } from '@/design-system/bakery'
 import { defaultMiniPriceInUSD, MINI_PRICE_RATIO } from '@/features/products/sizeVariants'
 
+import {
+  BUNDLE_SLUGS,
+  getBundlePricingWarnings,
+  parseBundlePricingResponse,
+  type BundlePricing,
+} from './bundlePricing'
 import styles from './index.module.css'
 
 type BulkCookiePriceToolProps = {
@@ -58,24 +64,6 @@ const formatSuccessMessage = ({
 const MINI_PERCENT_LABEL = `${Math.round(MINI_PRICE_RATIO * 100)}%`
 const CONFIRM_PRICE_UPDATE_MODAL = 'confirm-bulk-cookie-price-update'
 
-// Bundle prices are set separately from individual cookie prices, so a price
-// change here can quietly make a bundle a worse deal than buying singles. We
-// load the live bundle prices and warn the owner before that happens.
-const BUNDLE_SIZE_BY_SLUG: Record<string, 'large' | 'mini'> = {
-  'build-your-own-cookie-box': 'large',
-  'build-your-own-mini-box': 'mini',
-  'cookie-tray': 'large',
-  'mini-cookie-tray': 'mini',
-}
-const BUNDLE_SLUGS = Object.keys(BUNDLE_SIZE_BY_SLUG)
-
-type BundlePricing = {
-  count: number
-  price: number
-  size: 'large' | 'mini'
-  title: string
-}
-
 export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messageClassName }) => {
   const { openModal } = useModal()
   const [bundleCheckState, setBundleCheckState] = useState<'loading' | 'ready' | 'unavailable'>(
@@ -109,29 +97,14 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
 
         return response.json()
       })
-      .then((data: { docs?: Record<string, unknown>[] } | null) => {
-        if (!active || !data?.docs) {
-          if (active) {
-            setBundleCheckState('unavailable')
-          }
+      .then((data: unknown) => {
+        if (!active) {
           return
         }
-        const parsed = data.docs
-          .map((doc) => {
-            const slug = typeof doc.slug === 'string' ? doc.slug : ''
-            return {
-              count:
-                typeof doc.requiredSelectionCount === 'number' ? doc.requiredSelectionCount : 0,
-              price: typeof doc.priceInUSD === 'number' ? doc.priceInUSD : 0,
-              size: BUNDLE_SIZE_BY_SLUG[slug],
-              title: typeof doc.title === 'string' ? doc.title : slug,
-            }
-          })
-          .filter((bundle): bundle is BundlePricing =>
-            Boolean(bundle.size && bundle.count && bundle.price),
-          )
-        setBundles(parsed)
-        setBundleCheckState('ready')
+
+        const result = parseBundlePricingResponse(data)
+        setBundles(result.bundles)
+        setBundleCheckState(result.complete ? 'ready' : 'unavailable')
       })
       .catch(() => {
         if (active) {
@@ -150,20 +123,12 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
     if (!isValidPrice || bundles.length === 0) {
       return []
     }
-    const largeCents = Math.round(parsedPrice * 100)
-    const miniCents = defaultMiniPriceInUSD(largeCents)
-
-    return bundles.flatMap((bundle) => {
-      const unitCents = bundle.size === 'mini' ? miniCents : largeCents
-      const individualCents = unitCents * bundle.count
-      if (bundle.price >= individualCents) {
-        return [
-          `${bundle.title} (${formatUSDFromCents(bundle.price)}) would be no cheaper than buying ${bundle.count} ${bundle.size} cookies individually (${formatUSDFromCents(individualCents)}).`,
-        ]
-      }
-      return []
+    return getBundlePricingWarnings({
+      bundles,
+      largePriceInCents: Math.round(parsedPrice * 100),
+      updateMiniPrices,
     })
-  }, [bundles, isValidPrice, parsedPrice])
+  }, [bundles, isValidPrice, parsedPrice, updateMiniPrices])
 
   const updateCookiePrices = useCallback(async () => {
     setError(null)
@@ -325,6 +290,16 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
                 ? `Every mini cookie will also be set to ${miniPreviewLabel}.`
                 : 'Mini cookie prices will stay unchanged.'}
             </p>
+            {bundleWarnings.length > 0 ? (
+              <div className={styles.confirmationWarning}>
+                <p>Review these bundle prices before continuing:</p>
+                <ul>
+                  {bundleWarnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {bundleCheckState !== 'ready' ? (
               <p className={styles.confirmationWarning}>
                 Bundle prices have not been verified. Review them separately after this update.

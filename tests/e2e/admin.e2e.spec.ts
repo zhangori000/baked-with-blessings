@@ -131,6 +131,85 @@ test.describe('Admin Panel', () => {
     }
   })
 
+  test('keeps known bundle conflicts inside the price confirmation', async () => {
+    const productsPattern = '**/api/products?*'
+    const bundleWarning =
+      'Cookie tray ($32.00) would be no cheaper than buying 4 large cookies individually ($32.00).'
+
+    await page.route(productsPattern, async (route) => {
+      await route.fulfill({
+        json: {
+          docs: [
+            {
+              priceInUSD: 3200,
+              requiredSelectionCount: 4,
+              slug: 'cookie-tray',
+              title: 'Cookie tray',
+            },
+          ],
+          hasNextPage: false,
+          totalDocs: 1,
+        },
+        status: 200,
+      })
+    })
+
+    try {
+      await page.goto('http://localhost:3000/admin')
+      const bulkTools = page.locator('section[aria-labelledby="admin-tools-heading"]')
+      await bulkTools.getByLabel('Cookie price').fill('8.00')
+      await expect(bulkTools.getByText(bundleWarning)).toBeVisible()
+      await bulkTools.getByRole('button', { name: 'Set all cookies' }).click()
+
+      await expect(page.getByRole('dialog').getByText(bundleWarning)).toBeVisible()
+      await page.getByRole('button', { name: 'Cancel' }).click()
+    } finally {
+      await page.unroute(productsPattern)
+    }
+  })
+
+  test('treats partial bundle pricing as unverified', async () => {
+    const productsPattern = '**/api/products?*'
+
+    await page.route(productsPattern, async (route) => {
+      await route.fulfill({
+        json: {
+          docs: [
+            {
+              priceInUSD: 2000,
+              requiredSelectionCount: 4,
+              slug: 'cookie-tray',
+              title: 'Cookie tray',
+            },
+            {
+              priceInUSD: null,
+              requiredSelectionCount: 4,
+              slug: 'mini-cookie-tray',
+              title: 'Mini cookie tray',
+            },
+          ],
+          hasNextPage: false,
+          totalDocs: 2,
+        },
+        status: 200,
+      })
+    })
+
+    try {
+      await page.goto('http://localhost:3000/admin')
+      const bulkTools = page.locator('section[aria-labelledby="admin-tools-heading"]')
+      await expect(bulkTools.getByText('Bundle price check unavailable')).toBeVisible()
+      await bulkTools.getByRole('button', { name: 'Set all cookies' }).click()
+
+      await expect(
+        page.getByRole('dialog').getByText('Bundle prices have not been verified.'),
+      ).toBeVisible()
+      await page.getByRole('button', { name: 'Cancel' }).click()
+    } finally {
+      await page.unroute(productsPattern)
+    }
+  })
+
   test('keeps the dashboard usable at a mobile viewport', async () => {
     await page.setViewportSize({ height: 844, width: 390 })
     await page.goto('http://localhost:3000/admin')
