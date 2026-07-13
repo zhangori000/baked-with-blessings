@@ -6,105 +6,11 @@ import React from 'react'
 import { BulkCookiePriceTool } from '@/components/BeforeDashboard/BulkCookiePriceTool'
 import { LocalMediaSyncCard } from '@/components/BeforeDashboard/LocalMediaSyncCard'
 
-import type { ActiveRotationState, AttentionOrder, AttentionOrdersState } from './data'
+import { ActiveRotation } from './ActiveRotation'
+import { AttentionOrders } from './AttentionOrders'
 import { loadAdminDashboardData } from './data'
 import { dailyDestinations, supportingDestinations } from './destinations'
 import styles from './index.module.css'
-
-const orderStatusLabels: Record<AttentionOrder['status'], string> = {
-  confirmed: 'Confirmed',
-  processing: 'Requested',
-  ready: 'Ready for pickup',
-}
-
-const formatOrderDate = (value: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-  }).format(new Date(value))
-
-const formatOrderAmount = (value: number | null) =>
-  typeof value === 'number'
-    ? new Intl.NumberFormat('en-US', { currency: 'USD', style: 'currency' }).format(value / 100)
-    : 'Total unavailable'
-
-const AttentionOrders = ({ state }: { state: AttentionOrdersState }) => {
-  if (state.kind === 'unavailable') {
-    return (
-      <div className={styles.emptyState}>
-        <p>Order preview is temporarily unavailable.</p>
-        <Link href="/admin/collections/orders" prefetch={false}>
-          Open all orders
-        </Link>
-      </div>
-    )
-  }
-
-  if (state.docs.length === 0) {
-    return (
-      <div className={styles.emptyState}>
-        <p>You&apos;re all caught up. No orders need attention.</p>
-        <Link href="/admin/collections/orders" prefetch={false}>
-          View order history
-        </Link>
-      </div>
-    )
-  }
-
-  return (
-    <ul className={styles.orderList}>
-      {state.docs.map((order) => (
-        <li key={order.id}>
-          <Link
-            className={styles.orderLink}
-            href={`/admin/collections/orders/${order.id}`}
-            prefetch={false}
-          >
-            <span className={styles.orderMain}>
-              <strong>{order.customerName || `Order #${order.id}`}</strong>
-              <span>
-                {formatOrderDate(order.createdAt)} · {formatOrderAmount(order.amount)}
-              </span>
-            </span>
-            <span className={styles.statusPill}>{orderStatusLabels[order.status]}</span>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-const ActiveRotation = ({ state }: { state: ActiveRotationState }) => {
-  if (state.kind === 'active') {
-    return (
-      <Link
-        className={styles.rotationLink}
-        href={`/admin/collections/flavor-rotations/${state.rotation.id}`}
-        prefetch={false}
-      >
-        <span className={styles.rotationStatus}>Active now</span>
-        <strong>{state.rotation.title}</strong>
-        <span>Open this lineup →</span>
-      </Link>
-    )
-  }
-
-  const message =
-    state.kind === 'none'
-      ? 'No cookie lineup is active.'
-      : state.kind === 'multiple'
-        ? `${state.totalDocs} lineups are active. Choose just one.`
-        : 'Lineup status is temporarily unavailable.'
-
-  return (
-    <div className={styles.rotationFallback}>
-      <p>{message}</p>
-      <Link href="/admin/collections/flavor-rotations" prefetch={false}>
-        Open cookie lineups
-      </Link>
-    </div>
-  )
-}
 
 export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) => {
   const { req } = initPageResult

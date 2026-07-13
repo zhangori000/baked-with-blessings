@@ -24,7 +24,7 @@
 .link {
   display: flex;
   align-items: center;
-  min-height: 2.75rem;
+  min-height: 44px;
   border-radius: 0.5rem;
   padding: 0.55rem 0.7rem;
   color: var(--theme-elevation-800);

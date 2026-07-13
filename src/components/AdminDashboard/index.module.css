@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: center;
   justify-self: start;
-  min-height: 2.75rem;
+  min-height: 44px;
   border: 1px solid var(--theme-elevation-250);
   border-radius: 999px;
   padding: 0.65rem 1rem;
@@ -97,7 +97,7 @@
 }
 
 .sectionLink {
-  min-height: 2.75rem;
+  min-height: 44px;
   color: var(--theme-elevation-800);
   font-weight: 600;
 }
