@@ -21,6 +21,7 @@ export const cottageFoodDisclosure =
 export const businessCity = 'Plymouth'
 export const businessState = 'MN'
 export const businessStateFull = 'Minnesota'
+export const businessTimeZone = 'America/Chicago'
 
 /** Plain-language service area shown to customers. */
 export const serviceAreaShort = 'Plymouth and much of the Twin Cities metro'

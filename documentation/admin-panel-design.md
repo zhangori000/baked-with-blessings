@@ -24,6 +24,7 @@ The admin panel is for a non-technical bakery owner. Its home screen should answ
 - Search uses owner-known terms: customer name, email, or phone; product title or slug.
 - Important bulk updates require a review step that states their scope and resulting prices.
 - Requested, confirmed, and ready orders remain distinguishable without relying on color alone.
+- Owner-facing order dates use the bakery's Central time zone, not the deployment server's locale.
 
 ## Deliberate non-goals
 

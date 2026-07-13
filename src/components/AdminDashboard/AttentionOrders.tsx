@@ -1,5 +1,7 @@
 import { Link } from '@payloadcms/ui'
 
+import { businessTimeZone } from '@/utilities/businessInfo'
+
 import type { AttentionOrder, AttentionOrdersState } from './data'
 import styles from './index.module.css'
 
@@ -19,6 +21,7 @@ const formatOrderDate = (value: string) =>
   new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
     month: 'short',
+    timeZone: businessTimeZone,
   }).format(new Date(value))
 
 const formatOrderAmount = (value: number | null) =>
@@ -61,7 +64,8 @@ export const AttentionOrders = ({ state }: { state: AttentionOrdersState }) => {
             <span className={styles.orderMain}>
               <strong>{order.customerName || `Order #${order.id}`}</strong>
               <span>
-                {formatOrderDate(order.createdAt)} · {formatOrderAmount(order.amount)}
+                <time dateTime={order.createdAt}>{formatOrderDate(order.createdAt)}</time> ·{' '}
+                {formatOrderAmount(order.amount)}
               </span>
             </span>
             <span className={`${styles.statusPill} ${orderStatusClassNames[order.status]}`}>
