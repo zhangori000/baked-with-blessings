@@ -1,0 +1,44 @@
+.section {
+  margin: 0 0 1rem;
+  border-bottom: 1px solid var(--theme-elevation-150);
+  padding: 0 0 1rem;
+}
+
+.heading {
+  margin: 0 0 0.5rem;
+  color: var(--theme-elevation-600);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.list {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  color: var(--theme-elevation-800);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-1000);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--theme-success-500);
+  outline-offset: 2px;
+}
