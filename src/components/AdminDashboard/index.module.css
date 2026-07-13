@@ -97,6 +97,8 @@
 }
 
 .sectionLink {
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
   color: var(--theme-elevation-800);
   font-weight: 600;
@@ -176,11 +178,25 @@
 .rotationStatus {
   border-radius: 999px;
   padding: 0.35rem 0.55rem;
-  background: color-mix(in srgb, var(--theme-success-200) 70%, transparent);
-  color: var(--theme-success-700);
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.statusPillProcessing {
+  background: var(--theme-elevation-150);
+  color: var(--theme-elevation-800);
+}
+
+.statusPillConfirmed {
+  background: var(--theme-warning-150);
+  color: var(--theme-warning-800);
+}
+
+.statusPillReady,
+.rotationStatus {
+  background: color-mix(in srgb, var(--theme-success-200) 70%, transparent);
+  color: var(--theme-success-700);
 }
 
 .rotationLink,
@@ -252,6 +268,9 @@
 }
 
 .actionCard:focus-visible,
+.orderLink:focus-visible,
+.rotationLink:focus-visible,
+.sectionLink:focus-visible,
 .supportingLink:focus-visible,
 .storefrontLink:focus-visible {
   outline: 2px solid var(--theme-success-500);

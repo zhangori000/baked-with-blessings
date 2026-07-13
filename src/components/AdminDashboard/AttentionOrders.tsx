@@ -9,6 +9,12 @@ const orderStatusLabels: Record<AttentionOrder['status'], string> = {
   ready: 'Ready for pickup',
 }
 
+const orderStatusClassNames: Record<AttentionOrder['status'], string> = {
+  confirmed: styles.statusPillConfirmed,
+  processing: styles.statusPillProcessing,
+  ready: styles.statusPillReady,
+}
+
 const formatOrderDate = (value: string) =>
   new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
@@ -58,7 +64,9 @@ export const AttentionOrders = ({ state }: { state: AttentionOrdersState }) => {
                 {formatOrderDate(order.createdAt)} · {formatOrderAmount(order.amount)}
               </span>
             </span>
-            <span className={styles.statusPill}>{orderStatusLabels[order.status]}</span>
+            <span className={`${styles.statusPill} ${orderStatusClassNames[order.status]}`}>
+              {orderStatusLabels[order.status]}
+            </span>
           </Link>
         </li>
       ))}
