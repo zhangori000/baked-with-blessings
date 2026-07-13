@@ -11,6 +11,7 @@ import { AttentionOrders } from './AttentionOrders'
 import { loadAdminDashboardData } from './data'
 import { dailyDestinations, supportingDestinations } from './destinations'
 import styles from './index.module.css'
+import { attentionOrdersHref } from './orderQueue'
 
 export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) => {
   const { req } = initPageResult
@@ -44,12 +45,9 @@ export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) =
                 Your work queue
               </h2>
             </div>
-            {dashboardData.attentionOrders.kind === 'ready' ? (
-              <Link
-                className={styles.sectionLink}
-                href="/admin/collections/orders"
-                prefetch={false}
-              >
+            {dashboardData.attentionOrders.kind === 'ready' &&
+            dashboardData.attentionOrders.totalDocs > 0 ? (
+              <Link className={styles.sectionLink} href={attentionOrdersHref} prefetch={false}>
                 View all {dashboardData.attentionOrders.totalDocs} open orders
               </Link>
             ) : null}

@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test'
 import { login } from '../helpers/login'
+import { cleanupAdminOrderFixture, seedAdminOrderFixture } from '../helpers/seedAdminOrders'
 import { seedTestUser, cleanupTestUser, testUser } from '../helpers/seedUser'
 
 test.describe('Admin Panel', () => {
@@ -79,6 +80,26 @@ test.describe('Admin Panel', () => {
 
     await expect(page).toHaveURL(/\/admin\/collections\/orders(?:\?.*)?$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Orders' })).toBeVisible()
+  })
+
+  test('opens the complete active-order queue without completed orders', async () => {
+    const fixture = await seedAdminOrderFixture()
+
+    try {
+      await page.goto('http://localhost:3000/admin')
+      await page.getByRole('link', { name: /View all \d+ open orders/ }).click()
+      await page.waitForURL(/\/admin\/collections\/orders\?/)
+
+      const url = new URL(page.url())
+      expect([0, 1, 2].map((index) => url.searchParams.get(`where[status][in][${index}]`))).toEqual(
+        ['processing', 'confirmed', 'ready'],
+      )
+      expect(url.searchParams.get('sort')).toBe('createdAt')
+      await expect(page.getByText(fixture.openName, { exact: true })).toBeVisible()
+      await expect(page.getByText(fixture.completedName, { exact: true })).toHaveCount(0)
+    } finally {
+      await cleanupAdminOrderFixture(fixture.ids)
+    }
   })
 
   test('reviews a bulk price change before sending it', async () => {

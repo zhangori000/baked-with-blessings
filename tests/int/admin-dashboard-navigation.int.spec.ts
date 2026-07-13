@@ -4,6 +4,7 @@ import {
   quickNavDestinations,
   supportingDestinations,
 } from '@/components/AdminDashboard/destinations'
+import { attentionOrdersHref, attentionOrderStatuses } from '@/components/AdminDashboard/orderQueue'
 import { describe, expect, it } from 'vitest'
 
 describe('admin dashboard navigation', () => {
@@ -34,5 +35,16 @@ describe('admin dashboard navigation', () => {
     expect(
       quickNavDestinations.every((destination) => dailyDestinations.includes(destination)),
     ).toBe(true)
+  })
+
+  it('opens the complete attention queue with the same statuses and oldest-first ordering', () => {
+    const url = new URL(attentionOrdersHref, 'https://admin.example.com')
+
+    expect(
+      attentionOrderStatuses.map((_status, index) =>
+        url.searchParams.get(`where[status][in][${index}]`),
+      ),
+    ).toEqual([...attentionOrderStatuses])
+    expect(url.searchParams.get('sort')).toBe('createdAt')
   })
 })

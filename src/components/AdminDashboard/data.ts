@@ -1,13 +1,13 @@
 import type { Payload, PayloadRequest } from 'payload'
 
-const attentionStatuses = ['processing', 'confirmed', 'ready'] as const
+import { attentionOrderStatuses } from './orderQueue'
 
 export type AttentionOrder = {
   amount: number | null
   createdAt: string
   customerName: string | null
   id: number
-  status: (typeof attentionStatuses)[number]
+  status: (typeof attentionOrderStatuses)[number]
 }
 
 export type AttentionOrdersState =
@@ -54,7 +54,7 @@ export const loadAdminDashboardData = async ({
       sort: 'createdAt',
       where: {
         status: {
-          in: [...attentionStatuses],
+          in: [...attentionOrderStatuses],
         },
       },
     }),
@@ -81,7 +81,9 @@ export const loadAdminDashboardData = async ({
           docs: ordersResult.value.docs.flatMap((order) => {
             if (
               !order.status ||
-              !attentionStatuses.includes(order.status as (typeof attentionStatuses)[number])
+              !attentionOrderStatuses.includes(
+                order.status as (typeof attentionOrderStatuses)[number],
+              )
             ) {
               return []
             }
@@ -92,7 +94,7 @@ export const loadAdminDashboardData = async ({
                 createdAt: order.createdAt,
                 customerName: order.customerName ?? null,
                 id: order.id,
-                status: order.status as (typeof attentionStatuses)[number],
+                status: order.status as (typeof attentionOrderStatuses)[number],
               },
             ]
           }),

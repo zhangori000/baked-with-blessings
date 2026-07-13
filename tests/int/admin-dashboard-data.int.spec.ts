@@ -1,4 +1,5 @@
 import { loadAdminDashboardData } from '@/components/AdminDashboard/data'
+import { attentionOrderStatuses } from '@/components/AdminDashboard/orderQueue'
 import type { Payload, PayloadRequest } from 'payload'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -73,7 +74,7 @@ describe('admin dashboard data', () => {
       limit: 5,
       overrideAccess: false,
       sort: 'createdAt',
-      where: { status: { in: ['processing', 'confirmed', 'ready'] } },
+      where: { status: { in: [...attentionOrderStatuses] } },
     })
   })
 
