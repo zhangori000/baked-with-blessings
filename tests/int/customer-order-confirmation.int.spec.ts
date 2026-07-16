@@ -76,8 +76,8 @@ describe('contactChannels', () => {
     ])
   })
 
-  it('stays empty when every review notification source is unset', () => {
-    expect(getOwnerReviewNotificationRecipients()).toEqual([])
+  it('defaults review alerts to the bakery inbox when every optional source is unset', () => {
+    expect(getOwnerReviewNotificationRecipients()).toEqual([BAKERY_INBOX])
   })
 })
 

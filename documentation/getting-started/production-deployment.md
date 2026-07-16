@@ -86,8 +86,8 @@ ORDER_NOTIFICATION_TO
 REVIEW_NOTIFICATION_TO
 ```
 
-Order and review alerts always include `bakedwithblessings@gmail.com` when their
-configured recipient list is non-empty.
+Review alerts always include `bakedwithblessings@gmail.com`, including local and
+test sends. Order alerts include it whenever `ORDER_NOTIFICATION_TO` is configured.
 
 Twilio:
 

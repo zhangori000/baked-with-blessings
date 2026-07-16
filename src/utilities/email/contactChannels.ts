@@ -40,8 +40,9 @@ export const getOwnerNotificationRecipients = (): string[] => {
 
 /**
  * Recipients of a new-review alert. The review-specific list wins when set,
- * then falls back to the contact and order lists. Any configured route always
- * includes the bakery inbox so review feedback reaches the monitored account.
+ * then falls back to the contact and order lists. The bakery inbox is always
+ * included, including local development and test sends, so review feedback
+ * never loses its monitored destination.
  */
 export const getOwnerReviewNotificationRecipients = (): string[] => {
   const configured = getFirstConfiguredEmailRecipients(
@@ -49,10 +50,6 @@ export const getOwnerReviewNotificationRecipients = (): string[] => {
     process.env.CONTACT_NOTIFICATION_TO,
     process.env.ORDER_NOTIFICATION_TO,
   )
-
-  if (!configured.length) {
-    return []
-  }
 
   return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
 }

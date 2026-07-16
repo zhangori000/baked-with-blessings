@@ -67,13 +67,6 @@ const sendOwnerReviewNotification = async ({
 }) => {
   const to = getOwnerReviewNotificationRecipients()
 
-  if (!to.length) {
-    payload.logger.warn(
-      'REVIEW_NOTIFICATION_TO, CONTACT_NOTIFICATION_TO, and ORDER_NOTIFICATION_TO are not configured; skipping review notification.',
-    )
-    return
-  }
-
   const companyName =
     process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
   const serverURL = getServerSideURL()
