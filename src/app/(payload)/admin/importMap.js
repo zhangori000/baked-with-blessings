@@ -30,9 +30,10 @@ import { ProductGalleryBulkPicker as ProductGalleryBulkPicker_65ad1e7ed294a44520
 import { GenerateProductInfoPopup as GenerateProductInfoPopup_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
 import { ProductTrayPlacementField as ProductTrayPlacementField_4962c40848d1cb71f8b19cf0f9aafcea } from '@/components/admin/ProductTrayPlacementField'
 import { CopyProductDescriptionToSEO as CopyProductDescriptionToSEO_8d82c06baad6b06139ff1391e8f300ea } from '@/components/admin/CopyProductDescriptionToSEO'
-import { BeforeDashboard as BeforeDashboard_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { BeforeLogin as BeforeLogin_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { AdminQuickNav as AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f } from '@/components/AdminDashboard/AdminQuickNav'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
+import { AdminDashboard as AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698 } from '@/components/AdminDashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -69,8 +70,9 @@ export const importMap = {
   "@/components/admin/ProductWritingGenerators#GenerateProductInfoPopup": GenerateProductInfoPopup_65f16633f7e985b157f353a9f08c0be0,
   "@/components/admin/ProductTrayPlacementField#ProductTrayPlacementField": ProductTrayPlacementField_4962c40848d1cb71f8b19cf0f9aafcea,
   "@/components/admin/CopyProductDescriptionToSEO#CopyProductDescriptionToSEO": CopyProductDescriptionToSEO_8d82c06baad6b06139ff1391e8f300ea,
-  "@/components/BeforeDashboard#BeforeDashboard": BeforeDashboard_1a7510af427896d367a49dbf838d2de6,
   "@/components/BeforeLogin#BeforeLogin": BeforeLogin_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  "@/components/AdminDashboard/AdminQuickNav#AdminQuickNav": AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
+  "@/components/AdminDashboard#AdminDashboard": AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

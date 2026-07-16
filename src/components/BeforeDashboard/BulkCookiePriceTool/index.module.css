@@ -132,6 +132,25 @@
   margin: 0;
 }
 
+.confirmationBody {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.confirmationBody p {
+  margin: 0;
+}
+
+.confirmationWarning {
+  color: var(--theme-warning-800);
+  font-weight: 600;
+}
+
+.confirmationWarning ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.25rem;
+}
+
 .error {
   color: var(--theme-error-600);
 }

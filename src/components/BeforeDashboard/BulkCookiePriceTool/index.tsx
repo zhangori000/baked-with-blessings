@@ -1,11 +1,16 @@
 'use client'
 
 import React, { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from '@payloadcms/ui'
+import { ConfirmationModal, toast, useModal } from '@payloadcms/ui'
 
 import { BakeryPressable } from '@/design-system/bakery'
 import { defaultMiniPriceInUSD, MINI_PRICE_RATIO } from '@/features/products/sizeVariants'
 
+import {
+  getBundlePricingWarnings,
+  parseBundlePricingResponse,
+  type BundlePricing,
+} from './bundlePricing'
 import styles from './index.module.css'
 
 type BulkCookiePriceToolProps = {
@@ -56,28 +61,13 @@ const formatSuccessMessage = ({
 }
 
 const MINI_PERCENT_LABEL = `${Math.round(MINI_PRICE_RATIO * 100)}%`
+const CONFIRM_PRICE_UPDATE_MODAL = 'confirm-bulk-cookie-price-update'
 
-// Bundle prices are set separately from individual cookie prices, so a price
-// change here can quietly make a bundle a worse deal than buying singles. We
-// load the live bundle prices and warn the owner before that happens.
-const BUNDLE_SIZE_BY_SLUG: Record<string, 'large' | 'mini'> = {
-  'build-your-own-cookie-box': 'large',
-  'build-your-own-mini-box': 'mini',
-  'cookie-tray': 'large',
-  'mini-cookie-tray': 'mini',
-}
-const BUNDLE_SLUGS = Object.keys(BUNDLE_SIZE_BY_SLUG)
-
-type BundlePricing = {
-  count: number
-  price: number
-  size: 'large' | 'mini'
-  title: string
-}
-
-export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
-  messageClassName,
-}) => {
+export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messageClassName }) => {
+  const { openModal } = useModal()
+  const [bundleCheckState, setBundleCheckState] = useState<'loading' | 'ready' | 'unavailable'>(
+    'loading',
+  )
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [price, setPrice] = useState('7.00')
@@ -94,31 +84,34 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
 
   useEffect(() => {
     let active = true
-    const query = BUNDLE_SLUGS.map(
-      (slug, index) => `where[slug][in][${index}]=${encodeURIComponent(slug)}`,
-    ).join('&')
+    const query = new URLSearchParams({
+      depth: '0',
+      draft: 'false',
+      limit: '100',
+      'where[menuBehavior][equals]': 'batchBuilder',
+    })
 
-    fetch(`/api/products?${query}&depth=0&limit=20&draft=false`, { credentials: 'include' })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { docs?: Record<string, unknown>[] } | null) => {
-        if (!active || !data?.docs) {
+    fetch(`/api/products?${query.toString()}`, { credentials: 'include' })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Bundle pricing could not be checked.')
+        }
+
+        return response.json()
+      })
+      .then((data: unknown) => {
+        if (!active) {
           return
         }
-        const parsed = data.docs
-          .map((doc) => {
-            const slug = typeof doc.slug === 'string' ? doc.slug : ''
-            return {
-              count: typeof doc.requiredSelectionCount === 'number' ? doc.requiredSelectionCount : 0,
-              price: typeof doc.priceInUSD === 'number' ? doc.priceInUSD : 0,
-              size: BUNDLE_SIZE_BY_SLUG[slug],
-              title: typeof doc.title === 'string' ? doc.title : slug,
-            }
-          })
-          .filter((bundle): bundle is BundlePricing => Boolean(bundle.size && bundle.count && bundle.price))
-        setBundles(parsed)
+
+        const result = parseBundlePricingResponse(data)
+        setBundles(result.bundles)
+        setBundleCheckState(result.complete ? 'ready' : 'unavailable')
       })
       .catch(() => {
-        // Non-blocking: if we can't load bundle prices, just skip the warning.
+        if (active) {
+          setBundleCheckState('unavailable')
+        }
       })
 
     return () => {
@@ -132,23 +125,61 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
     if (!isValidPrice || bundles.length === 0) {
       return []
     }
-    const largeCents = Math.round(parsedPrice * 100)
-    const miniCents = defaultMiniPriceInUSD(largeCents)
-
-    return bundles.flatMap((bundle) => {
-      const unitCents = bundle.size === 'mini' ? miniCents : largeCents
-      const individualCents = unitCents * bundle.count
-      if (bundle.price >= individualCents) {
-        return [
-          `${bundle.title} (${formatUSDFromCents(bundle.price)}) would be no cheaper than buying ${bundle.count} ${bundle.size} cookies individually (${formatUSDFromCents(individualCents)}).`,
-        ]
-      }
-      return []
+    return getBundlePricingWarnings({
+      bundles,
+      largePriceInCents: Math.round(parsedPrice * 100),
+      updateMiniPrices,
     })
-  }, [bundles, isValidPrice, parsedPrice])
+  }, [bundles, isValidPrice, parsedPrice, updateMiniPrices])
+
+  const updateCookiePrices = useCallback(async () => {
+    setError(null)
+    setIsSubmitting(true)
+    setSuccessMessage(null)
+
+    try {
+      const response = await fetch('/next/admin-cookie-prices', {
+        body: JSON.stringify({ priceInUSD: parsedPrice, updateMiniPrices }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      })
+      const contentType = response.headers.get('content-type') || ''
+      const body = contentType.includes('application/json')
+        ? ((await response.json()) as BulkCookiePriceResponse)
+        : await response.text()
+
+      if (!response.ok) {
+        const message =
+          typeof body === 'string'
+            ? body
+            : body.error || 'An error occurred while updating cookie prices.'
+
+        setError(message)
+        toast.error(message)
+        return
+      }
+
+      const message =
+        typeof body === 'string' ? 'Cookie prices updated.' : formatSuccessMessage(body)
+
+      setSuccessMessage(message)
+      toast.success(message)
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'An unexpected error occurred while updating prices.'
+
+      setError(message)
+      toast.error(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [parsedPrice, updateMiniPrices])
 
   const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault()
 
       if (!isValidPrice) {
@@ -164,53 +195,9 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
         return
       }
 
-      setError(null)
-      setIsSubmitting(true)
-      setSuccessMessage(null)
-
-      try {
-        const response = await fetch('/next/admin-cookie-prices', {
-          body: JSON.stringify({ priceInUSD: parsedPrice, updateMiniPrices }),
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-        })
-        const contentType = response.headers.get('content-type') || ''
-        const body = contentType.includes('application/json')
-          ? ((await response.json()) as BulkCookiePriceResponse)
-          : await response.text()
-
-        if (!response.ok) {
-          const message =
-            typeof body === 'string'
-              ? body
-              : body.error || 'An error occurred while updating cookie prices.'
-
-          setError(message)
-          toast.error(message)
-          return
-        }
-
-        const message =
-          typeof body === 'string'
-            ? 'Cookie prices updated.'
-            : formatSuccessMessage(body)
-
-        setSuccessMessage(message)
-        toast.success(message)
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'An unexpected error occurred while updating prices.'
-
-        setError(message)
-        toast.error(message)
-      } finally {
-        setIsSubmitting(false)
-      }
+      openModal(CONFIRM_PRICE_UPDATE_MODAL)
     },
-    [isSubmitting, isValidPrice, parsedPrice, updateMiniPrices],
+    [isSubmitting, isValidPrice, openModal],
   )
 
   const statusMessage =
@@ -273,6 +260,14 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
           </p>
         </div>
       ) : null}
+      {bundleCheckState === 'unavailable' ? (
+        <div className={styles.warning} role="status">
+          <p className={styles.warningTitle}>Bundle price check unavailable</p>
+          <p className={styles.warningItem}>
+            Review tray and bundle prices separately before applying this change.
+          </p>
+        </div>
+      ) : null}
       <p
         className={[
           styles.message,
@@ -285,6 +280,41 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({
       >
         {statusMessage}
       </p>
+      <ConfirmationModal
+        body={
+          <div className={styles.confirmationBody}>
+            <p>
+              Every cookie product will be set to{' '}
+              {formatUSDFromCents(Math.round(parsedPrice * 100))}.
+            </p>
+            <p>
+              {updateMiniPrices && miniPreviewLabel
+                ? `Every mini cookie will also be set to ${miniPreviewLabel}.`
+                : 'Mini cookie prices will stay unchanged.'}
+            </p>
+            {bundleWarnings.length > 0 ? (
+              <div className={styles.confirmationWarning}>
+                <p>Review these bundle prices before continuing:</p>
+                <ul>
+                  {bundleWarnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {bundleCheckState !== 'ready' ? (
+              <p className={styles.confirmationWarning}>
+                Bundle prices have not been verified. Review them separately after this update.
+              </p>
+            ) : null}
+          </div>
+        }
+        confirmLabel="Set all cookie prices"
+        confirmingLabel="Updating cookie prices"
+        heading="Set every cookie price?"
+        modalSlug={CONFIRM_PRICE_UPDATE_MODAL}
+        onConfirm={updateCookiePrices}
+      />
     </form>
   )
 }

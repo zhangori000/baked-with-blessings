@@ -83,7 +83,11 @@ RESEND_FROM_EMAIL
 RESEND_FROM_NAME=Baked with Blessings
 CONTACT_NOTIFICATION_TO
 ORDER_NOTIFICATION_TO
+REVIEW_NOTIFICATION_TO
 ```
+
+Review alerts always include `bakedwithblessings@gmail.com`, including local and
+test sends. Order alerts include it whenever `ORDER_NOTIFICATION_TO` is configured.
 
 Twilio:
 

@@ -1,4 +1,7 @@
-import { parseEmailRecipients } from '@/utilities/email/recipients'
+import {
+  getFirstConfiguredEmailRecipients,
+  parseEmailRecipients,
+} from '@/utilities/email/recipients'
 
 /**
  * The bakery's real, monitored inbox. This is a Gmail account and is DISTINCT
@@ -32,5 +35,21 @@ export const getOwnerNotificationRecipients = (): string[] => {
   }
 
   // Reuse the parser's trim-aware, case-insensitive dedup instead of a second copy.
+  return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
+}
+
+/**
+ * Recipients of a new-review alert. The review-specific list wins when set,
+ * then falls back to the contact and order lists. The bakery inbox is always
+ * included, including local development and test sends, so review feedback
+ * never loses its monitored destination.
+ */
+export const getOwnerReviewNotificationRecipients = (): string[] => {
+  const configured = getFirstConfiguredEmailRecipients(
+    process.env.REVIEW_NOTIFICATION_TO,
+    process.env.CONTACT_NOTIFICATION_TO,
+    process.env.ORDER_NOTIFICATION_TO,
+  )
+
   return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
 }

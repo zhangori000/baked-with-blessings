@@ -1,8 +1,8 @@
 import type { File, Payload } from 'payload'
 
 import { REVIEW_TENANT_ID } from '@/features/reviews/types'
+import { getOwnerReviewNotificationRecipients } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
-import { getFirstConfiguredEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type LoosePayload = Payload & {
@@ -47,13 +47,6 @@ const escapeHTML = (value: unknown) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 
-const getReviewNotificationEmail = () =>
-  getFirstConfiguredEmailRecipients(
-    process.env.REVIEW_NOTIFICATION_TO,
-    process.env.CONTACT_NOTIFICATION_TO,
-    process.env.ORDER_NOTIFICATION_TO,
-  )
-
 const toPayloadFile = async (file: globalThis.File): Promise<File> => {
   const data = Buffer.from(await file.arrayBuffer())
 
@@ -72,14 +65,7 @@ const sendOwnerReviewNotification = async ({
   payload: Payload
   review: Record<string, unknown>
 }) => {
-  const to = getReviewNotificationEmail()
-
-  if (!to.length) {
-    payload.logger.warn(
-      'REVIEW_NOTIFICATION_TO, CONTACT_NOTIFICATION_TO, and ORDER_NOTIFICATION_TO are not configured; skipping review notification.',
-    )
-    return
-  }
+  const to = getOwnerReviewNotificationRecipients()
 
   const companyName =
     process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'

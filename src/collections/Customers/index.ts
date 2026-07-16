@@ -21,6 +21,7 @@ export const Customers: CollectionConfig = {
   admin: {
     defaultColumns: ['name', 'email', 'phone', 'phoneVerifiedAt'],
     group: 'Users',
+    listSearchableFields: ['name', 'email', 'phone'],
     useAsTitle: 'name',
   },
   auth: {
