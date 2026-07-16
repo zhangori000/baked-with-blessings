@@ -13,7 +13,7 @@ export const announcementItems = [
     linkHref: '/menu',
     linkLabel: 'Preorder now',
     message:
-      'Find us at the downtown farmers market every Wednesday, 9am to 1pm, now through September. Preorder by Tuesday night and your order will be waiting at the stand with your name on it.',
+      'Find us at the downtown farmers market every Wednesday, 2pm to 6pm, now through September. Preorder by Tuesday night and your order will be waiting at the stand with your name on it.',
     title: 'Farmers market — every Wednesday through September',
   },
 ]
