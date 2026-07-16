@@ -6,6 +6,7 @@ import {
   BAKERY_INBOX,
   getCustomerContactEmails,
   getOwnerNotificationRecipients,
+  getOwnerReviewNotificationRecipients,
 } from '@/utilities/email/contactChannels'
 import { buildCustomerOrderConfirmation } from '@/utilities/email/sendCustomerOrderConfirmation'
 import { classifyOrderPayment } from '@/utilities/orderPayment'
@@ -23,8 +24,10 @@ const build = (order: Order) =>
 
 describe('contactChannels', () => {
   afterEach(() => {
+    delete process.env.CONTACT_NOTIFICATION_TO
     delete process.env.CUSTOMER_CONTACT_EMAILS
     delete process.env.ORDER_NOTIFICATION_TO
+    delete process.env.REVIEW_NOTIFICATION_TO
   })
 
   it('defaults the customer contact to the bakery inbox', () => {
@@ -43,6 +46,38 @@ describe('contactChannels', () => {
   it('stays empty when ORDER_NOTIFICATION_TO is unset, preserving the local-dev skip', () => {
     delete process.env.ORDER_NOTIFICATION_TO
     expect(getOwnerNotificationRecipients()).toEqual([])
+  })
+
+  it('always includes the bakery inbox in review alerts when a recipient list is configured', () => {
+    process.env.REVIEW_NOTIFICATION_TO = 'reviewer@example.com, owner@example.com'
+
+    expect(getOwnerReviewNotificationRecipients()).toEqual([
+      'reviewer@example.com',
+      'owner@example.com',
+      BAKERY_INBOX,
+    ])
+  })
+
+  it('deduplicates the bakery inbox in review alerts', () => {
+    process.env.REVIEW_NOTIFICATION_TO = `reviewer@example.com, ${BAKERY_INBOX.toUpperCase()}`
+
+    const recipients = getOwnerReviewNotificationRecipients()
+
+    expect(recipients).toHaveLength(2)
+    expect(recipients.map((email) => email.toLowerCase())).toContain(BAKERY_INBOX)
+  })
+
+  it('falls back to contact recipients for review alerts and still includes the bakery inbox', () => {
+    process.env.CONTACT_NOTIFICATION_TO = 'contact-owner@example.com'
+
+    expect(getOwnerReviewNotificationRecipients()).toEqual([
+      'contact-owner@example.com',
+      BAKERY_INBOX,
+    ])
+  })
+
+  it('stays empty when every review notification source is unset', () => {
+    expect(getOwnerReviewNotificationRecipients()).toEqual([])
   })
 })
 

@@ -83,7 +83,11 @@ RESEND_FROM_EMAIL
 RESEND_FROM_NAME=Baked with Blessings
 CONTACT_NOTIFICATION_TO
 ORDER_NOTIFICATION_TO
+REVIEW_NOTIFICATION_TO
 ```
+
+Order and review alerts always include `bakedwithblessings@gmail.com` when their
+configured recipient list is non-empty.
 
 Twilio:
 
