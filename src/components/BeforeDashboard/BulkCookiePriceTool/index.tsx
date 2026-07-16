@@ -7,7 +7,6 @@ import { BakeryPressable } from '@/design-system/bakery'
 import { defaultMiniPriceInUSD, MINI_PRICE_RATIO } from '@/features/products/sizeVariants'
 
 import {
-  BUNDLE_SLUGS,
   getBundlePricingWarnings,
   parseBundlePricingResponse,
   type BundlePricing,
@@ -85,11 +84,14 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
 
   useEffect(() => {
     let active = true
-    const query = BUNDLE_SLUGS.map(
-      (slug, index) => `where[slug][in][${index}]=${encodeURIComponent(slug)}`,
-    ).join('&')
+    const query = new URLSearchParams({
+      depth: '0',
+      draft: 'false',
+      limit: '100',
+      'where[menuBehavior][equals]': 'batchBuilder',
+    })
 
-    fetch(`/api/products?${query}&depth=0&limit=20&draft=false`, { credentials: 'include' })
+    fetch(`/api/products?${query.toString()}`, { credentials: 'include' })
       .then((response) => {
         if (!response.ok) {
           throw new Error('Bundle pricing could not be checked.')

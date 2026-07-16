@@ -7,8 +7,6 @@ const BUNDLE_SIZE_BY_SLUG = {
   'mini-cookie-tray': 'mini',
 } as const
 
-export const BUNDLE_SLUGS = Object.keys(BUNDLE_SIZE_BY_SLUG)
-
 export type BundlePricing = {
   count: number
   price: number

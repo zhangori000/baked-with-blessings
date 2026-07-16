@@ -54,6 +54,26 @@ describe('admin bulk pricing safety check', () => {
     })
   })
 
+  it('preserves known bundle details but fails closed when another batch builder is unknown', () => {
+    expect(
+      parseBundlePricingResponse({
+        docs: [validBundle, { ...validBundle, slug: 'new-batch-builder', title: 'New bundle' }],
+        hasNextPage: false,
+        totalDocs: 2,
+      }),
+    ).toEqual({
+      bundles: [
+        {
+          count: 4,
+          price: 3200,
+          size: 'large',
+          title: 'Cookie tray',
+        },
+      ],
+      complete: false,
+    })
+  })
+
   it.each([
     ['unknown slug', { ...validBundle, slug: 'unknown-bundle' }],
     ['string price', { ...validBundle, priceInUSD: '3200' }],

@@ -189,10 +189,14 @@ test.describe('Admin Panel', () => {
     }
   })
 
-  test('treats partial bundle pricing as unverified', async () => {
+  test('checks every batch builder and treats an unknown bundle as unverified', async () => {
     const productsPattern = '**/api/products?*'
 
     await page.route(productsPattern, async (route) => {
+      const requestURL = new URL(route.request().url())
+      expect(requestURL.searchParams.get('where[menuBehavior][equals]')).toBe('batchBuilder')
+      expect(requestURL.searchParams.get('limit')).toBe('100')
+
       await route.fulfill({
         json: {
           docs: [
@@ -203,10 +207,10 @@ test.describe('Admin Panel', () => {
               title: 'Cookie tray',
             },
             {
-              priceInUSD: null,
+              priceInUSD: 2800,
               requiredSelectionCount: 4,
-              slug: 'mini-cookie-tray',
-              title: 'Mini cookie tray',
+              slug: 'new-batch-builder',
+              title: 'New bundle',
             },
           ],
           hasNextPage: false,
