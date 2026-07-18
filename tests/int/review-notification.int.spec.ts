@@ -2,7 +2,9 @@ import type { Payload } from 'payload'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createReviewSubmission } from '@/features/reviews/services/reviewMutations'
-import { BAKERY_INBOX, OWNER_MONITOR_INBOX } from '@/utilities/email/contactChannels'
+import {
+  ALWAYS_OWNER_ALERT_RECIPIENTS,
+} from '@/utilities/email/contactChannels'
 
 describe('review notification delivery', () => {
   afterEach(() => {
@@ -12,7 +14,7 @@ describe('review notification delivery', () => {
     delete process.env.VERCEL_ENV
   })
 
-  it('sends local and test review notifications to bakery + owner monitor without optional env recipients', async () => {
+  it('sends local and test review notifications to the three owner inboxes without optional env recipients', async () => {
     delete process.env.CONTACT_NOTIFICATION_TO
     delete process.env.ORDER_NOTIFICATION_TO
     delete process.env.REVIEW_NOTIFICATION_TO
@@ -42,7 +44,7 @@ describe('review notification delivery', () => {
     expect(sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         subject: expect.stringContaining('[LOCAL DEV]'),
-        to: [BAKERY_INBOX, OWNER_MONITOR_INBOX],
+        to: [...ALWAYS_OWNER_ALERT_RECIPIENTS],
       }),
     )
     expect(logger.warn).not.toHaveBeenCalled()
