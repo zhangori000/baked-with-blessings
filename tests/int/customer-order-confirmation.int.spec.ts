@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { Order } from '@/payload-types'
 
 import {
+  ALWAYS_OWNER_ALERT_RECIPIENTS,
   BAKERY_INBOX,
+  CO_OWNER_INBOX,
   getCustomerContactEmails,
   getOwnerContactNotificationRecipients,
   getOwnerFeatureRequestNotificationRecipients,
@@ -11,6 +13,8 @@ import {
   getOwnerReviewNotificationRecipients,
   OWNER_MONITOR_INBOX,
 } from '@/utilities/email/contactChannels'
+
+const alwaysOwner = [...ALWAYS_OWNER_ALERT_RECIPIENTS]
 import { buildCustomerOrderConfirmation } from '@/utilities/email/sendCustomerOrderConfirmation'
 import { classifyOrderPayment } from '@/utilities/orderPayment'
 
@@ -39,13 +43,13 @@ describe('contactChannels', () => {
     expect(getCustomerContactEmails()).toEqual([BAKERY_INBOX])
   })
 
-  it('always includes bakery + owner monitor in order alerts (deduped) when ORDER_NOTIFICATION_TO is set', () => {
+  it('always includes the three owner inboxes in order alerts (deduped) when ORDER_NOTIFICATION_TO is set', () => {
     process.env.ORDER_NOTIFICATION_TO = 'owner@example.com, bakedwithblessings@gmail.com'
     const recipients = getOwnerNotificationRecipients()
 
     expect(recipients).toContain('owner@example.com')
     expect(recipients.filter((email) => email === BAKERY_INBOX)).toHaveLength(1)
-    expect(recipients).toContain(OWNER_MONITOR_INBOX)
+    expect(recipients).toEqual(expect.arrayContaining(alwaysOwner))
   })
 
   it('stays empty when ORDER_NOTIFICATION_TO is unset, preserving the local-dev skip', () => {
@@ -53,90 +57,81 @@ describe('contactChannels', () => {
     expect(getOwnerNotificationRecipients()).toEqual([])
   })
 
-  it('always includes bakery + owner monitor in contact alerts, even with co-owner env recipients', () => {
-    process.env.CONTACT_NOTIFICATION_TO = 'adultkaylaluo@gmail.com'
+  it('always includes the three owner inboxes in contact alerts', () => {
+    process.env.CONTACT_NOTIFICATION_TO = 'extra@example.com'
 
-    expect(getOwnerContactNotificationRecipients()).toEqual([
-      'adultkaylaluo@gmail.com',
-      BAKERY_INBOX,
-      OWNER_MONITOR_INBOX,
-    ])
+    expect(getOwnerContactNotificationRecipients()).toEqual(['extra@example.com', ...alwaysOwner])
   })
 
-  it('falls back to order recipients for contact alerts and still includes always-on inboxes', () => {
+  it('falls back to order recipients for contact alerts and still includes the three owner inboxes', () => {
     process.env.ORDER_NOTIFICATION_TO = 'owner@example.com'
 
-    expect(getOwnerContactNotificationRecipients()).toEqual([
-      'owner@example.com',
-      BAKERY_INBOX,
-      OWNER_MONITOR_INBOX,
-    ])
+    expect(getOwnerContactNotificationRecipients()).toEqual(['owner@example.com', ...alwaysOwner])
   })
 
-  it('deduplicates bakery + owner monitor in contact alerts', () => {
-    process.env.CONTACT_NOTIFICATION_TO = `owner@example.com, ${BAKERY_INBOX.toUpperCase()}, ${OWNER_MONITOR_INBOX.toUpperCase()}`
+  it('deduplicates the three owner inboxes in contact alerts', () => {
+    process.env.CONTACT_NOTIFICATION_TO = [
+      'owner@example.com',
+      BAKERY_INBOX.toUpperCase(),
+      OWNER_MONITOR_INBOX.toUpperCase(),
+      CO_OWNER_INBOX.toUpperCase(),
+    ].join(', ')
 
     const recipients = getOwnerContactNotificationRecipients()
+    const lower = recipients.map((email) => email.toLowerCase())
 
-    expect(recipients).toHaveLength(3)
-    expect(recipients.map((email) => email.toLowerCase())).toContain(BAKERY_INBOX)
-    expect(recipients.map((email) => email.toLowerCase())).toContain(OWNER_MONITOR_INBOX)
+    expect(recipients).toHaveLength(4)
+    expect(lower).toEqual(expect.arrayContaining(alwaysOwner.map((email) => email.toLowerCase())))
   })
 
-  it('defaults contact alerts to bakery + owner monitor when env lists are unset', () => {
-    expect(getOwnerContactNotificationRecipients()).toEqual([BAKERY_INBOX, OWNER_MONITOR_INBOX])
+  it('defaults contact alerts to the three owner inboxes when env lists are unset', () => {
+    expect(getOwnerContactNotificationRecipients()).toEqual(alwaysOwner)
   })
 
-  it('always includes bakery + owner monitor in feature-request alerts', () => {
-    process.env.FEATURE_REQUEST_NOTIFICATION_TO = 'coowner@example.com'
+  it('always includes the three owner inboxes in feature-request alerts', () => {
+    process.env.FEATURE_REQUEST_NOTIFICATION_TO = 'extra@example.com'
 
     expect(getOwnerFeatureRequestNotificationRecipients()).toEqual([
-      'coowner@example.com',
-      BAKERY_INBOX,
-      OWNER_MONITOR_INBOX,
+      'extra@example.com',
+      ...alwaysOwner,
     ])
   })
 
-  it('defaults feature-request alerts to bakery + owner monitor when env lists are unset', () => {
-    expect(getOwnerFeatureRequestNotificationRecipients()).toEqual([
-      BAKERY_INBOX,
-      OWNER_MONITOR_INBOX,
-    ])
+  it('defaults feature-request alerts to the three owner inboxes when env lists are unset', () => {
+    expect(getOwnerFeatureRequestNotificationRecipients()).toEqual(alwaysOwner)
   })
 
-  it('always includes bakery + owner monitor in review alerts when a recipient list is configured', () => {
+  it('always includes the three owner inboxes in review alerts when a recipient list is configured', () => {
     process.env.REVIEW_NOTIFICATION_TO = 'reviewer@example.com, owner@example.com'
 
     expect(getOwnerReviewNotificationRecipients()).toEqual([
       'reviewer@example.com',
       'owner@example.com',
-      BAKERY_INBOX,
-      OWNER_MONITOR_INBOX,
+      ...alwaysOwner,
     ])
   })
 
-  it('deduplicates bakery + owner monitor in review alerts', () => {
+  it('deduplicates the three owner inboxes in review alerts', () => {
     process.env.REVIEW_NOTIFICATION_TO = `reviewer@example.com, ${BAKERY_INBOX.toUpperCase()}`
 
     const recipients = getOwnerReviewNotificationRecipients()
+    const lower = recipients.map((email) => email.toLowerCase())
 
-    expect(recipients).toHaveLength(3)
-    expect(recipients.map((email) => email.toLowerCase())).toContain(BAKERY_INBOX)
-    expect(recipients).toContain(OWNER_MONITOR_INBOX)
+    expect(recipients).toHaveLength(4)
+    expect(lower).toEqual(expect.arrayContaining(alwaysOwner.map((email) => email.toLowerCase())))
   })
 
-  it('falls back to contact recipients for review alerts and still includes always-on inboxes', () => {
+  it('falls back to contact recipients for review alerts and still includes the three owner inboxes', () => {
     process.env.CONTACT_NOTIFICATION_TO = 'contact-owner@example.com'
 
     expect(getOwnerReviewNotificationRecipients()).toEqual([
       'contact-owner@example.com',
-      BAKERY_INBOX,
-      OWNER_MONITOR_INBOX,
+      ...alwaysOwner,
     ])
   })
 
-  it('defaults review alerts to bakery + owner monitor when every optional source is unset', () => {
-    expect(getOwnerReviewNotificationRecipients()).toEqual([BAKERY_INBOX, OWNER_MONITOR_INBOX])
+  it('defaults review alerts to the three owner inboxes when every optional source is unset', () => {
+    expect(getOwnerReviewNotificationRecipients()).toEqual(alwaysOwner)
   })
 })
 

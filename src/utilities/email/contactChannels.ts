@@ -18,11 +18,19 @@ export const BAKERY_INBOX = 'bakedwithblessings@gmail.com'
  */
 export const OWNER_MONITOR_INBOX = 'zhangorienspam@gmail.com'
 
+/** Co-owner inbox. Always included on owner alerts with the other two. */
+export const CO_OWNER_INBOX = 'adultkaylaluo@gmail.com'
+
 /**
- * Hard-required destinations for every customer→owner alert. Env lists may add
- * more humans (e.g. co-owners); these two are never optional.
+ * Hard-required destinations for every customer→owner alert. These three always
+ * receive contact, review, feature-request, and (when enabled) order alerts.
+ * Env lists may still add more people; they cannot remove these.
  */
-export const ALWAYS_OWNER_ALERT_RECIPIENTS = [BAKERY_INBOX, OWNER_MONITOR_INBOX] as const
+export const ALWAYS_OWNER_ALERT_RECIPIENTS = [
+  BAKERY_INBOX,
+  OWNER_MONITOR_INBOX,
+  CO_OWNER_INBOX,
+] as const
 
 const withAlwaysOwnerAlertRecipients = (configured: string[] = []): string[] =>
   parseEmailRecipients([...configured, ...ALWAYS_OWNER_ALERT_RECIPIENTS].join(','))
