@@ -88,10 +88,10 @@ FEATURE_REQUEST_NOTIFICATION_TO
 ```
 
 Contact, review, and feature-request alerts always include
-`bakedwithblessings@gmail.com`, `zhangorienspam@gmail.com`, and
-`adultkaylaluo@gmail.com`, even when the env lists are blank. Order alerts
-include those three whenever `ORDER_NOTIFICATION_TO` is configured. Use the env
-lists only for additional recipients.
+`bakedwithblessings@gmail.com`, `zhangorienspam@gmail.com`,
+`adultkaylaluo@gmail.com`, and `luoangie338@gmail.com`, even when the env lists
+are blank. Order alerts include those whenever `ORDER_NOTIFICATION_TO` is
+configured. Use the env lists only for additional recipients.
 
 Twilio:
 

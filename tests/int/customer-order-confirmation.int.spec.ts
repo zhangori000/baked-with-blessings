@@ -80,7 +80,7 @@ describe('contactChannels', () => {
     const recipients = getOwnerContactNotificationRecipients()
     const lower = recipients.map((email) => email.toLowerCase())
 
-    expect(recipients).toHaveLength(4)
+    expect(recipients).toHaveLength(alwaysOwner.length + 1)
     expect(lower).toEqual(expect.arrayContaining(alwaysOwner.map((email) => email.toLowerCase())))
   })
 
@@ -117,7 +117,7 @@ describe('contactChannels', () => {
     const recipients = getOwnerReviewNotificationRecipients()
     const lower = recipients.map((email) => email.toLowerCase())
 
-    expect(recipients).toHaveLength(4)
+    expect(recipients).toHaveLength(alwaysOwner.length + 1)
     expect(lower).toEqual(expect.arrayContaining(alwaysOwner.map((email) => email.toLowerCase())))
   })
 
