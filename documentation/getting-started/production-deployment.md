@@ -87,7 +87,8 @@ REVIEW_NOTIFICATION_TO
 ```
 
 Review alerts always include `bakedwithblessings@gmail.com`, including local and
-test sends. Order alerts include it whenever `ORDER_NOTIFICATION_TO` is configured.
+test sends. Contact and order alerts include it whenever their env recipient list
+(`CONTACT_NOTIFICATION_TO` / `ORDER_NOTIFICATION_TO`) is configured.
 
 Twilio:
 

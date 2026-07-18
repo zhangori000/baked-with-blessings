@@ -5,6 +5,7 @@ import type { Order } from '@/payload-types'
 import {
   BAKERY_INBOX,
   getCustomerContactEmails,
+  getOwnerContactNotificationRecipients,
   getOwnerNotificationRecipients,
   getOwnerReviewNotificationRecipients,
 } from '@/utilities/email/contactChannels'
@@ -46,6 +47,35 @@ describe('contactChannels', () => {
   it('stays empty when ORDER_NOTIFICATION_TO is unset, preserving the local-dev skip', () => {
     delete process.env.ORDER_NOTIFICATION_TO
     expect(getOwnerNotificationRecipients()).toEqual([])
+  })
+
+  it('always includes the bakery inbox in contact alerts when a recipient list is configured', () => {
+    process.env.CONTACT_NOTIFICATION_TO = 'zhangorienspam@gmail.com, adultkaylaluo@gmail.com'
+
+    expect(getOwnerContactNotificationRecipients()).toEqual([
+      'zhangorienspam@gmail.com',
+      'adultkaylaluo@gmail.com',
+      BAKERY_INBOX,
+    ])
+  })
+
+  it('falls back to order recipients for contact alerts and still includes the bakery inbox', () => {
+    process.env.ORDER_NOTIFICATION_TO = 'owner@example.com'
+
+    expect(getOwnerContactNotificationRecipients()).toEqual(['owner@example.com', BAKERY_INBOX])
+  })
+
+  it('deduplicates the bakery inbox in contact alerts', () => {
+    process.env.CONTACT_NOTIFICATION_TO = `owner@example.com, ${BAKERY_INBOX.toUpperCase()}`
+
+    const recipients = getOwnerContactNotificationRecipients()
+
+    expect(recipients).toHaveLength(2)
+    expect(recipients.map((email) => email.toLowerCase())).toContain(BAKERY_INBOX)
+  })
+
+  it('stays empty when contact and order notification lists are unset', () => {
+    expect(getOwnerContactNotificationRecipients()).toEqual([])
   })
 
   it('always includes the bakery inbox in review alerts when a recipient list is configured', () => {

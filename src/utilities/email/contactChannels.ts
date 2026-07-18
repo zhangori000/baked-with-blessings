@@ -39,6 +39,25 @@ export const getOwnerNotificationRecipients = (): string[] => {
 }
 
 /**
+ * Recipients of a website contact-form alert. CONTACT_NOTIFICATION_TO wins when
+ * set, then falls back to ORDER_NOTIFICATION_TO. Stays empty when neither is
+ * configured (the contact route returns 503), matching the order-alert skip.
+ * When configured, the bakery inbox is always included so the main account
+ * never misses a customer message.
+ */
+export const getOwnerContactNotificationRecipients = (): string[] => {
+  const configured = getFirstConfiguredEmailRecipients(
+    process.env.CONTACT_NOTIFICATION_TO,
+    process.env.ORDER_NOTIFICATION_TO,
+  )
+  if (!configured.length) {
+    return []
+  }
+
+  return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
+}
+
+/**
  * Recipients of a new-review alert. The review-specific list wins when set,
  * then falls back to the contact and order lists. The bakery inbox is always
  * included, including local development and test sends, so review feedback
