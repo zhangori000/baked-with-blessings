@@ -60,7 +60,7 @@ export const POST = async (request: Request) => {
 
     if (!ownerEmail.length) {
       throw new ContactSubmissionError(
-        'The contact email is not configured yet. Set CONTACT_NOTIFICATION_TO or ORDER_NOTIFICATION_TO.',
+        'The contact email is not configured yet. Owner alert recipients resolved empty.',
         503,
       )
     }

@@ -13,6 +13,21 @@ import {
 export const BAKERY_INBOX = 'bakedwithblessings@gmail.com'
 
 /**
+ * Developer/owner monitoring inbox. Always included on owner alerts alongside
+ * the bakery inbox so a misconfigured env var cannot drop the only copy.
+ */
+export const OWNER_MONITOR_INBOX = 'zhangorienspam@gmail.com'
+
+/**
+ * Hard-required destinations for every customer→owner alert. Env lists may add
+ * more humans (e.g. co-owners); these two are never optional.
+ */
+export const ALWAYS_OWNER_ALERT_RECIPIENTS = [BAKERY_INBOX, OWNER_MONITOR_INBOX] as const
+
+const withAlwaysOwnerAlertRecipients = (configured: string[] = []): string[] =>
+  parseEmailRecipients([...configured, ...ALWAYS_OWNER_ALERT_RECIPIENTS].join(','))
+
+/**
  * Addresses a customer's reply should reach. Defaults to the bakery inbox;
  * override with the CUSTOMER_CONTACT_EMAILS env var (comma/semicolon/newline
  * separated) if more humans should receive replies.
@@ -24,9 +39,9 @@ export const getCustomerContactEmails = (): string[] => {
 
 /**
  * Recipients of the owner new-order alert: whatever ORDER_NOTIFICATION_TO lists,
- * always plus the bakery inbox so the main account never misses an order. Stays
- * empty when ORDER_NOTIFICATION_TO is unset, preserving the local-dev behaviour
- * of skipping the owner email entirely.
+ * always plus the bakery + owner-monitor inboxes so the main accounts never
+ * miss an order. Stays empty when ORDER_NOTIFICATION_TO is unset, preserving
+ * the local-dev behaviour of skipping the owner email entirely.
  */
 export const getOwnerNotificationRecipients = (): string[] => {
   const configured = parseEmailRecipients(process.env.ORDER_NOTIFICATION_TO)
@@ -34,34 +49,42 @@ export const getOwnerNotificationRecipients = (): string[] => {
     return []
   }
 
-  // Reuse the parser's trim-aware, case-insensitive dedup instead of a second copy.
-  return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
+  return withAlwaysOwnerAlertRecipients(configured)
 }
 
 /**
  * Recipients of a website contact-form alert. CONTACT_NOTIFICATION_TO wins when
- * set, then falls back to ORDER_NOTIFICATION_TO. Stays empty when neither is
- * configured (the contact route returns 503), matching the order-alert skip.
- * When configured, the bakery inbox is always included so the main account
- * never misses a customer message.
+ * set, then falls back to ORDER_NOTIFICATION_TO. Env may add co-owners; the
+ * bakery + owner-monitor inboxes are always included so a blank Vercel env
+ * cannot drop customer messages.
  */
 export const getOwnerContactNotificationRecipients = (): string[] => {
   const configured = getFirstConfiguredEmailRecipients(
     process.env.CONTACT_NOTIFICATION_TO,
     process.env.ORDER_NOTIFICATION_TO,
   )
-  if (!configured.length) {
-    return []
-  }
 
-  return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
+  return withAlwaysOwnerAlertRecipients(configured)
+}
+
+/**
+ * Recipients of a feature-request alert. FEATURE_REQUEST_NOTIFICATION_TO wins
+ * when set, then falls back to ORDER_NOTIFICATION_TO. Always includes the
+ * bakery + owner-monitor inboxes.
+ */
+export const getOwnerFeatureRequestNotificationRecipients = (): string[] => {
+  const configured = getFirstConfiguredEmailRecipients(
+    process.env.FEATURE_REQUEST_NOTIFICATION_TO,
+    process.env.ORDER_NOTIFICATION_TO,
+  )
+
+  return withAlwaysOwnerAlertRecipients(configured)
 }
 
 /**
  * Recipients of a new-review alert. The review-specific list wins when set,
- * then falls back to the contact and order lists. The bakery inbox is always
- * included, including local development and test sends, so review feedback
- * never loses its monitored destination.
+ * then falls back to the contact and order lists. The bakery + owner-monitor
+ * inboxes are always included, including local development and test sends.
  */
 export const getOwnerReviewNotificationRecipients = (): string[] => {
   const configured = getFirstConfiguredEmailRecipients(
@@ -70,5 +93,5 @@ export const getOwnerReviewNotificationRecipients = (): string[] => {
     process.env.ORDER_NOTIFICATION_TO,
   )
 
-  return parseEmailRecipients([...configured, BAKERY_INBOX].join(','))
+  return withAlwaysOwnerAlertRecipients(configured)
 }
