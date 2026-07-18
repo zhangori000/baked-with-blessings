@@ -1,6 +1,6 @@
 import config from '@/payload.config'
+import { getOwnerContactNotificationRecipients } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
-import { getFirstConfiguredEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getPayload } from 'payload'
 
@@ -40,12 +40,6 @@ const escapeHTML = (value: unknown) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 
-const getOwnerContactEmail = () =>
-  getFirstConfiguredEmailRecipients(
-    process.env.CONTACT_NOTIFICATION_TO,
-    process.env.ORDER_NOTIFICATION_TO,
-  )
-
 export const POST = async (request: Request) => {
   const payload = await getPayload({ config })
 
@@ -62,11 +56,11 @@ export const POST = async (request: Request) => {
     const phone = cleanText(input.phone, 80)
     const subject = cleanText(input.subject, 160)
     const message = cleanMultilineText(input.message, 3000)
-    const ownerEmail = getOwnerContactEmail()
+    const ownerEmail = getOwnerContactNotificationRecipients()
 
     if (!ownerEmail.length) {
       throw new ContactSubmissionError(
-        'The contact email is not configured yet. Set CONTACT_NOTIFICATION_TO or ORDER_NOTIFICATION_TO.',
+        'The contact email is not configured yet. Owner alert recipients resolved empty.',
         503,
       )
     }

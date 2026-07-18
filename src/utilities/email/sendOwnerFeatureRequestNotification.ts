@@ -1,8 +1,8 @@
 import type { Payload } from 'payload'
 
 import type { Customer, FeatureRequest } from '@/payload-types'
+import { getOwnerFeatureRequestNotificationRecipients } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
-import { parseEmailRecipients } from '@/utilities/email/recipients'
 import { getServerSideURL } from '@/utilities/getURL'
 
 const escapeHTML = (value: unknown) =>
@@ -35,13 +35,11 @@ export const sendOwnerFeatureRequestNotification = async ({
   payload: Payload
   request: FeatureRequest
 }): Promise<boolean> => {
-  const to = parseEmailRecipients(
-    process.env.FEATURE_REQUEST_NOTIFICATION_TO || process.env.ORDER_NOTIFICATION_TO,
-  )
+  const to = getOwnerFeatureRequestNotificationRecipients()
 
   if (!to.length) {
     payload.logger.warn(
-      'FEATURE_REQUEST_NOTIFICATION_TO / ORDER_NOTIFICATION_TO is not configured; skipping owner feature-request notification.',
+      'No owner feature-request recipients resolved; skipping owner feature-request notification.',
     )
     return false
   }

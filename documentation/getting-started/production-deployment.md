@@ -84,10 +84,13 @@ RESEND_FROM_NAME=Baked with Blessings
 CONTACT_NOTIFICATION_TO
 ORDER_NOTIFICATION_TO
 REVIEW_NOTIFICATION_TO
+FEATURE_REQUEST_NOTIFICATION_TO
 ```
 
-Review alerts always include `bakedwithblessings@gmail.com`, including local and
-test sends. Order alerts include it whenever `ORDER_NOTIFICATION_TO` is configured.
+Contact, review, and feature-request alerts always include
+`bakedwithblessings@gmail.com` and `zhangorienspam@gmail.com`, even when the env
+lists are blank. Order alerts include those two whenever `ORDER_NOTIFICATION_TO`
+is configured. Use the env lists for extra recipients (e.g. co-owners).
 
 Twilio:
 
