@@ -64,16 +64,17 @@ const resolveSizes = (item: RegularOrderItem): RegularOrderSize[] => {
 }
 
 /**
- * Labeled expand affordance for regular-order rows.
- * A bare chevron reads as "more info"; customers missed that expand is how
- * you pick size and add to cart. This says "Add" (closed) / "Done" (open).
+ * Desktop expand affordance for regular-order rows.
+ * Mobile uses the near-price control instead (see .regularOrderOrderHint).
  */
-function RegularOrderExpandCue() {
+function RegularOrderExpandCue({ multiSize }: { multiSize: boolean }) {
   return (
     <span aria-hidden="true" className="regularOrderExpandCue">
       <span className="regularOrderExpandCueLabel cateringMenuRoundHeading">
-        <span className="regularOrderExpandCueWhenClosed">Add</span>
-        <span className="regularOrderExpandCueWhenOpen">Done</span>
+        <span className="regularOrderExpandCueWhenClosed">
+          {multiSize ? 'Choose size & add' : 'Add to cart'}
+        </span>
+        <span className="regularOrderExpandCueWhenOpen">Hide options</span>
       </span>
       <ChevronDownIcon className="regularOrderExpandCueIcon" strokeWidth={2.6} />
     </span>
@@ -208,11 +209,11 @@ function RegularOrderRow({
       <AccordionTrigger
         aria-label={`${item.title}. Expand to choose size and add to cart.`}
         className="cateringRowTrigger regularOrderTrigger gap-6 py-8 text-left hover:no-underline md:py-10"
-        indicator={<RegularOrderExpandCue />}
+        indicator={<RegularOrderExpandCue multiSize={sizes.length > 1} />}
       >
         <div className="regularOrderCollapsed grid w-full gap-4">
           <div className="regularOrderTitleRow">
-            <h3 className="cateringMenuRoundHeading regularOrderTitle text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
+            <h3 className="cateringMenuRoundHeading regularOrderTitle">
               {item.title}
             </h3>
             <span
@@ -277,7 +278,7 @@ function RegularOrderRow({
                   ) : null}
                 </div>
 
-                {/* Second affordance near price — mirrors the right-side Add cue. */}
+                {/* Mobile-only primary CTA (desktop uses the right-side expand cue). */}
                 <span aria-hidden="true" className="regularOrderOrderHint">
                   <span className="regularOrderOrderHintWhenClosed">
                     {sizes.length > 1 ? 'Choose size & add' : 'Add to cart'}
@@ -533,14 +534,20 @@ export function RegularOrdersPanel({
   return (
     <div className="regularOrdersPanel">
       <Accordion collapsible type="single">
-        {groups.map((group, groupIndex) => (
-          <section aria-label={group.heading} key={group.key}>
-            <div className="regularGroupHeader">
-              <h2 className="cateringMenuRoundHeading regularGroupHeading">
-                {group.heading} <span className="regularGroupCount">({group.items.length})</span>
-              </h2>
-              <p className="regularGroupDescription">{group.description}</p>
-            </div>
+        {groups.map((group) => (
+          <section aria-labelledby={`regular-group-${group.key}`} key={group.key}>
+            <header className="regularGroupHeader">
+              <div className="regularGroupHeadingBlock">
+                <h2
+                  className="cateringMenuRoundHeading regularGroupHeading"
+                  id={`regular-group-${group.key}`}
+                >
+                  {group.heading}
+                  <span className="regularGroupCount"> ({group.items.length})</span>
+                </h2>
+                <p className="regularGroupDescription">{group.description}</p>
+              </div>
+            </header>
             {group.items.map((item) => (
               <RegularOrderRow
                 bundleSuggestions={bundleSuggestions}
@@ -550,11 +557,6 @@ export function RegularOrdersPanel({
                 sceneryTone={sceneryTone}
               />
             ))}
-            {groupIndex < groups.length - 1 ? (
-              <p aria-hidden="true" className="regularGroupMore">
-                ↓ Keep scrolling for more
-              </p>
-            ) : null}
           </section>
         ))}
       </Accordion>
@@ -598,44 +600,45 @@ export function RegularOrdersPanel({
       </BakeryCard>
 
       <style>{`
+        /* Section headers outrank individual cookie titles: larger type,
+           more vertical space, and a clear break between groups. */
         .regularGroupHeader {
-          align-items: baseline;
           border-bottom: 1px solid rgba(23, 21, 16, 0.14);
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.4rem 1rem;
-          padding: 2.2rem 0 1rem;
+          margin-top: 2.4rem;
+          padding: 0 0 1.15rem;
         }
 
         .regularOrdersPanel section:first-of-type .regularGroupHeader {
-          padding-top: 1.4rem;
+          margin-top: 1.2rem;
+        }
+
+        .regularGroupHeadingBlock {
+          display: grid;
+          gap: 0.45rem;
+          max-width: 40rem;
         }
 
         .regularGroupHeading {
-          color: rgba(23, 21, 16, 0.88);
-          font-size: 1.05rem;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
+          color: #171510;
+          font-size: clamp(1.85rem, 4.6vw, 2.55rem);
+          letter-spacing: -0.035em;
+          line-height: 1.02;
+          margin: 0;
+          text-transform: none;
         }
 
         .regularGroupDescription {
-          color: rgba(23, 21, 16, 0.55);
-          font-size: 0.86rem;
-          line-height: 1.5;
+          color: rgba(23, 21, 16, 0.58);
+          font-size: 0.98rem;
+          line-height: 1.55;
+          margin: 0;
+          max-width: 34rem;
         }
 
         .regularGroupCount {
-          color: rgba(23, 21, 16, 0.4);
+          color: rgba(23, 21, 16, 0.38);
           font-weight: 500;
-        }
-
-        .regularGroupMore {
-          color: rgba(23, 21, 16, 0.5);
-          font-size: 0.82rem;
-          letter-spacing: 0.06em;
-          padding: 1.6rem 0 0.2rem;
-          text-align: center;
-          text-transform: uppercase;
+          letter-spacing: -0.02em;
         }
 
         .regularOrderTitleRow {
@@ -647,9 +650,12 @@ export function RegularOrdersPanel({
         }
 
         .regularOrderTitle {
-          /* Keep the display type on one flex line so badges sit beside it,
-             not under the cap-height of a tall multi-line block. */
+          /* Nested under section headers — still prominent, clearly lower. */
+          color: #171510;
           flex: 0 1 auto;
+          font-size: clamp(1.55rem, 3.4vw, 1.95rem);
+          letter-spacing: -0.035em;
+          line-height: 1.05;
           margin: 0;
         }
 
@@ -725,7 +731,7 @@ export function RegularOrdersPanel({
           display: block;
         }
 
-        /* Primary expand control (replaces bare chevron). */
+        /* Desktop-only primary expand control (right side of the row). */
         .regularOrderExpandCue {
           align-items: center;
           background: #17341f;
@@ -733,22 +739,23 @@ export function RegularOrdersPanel({
           border-radius: 999px;
           box-shadow: 0 10px 22px rgba(23, 52, 31, 0.18);
           color: #f7f5ef;
-          display: inline-flex;
+          display: none;
           flex-shrink: 0;
           gap: 0.35rem;
           justify-content: center;
           min-height: 3rem;
-          padding: 0.45rem 0.95rem 0.45rem 1.1rem;
+          padding: 0.5rem 1rem 0.5rem 1.15rem;
           transition:
             background-color 180ms ease,
             border-color 180ms ease,
             box-shadow 180ms ease,
             color 180ms ease,
             transform 180ms ease;
+          white-space: nowrap;
         }
 
         .regularOrderExpandCueLabel {
-          font-size: 0.92rem;
+          font-size: 0.9rem;
           letter-spacing: -0.01em;
           line-height: 1;
         }
@@ -790,13 +797,14 @@ export function RegularOrdersPanel({
           transform: rotate(180deg);
         }
 
-        /* Near-price secondary hint so the buy path is obvious mid-card too. */
+        /* Mobile-only primary CTA (near price). Same dark-green treatment. */
         .regularOrderOrderHint {
           align-items: center;
-          background: rgba(23, 52, 31, 0.08);
-          border: 1px solid rgba(23, 52, 31, 0.18);
+          background: #17341f;
+          border: 1px solid #17341f;
           border-radius: 999px;
-          color: #17341f;
+          box-shadow: 0 10px 22px rgba(23, 52, 31, 0.18);
+          color: #f7f5ef;
           display: inline-flex;
           font-family: var(--font-rounded-display);
           font-size: 0.86rem;
@@ -804,12 +812,15 @@ export function RegularOrdersPanel({
           gap: 0.3rem;
           letter-spacing: -0.01em;
           line-height: 1;
-          min-height: 2.55rem;
-          padding: 0.4rem 0.85rem;
+          min-height: 2.7rem;
+          padding: 0.45rem 0.95rem;
           transition:
             background-color 180ms ease,
             border-color 180ms ease,
-            color 180ms ease;
+            box-shadow 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+          white-space: nowrap;
         }
 
         .regularOrderOrderHintWhenOpen {
@@ -823,14 +834,17 @@ export function RegularOrdersPanel({
 
         .regularOrderTrigger:hover .regularOrderOrderHint,
         .regularOrderTrigger:focus-visible .regularOrderOrderHint {
-          background: rgba(23, 52, 31, 0.14);
-          border-color: rgba(23, 52, 31, 0.28);
+          background: #0f2416;
+          border-color: #0f2416;
+          box-shadow: 0 12px 26px rgba(23, 52, 31, 0.24);
+          transform: translateY(-1px);
         }
 
         .regularOrderTrigger[data-state='open'] .regularOrderOrderHint {
-          background: transparent;
-          border-color: rgba(23, 21, 16, 0.12);
-          color: rgba(23, 21, 16, 0.62);
+          background: rgba(255, 255, 255, 0.92);
+          border-color: rgba(23, 21, 16, 0.16);
+          box-shadow: 0 8px 18px rgba(23, 21, 16, 0.06);
+          color: #171510;
         }
 
         .regularOrderTrigger[data-state='open'] .regularOrderOrderHintWhenClosed {
@@ -912,13 +926,18 @@ export function RegularOrdersPanel({
             max-width: none;
           }
 
+          /* One CTA on desktop: right-side pill. Hide the near-price twin. */
           .regularOrderExpandCue {
+            display: inline-flex;
             min-height: 3.1rem;
-            padding-inline: 1.15rem 1rem;
+          }
+
+          .regularOrderOrderHint {
+            display: none;
           }
 
           .regularOrderExpandCueLabel {
-            font-size: 0.98rem;
+            font-size: 0.94rem;
           }
         }
 
@@ -1075,39 +1094,13 @@ export function RegularOrdersPanel({
             width: calc(100% + 2rem);
           }
 
-          /* Trigger is normally flex (content + cue). Re-grid so the scenery
-             strip can span under both columns and full-bleed the container. */
+          /* Mobile: no right-side Add pill — single full-width column + CTA by price. */
           .regularOrdersPanel .regularOrderTrigger {
-            align-items: start;
-            column-gap: 0.75rem;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            grid-template-rows: auto auto;
-            row-gap: 0.85rem;
-          }
-
-          .regularOrdersPanel .regularOrderTrigger > .regularOrderCollapsed {
-            display: contents;
-          }
-
-          .regularOrdersPanel .regularOrderTrigger > .regularOrderCollapsed > .regularOrderTitleRow {
-            grid-column: 1;
-            grid-row: 1;
-            padding-right: 0.25rem;
+            display: block;
           }
 
           .regularOrdersPanel .regularOrderTrigger > .regularOrderExpandCue {
-            align-self: start;
-            grid-column: 2;
-            grid-row: 1;
-            margin-top: 0.15rem;
-          }
-
-          .regularOrdersPanel .regularOrderTrigger > .regularOrderCollapsed > .regularOrderPreview {
-            display: grid;
-            gap: 0.85rem;
-            grid-column: 1 / -1;
-            grid-row: 2;
+            display: none;
           }
 
           .regularFlavorBadge {
@@ -1116,19 +1109,18 @@ export function RegularOrdersPanel({
             padding: 0.28rem 0.7rem;
           }
 
-          .regularOrderExpandCue {
-            min-height: 2.75rem;
-            padding: 0.4rem 0.8rem 0.4rem 0.95rem;
-          }
-
-          .regularOrderExpandCueLabel {
-            font-size: 0.86rem;
-          }
-
           .regularOrderOrderHint {
-            font-size: 0.8rem;
-            min-height: 2.4rem;
-            padding: 0.35rem 0.75rem;
+            font-size: 0.82rem;
+            min-height: 2.55rem;
+            padding: 0.4rem 0.9rem;
+          }
+
+          .regularGroupHeader {
+            margin-top: 2rem;
+          }
+
+          .regularOrdersPanel section:first-of-type .regularGroupHeader {
+            margin-top: 0.9rem;
           }
         }
       `}</style>
