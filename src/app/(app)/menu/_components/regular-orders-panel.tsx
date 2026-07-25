@@ -63,10 +63,20 @@ const resolveSizes = (item: RegularOrderItem): RegularOrderSize[] => {
   return []
 }
 
-function RegularRowChevron() {
+/**
+ * Desktop expand affordance for regular-order rows.
+ * Mobile uses the near-price control instead (see .regularOrderOrderHint).
+ */
+function RegularOrderExpandCue({ multiSize }: { multiSize: boolean }) {
   return (
-    <span aria-hidden="true" className="cateringRowChevron">
-      <ChevronDownIcon className="cateringRowChevronIcon" />
+    <span aria-hidden="true" className="regularOrderExpandCue">
+      <span className="regularOrderExpandCueLabel cateringMenuRoundHeading">
+        <span className="regularOrderExpandCueWhenClosed">
+          {multiSize ? 'Choose size & add' : 'Add to cart'}
+        </span>
+        <span className="regularOrderExpandCueWhenOpen">Hide options</span>
+      </span>
+      <ChevronDownIcon className="regularOrderExpandCueIcon" strokeWidth={2.6} />
     </span>
   )
 }
@@ -197,88 +207,100 @@ function RegularOrderRow({
       value={`regular-${item.slug}`}
     >
       <AccordionTrigger
-        className="cateringRowTrigger gap-6 py-8 text-left hover:no-underline md:py-10"
-        indicator={<RegularRowChevron />}
+        aria-label={`${item.title}. Expand to choose size and add to cart.`}
+        className="cateringRowTrigger regularOrderTrigger gap-6 py-8 text-left hover:no-underline md:py-10"
+        indicator={<RegularOrderExpandCue multiSize={sizes.length > 1} />}
       >
-        <div className="grid w-full gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-              <h3 className="cateringMenuRoundHeading text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
-                {item.title}
-              </h3>
-              <span
-                className={cn(
-                  'regularFlavorBadge',
-                  item.availability === 'seasonal'
-                    ? 'regularFlavorBadgeSeasonal'
-                    : 'regularFlavorBadgeAlways',
-                )}
-              >
-                {item.badgeLabel}
+        <div className="regularOrderCollapsed grid w-full gap-4">
+          <div className="regularOrderTitleRow">
+            <h3 className="cateringMenuRoundHeading regularOrderTitle">
+              {item.title}
+            </h3>
+            <span
+              className={cn(
+                'regularFlavorBadge',
+                item.availability === 'seasonal'
+                  ? 'regularFlavorBadgeSeasonal'
+                  : 'regularFlavorBadgeAlways',
+              )}
+            >
+              {item.badgeLabel}
+            </span>
+            {item.categoryLabel ? (
+              <span className="regularFlavorBadge regularFlavorBadgeCategory">
+                {item.categoryLabel}
               </span>
-              {item.categoryLabel ? (
-                <span className="regularFlavorBadge regularFlavorBadgeCategory">
-                  {item.categoryLabel}
-                </span>
-              ) : null}
-            </div>
-            <p className="max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)] md:text-[1.05rem]">
-              {item.summary}
-            </p>
+            ) : null}
           </div>
 
-          <div className="cateringPriceBlock text-left md:text-right">
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-              {sizes.length > 1 ? 'From' : 'Price'}
-            </p>
-            {typeof fromPrice === 'number' ? (
-              <Price
-                amount={fromPrice}
-                className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
+          {/* Collapsed preview: full-bleed strip on mobile; desktop fills free
+              space with description + price beside the sheep-cookie scene. */}
+          <div className="regularOrderPreview">
+            <div aria-hidden="true" className="regularOrderVisual regularOrderVisualCollapsed">
+              <DecorativeSceneImage
+                className="absolute inset-0"
+                fit="cover"
+                mobileSrc={mobileSkySrc}
+                sizes="(max-width: 767px) 100vw, 24rem"
+                src={skySrc}
               />
-            ) : null}
+              <DecorativeSceneImage
+                className="absolute inset-x-0 bottom-[-0.15rem] z-[1] h-[34%]"
+                fit="cover"
+                sizes="(max-width: 767px) 100vw, 24rem"
+                src={meadowSrc}
+              />
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
+              <div className="regularOrderCookieStage">
+                <CookieSheepRig
+                  bodyFallbackSrc={item.bodyFallbackSrc}
+                  image={item.image}
+                  title={item.title}
+                />
+              </div>
+            </div>
+
+            <div className="regularOrderPreviewMeta">
+              {item.summary ? (
+                <p className="regularOrderPreviewSummary">{item.summary}</p>
+              ) : null}
+
+              <div className="regularOrderPriceRow">
+                <div className="cateringPriceBlock text-left">
+                  <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
+                    {sizes.length > 1 ? 'From' : 'Price'}
+                  </p>
+                  {typeof fromPrice === 'number' ? (
+                    <Price
+                      amount={fromPrice}
+                      className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
+                    />
+                  ) : null}
+                </div>
+
+                {/* Mobile-only primary CTA (desktop uses the right-side expand cue). */}
+                <span aria-hidden="true" className="regularOrderOrderHint">
+                  <span className="regularOrderOrderHintWhenClosed">
+                    {sizes.length > 1 ? 'Choose size & add' : 'Add to cart'}
+                  </span>
+                  <span className="regularOrderOrderHintWhenOpen">Hide options</span>
+                  <ChevronDownIcon className="regularOrderOrderHintIcon" size={16} strokeWidth={2.6} />
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </AccordionTrigger>
 
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
-        <div className="regularOrderCardGrid">
-          <div className="regularOrderVisual">
-            <DecorativeSceneImage
-              className="absolute inset-0"
-              fit="cover"
-              mobileSrc={mobileSkySrc}
-              sizes="24rem"
-              src={skySrc}
-            />
-            <DecorativeSceneImage
-              className="absolute inset-x-0 bottom-[-0.15rem] z-[1] h-[34%]"
-              fit="cover"
-              sizes="24rem"
-              src={meadowSrc}
-            />
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
-            <div className="regularOrderCookieStage">
-              <CookieSheepRig
-                bodyFallbackSrc={item.bodyFallbackSrc}
-                image={item.image}
-                title={item.title}
-              />
-            </div>
-
-            {item.receiptBody ? (
-              <BakeryPressable
-                aria-controls={infoId}
-                aria-expanded={isInfoOpen}
-                aria-label={`Show info for ${item.title}`}
-                className="regularOrderInfoButton cateringMenuRoundHeading"
-                onClick={() => setIsInfoOpen((current) => !current)}
-                type="button"
-              >
-                {item.infoButtonLabel ?? 'Info'}
-              </BakeryPressable>
-            ) : null}
-          </div>
+        <div className="regularOrderExpanded space-y-5">
+          {/* Description already sits beside the image on desktop; keep it in
+              the expanded body on mobile only. */}
+          {item.summary ? (
+            <p className="regularOrderExpandedSummary max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)]">
+              {item.summary}
+            </p>
+          ) : null}
 
           <BakeryCard
             className="regularOrderControls space-y-5 border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)] md:p-5"
@@ -411,46 +433,61 @@ function RegularOrderRow({
               </button>
             ) : null}
           </BakeryCard>
-        </div>
 
-        {item.receiptBody ? (
-          <div
-            aria-hidden={!isInfoOpen}
-            className={cn(
-              'overflow-hidden transition-[max-height,opacity,transform,margin] duration-300',
-              isInfoOpen ? 'mt-4 max-h-[30rem] translate-y-0 opacity-100' : 'max-h-0 -translate-y-2 opacity-0',
-            )}
-          >
-            <BakeryCard
-              aria-label={`${item.title} info`}
-              className="relative border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
-              id={infoId}
-              radius="md"
-              spacing="none"
-              tone="transparent"
-            >
+          {item.receiptBody ? (
+            <div className="space-y-3">
               <BakeryPressable
-                aria-label={`Close info for ${item.title}`}
-                className="absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] font-medium text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
-                onClick={() => setIsInfoOpen(false)}
+                aria-controls={infoId}
+                aria-expanded={isInfoOpen}
+                aria-label={`Show info for ${item.title}`}
+                className="regularOrderInfoButtonInline cateringMenuRoundHeading"
+                onClick={() => setIsInfoOpen((current) => !current)}
                 type="button"
               >
-                Close
+                {item.infoButtonLabel ?? 'Info'}
               </BakeryPressable>
 
-              <p className="cateringMenuEyebrow pr-12">For {item.title}</p>
-              <h5 className="mt-0.5 text-[0.9rem] font-semibold tracking-[-0.005em] text-[#5d4119]">
-                Product Info
-              </h5>
+              <div
+                aria-hidden={!isInfoOpen}
+                className={cn(
+                  'overflow-hidden transition-[max-height,opacity,transform] duration-300',
+                  isInfoOpen
+                    ? 'max-h-[30rem] translate-y-0 opacity-100'
+                    : 'max-h-0 -translate-y-2 opacity-0',
+                )}
+              >
+                <BakeryCard
+                  aria-label={`${item.title} info`}
+                  className="relative border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
+                  id={infoId}
+                  radius="md"
+                  spacing="none"
+                  tone="transparent"
+                >
+                  <BakeryPressable
+                    aria-label={`Close info for ${item.title}`}
+                    className="absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] font-medium text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
+                    onClick={() => setIsInfoOpen(false)}
+                    type="button"
+                  >
+                    Close
+                  </BakeryPressable>
 
-              <CookieInfoNote
-                allergens={item.allergens}
-                body={item.receiptBody}
-                className="cookieInfoNote--menu"
-              />
-            </BakeryCard>
-          </div>
-        ) : null}
+                  <p className="cateringMenuEyebrow pr-12">For {item.title}</p>
+                  <h5 className="mt-0.5 text-[0.9rem] font-semibold tracking-[-0.005em] text-[#5d4119]">
+                    Product Info
+                  </h5>
+
+                  <CookieInfoNote
+                    allergens={item.allergens}
+                    body={item.receiptBody}
+                    className="cookieInfoNote--menu"
+                  />
+                </BakeryCard>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </AccordionContent>
     </AccordionItem>
   )
@@ -497,14 +534,20 @@ export function RegularOrdersPanel({
   return (
     <div className="regularOrdersPanel">
       <Accordion collapsible type="single">
-        {groups.map((group, groupIndex) => (
-          <section aria-label={group.heading} key={group.key}>
-            <div className="regularGroupHeader">
-              <h2 className="cateringMenuRoundHeading regularGroupHeading">
-                {group.heading} <span className="regularGroupCount">({group.items.length})</span>
-              </h2>
-              <p className="regularGroupDescription">{group.description}</p>
-            </div>
+        {groups.map((group) => (
+          <section aria-labelledby={`regular-group-${group.key}`} key={group.key}>
+            <header className="regularGroupHeader">
+              <div className="regularGroupHeadingBlock">
+                <h2
+                  className="cateringMenuRoundHeading regularGroupHeading"
+                  id={`regular-group-${group.key}`}
+                >
+                  {group.heading}
+                  <span className="regularGroupCount"> ({group.items.length})</span>
+                </h2>
+                <p className="regularGroupDescription">{group.description}</p>
+              </div>
+            </header>
             {group.items.map((item) => (
               <RegularOrderRow
                 bundleSuggestions={bundleSuggestions}
@@ -514,11 +557,6 @@ export function RegularOrdersPanel({
                 sceneryTone={sceneryTone}
               />
             ))}
-            {groupIndex < groups.length - 1 ? (
-              <p aria-hidden="true" className="regularGroupMore">
-                ↓ Keep scrolling for more
-              </p>
-            ) : null}
           </section>
         ))}
       </Accordion>
@@ -562,54 +600,76 @@ export function RegularOrdersPanel({
       </BakeryCard>
 
       <style>{`
+        /* Section headers outrank individual cookie titles: larger type,
+           more vertical space, and a clear break between groups. */
         .regularGroupHeader {
-          align-items: baseline;
           border-bottom: 1px solid rgba(23, 21, 16, 0.14);
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.4rem 1rem;
-          padding: 2.2rem 0 1rem;
+          margin-top: 2.4rem;
+          padding: 0 0 1.15rem;
         }
 
         .regularOrdersPanel section:first-of-type .regularGroupHeader {
-          padding-top: 1.4rem;
+          margin-top: 1.2rem;
+        }
+
+        .regularGroupHeadingBlock {
+          display: grid;
+          gap: 0.45rem;
+          max-width: 40rem;
         }
 
         .regularGroupHeading {
-          color: rgba(23, 21, 16, 0.88);
-          font-size: 1.05rem;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
+          color: #171510;
+          font-size: clamp(1.85rem, 4.6vw, 2.55rem);
+          letter-spacing: -0.035em;
+          line-height: 1.02;
+          margin: 0;
+          text-transform: none;
         }
 
         .regularGroupDescription {
-          color: rgba(23, 21, 16, 0.55);
-          font-size: 0.86rem;
-          line-height: 1.5;
+          color: rgba(23, 21, 16, 0.58);
+          font-size: 0.98rem;
+          line-height: 1.55;
+          margin: 0;
+          max-width: 34rem;
         }
 
         .regularGroupCount {
-          color: rgba(23, 21, 16, 0.4);
+          color: rgba(23, 21, 16, 0.38);
           font-weight: 500;
+          letter-spacing: -0.02em;
         }
 
-        .regularGroupMore {
-          color: rgba(23, 21, 16, 0.5);
-          font-size: 0.82rem;
-          letter-spacing: 0.06em;
-          padding: 1.6rem 0 0.2rem;
-          text-align: center;
-          text-transform: uppercase;
+        .regularOrderTitleRow {
+          align-items: center;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem 0.75rem;
+          min-width: 0;
+        }
+
+        .regularOrderTitle {
+          /* Nested under section headers — still prominent, clearly lower. */
+          color: #171510;
+          flex: 0 1 auto;
+          font-size: clamp(1.55rem, 3.4vw, 1.95rem);
+          letter-spacing: -0.035em;
+          line-height: 1.05;
+          margin: 0;
         }
 
         .regularFlavorBadge {
           align-items: center;
+          align-self: center;
           border-radius: 999px;
           display: inline-flex;
+          flex: 0 0 auto;
           font-family: var(--font-rounded-display);
           font-size: 0.78rem;
           font-weight: 600;
           letter-spacing: 0.08em;
+          line-height: 1;
           min-height: 2rem;
           padding: 0.32rem 0.8rem;
           text-transform: uppercase;
@@ -631,17 +691,172 @@ export function RegularOrdersPanel({
           color: #6b5a45;
         }
 
-        .regularOrderCardGrid {
-          display: grid;
-          gap: 1rem;
+        /* Collapsed: title/badges, then image + meta. Buy controls expand. */
+        .regularOrderCollapsed {
+          max-width: 100%;
+          min-width: 0;
         }
 
-        @media (min-width: 768px) {
-          .regularOrderCardGrid {
-            align-items: stretch;
-            gap: 1.25rem;
-            grid-template-columns: minmax(0, 23rem) minmax(0, 1fr);
-          }
+        .regularOrderPreview {
+          display: grid;
+          gap: 0.85rem;
+          min-width: 0;
+          width: 100%;
+        }
+
+        .regularOrderPreviewMeta {
+          display: grid;
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        .regularOrderPriceRow {
+          align-items: flex-end;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem 1rem;
+          justify-content: space-between;
+        }
+
+        /* Mobile default: description lives in the expanded panel only. */
+        .regularOrderPreviewSummary {
+          color: rgba(23, 21, 16, 0.72);
+          display: none;
+          font-size: 0.98rem;
+          line-height: 1.75;
+          margin: 0;
+        }
+
+        .regularOrderExpandedSummary {
+          display: block;
+        }
+
+        /* Desktop-only primary expand control (right side of the row). */
+        .regularOrderExpandCue {
+          align-items: center;
+          background: #17341f;
+          border: 1px solid #17341f;
+          border-radius: 999px;
+          box-shadow: 0 10px 22px rgba(23, 52, 31, 0.18);
+          color: #f7f5ef;
+          display: none;
+          flex-shrink: 0;
+          gap: 0.35rem;
+          justify-content: center;
+          min-height: 3rem;
+          padding: 0.5rem 1rem 0.5rem 1.15rem;
+          transition:
+            background-color 180ms ease,
+            border-color 180ms ease,
+            box-shadow 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+          white-space: nowrap;
+        }
+
+        .regularOrderExpandCueLabel {
+          font-size: 0.9rem;
+          letter-spacing: -0.01em;
+          line-height: 1;
+        }
+
+        .regularOrderExpandCueWhenOpen {
+          display: none;
+        }
+
+        .regularOrderExpandCueIcon {
+          height: 1.05rem;
+          transition: transform 220ms ease;
+          width: 1.05rem;
+        }
+
+        .regularOrderTrigger:hover .regularOrderExpandCue,
+        .regularOrderTrigger:focus-visible .regularOrderExpandCue {
+          background: #0f2416;
+          border-color: #0f2416;
+          box-shadow: 0 12px 26px rgba(23, 52, 31, 0.24);
+          transform: translateY(-1px);
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderExpandCue {
+          background: rgba(255, 255, 255, 0.92);
+          border-color: rgba(23, 21, 16, 0.16);
+          box-shadow: 0 8px 18px rgba(23, 21, 16, 0.06);
+          color: #171510;
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderExpandCueWhenClosed {
+          display: none;
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderExpandCueWhenOpen {
+          display: inline;
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderExpandCueIcon {
+          transform: rotate(180deg);
+        }
+
+        /* Mobile-only primary CTA (near price). Same dark-green treatment. */
+        .regularOrderOrderHint {
+          align-items: center;
+          background: #17341f;
+          border: 1px solid #17341f;
+          border-radius: 999px;
+          box-shadow: 0 10px 22px rgba(23, 52, 31, 0.18);
+          color: #f7f5ef;
+          display: inline-flex;
+          font-family: var(--font-rounded-display);
+          font-size: 0.86rem;
+          font-weight: 600;
+          gap: 0.3rem;
+          letter-spacing: -0.01em;
+          line-height: 1;
+          min-height: 2.7rem;
+          padding: 0.45rem 0.95rem;
+          transition:
+            background-color 180ms ease,
+            border-color 180ms ease,
+            box-shadow 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+          white-space: nowrap;
+        }
+
+        .regularOrderOrderHintWhenOpen {
+          display: none;
+        }
+
+        .regularOrderOrderHintIcon {
+          flex-shrink: 0;
+          transition: transform 220ms ease;
+        }
+
+        .regularOrderTrigger:hover .regularOrderOrderHint,
+        .regularOrderTrigger:focus-visible .regularOrderOrderHint {
+          background: #0f2416;
+          border-color: #0f2416;
+          box-shadow: 0 12px 26px rgba(23, 52, 31, 0.24);
+          transform: translateY(-1px);
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderOrderHint {
+          background: rgba(255, 255, 255, 0.92);
+          border-color: rgba(23, 21, 16, 0.16);
+          box-shadow: 0 8px 18px rgba(23, 21, 16, 0.06);
+          color: #171510;
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderOrderHintWhenClosed {
+          display: none;
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderOrderHintWhenOpen {
+          display: inline;
+        }
+
+        .regularOrderTrigger[data-state='open'] .regularOrderOrderHintIcon {
+          transform: rotate(180deg);
         }
 
         .regularOrderVisual {
@@ -655,6 +870,11 @@ export function RegularOrdersPanel({
           min-height: 16.5rem;
           overflow: hidden;
           position: relative;
+          width: 100%;
+        }
+
+        .regularOrderVisualCollapsed {
+          max-width: none;
         }
 
         .regularOrderCookieStage {
@@ -662,38 +882,84 @@ export function RegularOrdersPanel({
           inset: 0;
         }
 
-        .regularOrderVisual:hover .cookieSheepBodyImage,
-        .regularOrderVisual:focus-within .cookieSheepBodyImage {
+        .regularOrderTrigger:hover .regularOrderVisual .cookieSheepBodyImage,
+        .regularOrderTrigger:focus-visible .regularOrderVisual .cookieSheepBodyImage,
+        .regularOrderTrigger[data-state='open'] .regularOrderVisual .cookieSheepBodyImage {
           transform: scale(1.18);
         }
 
-        .regularOrderVisual:hover .cookieSheepBurstPart,
-        .regularOrderVisual:focus-within .cookieSheepBurstPart {
+        .regularOrderTrigger:hover .regularOrderVisual .cookieSheepBurstPart,
+        .regularOrderTrigger:focus-visible .regularOrderVisual .cookieSheepBurstPart,
+        .regularOrderTrigger[data-state='open'] .regularOrderVisual .cookieSheepBurstPart {
           opacity: 0;
           transform: translate3d(var(--sheep-burst-x, 0), var(--sheep-burst-y, 0), 0)
             rotate(var(--sheep-burst-rotate, 0deg)) scale(var(--sheep-burst-scale, 0.72));
         }
 
-        .regularOrderInfoButton {
+        @media (min-width: 768px) {
+          .regularOrderPreview {
+            align-items: stretch;
+            gap: 1.25rem 1.5rem;
+            grid-template-columns: minmax(0, 23rem) minmax(0, 1fr);
+          }
+
+          .regularOrderPreviewMeta {
+            align-content: space-between;
+            display: grid;
+            gap: 1rem;
+            min-height: 100%;
+          }
+
+          /* Desktop fills the empty column with description + price. */
+          .regularOrderPreviewSummary {
+            display: block;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            max-width: 36rem;
+          }
+
+          .regularOrderExpandedSummary {
+            display: none;
+          }
+
+          .regularOrderVisualCollapsed {
+            max-width: none;
+          }
+
+          /* One CTA on desktop: right-side pill. Hide the near-price twin. */
+          .regularOrderExpandCue {
+            display: inline-flex;
+            min-height: 3.1rem;
+          }
+
+          .regularOrderOrderHint {
+            display: none;
+          }
+
+          .regularOrderExpandCueLabel {
+            font-size: 0.94rem;
+          }
+        }
+
+        .regularOrderInfoButton.inline {
           background: rgba(255, 250, 236, 0.92);
           border: 1px solid rgba(121, 92, 47, 0.28);
           border-radius: 999px;
-          bottom: 0.75rem;
           color: #5a4121;
+          display: inline-flex;
           font-size: 0.76rem;
           letter-spacing: 0.01em;
           min-height: 2.5rem;
           padding: 0.45rem 1rem;
-          position: absolute;
-          right: 0.75rem;
+          position: static;
           transition:
             background-color 150ms cubic-bezier(0.6, 0, 0.15, 1),
             border-color 150ms cubic-bezier(0.6, 0, 0.15, 1),
             transform 150ms cubic-bezier(0.6, 0, 0.15, 1);
         }
 
-        .regularOrderInfoButton:hover,
-        .regularOrderInfoButton:focus-visible {
+        .regularOrderInfoButton.inline:hover,
+        .regularOrderInfoButton.inline:focus-visible {
           background: #fff4c8;
           border-color: rgba(121, 92, 47, 0.45);
           transform: translateY(-1px);
@@ -812,12 +1078,49 @@ export function RegularOrdersPanel({
         }
 
         @media (max-width: 767px) {
+          /* Edge-to-edge scenery strip: cancel container padding (1rem), drop
+             left/right radius so it reads as a banner, not a card. */
           .regularOrderVisual {
-            min-height: 12.5rem;
+            min-height: 13.75rem;
+            width: 100%;
+          }
+
+          .regularOrderVisualCollapsed {
+            border-left: none;
+            border-radius: 0;
+            border-right: none;
+            margin-inline: -1rem;
+            max-width: none;
+            width: calc(100% + 2rem);
+          }
+
+          /* Mobile: no right-side Add pill — single full-width column + CTA by price. */
+          .regularOrdersPanel .regularOrderTrigger {
+            display: block;
+          }
+
+          .regularOrdersPanel .regularOrderTrigger > .regularOrderExpandCue {
+            display: none;
           }
 
           .regularFlavorBadge {
             font-size: 0.72rem;
+            min-height: 1.85rem;
+            padding: 0.28rem 0.7rem;
+          }
+
+          .regularOrderOrderHint {
+            font-size: 0.82rem;
+            min-height: 2.55rem;
+            padding: 0.4rem 0.9rem;
+          }
+
+          .regularGroupHeader {
+            margin-top: 2rem;
+          }
+
+          .regularOrdersPanel section:first-of-type .regularGroupHeader {
+            margin-top: 0.9rem;
           }
         }
       `}</style>
