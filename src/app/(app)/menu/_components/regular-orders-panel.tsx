@@ -201,8 +201,8 @@ function RegularOrderRow({
         indicator={<RegularRowChevron />}
       >
         <div className="regularOrderCollapsed grid w-full gap-4">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-            <h3 className="cateringMenuRoundHeading text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
+          <div className="regularOrderTitleRow">
+            <h3 className="cateringMenuRoundHeading regularOrderTitle text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
               {item.title}
             </h3>
             <span
@@ -222,49 +222,60 @@ function RegularOrderRow({
             ) : null}
           </div>
 
-          {/* Image-first collapsed preview: sheep cookie + scenery (no description). */}
-          <div aria-hidden="true" className="regularOrderVisual regularOrderVisualCollapsed">
-            <DecorativeSceneImage
-              className="absolute inset-0"
-              fit="cover"
-              mobileSrc={mobileSkySrc}
-              sizes="24rem"
-              src={skySrc}
-            />
-            <DecorativeSceneImage
-              className="absolute inset-x-0 bottom-[-0.15rem] z-[1] h-[34%]"
-              fit="cover"
-              sizes="24rem"
-              src={meadowSrc}
-            />
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
-            <div className="regularOrderCookieStage">
-              <CookieSheepRig
-                bodyFallbackSrc={item.bodyFallbackSrc}
-                image={item.image}
-                title={item.title}
+          {/* Collapsed preview: full-width image on mobile; desktop fills free
+              space with description + price beside the sheep-cookie scene. */}
+          <div className="regularOrderPreview">
+            <div aria-hidden="true" className="regularOrderVisual regularOrderVisualCollapsed">
+              <DecorativeSceneImage
+                className="absolute inset-0"
+                fit="cover"
+                mobileSrc={mobileSkySrc}
+                sizes="(max-width: 767px) 100vw, 24rem"
+                src={skySrc}
               />
+              <DecorativeSceneImage
+                className="absolute inset-x-0 bottom-[-0.15rem] z-[1] h-[34%]"
+                fit="cover"
+                sizes="(max-width: 767px) 100vw, 24rem"
+                src={meadowSrc}
+              />
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[54%] bg-gradient-to-b from-[rgba(255,255,255,0.18)] to-transparent" />
+              <div className="regularOrderCookieStage">
+                <CookieSheepRig
+                  bodyFallbackSrc={item.bodyFallbackSrc}
+                  image={item.image}
+                  title={item.title}
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="cateringPriceBlock text-left">
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-              {sizes.length > 1 ? 'From' : 'Price'}
-            </p>
-            {typeof fromPrice === 'number' ? (
-              <Price
-                amount={fromPrice}
-                className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
-              />
-            ) : null}
+            <div className="regularOrderPreviewMeta">
+              {item.summary ? (
+                <p className="regularOrderPreviewSummary">{item.summary}</p>
+              ) : null}
+
+              <div className="cateringPriceBlock text-left">
+                <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
+                  {sizes.length > 1 ? 'From' : 'Price'}
+                </p>
+                {typeof fromPrice === 'number' ? (
+                  <Price
+                    amount={fromPrice}
+                    className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
+                  />
+                ) : null}
+              </div>
+            </div>
           </div>
         </div>
       </AccordionTrigger>
 
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
         <div className="regularOrderExpanded space-y-5">
+          {/* Description already sits beside the image on desktop; keep it in
+              the expanded body on mobile only. */}
           {item.summary ? (
-            <p className="max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)] md:text-[1.05rem]">
+            <p className="regularOrderExpandedSummary max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)]">
               {item.summary}
             </p>
           ) : null}
@@ -606,14 +617,32 @@ export function RegularOrdersPanel({
           text-transform: uppercase;
         }
 
+        .regularOrderTitleRow {
+          align-items: center;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem 0.75rem;
+          min-width: 0;
+        }
+
+        .regularOrderTitle {
+          /* Keep the display type on one flex line so badges sit beside it,
+             not under the cap-height of a tall multi-line block. */
+          flex: 0 1 auto;
+          margin: 0;
+        }
+
         .regularFlavorBadge {
           align-items: center;
+          align-self: center;
           border-radius: 999px;
           display: inline-flex;
+          flex: 0 0 auto;
           font-family: var(--font-rounded-display);
           font-size: 0.78rem;
           font-weight: 600;
           letter-spacing: 0.08em;
+          line-height: 1;
           min-height: 2rem;
           padding: 0.32rem 0.8rem;
           text-transform: uppercase;
@@ -635,11 +664,36 @@ export function RegularOrdersPanel({
           color: #6b5a45;
         }
 
-        /* Collapsed preview: title + sheep-cookie scene + price. Description
-           and buy controls only appear after expand (see AccordionContent). */
+        /* Collapsed: title/badges, then image + meta. Buy controls expand. */
         .regularOrderCollapsed {
           max-width: 100%;
           min-width: 0;
+        }
+
+        .regularOrderPreview {
+          display: grid;
+          gap: 0.85rem;
+          min-width: 0;
+          width: 100%;
+        }
+
+        .regularOrderPreviewMeta {
+          display: grid;
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        /* Mobile default: description lives in the expanded panel only. */
+        .regularOrderPreviewSummary {
+          color: rgba(23, 21, 16, 0.72);
+          display: none;
+          font-size: 0.98rem;
+          line-height: 1.75;
+          margin: 0;
+        }
+
+        .regularOrderExpandedSummary {
+          display: block;
         }
 
         .regularOrderVisual {
@@ -653,10 +707,11 @@ export function RegularOrdersPanel({
           min-height: 16.5rem;
           overflow: hidden;
           position: relative;
+          width: 100%;
         }
 
         .regularOrderVisualCollapsed {
-          max-width: 28rem;
+          max-width: none;
         }
 
         .regularOrderCookieStage {
@@ -676,6 +731,37 @@ export function RegularOrdersPanel({
           opacity: 0;
           transform: translate3d(var(--sheep-burst-x, 0), var(--sheep-burst-y, 0), 0)
             rotate(var(--sheep-burst-rotate, 0deg)) scale(var(--sheep-burst-scale, 0.72));
+        }
+
+        @media (min-width: 768px) {
+          .regularOrderPreview {
+            align-items: stretch;
+            gap: 1.25rem 1.5rem;
+            grid-template-columns: minmax(0, 23rem) minmax(0, 1fr);
+          }
+
+          .regularOrderPreviewMeta {
+            align-content: space-between;
+            display: grid;
+            gap: 1rem;
+            min-height: 100%;
+          }
+
+          /* Desktop fills the empty column with description + price. */
+          .regularOrderPreviewSummary {
+            display: block;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            max-width: 36rem;
+          }
+
+          .regularOrderExpandedSummary {
+            display: none;
+          }
+
+          .regularOrderVisualCollapsed {
+            max-width: none;
+          }
         }
 
         .regularOrderInfoButton.inline {
@@ -816,7 +902,9 @@ export function RegularOrdersPanel({
 
         @media (max-width: 767px) {
           .regularOrderVisual {
-            min-height: 12.5rem;
+            /* Full content width under title; panel already supplies outer padding. */
+            min-height: 13.5rem;
+            width: 100%;
           }
 
           .regularOrderVisualCollapsed {
@@ -825,6 +913,8 @@ export function RegularOrdersPanel({
 
           .regularFlavorBadge {
             font-size: 0.72rem;
+            min-height: 1.85rem;
+            padding: 0.28rem 0.7rem;
           }
         }
       `}</style>
