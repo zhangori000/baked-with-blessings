@@ -200,50 +200,30 @@ function RegularOrderRow({
         className="cateringRowTrigger gap-6 py-8 text-left hover:no-underline md:py-10"
         indicator={<RegularRowChevron />}
       >
-        <div className="grid w-full gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-              <h3 className="cateringMenuRoundHeading text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
-                {item.title}
-              </h3>
-              <span
-                className={cn(
-                  'regularFlavorBadge',
-                  item.availability === 'seasonal'
-                    ? 'regularFlavorBadgeSeasonal'
-                    : 'regularFlavorBadgeAlways',
-                )}
-              >
-                {item.badgeLabel}
+        <div className="regularOrderCollapsed grid w-full gap-4">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
+            <h3 className="cateringMenuRoundHeading text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
+              {item.title}
+            </h3>
+            <span
+              className={cn(
+                'regularFlavorBadge',
+                item.availability === 'seasonal'
+                  ? 'regularFlavorBadgeSeasonal'
+                  : 'regularFlavorBadgeAlways',
+              )}
+            >
+              {item.badgeLabel}
+            </span>
+            {item.categoryLabel ? (
+              <span className="regularFlavorBadge regularFlavorBadgeCategory">
+                {item.categoryLabel}
               </span>
-              {item.categoryLabel ? (
-                <span className="regularFlavorBadge regularFlavorBadgeCategory">
-                  {item.categoryLabel}
-                </span>
-              ) : null}
-            </div>
-            <p className="max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)] md:text-[1.05rem]">
-              {item.summary}
-            </p>
-          </div>
-
-          <div className="cateringPriceBlock text-left md:text-right">
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
-              {sizes.length > 1 ? 'From' : 'Price'}
-            </p>
-            {typeof fromPrice === 'number' ? (
-              <Price
-                amount={fromPrice}
-                className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
-              />
             ) : null}
           </div>
-        </div>
-      </AccordionTrigger>
 
-      <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
-        <div className="regularOrderCardGrid">
-          <div className="regularOrderVisual">
+          {/* Image-first collapsed preview: sheep cookie + scenery (no description). */}
+          <div aria-hidden="true" className="regularOrderVisual regularOrderVisualCollapsed">
             <DecorativeSceneImage
               className="absolute inset-0"
               fit="cover"
@@ -265,20 +245,29 @@ function RegularOrderRow({
                 title={item.title}
               />
             </div>
+          </div>
 
-            {item.receiptBody ? (
-              <BakeryPressable
-                aria-controls={infoId}
-                aria-expanded={isInfoOpen}
-                aria-label={`Show info for ${item.title}`}
-                className="regularOrderInfoButton cateringMenuRoundHeading"
-                onClick={() => setIsInfoOpen((current) => !current)}
-                type="button"
-              >
-                {item.infoButtonLabel ?? 'Info'}
-              </BakeryPressable>
+          <div className="cateringPriceBlock text-left">
+            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-[rgba(23,21,16,0.46)]">
+              {sizes.length > 1 ? 'From' : 'Price'}
+            </p>
+            {typeof fromPrice === 'number' ? (
+              <Price
+                amount={fromPrice}
+                className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
+              />
             ) : null}
           </div>
+        </div>
+      </AccordionTrigger>
+
+      <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
+        <div className="regularOrderExpanded space-y-5">
+          {item.summary ? (
+            <p className="max-w-[41rem] text-[0.98rem] leading-8 text-[rgba(23,21,16,0.72)] md:text-[1.05rem]">
+              {item.summary}
+            </p>
+          ) : null}
 
           <BakeryCard
             className="regularOrderControls space-y-5 border-[rgba(91,70,37,0.12)] bg-[#fff8f2] p-4 shadow-[0_10px_24px_rgba(23,21,16,0.06)] md:p-5"
@@ -411,46 +400,61 @@ function RegularOrderRow({
               </button>
             ) : null}
           </BakeryCard>
-        </div>
 
-        {item.receiptBody ? (
-          <div
-            aria-hidden={!isInfoOpen}
-            className={cn(
-              'overflow-hidden transition-[max-height,opacity,transform,margin] duration-300',
-              isInfoOpen ? 'mt-4 max-h-[30rem] translate-y-0 opacity-100' : 'max-h-0 -translate-y-2 opacity-0',
-            )}
-          >
-            <BakeryCard
-              aria-label={`${item.title} info`}
-              className="relative border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
-              id={infoId}
-              radius="md"
-              spacing="none"
-              tone="transparent"
-            >
+          {item.receiptBody ? (
+            <div className="space-y-3">
               <BakeryPressable
-                aria-label={`Close info for ${item.title}`}
-                className="absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] font-medium text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
-                onClick={() => setIsInfoOpen(false)}
+                aria-controls={infoId}
+                aria-expanded={isInfoOpen}
+                aria-label={`Show info for ${item.title}`}
+                className="regularOrderInfoButtonInline cateringMenuRoundHeading"
+                onClick={() => setIsInfoOpen((current) => !current)}
                 type="button"
               >
-                Close
+                {item.infoButtonLabel ?? 'Info'}
               </BakeryPressable>
 
-              <p className="cateringMenuEyebrow pr-12">For {item.title}</p>
-              <h5 className="mt-0.5 text-[0.9rem] font-semibold tracking-[-0.005em] text-[#5d4119]">
-                Product Info
-              </h5>
+              <div
+                aria-hidden={!isInfoOpen}
+                className={cn(
+                  'overflow-hidden transition-[max-height,opacity,transform] duration-300',
+                  isInfoOpen
+                    ? 'max-h-[30rem] translate-y-0 opacity-100'
+                    : 'max-h-0 -translate-y-2 opacity-0',
+                )}
+              >
+                <BakeryCard
+                  aria-label={`${item.title} info`}
+                  className="relative border border-[rgba(121,92,47,0.16)] bg-[linear-gradient(180deg,#fffaf0_0%,#f8efd9_100%)] px-4 pb-4 pt-3 shadow-[0_16px_28px_rgba(23,21,16,0.08)]"
+                  id={infoId}
+                  radius="md"
+                  spacing="none"
+                  tone="transparent"
+                >
+                  <BakeryPressable
+                    aria-label={`Close info for ${item.title}`}
+                    className="absolute right-3 top-3 bg-transparent p-0 text-[0.76rem] font-medium text-[rgba(90,65,33,0.7)] transition hover:text-[rgba(90,65,33,1)]"
+                    onClick={() => setIsInfoOpen(false)}
+                    type="button"
+                  >
+                    Close
+                  </BakeryPressable>
 
-              <CookieInfoNote
-                allergens={item.allergens}
-                body={item.receiptBody}
-                className="cookieInfoNote--menu"
-              />
-            </BakeryCard>
-          </div>
-        ) : null}
+                  <p className="cateringMenuEyebrow pr-12">For {item.title}</p>
+                  <h5 className="mt-0.5 text-[0.9rem] font-semibold tracking-[-0.005em] text-[#5d4119]">
+                    Product Info
+                  </h5>
+
+                  <CookieInfoNote
+                    allergens={item.allergens}
+                    body={item.receiptBody}
+                    className="cookieInfoNote--menu"
+                  />
+                </BakeryCard>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </AccordionContent>
     </AccordionItem>
   )
@@ -631,17 +635,11 @@ export function RegularOrdersPanel({
           color: #6b5a45;
         }
 
-        .regularOrderCardGrid {
-          display: grid;
-          gap: 1rem;
-        }
-
-        @media (min-width: 768px) {
-          .regularOrderCardGrid {
-            align-items: stretch;
-            gap: 1.25rem;
-            grid-template-columns: minmax(0, 23rem) minmax(0, 1fr);
-          }
+        /* Collapsed preview: title + sheep-cookie scene + price. Description
+           and buy controls only appear after expand (see AccordionContent). */
+        .regularOrderCollapsed {
+          max-width: 100%;
+          min-width: 0;
         }
 
         .regularOrderVisual {
@@ -657,43 +655,48 @@ export function RegularOrdersPanel({
           position: relative;
         }
 
+        .regularOrderVisualCollapsed {
+          max-width: 28rem;
+        }
+
         .regularOrderCookieStage {
           position: absolute;
           inset: 0;
         }
 
-        .regularOrderVisual:hover .cookieSheepBodyImage,
-        .regularOrderVisual:focus-within .cookieSheepBodyImage {
+        .cateringRowTrigger:hover .regularOrderVisual .cookieSheepBodyImage,
+        .cateringRowTrigger:focus-visible .regularOrderVisual .cookieSheepBodyImage,
+        .cateringRowTrigger[data-state='open'] .regularOrderVisual .cookieSheepBodyImage {
           transform: scale(1.18);
         }
 
-        .regularOrderVisual:hover .cookieSheepBurstPart,
-        .regularOrderVisual:focus-within .cookieSheepBurstPart {
+        .cateringRowTrigger:hover .regularOrderVisual .cookieSheepBurstPart,
+        .cateringRowTrigger:focus-visible .regularOrderVisual .cookieSheepBurstPart,
+        .cateringRowTrigger[data-state='open'] .regularOrderVisual .cookieSheepBurstPart {
           opacity: 0;
           transform: translate3d(var(--sheep-burst-x, 0), var(--sheep-burst-y, 0), 0)
             rotate(var(--sheep-burst-rotate, 0deg)) scale(var(--sheep-burst-scale, 0.72));
         }
 
-        .regularOrderInfoButton {
+        .regularOrderInfoButton.inline {
           background: rgba(255, 250, 236, 0.92);
           border: 1px solid rgba(121, 92, 47, 0.28);
           border-radius: 999px;
-          bottom: 0.75rem;
           color: #5a4121;
+          display: inline-flex;
           font-size: 0.76rem;
           letter-spacing: 0.01em;
           min-height: 2.5rem;
           padding: 0.45rem 1rem;
-          position: absolute;
-          right: 0.75rem;
+          position: static;
           transition:
             background-color 150ms cubic-bezier(0.6, 0, 0.15, 1),
             border-color 150ms cubic-bezier(0.6, 0, 0.15, 1),
             transform 150ms cubic-bezier(0.6, 0, 0.15, 1);
         }
 
-        .regularOrderInfoButton:hover,
-        .regularOrderInfoButton:focus-visible {
+        .regularOrderInfoButton.inline:hover,
+        .regularOrderInfoButton.inline:focus-visible {
           background: #fff4c8;
           border-color: rgba(121, 92, 47, 0.45);
           transform: translateY(-1px);
@@ -814,6 +817,10 @@ export function RegularOrdersPanel({
         @media (max-width: 767px) {
           .regularOrderVisual {
             min-height: 12.5rem;
+          }
+
+          .regularOrderVisualCollapsed {
+            max-width: none;
           }
 
           .regularFlavorBadge {
