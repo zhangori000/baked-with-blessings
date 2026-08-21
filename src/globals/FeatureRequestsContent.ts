@@ -17,6 +17,7 @@ export const FeatureRequestsContent: GlobalConfig = {
     update: adminOnly,
   },
   admin: {
+    group: 'Community',
     description:
       'Hero copy shown at the top of /feature-requests. Edit here to change what visitors read above the request composer.',
   },

@@ -215,7 +215,7 @@ export const plugins: Plugin[] = [
         update: isAdmin,
       },
       admin: {
-        group: 'Content',
+        group: 'Community',
       },
     },
     formOverrides: {
@@ -226,7 +226,7 @@ export const plugins: Plugin[] = [
         create: isAdmin,
       },
       admin: {
-        group: 'Content',
+        hidden: true,
       },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
@@ -262,6 +262,10 @@ export const plugins: Plugin[] = [
       cartItemMatcher: trayAwareCartItemMatcher,
       cartsCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
+        admin: {
+          ...defaultCollection.admin,
+          hidden: true,
+        },
         endpoints: Array.isArray(defaultCollection.endpoints)
           ? defaultCollection.endpoints.map((endpoint) =>
               endpoint.path === '/:id/merge'
@@ -326,6 +330,7 @@ export const plugins: Plugin[] = [
             'manualPaymentMethod',
             'createdAt',
           ],
+          group: 'Daily work',
           description:
             'Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.',
           listSearchableFields: [
@@ -541,13 +546,49 @@ export const plugins: Plugin[] = [
         }),
       ],
     },
+    addresses: {
+      addressesCollectionOverride: ({ defaultCollection }) => ({
+        ...defaultCollection,
+        admin: {
+          ...defaultCollection.admin,
+          hidden: true,
+        },
+      }),
+    },
     products: {
       productsCollectionOverride: ProductsCollection,
       validation: validateMadeToOrderPricing,
+      variants: {
+        variantOptionsCollectionOverride: ({ defaultCollection }) => ({
+          ...defaultCollection,
+          admin: {
+            ...defaultCollection.admin,
+            hidden: true,
+          },
+        }),
+        variantsCollectionOverride: ({ defaultCollection }) => ({
+          ...defaultCollection,
+          admin: {
+            ...defaultCollection.admin,
+            hidden: true,
+          },
+        }),
+        variantTypesCollectionOverride: ({ defaultCollection }) => ({
+          ...defaultCollection,
+          admin: {
+            ...defaultCollection.admin,
+            hidden: true,
+          },
+        }),
+      },
     },
     transactions: {
       transactionsCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
+        admin: {
+          ...defaultCollection.admin,
+          hidden: true,
+        },
         fields: [
           ...extendCollectionItemsWithBatchSelections({
             fields: defaultCollection.fields,

@@ -233,11 +233,11 @@ export const RotationShowcaseProductsField: React.FC = () => {
       <div className={`${baseClass}__header`}>
         <div>
           <span className={`${baseClass}__label`} id="rotation-showcase-products-label">
-            Flavor pool for rotation planning <span aria-hidden="true">*</span>
+            Also considering (not on the site yet)
           </span>
           <p className={`${baseClass}__description`} id="rotation-showcase-products-description">
-            Select normal products that can be chosen for the public rotation below. This pool does
-            not publish a flavor to /rotations by itself.
+            Optional extra flavors you are thinking about. Cookies you pick for Specials of the Week
+            are added here automatically. This list does not appear on the public site by itself.
           </p>
         </div>
         <div className={`${baseClass}__actions`}>

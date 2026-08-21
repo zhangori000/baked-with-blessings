@@ -19,7 +19,7 @@ export const Reviews: CollectionConfig = {
   },
   admin: {
     defaultColumns: ['title', 'publicStatus', 'responseStatus', 'createdAt'],
-    group: 'Review System',
+    group: 'Daily work',
     useAsTitle: 'title',
   },
   fields: [

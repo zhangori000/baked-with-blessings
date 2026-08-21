@@ -5,6 +5,9 @@ import { link } from '@/fields/link'
 
 export const Footer: GlobalConfig = {
   slug: 'footer',
+  admin: {
+    group: 'Website',
+  },
   access: {
     read: () => true,
     update: adminOnly,

@@ -29,8 +29,8 @@ export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) =
           <p className={styles.eyebrow}>Bakery command center</p>
           <h1 className={styles.title}>What would you like to take care of?</h1>
           <p className={styles.subtitle}>
-            Your everyday work is one click away. The full Payload menu is still available for less
-            common changes.
+            Everyday bakery work is one click away. Unused developer collections are hidden from the
+            left menu so Daily work stays easy to find.
           </p>
           <Link className={styles.storefrontLink} href="/" prefetch={false}>
             View the storefront
@@ -61,9 +61,9 @@ export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) =
               <AttentionOrders state={dashboardData.attentionOrders} />
             </article>
             <article className={styles.attentionCard}>
-              <h3 className={styles.attentionTitle}>Current cookie lineup</h3>
+              <h3 className={styles.attentionTitle}>This week&apos;s cookie lineup</h3>
               <p className={styles.attentionDescription}>
-                Check which rotating flavors customers can order right now.
+                These flavors are on Specials of the Week and the homepage right now.
               </p>
               <ActiveRotation state={dashboardData.activeRotation} />
             </article>

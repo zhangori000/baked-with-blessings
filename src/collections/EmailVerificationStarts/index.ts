@@ -13,6 +13,7 @@ export const EmailVerificationStarts: CollectionConfig = {
   admin: {
     defaultColumns: ['flow', 'email', 'expiresAt', 'createdAt'],
     group: 'Security',
+    hidden: true,
     useAsTitle: 'key',
   },
   fields: [

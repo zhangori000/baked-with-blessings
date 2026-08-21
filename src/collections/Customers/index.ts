@@ -20,7 +20,7 @@ export const Customers: CollectionConfig = {
   },
   admin: {
     defaultColumns: ['name', 'email', 'phone', 'phoneVerifiedAt'],
-    group: 'Users',
+    group: 'Accounts',
     listSearchableFields: ['name', 'email', 'phone'],
     useAsTitle: 'name',
   },

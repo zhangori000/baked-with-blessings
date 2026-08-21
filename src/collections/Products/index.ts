@@ -41,6 +41,28 @@ const CURRENCIES_CONFIG = { defaultCurrency: 'USD', supportedCurrencies: [USD_CU
 const productDetailsFields = (defaultFields: Field[]): Field[] =>
   defaultFields.map(transformProductDetailField)
 
+const takeNamedFields = (fields: Field[], names: string[]): { rest: Field[]; taken: Field[] } => {
+  const nameSet = new Set(names)
+  const takenByName = new Map<string, Field>()
+  const rest: Field[] = []
+
+  for (const field of fields) {
+    if ('name' in field && typeof field.name === 'string' && nameSet.has(field.name)) {
+      takenByName.set(field.name, field)
+    } else {
+      rest.push(field)
+    }
+  }
+
+  return {
+    rest,
+    taken: names.flatMap((name) => {
+      const field = takenByName.get(name)
+      return field ? [field] : []
+    }),
+  }
+}
+
 const transformProductDetailField = (field: Field): Field => {
   if (!field || typeof field !== 'object') {
     return field
@@ -93,10 +115,25 @@ const transformProductDetailField = (field: Field): Field => {
   return nextField
 }
 
-export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
+export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => {
+  const defaultDetailFields = productDetailsFields(defaultCollection.fields as Field[])
+  const { rest: leftoverPluginFields, taken: priceFields } = takeNamedFields(defaultDetailFields, [
+    'priceInUSD',
+    'priceInUSDEnabled',
+  ])
+
+  return {
   ...defaultCollection,
+  labels: {
+    plural: 'Cookies and menu',
+    singular: 'Cookie or menu item',
+  },
   admin: {
     ...defaultCollection?.admin,
+    components: {
+      ...defaultCollection?.admin?.components,
+      beforeList: ['@/components/admin/ProductListIntro#ProductListIntro'],
+    },
     defaultColumns: [
       'title',
       'menuPlacement',
@@ -105,6 +142,9 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       'categories',
       '_status',
     ],
+    description:
+      'Standing menu, trays, photos, and prices. To change Specials of the Week for everyone at once, open Cookie lineups. The "Where it lives" field can also move one cookie onto this week\'s lineup.',
+    group: 'Daily work',
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -146,66 +186,73 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       type: 'tabs',
       tabs: [
         {
+          label: 'On the menu',
           fields: [
             {
-              name: 'description',
-              type: 'richText',
+              name: 'menuPlacement',
+              label: 'Where does this flavor live right now?',
+              type: 'select',
               admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
                 description:
-                  'General customer-facing description. Keep this short and clear; the menu can use it as fallback summary text when a shorter menu summary is not set.',
+                  'Always available: year-round on /menu. In the current rotation: also appears on Specials of the Week (open Cookie lineups to rearrange). Backlog: catering trays only. Saving applies the change everywhere.',
               },
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
-                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    FixedToolbarFeature(),
-                    InlineToolbarFeature(),
-                    HorizontalRuleFeature(),
-                  ]
+              defaultValue: 'backlog',
+              hooks: {
+                afterRead: [menuPlacementAfterRead],
+              },
+              options: [
+                {
+                  label: 'Backlog — catering trays only',
+                  value: 'backlog',
                 },
-              }),
-              label: 'Product Description',
-              required: false,
+                {
+                  label: 'In the current rotation',
+                  value: 'currentRotation',
+                },
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
+              virtual: true,
             },
+            ...priceFields,
             {
-              name: 'generateProductDescription',
-              type: 'ui',
+              name: 'miniPriceInUSD',
+              label: 'Mini size price',
+              type: 'number',
               admin: {
                 components: {
-                  Field: '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
+                  Cell: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/client#PriceCell',
+                  },
+                  Field: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/rsc#PriceInput',
+                  },
                 },
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description: `Only used for cookie flavors sold individually. Leave it empty and it fills in at ${Math.round(
+                  MINI_PRICE_RATIO * 100,
+                )}% of the main price when you save. The sizes customers see update automatically.`,
               },
+              min: 0,
             },
             {
-              name: 'menuExpandedPitch',
-              type: 'richText',
+              name: 'menuPortionLabel',
+              label: 'Menu Quantity Label',
+              type: 'text',
               admin: {
                 description:
-                  'When a customer clicks Expand on a /menu card, this longer blog-like section appears inside the opened card. Use it for selling points, serving ideas, and details that are too long for the collapsed card.',
-              },
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
-                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    FixedToolbarFeature(),
-                    InlineToolbarFeature(),
-                    HorizontalRuleFeature(),
-                  ]
-                },
-              }),
-              label: 'Expanded Menu Description',
-              required: false,
-            },
-            {
-              name: 'generateExpandedMenuDescription',
-              type: 'ui',
-              admin: {
-                components: {
-                  Field:
-                    '@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription',
-                },
+                  'Short quantity label shown on menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".',
               },
             },
             {
@@ -281,7 +328,71 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 },
               },
             },
-
+          ],
+        },
+        {
+          fields: [
+            {
+              name: 'description',
+              type: 'richText',
+              admin: {
+                description:
+                  'General customer-facing description. Keep this short and clear; the menu can use it as fallback summary text when a shorter menu summary is not set.',
+              },
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => {
+                  return [
+                    ...rootFeatures,
+                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                    FixedToolbarFeature(),
+                    InlineToolbarFeature(),
+                    HorizontalRuleFeature(),
+                  ]
+                },
+              }),
+              label: 'Product Description',
+              required: false,
+            },
+            {
+              name: 'generateProductDescription',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
+                },
+              },
+            },
+            {
+              name: 'menuExpandedPitch',
+              type: 'richText',
+              admin: {
+                description:
+                  'When a customer clicks Expand on a /menu card, this longer blog-like section appears inside the opened card. Use it for selling points, serving ideas, and details that are too long for the collapsed card.',
+              },
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => {
+                  return [
+                    ...rootFeatures,
+                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                    FixedToolbarFeature(),
+                    InlineToolbarFeature(),
+                    HorizontalRuleFeature(),
+                  ]
+                },
+              }),
+              label: 'Expanded Menu Description',
+              required: false,
+            },
+            {
+              name: 'generateExpandedMenuDescription',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field:
+                    '@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription',
+                },
+              },
+            },
             {
               name: 'layout',
               type: 'blocks',
@@ -333,48 +444,14 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               ],
             },
           ],
-          label: 'Description & Photos',
+          label: 'Writing',
         },
         {
           fields: [
-            ...productDetailsFields(defaultCollection.fields as Field[]),
-            {
-              name: 'miniPriceInUSD',
-              label: 'Mini size price',
-              type: 'number',
-              admin: {
-                components: {
-                  Cell: {
-                    clientProps: {
-                      currenciesConfig: CURRENCIES_CONFIG,
-                      currency: USD_CURRENCY,
-                    },
-                    path: '@payloadcms/plugin-ecommerce/client#PriceCell',
-                  },
-                  Field: {
-                    clientProps: {
-                      currenciesConfig: CURRENCIES_CONFIG,
-                      currency: USD_CURRENCY,
-                    },
-                    path: '@payloadcms/plugin-ecommerce/rsc#PriceInput',
-                  },
-                },
-                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
-                description: `Only used for cookie flavors sold individually. Leave it empty and it fills in at ${Math.round(
-                  MINI_PRICE_RATIO * 100,
-                )}% of the main price when you save. The sizes customers see update automatically.`,
-              },
-              min: 0,
-            },
-            {
-              name: 'menuPortionLabel',
-              label: 'Menu Quantity Label',
-              type: 'text',
-              admin: {
-                description:
-                  'Short quantity label shown on menu cards, for example "10 jumbo cookies", "10 cups", or "One tray".',
-              },
-            },
+            ...leftoverPluginFields.filter(
+              (field) =>
+                !('name' in field) || (field.name !== 'title' && field.name !== 'description'),
+            ),
             {
               name: 'menuBehavior',
               label: 'Can customers choose flavors for this item?',
@@ -424,35 +501,6 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   value: 'always',
                 },
               ],
-            },
-            {
-              name: 'menuPlacement',
-              label: 'Where does this flavor live right now?',
-              type: 'select',
-              admin: {
-                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
-                description:
-                  'Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.',
-              },
-              defaultValue: 'backlog',
-              hooks: {
-                afterRead: [menuPlacementAfterRead],
-              },
-              options: [
-                {
-                  label: 'Backlog — catering trays only',
-                  value: 'backlog',
-                },
-                {
-                  label: 'In the current rotation',
-                  value: 'currentRotation',
-                },
-                {
-                  label: 'Always available on the menu',
-                  value: 'always',
-                },
-              ],
-              virtual: true,
             },
             {
               name: 'flavorSelection',
@@ -581,7 +629,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               relationTo: 'products',
             },
           ],
-          label: 'Price & Tray Choices',
+          label: 'Trays & extras',
         },
         {
           name: 'meta',
@@ -643,4 +691,5 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       applyMenuPlacementBeforeChange,
     ],
   },
-})
+  }
+}

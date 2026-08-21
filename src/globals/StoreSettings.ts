@@ -14,6 +14,7 @@ export const StoreSettings: GlobalConfig = {
     update: adminOnly,
   },
   admin: {
+    group: 'Daily work',
     description:
       'Storefront-wide switches the business owner can flip without a code change. Changes apply as soon as you save.',
   },

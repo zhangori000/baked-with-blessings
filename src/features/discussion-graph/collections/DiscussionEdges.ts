@@ -15,6 +15,7 @@ export const DiscussionEdges: CollectionConfig = {
   admin: {
     defaultColumns: ['type', 'fromNode', 'toNode', 'createdAt'],
     group: 'Discussion Graph',
+    hidden: true,
     useAsTitle: 'type',
   },
   fields: [

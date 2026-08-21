@@ -10,6 +10,7 @@ export const Announcements: GlobalConfig = {
     update: adminOnly,
   },
   admin: {
+    group: 'Daily work',
     description:
       'These appear under the ANNOUNCEMENTS button in the site header on every page (it replaced Contact in the main nav; Contact now lives under Other pages). Visitors see a red dot on the button until they open the panel — saving any change here shows the dot again.',
   },

@@ -17,6 +17,14 @@ describe('admin dashboard navigation', () => {
       reviews: '/admin/collections/reviews',
       'store-settings': '/admin/globals/store-settings',
     })
+    expect(dailyDestinations.map(({ key }) => key)).toEqual([
+      'orders',
+      'flavor-rotations',
+      'products',
+      'announcements',
+      'store-settings',
+      'reviews',
+    ])
   })
 
   it('uses unique labels, keys, and direct Payload destinations', () => {
