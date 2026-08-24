@@ -215,7 +215,7 @@ export const plugins: Plugin[] = [
         update: isAdmin,
       },
       admin: {
-        group: 'Content',
+        group: 'Community',
       },
     },
     formOverrides: {
@@ -326,6 +326,7 @@ export const plugins: Plugin[] = [
             'manualPaymentMethod',
             'createdAt',
           ],
+          group: 'Daily work',
           description:
             'Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.',
           listSearchableFields: [

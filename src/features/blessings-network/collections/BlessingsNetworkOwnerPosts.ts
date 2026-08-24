@@ -23,6 +23,7 @@ export const BlessingsNetworkOwnerPosts: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'owner', 'topic', 'publicStatus', 'createdAt'],
     group: 'Community Advice',
+    hidden: true,
     useAsTitle: 'title',
   },
   fields: [

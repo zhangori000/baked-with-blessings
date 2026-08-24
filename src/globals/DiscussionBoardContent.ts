@@ -17,6 +17,7 @@ export const DiscussionBoardContent: GlobalConfig = {
     update: adminOnly,
   },
   admin: {
+    hidden: true,
     description:
       'Hero copy shown at the top of /discussion-board. Edit here to change what visitors read while they wait, without a code change.',
   },

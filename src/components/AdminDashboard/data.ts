@@ -19,10 +19,19 @@ export type AttentionOrdersState =
   | { kind: 'unavailable' }
 
 export type ActiveRotationState =
-  | { kind: 'active'; rotation: { id: number; title: string } }
+  | { flavorTitles: string[]; kind: 'active'; rotation: { id: number; title: string } }
   | { kind: 'multiple'; totalDocs: number }
   | { kind: 'none' }
   | { kind: 'unavailable' }
+
+const getFlavorTitle = (value: unknown): string | null => {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const title = 'title' in value ? value.title : null
+  return typeof title === 'string' && title.trim() ? title : null
+}
 
 export type AdminDashboardData = {
   activeRotation: ActiveRotationState
@@ -60,11 +69,12 @@ export const loadAdminDashboardData = async ({
     }),
     payload.find({
       collection: 'flavor-rotations',
-      depth: 0,
+      depth: 1,
       limit: 2,
       overrideAccess: false,
       req,
       select: {
+        individualFlavors: true,
         title: true,
       },
       where: {
@@ -115,6 +125,12 @@ export const loadAdminDashboardData = async ({
     const rotation = rotationResult.value.docs[0]
     activeRotation = rotation
       ? {
+          flavorTitles: Array.isArray(rotation.individualFlavors)
+            ? rotation.individualFlavors.flatMap((flavor) => {
+                const title = getFlavorTitle(flavor)
+                return title ? [title] : []
+              })
+            : [],
           kind: 'active',
           rotation: {
             id: rotation.id,

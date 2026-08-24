@@ -1,5 +1,6 @@
 import type {
   CollectionBeforeChangeHook,
+  CollectionBeforeValidateHook,
   CollectionConfig,
   DefaultDocumentIDType,
   PayloadRequest,
@@ -97,6 +98,30 @@ const buildRotationIneligibleProductWhere = async (req: PayloadRequest): Promise
   }
 }
 
+/** Public lineup cookies must also live in the planning pool. Staff only pick the public set. */
+export const ensureShowcaseContainsPublicCookies: CollectionBeforeValidateHook = ({
+  data,
+  originalDoc,
+}) => {
+  if (!data || typeof data !== 'object') {
+    return data
+  }
+
+  const publicIDs = getRelationshipIDs(
+    data.individualFlavors !== undefined ? data.individualFlavors : originalDoc?.individualFlavors,
+  )
+  const showcaseIDs = getRelationshipIDs(
+    data.showcaseProducts !== undefined ? data.showcaseProducts : originalDoc?.showcaseProducts,
+  )
+  const merged = Array.from(new Set([...showcaseIDs, ...publicIDs]))
+
+  if (merged.length > 0) {
+    data.showcaseProducts = merged
+  }
+
+  return data
+}
+
 const enforceSingleActiveFlavorRotation: CollectionBeforeChangeHook = async ({
   data,
   operation,
@@ -153,6 +178,10 @@ const enforceSingleActiveFlavorRotation: CollectionBeforeChangeHook = async ({
 
 export const FlavorRotations: CollectionConfig = {
   slug: 'flavor-rotations',
+  labels: {
+    plural: 'Cookie lineups',
+    singular: 'Cookie lineup',
+  },
   access: {
     create: adminOnly,
     delete: adminOnly,
@@ -170,10 +199,13 @@ export const FlavorRotations: CollectionConfig = {
     update: adminOnly,
   },
   admin: {
+    components: {
+      beforeList: ['@/components/admin/FlavorRotationListIntro#FlavorRotationListIntro'],
+    },
     defaultColumns: ['title', 'status', 'rotationType', 'individualFlavors', 'updatedAt'],
     description:
-      'Controls the /rotations page. The public page shows the products selected in Public rotation cookies.',
-    group: 'Content',
+      'This is the current cookie lineup. The Active lineup is what customers see on Specials of the Week (/rotations) and the homepage.',
+    group: 'Daily work',
     useAsTitle: 'title',
   },
   fields: [
@@ -218,6 +250,7 @@ export const FlavorRotations: CollectionConfig = {
       admin: {
         description:
           'Internal organizer for monthly, seasonal, or special lineups. It does not change the page by itself.',
+        position: 'sidebar',
       },
       defaultValue: 'monthly',
       options: [
@@ -247,15 +280,48 @@ export const FlavorRotations: CollectionConfig = {
       },
     },
     {
+      name: 'individualFlavors',
+      label: 'Cookies on Specials of the Week',
+      type: 'relationship',
+      admin: {
+        description:
+          'These cookies appear on Specials of the Week and the homepage. Drag to change the order. Saving updates the public site.',
+      },
+      filterOptions: async ({ req }) => buildRotationEligibleProductWhere(req),
+      hasMany: true,
+      relationTo: 'products',
+      required: true,
+      validate: (value, { siblingData }) => {
+        const selectedIDs = getRelationshipIDs(value)
+        const showcaseIDs = new Set(
+          getRelationshipIDs(
+            (siblingData as { showcaseProducts?: unknown } | undefined)?.showcaseProducts,
+          ),
+        )
+
+        if (selectedIDs.length === 0) {
+          return 'Choose at least one cookie for Specials of the Week.'
+        }
+
+        const missingFromShowcase = selectedIDs.filter((id) => !showcaseIDs.has(id))
+
+        if (missingFromShowcase.length === 0) {
+          return true
+        }
+
+        return 'Every public lineup cookie must also be in the optional considering list below. Save again if you just added a cookie — it is added automatically.'
+      },
+    },
+    {
       name: 'showcaseProducts',
-      label: 'Flavor pool for rotation planning',
+      label: 'Also considering (not on the site yet)',
       type: 'relationship',
       admin: {
         components: {
           Field: '@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField',
         },
         description:
-          'Internal planning pool used to choose the public rotation cookies. These products do not appear on /rotations unless they are also selected below.',
+          'Optional extra flavors you are thinking about. Cookies you pick for Specials of the Week are added here automatically. This list does not appear on the public site by itself.',
       },
       filterOptions: async ({ req }) => buildRotationEligibleProductWhere(req),
       hasMany: true,
@@ -265,7 +331,7 @@ export const FlavorRotations: CollectionConfig = {
         const selectedIDs = getRelationshipIDs(value)
 
         if (selectedIDs.length === 0) {
-          return 'Choose at least one flavor/product for the rotation planning pool.'
+          return 'Choose at least one cookie for Specials of the Week. It will be added here automatically.'
         }
 
         const ineligibleProductWhere = await buildRotationIneligibleProductWhere(req)
@@ -300,60 +366,7 @@ export const FlavorRotations: CollectionConfig = {
           .filter(Boolean)
           .join(', ')
 
-        return `Remove tray, catering-pack, or batch-builder products from the rotation planning pool: ${productNames}.`
-      },
-    },
-    {
-      name: 'individualFlavors',
-      label: 'Public rotation cookies (/rotations)',
-      type: 'relationship',
-      admin: {
-        description:
-          'Choose any number from the planning pool above. These are the cookies customers see on /rotations right now.',
-      },
-      filterOptions: async ({ req, siblingData }) => {
-        const showcaseIDs = getRelationshipIDs(
-          (siblingData as { showcaseProducts?: unknown } | undefined)?.showcaseProducts,
-        )
-        const rotationEligibleProductWhere = await buildRotationEligibleProductWhere(req)
-
-        if (showcaseIDs.length > 0) {
-          return {
-            and: [
-              {
-                id: {
-                  in: showcaseIDs,
-                },
-              },
-              rotationEligibleProductWhere,
-            ],
-          }
-        }
-
-        return rotationEligibleProductWhere
-      },
-      hasMany: true,
-      relationTo: 'products',
-      required: true,
-      validate: (value, { siblingData }) => {
-        const selectedIDs = getRelationshipIDs(value)
-        const showcaseIDs = new Set(
-          getRelationshipIDs(
-            (siblingData as { showcaseProducts?: unknown } | undefined)?.showcaseProducts,
-          ),
-        )
-
-        if (selectedIDs.length === 0) {
-          return 'Choose at least one cookie for /rotations.'
-        }
-
-        const missingFromShowcase = selectedIDs.filter((id) => !showcaseIDs.has(id))
-
-        if (missingFromShowcase.length === 0) {
-          return true
-        }
-
-        return 'Every public rotation cookie must also be selected in the flavor planning pool.'
+        return `Remove tray, catering-pack, or batch-builder products from this list: ${productNames}.`
       },
     },
     {
@@ -407,5 +420,6 @@ export const FlavorRotations: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [enforceSingleActiveFlavorRotation],
+    beforeValidate: [ensureShowcaseContainsPublicCookies],
   },
 }

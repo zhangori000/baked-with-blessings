@@ -15,7 +15,7 @@ const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   admin: {
-    group: 'Content',
+    group: 'Daily work',
   },
   slug: 'media',
   access: {

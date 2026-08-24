@@ -24,6 +24,7 @@ export const BlessingsNetworkQuestions: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'category', 'questionStatus', 'publicStatus', 'displayOrder'],
     group: 'Community Advice',
+    hidden: true,
     useAsTitle: 'title',
   },
   fields: [

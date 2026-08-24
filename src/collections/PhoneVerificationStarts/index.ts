@@ -13,6 +13,7 @@ export const PhoneVerificationStarts: CollectionConfig = {
   admin: {
     defaultColumns: ['flow', 'phone', 'expiresAt', 'createdAt'],
     group: 'Security',
+    hidden: true,
     useAsTitle: 'key',
   },
   fields: [

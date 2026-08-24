@@ -25,9 +25,12 @@ The admin panel is for a non-technical bakery owner. Its home screen should answ
 - Important bulk updates require a review step that states their scope and resulting prices.
 - Requested, confirmed, and ready orders remain distinguishable without relying on color alone.
 - Owner-facing order dates use the bakery's Central time zone, not the deployment server's locale.
+- The left nav shows bakery work only. Discussion graph, blessings-network, and verification logs stay hidden. Ecommerce internals (carts, variants, transactions) stay in an Advanced group so Payload can still build the login client config.
+- Specials of the Week has one owner path: **Cookie lineups**. The standing menu lives on **Cookies and menu**. A single cookie can still move onto the lineup from its product form; rearranging the public set happens on the lineup.
+- The default product edit leads with placement, price, and photos. Writing, trays, and SEO stay on later tabs.
 
 ## Deliberate non-goals
 
-- Do not replace Payload's built-in navigation or collection screens.
+- Do not replace Payload's collection or document screens with a parallel CMS.
 - Do not add charts without a concrete owner decision they help make.
 - Do not add global search until its indexed content, permissions, and keyboard behavior can be implemented as one coherent feature.
