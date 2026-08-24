@@ -25,7 +25,7 @@ The admin panel is for a non-technical bakery owner. Its home screen should answ
 - Important bulk updates require a review step that states their scope and resulting prices.
 - Requested, confirmed, and ready orders remain distinguishable without relying on color alone.
 - Owner-facing order dates use the bakery's Central time zone, not the deployment server's locale.
-- The left nav shows bakery work only. Carts, variants, discussion graph, blessings-network, verification logs, and other plugin machinery stay in the schema and remain reachable by URL, but they are hidden from the sidebar.
+- The left nav shows bakery work only. Discussion graph, blessings-network, and verification logs stay hidden. Ecommerce internals (carts, variants, transactions) stay in an Advanced group so Payload can still build the login client config.
 - Specials of the Week has one owner path: **Cookie lineups**. The standing menu lives on **Cookies and menu**. A single cookie can still move onto the lineup from its product form; rearranging the public set happens on the lineup.
 - The default product edit leads with placement, price, and photos. Writing, trays, and SEO stay on later tabs.
 

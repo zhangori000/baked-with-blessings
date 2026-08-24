@@ -11,6 +11,7 @@ import type { CollectionConfig, Config, GlobalConfig } from 'payload'
 
 export const ADMIN_GROUPS = {
   accounts: 'Accounts',
+  advanced: 'Advanced',
   community: 'Community',
   dailyWork: 'Daily work',
   website: 'Website',
@@ -36,6 +37,23 @@ export const visibleCollectionNav: Record<string, { group: AdminGroup }> = {
   reviews: { group: ADMIN_GROUPS.dailyWork },
 }
 
+/**
+ * Ecommerce / form-builder internals. Keep them in the schema and client
+ * config (product fields still relate to variants). Put them in a collapsed
+ * Advanced group instead of `hidden: true` — Payload's login path builds a
+ * client config for every collection, and hiding related collections has
+ * blanked /admin before login can mount.
+ */
+export const advancedCollectionNav: Record<string, { group: AdminGroup }> = {
+  addresses: { group: ADMIN_GROUPS.advanced },
+  carts: { group: ADMIN_GROUPS.advanced },
+  forms: { group: ADMIN_GROUPS.advanced },
+  transactions: { group: ADMIN_GROUPS.advanced },
+  variantOptions: { group: ADMIN_GROUPS.advanced },
+  variantTypes: { group: ADMIN_GROUPS.advanced },
+  variants: { group: ADMIN_GROUPS.advanced },
+}
+
 /** Globals bakery staff should see in the left nav. */
 export const visibleGlobalNav: Record<string, { group: AdminGroup }> = {
   announcements: { group: ADMIN_GROUPS.dailyWork },
@@ -53,34 +71,46 @@ export const visibleGlobalNav: Record<string, { group: AdminGroup }> = {
  * `/admin/collections/<slug>` or `/admin/globals/<slug>` if needed.
  */
 export const hiddenCollectionSlugs = [
-  'addresses',
   'awareness-marks',
   'blessings-network-answers',
   'blessings-network-owner-posts',
   'blessings-network-owners',
   'blessings-network-questions',
-  'carts',
   'discussion-edges',
   'discussion-nodes',
   'email-verification-starts',
-  'forms',
   'phone-verification-starts',
-  'transactions',
-  'variantOptions',
-  'variantTypes',
-  'variants',
 ] as const
 
 export const hiddenGlobalSlugs = ['blog-page-content', 'discussion-board-content'] as const
 
 const hiddenCollectionSet = new Set<string>(hiddenCollectionSlugs)
 const hiddenGlobalSet = new Set<string>(hiddenGlobalSlugs)
+const groupedCollectionNav: Record<string, { group: AdminGroup }> = {
+  ...visibleCollectionNav,
+  ...advancedCollectionNav,
+}
+
+const AUTH_COLLECTION_SLUG = 'admins'
 
 const applyAdminNav = <T extends CollectionConfig | GlobalConfig>(
   entity: T,
   visible: Record<string, { group: AdminGroup }>,
   hidden: Set<string>,
 ): T => {
+  // Payload's RootPage always builds a client config for the auth collection
+  // before login can render. Never hide it.
+  if (entity.slug === AUTH_COLLECTION_SLUG) {
+    return {
+      ...entity,
+      admin: {
+        ...entity.admin,
+        group: ADMIN_GROUPS.accounts,
+        hidden: false,
+      },
+    }
+  }
+
   if (hidden.has(entity.slug)) {
     return {
       ...entity,
@@ -94,7 +124,10 @@ const applyAdminNav = <T extends CollectionConfig | GlobalConfig>(
   const nav = visible[entity.slug]
 
   if (!nav) {
-    return entity
+    return {
+      ...entity,
+      admin: entity.admin ?? {},
+    }
   }
 
   return {
@@ -110,7 +143,7 @@ const applyAdminNav = <T extends CollectionConfig | GlobalConfig>(
 export const applyOwnerAdminNav = (config: Config): Config => ({
   ...config,
   collections: config.collections?.map((collection) =>
-    applyAdminNav(collection, visibleCollectionNav, hiddenCollectionSet),
+    applyAdminNav(collection, groupedCollectionNav, hiddenCollectionSet),
   ),
   globals: config.globals?.map((global) =>
     applyAdminNav(global, visibleGlobalNav, hiddenGlobalSet),

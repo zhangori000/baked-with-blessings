@@ -1,5 +1,6 @@
 import {
   ADMIN_GROUPS,
+  advancedCollectionNav,
   applyOwnerAdminNav,
   hiddenCollectionSlugs,
   hiddenGlobalSlugs,
@@ -19,21 +20,18 @@ describe('owner admin navigation', () => {
     expect(visibleGlobalNav['store-settings']?.group).toBe(ADMIN_GROUPS.dailyWork)
   })
 
-  it('hides unused plugin and experiment collections from the sidebar', () => {
+  it('groups ecommerce internals instead of hiding them from the client config', () => {
+    expect(advancedCollectionNav.carts?.group).toBe(ADMIN_GROUPS.advanced)
+    expect(advancedCollectionNav.variants?.group).toBe(ADMIN_GROUPS.advanced)
+    expect(advancedCollectionNav.forms?.group).toBe(ADMIN_GROUPS.advanced)
     expect(hiddenCollectionSlugs).toEqual(
       expect.arrayContaining([
-        'carts',
-        'transactions',
-        'variants',
-        'variantTypes',
-        'variantOptions',
-        'addresses',
-        'forms',
         'discussion-nodes',
         'blessings-network-owners',
         'email-verification-starts',
       ]),
     )
+    expect(hiddenCollectionSlugs).not.toEqual(expect.arrayContaining(['carts', 'variants', 'admins']))
     expect(hiddenGlobalSlugs).toEqual(
       expect.arrayContaining(['blog-page-content', 'discussion-board-content']),
     )
@@ -59,10 +57,10 @@ describe('owner admin navigation', () => {
         slug: 'products',
       }),
       expect.objectContaining({
-        admin: expect.objectContaining({ hidden: true }),
+        admin: expect.objectContaining({ group: ADMIN_GROUPS.advanced, hidden: false }),
         slug: 'carts',
       }),
-      expect.objectContaining({ slug: 'mystery-lab' }),
+      expect.objectContaining({ admin: {}, slug: 'mystery-lab' }),
     ])
     expect(config.globals).toEqual([
       expect.objectContaining({
@@ -73,7 +71,33 @@ describe('owner admin navigation', () => {
         admin: expect.objectContaining({ hidden: true }),
         slug: 'discussion-board-content',
       }),
-      expect.objectContaining({ slug: 'mystery-setting' }),
+      expect.objectContaining({ admin: {}, slug: 'mystery-setting' }),
     ])
+  })
+
+  it('never hides the admins auth collection and always sets admin for nav safety', () => {
+    const config = applyOwnerAdminNav({
+      collections: [{ slug: 'admins' }, { slug: 'discussion-nodes' }],
+      globals: [{ slug: 'header' }],
+    } as Config)
+
+    expect(config.collections).toEqual([
+      expect.objectContaining({
+        admin: expect.objectContaining({ group: ADMIN_GROUPS.accounts, hidden: false }),
+        slug: 'admins',
+      }),
+      expect.objectContaining({
+        admin: expect.objectContaining({ hidden: true }),
+        slug: 'discussion-nodes',
+      }),
+    ])
+
+    for (const entity of [...(config.collections ?? []), ...(config.globals ?? [])]) {
+      expect(entity.admin).toBeDefined()
+      expect(() => {
+        const { hidden } = entity.admin as { hidden?: boolean }
+        return hidden
+      }).not.toThrow()
+    }
   })
 })
