@@ -39,14 +39,14 @@ test.describe('Admin Panel', () => {
         path: '/admin/collections/orders',
       },
       {
-        heading: 'Products',
-        label: 'Products and prices',
-        path: '/admin/collections/products',
+        heading: 'Cookie lineups',
+        label: 'Cookie lineups',
+        path: '/admin/collections/flavor-rotations',
       },
       {
-        heading: 'Flavor Rotations',
-        label: 'Current cookie lineup',
-        path: '/admin/collections/flavor-rotations',
+        heading: 'Cookies and menu',
+        label: 'Cookies and menu',
+        path: '/admin/collections/products',
       },
       {
         heading: 'Announcements',

@@ -241,6 +241,12 @@
   justify-self: start;
 }
 
+.rotationFlavors {
+  color: var(--theme-elevation-800);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
 .rotationLink > span:last-child,
 .rotationFallback a,
 .emptyState a {

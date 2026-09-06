@@ -36,6 +36,7 @@ import {
   ordersBakerListSearchableFields,
   ordersBakerUseAsTitle,
 } from '@/plugins/ordersBakerAdmin'
+import { bakerAdvancedGroup, bakerDailyWorkGroup } from '@/utilities/bakerMenuAdmin'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
   if (!address || typeof address !== 'object' || !('phone' in address)) {
@@ -309,6 +310,10 @@ export const plugins: Plugin[] = [
       cartItemMatcher: trayAwareCartItemMatcher,
       cartsCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
+        admin: {
+          ...defaultCollection.admin,
+          group: bakerAdvancedGroup,
+        },
         endpoints: Array.isArray(defaultCollection.endpoints)
           ? defaultCollection.endpoints.map((endpoint) =>
               endpoint.path === '/:id/merge'
@@ -367,6 +372,7 @@ export const plugins: Plugin[] = [
           ...defaultCollection.admin,
           defaultColumns: [...ordersBakerDefaultColumns],
           description: ordersBakerDescription,
+          group: bakerDailyWorkGroup,
           listSearchableFields: [...ordersBakerListSearchableFields],
           useAsTitle: ordersBakerUseAsTitle,
         },
@@ -589,6 +595,10 @@ export const plugins: Plugin[] = [
     transactions: {
       transactionsCollectionOverride: ({ defaultCollection }) => ({
         ...defaultCollection,
+        admin: {
+          ...defaultCollection.admin,
+          group: bakerAdvancedGroup,
+        },
         fields: [
           ...extendCollectionItemsWithBatchSelections({
             fields: defaultCollection.fields,
