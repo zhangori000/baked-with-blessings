@@ -9,7 +9,7 @@ export const dailyDestinations: AdminDestination[] = [
   {
     key: 'orders',
     label: 'Orders to handle',
-    description: 'Review new orders and move each one from requested to ready for pickup.',
+    description: 'See who ordered, what to bake, and whether it is paid. Newest first.',
     href: '/admin/collections/orders',
   },
   {
