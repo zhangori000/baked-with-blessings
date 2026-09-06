@@ -20,6 +20,8 @@ import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { FlavorRotationListIntro as FlavorRotationListIntro_a4f8c21e9b0d47e6a1c3d5e7f902b846 } from '@/components/admin/FlavorRotationListIntro'
+import { ProductListIntro as ProductListIntro_b5e9d32f0c1e58f7b2d4e6f8a013c957 } from '@/components/admin/ProductListIntro'
 import { RotationShowcaseProductsField as RotationShowcaseProductsField_2f0a79148518000fce2e8f9e4dddb17e } from '@/components/admin/RotationShowcaseProductsField'
 import { VariantOptionsSelector as VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
 import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
@@ -60,6 +62,8 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/components/admin/FlavorRotationListIntro#FlavorRotationListIntro": FlavorRotationListIntro_a4f8c21e9b0d47e6a1c3d5e7f902b846,
+  "@/components/admin/ProductListIntro#ProductListIntro": ProductListIntro_b5e9d32f0c1e58f7b2d4e6f8a013c957,
   "@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField": RotationShowcaseProductsField_2f0a79148518000fce2e8f9e4dddb17e,
   "@payloadcms/plugin-ecommerce/rsc#VariantOptionsSelector": VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb,
   "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,

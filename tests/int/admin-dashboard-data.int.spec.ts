@@ -102,7 +102,23 @@ describe('admin dashboard data', () => {
     [{ docs: [], totalDocs: 0 }, { kind: 'none' }],
     [
       { docs: [{ id: 22, title: 'July cookies' }], totalDocs: 1 },
-      { kind: 'active', rotation: { id: 22, title: 'July cookies' } },
+      { kind: 'active', rotation: { flavors: [], id: 22, title: 'July cookies' } },
+    ],
+    [
+      {
+        docs: [
+          {
+            id: 22,
+            individualFlavors: [{ title: "S'mores" }, { title: 'Biscoff' }, 41],
+            title: 'July cookies',
+          },
+        ],
+        totalDocs: 1,
+      },
+      {
+        kind: 'active',
+        rotation: { flavors: ["S'mores", 'Biscoff'], id: 22, title: 'July cookies' },
+      },
     ],
     [
       { docs: [{ id: 22 }, { id: 23 }], totalDocs: 2 },
@@ -127,7 +143,7 @@ describe('admin dashboard data', () => {
     expect(result.attentionOrders).toEqual({ kind: 'unavailable' })
     expect(result.activeRotation).toEqual({
       kind: 'active',
-      rotation: { id: 22, title: 'July cookies' },
+      rotation: { flavors: [], id: 22, title: 'July cookies' },
     })
   })
 })

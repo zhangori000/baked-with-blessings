@@ -19,6 +19,8 @@ The admin panel is for a non-technical bakery owner. Its home screen should answ
 
 - The dashboard is an operational overview, not a second copy of Payload's full navigation.
 - Daily workflows are one click from the dashboard and no more than two clicks from an inner admin screen.
+- Cookie lineups is the path for this week's specials (Specials of the Week). Cookies and menu is the standing catalog for always-available cookies, prices, and photos.
+- A cookie's first edit tab is placement, price, and photos. Writing, trays, and search listing come later.
 - The newest unfinished orders appear first, so a just-placed paid order is at the top of the baker's queue. Completed and cancelled orders do not compete for attention.
 - Each dashboard data source fails independently so one unavailable preview does not block other work.
 - Search uses owner-known terms: customer name, email, or phone; product title or slug.

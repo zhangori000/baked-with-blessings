@@ -6,8 +6,12 @@ import type {
   PayloadRequest,
 } from 'payload'
 
-import { ensureProductSizeVariants, ensureSizeAxis } from '@/features/products/sizeVariantProvisioning'
+import {
+  ensureProductSizeVariants,
+  ensureSizeAxis,
+} from '@/features/products/sizeVariantProvisioning'
 import { defaultMiniPriceInUSD } from '@/features/products/sizeVariants'
+import { lastCookieInLineupError, noActiveLineupError } from '@/utilities/bakerMenuAdmin'
 
 type SizeAxis = Awaited<ReturnType<typeof ensureSizeAxis>>
 
@@ -196,22 +200,20 @@ export const applyMenuPlacementBeforeChange: CollectionBeforeChangeHook = async 
     const rotation = await loadActiveRotation(req)
 
     if (placement === 'currentRotation' && !rotation) {
-      throw new Error(
-        'No rotation is active right now. Open Flavor Rotations, set one rotation to Active, then try again.',
-      )
+      throw new Error(noActiveLineupError)
     }
 
     const isCurrentMember =
-      rotation != null && productID != null && rotation.individualFlavorIDs.includes(String(productID))
+      rotation != null &&
+      productID != null &&
+      rotation.individualFlavorIDs.includes(String(productID))
 
     if (
       placement !== 'currentRotation' &&
       isCurrentMember &&
       rotation.individualFlavorIDs.length <= 1
     ) {
-      throw new Error(
-        'This is the only cookie in the current rotation, and the rotation page cannot be empty. Add another cookie to the rotation first (Flavor Rotations page), then move this one.',
-      )
+      throw new Error(lastCookieInLineupError)
     }
 
     // Stash for afterChange, which applies the rotation move once the
@@ -237,9 +239,9 @@ export const applyMenuPlacementBeforeChange: CollectionBeforeChangeHook = async 
     // Link the size axis directly in the incoming data (instead of a nested
     // self-update later, which breaks inside the create transaction).
     const axis = await loadSizeAxis(req)
-    const linkedTypeIDs = getRelationshipIDs(
-      data.variantTypes ?? originalDoc?.variantTypes,
-    ).map(String)
+    const linkedTypeIDs = getRelationshipIDs(data.variantTypes ?? originalDoc?.variantTypes).map(
+      String,
+    )
 
     if (data.enableVariants !== true || !linkedTypeIDs.includes(String(axis.sizeTypeID))) {
       data.enableVariants = true
@@ -331,9 +333,9 @@ export const syncMenuAutomationAfterChange: CollectionAfterChangeHook = async ({
           collection: 'flavor-rotations',
           data: {
             individualFlavors: [...rotation.individualFlavorIDs, idAsString].map(toDocID),
-            showcaseProducts: Array.from(
-              new Set([...rotation.showcaseProductIDs, idAsString]),
-            ).map(toDocID),
+            showcaseProducts: Array.from(new Set([...rotation.showcaseProductIDs, idAsString])).map(
+              toDocID,
+            ),
           },
           depth: 0,
           overrideAccess: true,
