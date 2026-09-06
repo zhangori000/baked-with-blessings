@@ -62,8 +62,13 @@ export const AttentionOrders = ({ state }: { state: AttentionOrdersState }) => {
             prefetch={false}
           >
             <span className={styles.orderMain}>
-              <strong>{order.customerName || `Order #${order.id}`}</strong>
+              <strong>{order.primaryCustomer}</strong>
+              {order.secondaryCustomer ? (
+                <span className={styles.orderSecondary}>{order.secondaryCustomer}</span>
+              ) : null}
+              <span className={styles.orderItems}>{order.itemsSummary}</span>
               <span>
+                {order.paymentLabel} ·{' '}
                 <time dateTime={order.createdAt}>{formatOrderDate(order.createdAt)}</time> ·{' '}
                 {formatOrderAmount(order.amount)}
               </span>

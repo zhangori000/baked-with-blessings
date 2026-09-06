@@ -57,9 +57,10 @@ export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) =
           </div>
           <div className={styles.attentionGrid}>
             <article className={styles.attentionCard}>
-              <h3 className={styles.attentionTitle}>Oldest orders first</h3>
+              <h3 className={styles.attentionTitle}>Newest first</h3>
               <p className={styles.attentionDescription}>
-                Requested, confirmed, and ready-for-pickup orders stay here until completed.
+                New orders land at the top. Requested, confirmed, and ready-for-pickup stay here
+                until you finish them.
               </p>
               <AttentionOrders state={dashboardData.attentionOrders} />
             </article>
