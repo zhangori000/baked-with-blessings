@@ -1,3 +1,5 @@
+import type { Payload } from 'payload'
+
 import type { Order, Product, Variant } from '@/payload-types'
 import { getVariantDisplayLabel } from '@/utilities/email/orderItemLabels'
 import { classifyOrderPayment, type OrderPaymentKind } from '@/utilities/orderPayment'
@@ -154,4 +156,81 @@ export const summarizeOrderItems = (items: Order['items']) => {
   }
 
   return summaries.join('; ')
+}
+
+const collectProductIDs = (items: Order['items']) => {
+  const ids = new Set<number>()
+
+  for (const item of items ?? []) {
+    if (typeof item.product === 'number') {
+      ids.add(item.product)
+    }
+
+    for (const selection of item.batchSelections ?? []) {
+      if (typeof selection.product === 'number') {
+        ids.add(selection.product)
+      }
+    }
+  }
+
+  return [...ids]
+}
+
+const attachProductTitles = (
+  items: NonNullable<Order['items']>,
+  titles: Map<number, string>,
+): NonNullable<Order['items']> =>
+  items.map((item) => ({
+    ...item,
+    batchSelections: Array.isArray(item.batchSelections)
+      ? item.batchSelections.map((selection) => ({
+          ...selection,
+          product:
+            typeof selection.product === 'number'
+              ? { title: titles.get(selection.product) || null }
+              : selection.product,
+        }))
+      : item.batchSelections,
+    product:
+      typeof item.product === 'number'
+        ? { title: titles.get(item.product) || null }
+        : item.product,
+  })) as NonNullable<Order['items']>
+
+export const summarizeOrderItemsForAdmin = async ({
+  items,
+  payload,
+}: {
+  items: Order['items']
+  payload: Pick<Payload, 'find'>
+}) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return summarizeOrderItems(items)
+  }
+
+  const productIDs = collectProductIDs(items)
+
+  if (productIDs.length === 0) {
+    return summarizeOrderItems(items)
+  }
+
+  const products = await payload.find({
+    collection: 'products',
+    depth: 0,
+    limit: productIDs.length,
+    overrideAccess: true,
+    pagination: false,
+    select: {
+      title: true,
+    },
+    where: {
+      id: {
+        in: productIDs,
+      },
+    },
+  })
+
+  const titles = new Map(products.docs.map((product) => [product.id, product.title]))
+
+  return summarizeOrderItems(attachProductTitles(items, titles))
 }

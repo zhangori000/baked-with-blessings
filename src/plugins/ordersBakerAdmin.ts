@@ -4,7 +4,7 @@ import type { Order } from '@/payload-types'
 import {
   bakerOrdersSort,
   getBakerPaymentLabel,
-  summarizeOrderItems,
+  summarizeOrderItemsForAdmin,
 } from '@/utilities/bakerOrderDisplay'
 
 export const ordersBakerDefaultSort = bakerOrdersSort
@@ -52,7 +52,11 @@ export const createBakerFacingOrderFields = (): Field[] => [
     },
     hooks: {
       afterRead: [
-        ({ siblingData }) => summarizeOrderItems(siblingData?.items as Parameters<typeof summarizeOrderItems>[0]),
+        async ({ req, siblingData }) =>
+          summarizeOrderItemsForAdmin({
+            items: siblingData?.items as Parameters<typeof summarizeOrderItemsForAdmin>[0]['items'],
+            payload: req.payload,
+          }),
       ],
     },
     label: 'What they ordered',

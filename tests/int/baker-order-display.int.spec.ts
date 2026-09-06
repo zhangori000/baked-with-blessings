@@ -5,6 +5,7 @@ import {
   getBakerCustomerIdentity,
   getBakerPaymentLabel,
   summarizeOrderItems,
+  summarizeOrderItemsForAdmin,
 } from '@/utilities/bakerOrderDisplay'
 
 describe('baker-facing order display', () => {
@@ -80,5 +81,26 @@ describe('baker-facing order display', () => {
       '2 items — open to see flavors',
     )
     expect(summarizeOrderItems([])).toBe('Open to see items')
+  })
+
+  it('loads product titles for the orders list when the row only has IDs', async () => {
+    const payload = {
+      find: async () => ({
+        docs: [
+          { id: 12, title: 'Build-Your-Own Mini Box' },
+          { id: 13, title: 'Biscoff' },
+        ],
+      }),
+    }
+
+    await expect(
+      summarizeOrderItemsForAdmin({
+        items: [
+          { product: 12, quantity: 1 },
+          { product: 13, quantity: 2 },
+        ] as Order['items'],
+        payload: payload as never,
+      }),
+    ).resolves.toBe('1× Build-Your-Own Mini Box; 2× Biscoff')
   })
 })
