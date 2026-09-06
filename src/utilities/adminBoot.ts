@@ -8,6 +8,7 @@ export type AdminEnv = {
   NEON_POSTGRES_URL?: string
   PAYLOAD_SECRET?: string
   VERCEL?: string
+  [key: string]: string | undefined
 }
 
 export const diagnoseAdminEnv = (env: AdminEnv = process.env): Error | null => {
