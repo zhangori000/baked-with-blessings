@@ -419,6 +419,7 @@ export const plugins: Plugin[] = [
               ],
             },
           },
+          ...createBakerFacingOrderFields(),
           {
             name: 'accessToken',
             type: 'text',
@@ -557,7 +558,6 @@ export const plugins: Plugin[] = [
               readOnly: true,
             },
           },
-          ...createBakerFacingOrderFields(),
         ],
         hooks: {
           ...defaultCollection.hooks,
