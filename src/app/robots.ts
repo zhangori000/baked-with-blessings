@@ -13,6 +13,10 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin', '/api', '/next/preview'],
         userAgent: '*',
       },
+      {
+        allow: '/',
+        userAgent: 'LinkedInBot',
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
   }

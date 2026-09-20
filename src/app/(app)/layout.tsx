@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     description: siteDescription,
     images: [defaultSocialImage],
+    locale: 'en_US',
     siteName,
     title: siteName,
     type: 'website',
