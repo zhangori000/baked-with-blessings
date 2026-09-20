@@ -6,6 +6,7 @@ export const siteDescription =
 export const defaultSocialImage = {
   alt: 'Baked with Blessings logo',
   height: 630,
+  type: 'image/png',
   url: '/baked-with-blessings-social.png',
   width: 1200,
 }

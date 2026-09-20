@@ -20,6 +20,7 @@ export const buildStaticMetadata = ({
   openGraph: {
     description,
     images: [defaultSocialImage],
+    locale: 'en_US',
     siteName,
     title,
     type: 'website',

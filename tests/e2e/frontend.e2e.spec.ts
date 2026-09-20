@@ -33,9 +33,15 @@ test.describe('Frontend', () => {
   })
 
   test('can go on homepage', async ({ page }) => {
-    await page.goto(baseURL)
+    const response = await page.goto(baseURL)
 
-    await expect(page).toHaveTitle(/Baked with Blessings/)
+    expect(response?.status()).toBe(200)
+    await expect(page).not.toHaveURL(/\/rotations/)
+    await expect(page).toHaveTitle(/^Baked with Blessings$/)
+    await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute(
+      'content',
+      /baked-with-blessings-social\.png/,
+    )
 
     const heading = page.locator('h1').first()
 

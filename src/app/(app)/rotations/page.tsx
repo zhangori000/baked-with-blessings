@@ -1,8 +1,5 @@
-import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { RotationsShowcase } from '@/app/(app)/RotationsShowcase'
 import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
-
-import { HomeCookieCarousel } from '../HomeCookieCarousel.client'
-import { queryPublicRotationCookiePosters } from '../cookiePosterQueries'
 
 export const metadata = buildStaticMetadata({
   description: 'Browse this week’s specials in the animated Baked with Blessings showcase.',
@@ -10,15 +7,6 @@ export const metadata = buildStaticMetadata({
   title: 'Specials of the Week',
 })
 
-export default async function RotationsPage() {
-  const initialSceneryTone = await getMenuSceneToneFromCookies()
-  const posters = await queryPublicRotationCookiePosters()
-
-  return (
-    <HomeCookieCarousel
-      initialSceneryTone={initialSceneryTone}
-      posters={posters}
-      sceneVariant="scenery"
-    />
-  )
+export default function RotationsPage() {
+  return <RotationsShowcase />
 }
