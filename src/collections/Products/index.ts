@@ -25,6 +25,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import { DefaultDocumentIDType, type Field, Where } from 'payload'
+import { bakerDailyWorkGroup, cookiesAndMenuLabels } from '@/utilities/bakerMenuAdmin'
 
 const hiddenProductDetailFields = new Set([
   'enableVariants',
@@ -95,8 +96,13 @@ const transformProductDetailField = (field: Field): Field => {
 
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
+  labels: cookiesAndMenuLabels,
   admin: {
     ...defaultCollection?.admin,
+    components: {
+      ...defaultCollection?.admin?.components,
+      beforeList: ['@/components/admin/ProductListIntro#ProductListIntro'],
+    },
     defaultColumns: [
       'title',
       'menuPlacement',
@@ -105,6 +111,9 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       'categories',
       '_status',
     ],
+    description:
+      "Standing catalog: prices, photos, and whether a cookie is always on the Menu. This week's specials live on Cookie lineups.",
+    group: bakerDailyWorkGroup,
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -148,65 +157,82 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         {
           fields: [
             {
-              name: 'description',
-              type: 'richText',
+              name: 'menuPlacement',
+              label: 'Where does this flavor live right now?',
+              type: 'select',
+              admin: {
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description:
+                  "Always available stays on the Menu year-round. This week's specials adds it to the live Cookie lineup — use Cookie lineups to set the order customers see. Catering trays only keeps it off the single-cookie Menu.",
+              },
+              defaultValue: 'backlog',
+              hooks: {
+                afterRead: [menuPlacementAfterRead],
+              },
+              options: [
+                {
+                  label: 'Catering trays only',
+                  value: 'backlog',
+                },
+                {
+                  label: "This week's specials",
+                  value: 'currentRotation',
+                },
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
+              virtual: true,
+            },
+            {
+              name: 'individualAvailability',
+              type: 'select',
               admin: {
                 description:
-                  'General customer-facing description. Keep this short and clear; the menu can use it as fallback summary text when a shorter menu summary is not set.',
+                  'Stored availability flag. Edit "Where does this flavor live right now?" instead — it sets this automatically.',
+                hidden: true,
               },
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
-                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    FixedToolbarFeature(),
-                    InlineToolbarFeature(),
-                    HorizontalRuleFeature(),
-                  ]
+              defaultValue: 'rotation',
+              options: [
+                {
+                  label: 'Rotation only (default)',
+                  value: 'rotation',
                 },
-              }),
-              label: 'Product Description',
-              required: false,
+                {
+                  label: 'Always available on the menu',
+                  value: 'always',
+                },
+              ],
             },
+            ...productDetailsFields(defaultCollection.fields as Field[]),
             {
-              name: 'generateProductDescription',
-              type: 'ui',
+              name: 'miniPriceInUSD',
+              label: 'Mini size price',
+              type: 'number',
               admin: {
                 components: {
-                  Field: '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
+                  Cell: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/client#PriceCell',
+                  },
+                  Field: {
+                    clientProps: {
+                      currenciesConfig: CURRENCIES_CONFIG,
+                      currency: USD_CURRENCY,
+                    },
+                    path: '@payloadcms/plugin-ecommerce/rsc#PriceInput',
+                  },
                 },
+                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
+                description: `Only used for cookie flavors sold individually. Leave it empty and it fills in at ${Math.round(
+                  MINI_PRICE_RATIO * 100,
+                )}% of the main price when you save. The sizes customers see update automatically.`,
               },
-            },
-            {
-              name: 'menuExpandedPitch',
-              type: 'richText',
-              admin: {
-                description:
-                  'When a customer clicks Expand on a /menu card, this longer blog-like section appears inside the opened card. Use it for selling points, serving ideas, and details that are too long for the collapsed card.',
-              },
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
-                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    FixedToolbarFeature(),
-                    InlineToolbarFeature(),
-                    HorizontalRuleFeature(),
-                  ]
-                },
-              }),
-              label: 'Expanded Menu Description',
-              required: false,
-            },
-            {
-              name: 'generateExpandedMenuDescription',
-              type: 'ui',
-              admin: {
-                components: {
-                  Field:
-                    '@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription',
-                },
-              },
+              min: 0,
             },
             {
               name: 'gallery',
@@ -281,7 +307,72 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 },
               },
             },
-
+          ],
+          label: 'On the menu',
+        },
+        {
+          fields: [
+            {
+              name: 'description',
+              type: 'richText',
+              admin: {
+                description:
+                  'General customer-facing description. Keep this short and clear; the menu can use it as fallback summary text when a shorter menu summary is not set.',
+              },
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => {
+                  return [
+                    ...rootFeatures,
+                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                    FixedToolbarFeature(),
+                    InlineToolbarFeature(),
+                    HorizontalRuleFeature(),
+                  ]
+                },
+              }),
+              label: 'Product Description',
+              required: false,
+            },
+            {
+              name: 'generateProductDescription',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/admin/ProductWritingGenerators#GenerateProductDescription',
+                },
+              },
+            },
+            {
+              name: 'menuExpandedPitch',
+              type: 'richText',
+              admin: {
+                description:
+                  'When a customer clicks Expand on a Menu card, this longer section appears inside the opened card. Use it for selling points, serving ideas, and details that are too long for the collapsed card.',
+              },
+              editor: lexicalEditor({
+                features: ({ rootFeatures }) => {
+                  return [
+                    ...rootFeatures,
+                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                    FixedToolbarFeature(),
+                    InlineToolbarFeature(),
+                    HorizontalRuleFeature(),
+                  ]
+                },
+              }),
+              label: 'Expanded Menu Description',
+              required: false,
+            },
+            {
+              name: 'generateExpandedMenuDescription',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field:
+                    '@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription',
+                },
+              },
+            },
             {
               name: 'layout',
               type: 'blocks',
@@ -298,7 +389,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'group',
               admin: {
                 description:
-                  'Reusable product information shown when customers click Info on rotating cookie pages and tray flavor choices. Use this for flavor notes, serving notes, ingredients, and allergy guidance.',
+                  'Reusable product information shown when customers click Info on Specials of the Week and tray flavor choices. Use this for flavor notes, serving notes, ingredients, and allergy guidance.',
               },
               fields: [
                 {
@@ -307,7 +398,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   type: 'richText',
                   admin: {
                     description:
-                      'Rich text shown in the Info popup. This is reused on the rotating cookie page and in tray flavor choices. Use paragraphs and bold text for flavor notes, serving notes, ingredients, and allergy warnings.',
+                      'Rich text shown in the Info popup. This is reused on Specials of the Week and in tray flavor choices. Use paragraphs and bold text for flavor notes, serving notes, ingredients, and allergy warnings.',
                   },
                   editor: lexicalEditor({
                     features: ({ rootFeatures }) => {
@@ -333,39 +424,10 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               ],
             },
           ],
-          label: 'Description & Photos',
+          label: 'Writing',
         },
         {
           fields: [
-            ...productDetailsFields(defaultCollection.fields as Field[]),
-            {
-              name: 'miniPriceInUSD',
-              label: 'Mini size price',
-              type: 'number',
-              admin: {
-                components: {
-                  Cell: {
-                    clientProps: {
-                      currenciesConfig: CURRENCIES_CONFIG,
-                      currency: USD_CURRENCY,
-                    },
-                    path: '@payloadcms/plugin-ecommerce/client#PriceCell',
-                  },
-                  Field: {
-                    clientProps: {
-                      currenciesConfig: CURRENCIES_CONFIG,
-                      currency: USD_CURRENCY,
-                    },
-                    path: '@payloadcms/plugin-ecommerce/rsc#PriceInput',
-                  },
-                },
-                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
-                description: `Only used for cookie flavors sold individually. Leave it empty and it fills in at ${Math.round(
-                  MINI_PRICE_RATIO * 100,
-                )}% of the main price when you save. The sizes customers see update automatically.`,
-              },
-              min: 0,
-            },
             {
               name: 'menuPortionLabel',
               label: 'Menu Quantity Label',
@@ -381,7 +443,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'select',
               admin: {
                 description:
-                  'Use "Yes" for cookie trays or themed trays where the customer chooses from a list of products inside the expanded /menu card.',
+                  'Use "Yes" for cookie trays or themed trays where the customer chooses from a list of products inside the expanded Menu card.',
               },
               defaultValue: 'simple',
               options: [
@@ -404,55 +466,6 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   Field: '@/components/admin/ProductTrayPlacementField#ProductTrayPlacementField',
                 },
               },
-            },
-            {
-              name: 'individualAvailability',
-              type: 'select',
-              admin: {
-                description:
-                  'Stored availability flag. Edit "Where does this flavor live right now?" instead — it sets this automatically.',
-                hidden: true,
-              },
-              defaultValue: 'rotation',
-              options: [
-                {
-                  label: 'Rotation only (default)',
-                  value: 'rotation',
-                },
-                {
-                  label: 'Always available on the menu',
-                  value: 'always',
-                },
-              ],
-            },
-            {
-              name: 'menuPlacement',
-              label: 'Where does this flavor live right now?',
-              type: 'select',
-              admin: {
-                condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
-                description:
-                  'Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.',
-              },
-              defaultValue: 'backlog',
-              hooks: {
-                afterRead: [menuPlacementAfterRead],
-              },
-              options: [
-                {
-                  label: 'Backlog — catering trays only',
-                  value: 'backlog',
-                },
-                {
-                  label: 'In the current rotation',
-                  value: 'currentRotation',
-                },
-                {
-                  label: 'Always available on the menu',
-                  value: 'always',
-                },
-              ],
-              virtual: true,
             },
             {
               name: 'flavorSelection',
@@ -513,7 +526,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors that are available right now (always-available + this month’s rotation), so rare and backlog flavors stay hidden until they return. One-flavor trays show every flavor selected here, including rare ones — that’s how customers order an out-of-season favorite.',
+                  "The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For mix-and-match boxes the menu automatically shows only the flavors that are available right now (always-available plus this week's specials), so rare flavors stay hidden until they return. One-flavor trays show every flavor selected here, including rare ones.",
               },
               filterOptions: ({ id }) => {
                 if (id) {
@@ -581,11 +594,11 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               relationTo: 'products',
             },
           ],
-          label: 'Price & Tray Choices',
+          label: 'Trays',
         },
         {
           name: 'meta',
-          label: 'SEO',
+          label: 'Search listing',
           fields: [
             OverviewField({
               titlePath: 'meta.title',
@@ -626,7 +639,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       type: 'relationship',
       admin: {
         description:
-          'Categories group products on the /menu page and help organize the menu for customers and admins.',
+          'Categories group products on the Menu page and help organize the menu for customers and admins.',
         position: 'sidebar',
         sortOptions: 'title',
       },

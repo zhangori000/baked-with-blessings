@@ -1,0 +1,20 @@
+.intro {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-800);
+  line-height: 1.5;
+}
+
+.intro p {
+  margin: 0;
+}
+
+.intro a {
+  color: var(--theme-elevation-900);
+  font-weight: 650;
+}

@@ -8,6 +8,11 @@ import type {
 
 import { adminOnly } from '@/access/adminOnly'
 import { isAdminUser } from '@/access/utilities'
+import {
+  bakerDailyWorkGroup,
+  cookieLineupLabels,
+  multipleActiveLineupsError,
+} from '@/utilities/bakerMenuAdmin'
 
 const defaultLockedDescription =
   'Outside the monthly rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'
@@ -143,9 +148,7 @@ const enforceSingleActiveFlavorRotation: CollectionBeforeChangeHook = async ({
   })
 
   if (existingActiveRotation.docs.length > 0) {
-    throw new Error(
-      'Only one flavor rotation can be active at a time. Archive the current active rotation before activating another one.',
-    )
+    throw new Error(multipleActiveLineupsError)
   }
 
   return data
@@ -153,6 +156,7 @@ const enforceSingleActiveFlavorRotation: CollectionBeforeChangeHook = async ({
 
 export const FlavorRotations: CollectionConfig = {
   slug: 'flavor-rotations',
+  labels: cookieLineupLabels,
   access: {
     create: adminOnly,
     delete: adminOnly,
@@ -170,10 +174,13 @@ export const FlavorRotations: CollectionConfig = {
     update: adminOnly,
   },
   admin: {
-    defaultColumns: ['title', 'status', 'rotationType', 'individualFlavors', 'updatedAt'],
+    components: {
+      beforeList: ['@/components/admin/FlavorRotationListIntro#FlavorRotationListIntro'],
+    },
+    defaultColumns: ['title', 'status', 'individualFlavors', 'updatedAt'],
     description:
-      'Controls the /rotations page. The public page shows the products selected in Public rotation cookies.',
-    group: 'Content',
+      "This week's specials. The live lineup is what customers see on Specials of the Week.",
+    group: bakerDailyWorkGroup,
     useAsTitle: 'title',
   },
   fields: [
@@ -183,7 +190,7 @@ export const FlavorRotations: CollectionConfig = {
       type: 'text',
       admin: {
         description:
-          'Internal name so you can recognize this rotation later. Customers do not see this.',
+          'Internal name so you can recognize this lineup later. Customers do not see this.',
       },
       required: true,
     },
@@ -192,20 +199,20 @@ export const FlavorRotations: CollectionConfig = {
       type: 'select',
       admin: {
         description:
-          'Set exactly one rotation to Active. Draft and Archived rotations do not control the storefront.',
+          'Set exactly one lineup to Live now. Not-live and past lineups stay off the storefront.',
       },
       defaultValue: 'draft',
       options: [
         {
-          label: 'Draft',
+          label: 'Not live yet',
           value: 'draft',
         },
         {
-          label: 'Active',
+          label: 'Live now',
           value: 'active',
         },
         {
-          label: 'Archived',
+          label: 'Past lineup',
           value: 'archived',
         },
       ],
@@ -213,11 +220,12 @@ export const FlavorRotations: CollectionConfig = {
     },
     {
       name: 'rotationType',
-      label: 'Schedule type',
+      label: 'For your notes',
       type: 'select',
       admin: {
         description:
-          'Internal organizer for monthly, seasonal, or special lineups. It does not change the page by itself.',
+          'Optional label for monthly, seasonal, or one-off lineups. It does not change the public page by itself.',
+        position: 'sidebar',
       },
       defaultValue: 'monthly',
       options: [
@@ -248,14 +256,14 @@ export const FlavorRotations: CollectionConfig = {
     },
     {
       name: 'showcaseProducts',
-      label: 'Flavor pool for rotation planning',
+      label: 'Cookies you might rotate this month',
       type: 'relationship',
       admin: {
         components: {
           Field: '@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField',
         },
         description:
-          'Internal planning pool used to choose the public rotation cookies. These products do not appear on /rotations unless they are also selected below.',
+          "Check the cookies you are considering. Customers do not see this list until you pick them as this week's specials below.",
       },
       filterOptions: async ({ req }) => buildRotationEligibleProductWhere(req),
       hasMany: true,
@@ -265,7 +273,7 @@ export const FlavorRotations: CollectionConfig = {
         const selectedIDs = getRelationshipIDs(value)
 
         if (selectedIDs.length === 0) {
-          return 'Choose at least one flavor/product for the rotation planning pool.'
+          return 'Choose at least one cookie you might rotate this month.'
         }
 
         const ineligibleProductWhere = await buildRotationIneligibleProductWhere(req)
@@ -300,16 +308,16 @@ export const FlavorRotations: CollectionConfig = {
           .filter(Boolean)
           .join(', ')
 
-        return `Remove tray, catering-pack, or batch-builder products from the rotation planning pool: ${productNames}.`
+        return `Remove tray, catering-pack, or build-your-own items from this list: ${productNames}.`
       },
     },
     {
       name: 'individualFlavors',
-      label: 'Public rotation cookies (/rotations)',
+      label: "This week's specials",
       type: 'relationship',
       admin: {
         description:
-          'Choose any number from the planning pool above. These are the cookies customers see on /rotations right now.',
+          'Choose any number from the list above. These cookies appear on Specials of the Week, in the order shown here.',
       },
       filterOptions: async ({ req, siblingData }) => {
         const showcaseIDs = getRelationshipIDs(
@@ -344,7 +352,7 @@ export const FlavorRotations: CollectionConfig = {
         )
 
         if (selectedIDs.length === 0) {
-          return 'Choose at least one cookie for /rotations.'
+          return "Choose at least one cookie for this week's specials."
         }
 
         const missingFromShowcase = selectedIDs.filter((id) => !showcaseIDs.has(id))
@@ -353,16 +361,16 @@ export const FlavorRotations: CollectionConfig = {
           return true
         }
 
-        return 'Every public rotation cookie must also be selected in the flavor planning pool.'
+        return "Every cookie in this week's specials must also be checked in the list above."
       },
     },
     {
       name: 'monthlyFlavorLabel',
-      label: 'Badge on public rotation cookies',
+      label: "Badge on this week's specials",
       type: 'text',
       admin: {
         description:
-          'Small label shown on /rotations cookies, for example "This month\'s flavor" or "Available individually".',
+          'Small label on Specials of the Week, for example "This week\'s special" or "Available individually".',
       },
       defaultValue: "This month's flavor",
     },
@@ -372,7 +380,7 @@ export const FlavorRotations: CollectionConfig = {
       type: 'text',
       admin: {
         description:
-          'Short label used by broader cookie showcases when a flavor is outside the public rotation and only available through catering.',
+          "Short label used when a flavor is outside this week's specials and only available through catering.",
       },
       defaultValue: 'Catering only this month',
     },
@@ -382,7 +390,7 @@ export const FlavorRotations: CollectionConfig = {
       type: 'textarea',
       admin: {
         description:
-          'Message used by broader cookie showcases when a customer opens a flavor outside the public rotation.',
+          "Message used when a customer opens a flavor that is not in this week's specials.",
       },
       defaultValue: defaultLockedDescription,
     },
@@ -391,8 +399,7 @@ export const FlavorRotations: CollectionConfig = {
       label: 'Catering menu button text',
       type: 'text',
       admin: {
-        description:
-          'Button label for catering-only flavors. The destination is always the /menu page.',
+        description: 'Button label for catering-only flavors. It always goes to the Menu page.',
       },
       defaultValue: 'View menu',
     },

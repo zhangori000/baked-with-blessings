@@ -11,9 +11,12 @@ export const ActiveRotation = ({ state }: { state: ActiveRotationState }) => {
         href={`/admin/collections/flavor-rotations/${state.rotation.id}`}
         prefetch={false}
       >
-        <span className={styles.rotationStatus}>Active now</span>
+        <span className={styles.rotationStatus}>Live now</span>
         <strong>{state.rotation.title}</strong>
-        <span>Open this lineup →</span>
+        {state.rotation.flavors.length > 0 ? (
+          <span className={styles.rotationFlavors}>{state.rotation.flavors.join(', ')}</span>
+        ) : null}
+        <span>Change this week&apos;s cookies →</span>
       </Link>
     )
   }

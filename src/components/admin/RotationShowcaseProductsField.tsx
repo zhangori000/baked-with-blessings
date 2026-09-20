@@ -201,23 +201,23 @@ export const RotationShowcaseProductsField: React.FC = () => {
 
     if (eligibleSelectedIDs.length !== selectedIDs.length) {
       updateShowcaseProducts(eligibleSelectedIDs)
-      toast.info('Removed tray or catering-pack products from this rotation list.')
+      toast.info('Removed tray or catering-pack items from this list.')
     }
   }, [allProductIDs, error, isLoading, selectedIDs, updateShowcaseProducts])
 
   const addAllProducts = () => {
     if (allProductIDs.length === 0) {
-      toast.info('No published products are available to add.')
+      toast.info('No published cookies are available to add.')
       return
     }
 
     updateShowcaseProducts(allProductIDs)
-    toast.success(`Added ${allProductIDs.length} product${allProductIDs.length === 1 ? '' : 's'}.`)
+    toast.success(`Added ${allProductIDs.length} cookie${allProductIDs.length === 1 ? '' : 's'}.`)
   }
 
   const clearAllProducts = () => {
     updateShowcaseProducts([])
-    toast.success('Cleared all products from this rotation.')
+    toast.success('Cleared the considering list.')
   }
 
   const toggleProduct = (id: ProductID) => {
@@ -233,11 +233,11 @@ export const RotationShowcaseProductsField: React.FC = () => {
       <div className={`${baseClass}__header`}>
         <div>
           <span className={`${baseClass}__label`} id="rotation-showcase-products-label">
-            Flavor pool for rotation planning <span aria-hidden="true">*</span>
+            Cookies you might rotate this month <span aria-hidden="true">*</span>
           </span>
           <p className={`${baseClass}__description`} id="rotation-showcase-products-description">
-            Select normal products that can be chosen for the public rotation below. This pool does
-            not publish a flavor to /rotations by itself.
+            Check the cookies you are considering. Customers do not see this list until you pick
+            them as this week&apos;s specials below.
           </p>
         </div>
         <div className={`${baseClass}__actions`}>
@@ -262,7 +262,7 @@ export const RotationShowcaseProductsField: React.FC = () => {
 
       <p className={`${baseClass}__count`}>
         {selectedCount} selected
-        {products.length > 0 ? ` from ${products.length} eligible published products` : ''}
+        {products.length > 0 ? ` from ${products.length} eligible published cookies` : ''}
       </p>
 
       {isLoading ? <p className={`${baseClass}__status`}>Loading products...</p> : null}

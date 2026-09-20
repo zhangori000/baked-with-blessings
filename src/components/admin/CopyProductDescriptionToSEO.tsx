@@ -32,7 +32,7 @@ export const CopyProductDescriptionToSEO: React.FC = () => {
         Copy product description
       </Button>
       <p className={`${baseClass}__description`}>
-        Uses the Product Description from the Description & Photos tab.
+        Uses the Product Description from the Writing tab.
       </p>
     </div>
   )

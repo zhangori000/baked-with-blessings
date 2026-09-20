@@ -153,7 +153,7 @@ describe('applyMenuPlacementBeforeChange (mapping + prechecks)', () => {
         originalDoc: undefined,
         req,
       } as never),
-    ).rejects.toThrow(/No rotation is active/i)
+    ).rejects.toThrow(/No cookie lineup is live/i)
   })
 
   it('refuses to empty the rotation by moving its last cookie out', async () => {
@@ -167,7 +167,7 @@ describe('applyMenuPlacementBeforeChange (mapping + prechecks)', () => {
         originalDoc: undefined,
         req,
       } as never),
-    ).rejects.toThrow(/only cookie in the current rotation/i)
+    ).rejects.toThrow(/only cookie in this week's specials/i)
   })
 
   it('fills an empty mini price with the half-of-large default for cookie flavors', async () => {
@@ -276,7 +276,11 @@ describe('syncMenuAutomationAfterChange (variants + rotation follow the form)', 
     const env = makeEnv({ variants: [] })
 
     await expect(
-      syncMenuAutomationAfterChange({ doc: cookieDoc(), operation: 'create', req: env.req } as never),
+      syncMenuAutomationAfterChange({
+        doc: cookieDoc(),
+        operation: 'create',
+        req: env.req,
+      } as never),
     ).resolves.toBeTruthy()
 
     expect(env.creates.filter((write) => write.collection === 'variants')).toHaveLength(0)

@@ -1,3 +1,4 @@
+import { ActiveRotation } from '@/components/AdminDashboard/ActiveRotation'
 import { AttentionOrders } from '@/components/AdminDashboard/AttentionOrders'
 import { businessTimeZone } from '@/utilities/businessInfo'
 import { cleanup, render } from '@testing-library/react'
@@ -28,7 +29,7 @@ describe('admin dashboard order display', () => {
               customerEmail: 'test@example.com',
               customerName: 'Test customer',
               id: 10,
-              itemsSummary: '1× S\'mores',
+              itemsSummary: "1× S'mores",
               paymentLabel: 'Paid online',
               primaryCustomer: 'Test customer',
               secondaryCustomer: 'test@example.com',
@@ -49,5 +50,27 @@ describe('admin dashboard order display', () => {
     expect(container.textContent).toContain('test@example.com')
     expect(container.textContent).toContain("1× S'mores")
     expect(container.textContent).toContain('Paid online')
+  })
+
+  it('shows the live lineup cookie names for this week', () => {
+    const { container } = render(
+      <ActiveRotation
+        state={{
+          kind: 'active',
+          rotation: {
+            flavors: ["S'mores", 'Biscoff'],
+            id: 22,
+            title: 'September cookies',
+          },
+        }}
+      />,
+    )
+
+    expect(container.textContent).toContain('Live now')
+    expect(container.textContent).toContain('September cookies')
+    expect(container.textContent).toContain("S'mores, Biscoff")
+    expect(container.querySelector('a')?.getAttribute('href')).toBe(
+      '/admin/collections/flavor-rotations/22',
+    )
   })
 })
