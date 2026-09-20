@@ -1,12 +1,24 @@
 import type { Payload, PayloadRequest } from 'payload'
 
+import {
+  bakerOrdersSort,
+  getBakerCustomerIdentity,
+  getBakerPaymentLabel,
+  summarizeOrderItems,
+} from '@/utilities/bakerOrderDisplay'
+
 import { attentionOrderStatuses } from './orderQueue'
 
 export type AttentionOrder = {
   amount: number | null
   createdAt: string
+  customerEmail: string | null
   customerName: string | null
   id: number
+  itemsSummary: string
+  paymentLabel: string
+  primaryCustomer: string
+  secondaryCustomer: string | null
   status: (typeof attentionOrderStatuses)[number]
 }
 
@@ -41,17 +53,22 @@ export const loadAdminDashboardData = async ({
   const [ordersResult, rotationResult] = await Promise.allSettled([
     payload.find({
       collection: 'orders',
-      depth: 0,
+      depth: 2,
       limit: 5,
       overrideAccess: false,
       req,
       select: {
         amount: true,
         createdAt: true,
+        customerEmail: true,
         customerName: true,
+        guestContactValue: true,
+        items: true,
+        manualPaymentMethod: true,
         status: true,
+        stripePaymentIntentID: true,
       },
-      sort: 'createdAt',
+      sort: bakerOrdersSort,
       where: {
         status: {
           in: [...attentionOrderStatuses],
@@ -88,12 +105,24 @@ export const loadAdminDashboardData = async ({
               return []
             }
 
+            const identity = getBakerCustomerIdentity({
+              customerEmail: order.customerEmail,
+              customerName: order.customerName,
+              guestContactValue: order.guestContactValue,
+              id: order.id,
+            })
+
             return [
               {
                 amount: order.amount ?? null,
                 createdAt: order.createdAt,
+                customerEmail: order.customerEmail ?? null,
                 customerName: order.customerName ?? null,
                 id: order.id,
+                itemsSummary: summarizeOrderItems(order.items),
+                paymentLabel: getBakerPaymentLabel(order),
+                primaryCustomer: identity.primary,
+                secondaryCustomer: identity.secondary,
                 status: order.status as (typeof attentionOrderStatuses)[number],
               },
             ]

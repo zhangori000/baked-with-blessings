@@ -28,6 +28,14 @@ import { idempotentStripeAdapter } from '@/plugins/ecommerce/idempotentStripeAda
 import { getRelationshipID } from '@/utilities/manualOrders'
 import { sendCustomerOrderConfirmationAfterChange } from '@/utilities/email/sendCustomerOrderConfirmation'
 import { sendOwnerOrderNotificationAfterChange } from '@/utilities/email/sendOwnerOrderNotification'
+import {
+  createBakerFacingOrderFields,
+  ordersBakerDefaultColumns,
+  ordersBakerDefaultSort,
+  ordersBakerDescription,
+  ordersBakerListSearchableFields,
+  ordersBakerUseAsTitle,
+} from '@/plugins/ordersBakerAdmin'
 
 const getPhoneFromAddress = (address: unknown): null | string => {
   if (!address || typeof address !== 'object' || !('phone' in address)) {
@@ -108,9 +116,10 @@ const createGuestContactFields = () => [
   {
     name: 'guestContactValue',
     type: 'text' as const,
+    label: 'Phone or guest contact',
     admin: {
       description:
-        'Derived guest checkout contact value. This is app-level groundwork for a future email-or-phone guest flow.',
+        'Phone or other contact from guest checkout, when the order is not tied to a customer account.',
       position: 'sidebar' as const,
       readOnly: true,
     },
@@ -141,7 +150,11 @@ const ORDER_STATUS_OPTIONS = [
 
 const enhanceOrderFields = (fields: Field[]): Field[] =>
   fields.map((field) => {
-    if ('name' in field && field.name === 'status') {
+    if (!('name' in field)) {
+      return field
+    }
+
+    if (field.name === 'status') {
       const statusField = field as Field & {
         access?: Record<string, unknown>
         admin?: Record<string, unknown>
@@ -158,7 +171,41 @@ const enhanceOrderFields = (fields: Field[]): Field[] =>
           description:
             'Where this order is in your workflow. New orders arrive as Requested. Move it to Confirmed when you commit to baking it, Ready for pickup once it is packed, and Completed when it is handed over and paid.',
         },
+        label: 'Status',
         options: ORDER_STATUS_OPTIONS,
+      } as Field
+    }
+
+    if (field.name === 'amount') {
+      return {
+        ...field,
+        admin: {
+          ...('admin' in field ? field.admin : {}),
+          description: 'Order total. Amounts are stored in cents and shown in dollars.',
+        },
+        label: 'Total',
+      } as Field
+    }
+
+    if (field.name === 'customerEmail') {
+      return {
+        ...field,
+        admin: {
+          ...('admin' in field ? field.admin : {}),
+          description: 'Email on the order, when the customer shared one.',
+        },
+        label: 'Email',
+      } as Field
+    }
+
+    if (field.name === 'items') {
+      return {
+        ...field,
+        admin: {
+          ...('admin' in field ? field.admin : {}),
+          description: 'Cookies and boxes on this order. The list view uses a shorter summary.',
+        },
+        label: 'Cookies to bake',
       } as Field
     }
 
@@ -318,25 +365,12 @@ export const plugins: Plugin[] = [
         ...defaultCollection,
         admin: {
           ...defaultCollection.admin,
-          defaultColumns: [
-            'id',
-            'customerName',
-            'status',
-            'amount',
-            'manualPaymentMethod',
-            'createdAt',
-          ],
-          description:
-            'Customer orders. Open an order to move it through your workflow and review items and contact details. Pay-at-pickup orders are unpaid until you complete them.',
-          listSearchableFields: [
-            'id',
-            'customerName',
-            'customerEmail',
-            'guestContactValue',
-            'manualPaymentReference',
-          ],
-          useAsTitle: 'id',
+          defaultColumns: [...ordersBakerDefaultColumns],
+          description: ordersBakerDescription,
+          listSearchableFields: [...ordersBakerListSearchableFields],
+          useAsTitle: ordersBakerUseAsTitle,
         },
+        defaultSort: ordersBakerDefaultSort,
         fields: [
           ...extendCollectionItemsWithBatchSelections({
             fields: enhanceOrderFields(defaultCollection.fields),
@@ -345,9 +379,10 @@ export const plugins: Plugin[] = [
           {
             name: 'customerName',
             type: 'text',
+            label: 'Customer',
             admin: {
               description:
-                'Copied from the customer account when the order is saved, so the orders list can show and search names at the market stand.',
+                'The name on the customer account when the order was saved. If they never entered a name, this may show their email or phone instead.',
               position: 'sidebar',
               readOnly: true,
             },
@@ -384,12 +419,14 @@ export const plugins: Plugin[] = [
               ],
             },
           },
+          ...createBakerFacingOrderFields(),
           {
             name: 'accessToken',
             type: 'text',
             unique: true,
             index: true,
             admin: {
+              disableListColumn: true,
               position: 'sidebar',
               readOnly: true,
             },
@@ -414,6 +451,7 @@ export const plugins: Plugin[] = [
               },
               description:
                 'Set automatically after the new-order email is sent to the business owner.',
+              disableListColumn: true,
               position: 'sidebar',
               readOnly: true,
             },
@@ -427,6 +465,7 @@ export const plugins: Plugin[] = [
               },
               description:
                 'Set automatically after the order confirmation email is sent to the customer. Stays empty for phone-only accounts with no email address.',
+              disableListColumn: true,
               position: 'sidebar',
               readOnly: true,
             },
@@ -502,6 +541,7 @@ export const plugins: Plugin[] = [
             index: true,
             admin: {
               description: 'Internal idempotency reference for manual payment order creation.',
+              disableListColumn: true,
               position: 'sidebar',
               readOnly: true,
             },
@@ -513,6 +553,7 @@ export const plugins: Plugin[] = [
             index: true,
             admin: {
               description: 'Stripe PaymentIntent used as the checkout idempotency key.',
+              disableListColumn: true,
               position: 'sidebar',
               readOnly: true,
             },

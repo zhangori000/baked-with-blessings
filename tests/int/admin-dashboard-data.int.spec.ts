@@ -1,5 +1,6 @@
 import { loadAdminDashboardData } from '@/components/AdminDashboard/data'
 import { attentionOrderStatuses } from '@/components/AdminDashboard/orderQueue'
+import { bakerOrdersSort } from '@/utilities/bakerOrderDisplay'
 import type { Payload, PayloadRequest } from 'payload'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -23,17 +24,25 @@ const createPayload = (results: unknown[]) => {
 }
 
 describe('admin dashboard data', () => {
-  it('keeps actionable orders oldest-first and returns only display-safe fields', async () => {
+  it('keeps actionable orders newest-first and returns baker-facing display fields', async () => {
     const { find, payload } = createPayload([
       {
         docs: [
           {
-            amount: 1800,
-            createdAt: '2026-07-01T10:00:00.000Z',
-            customerEmail: 'not-returned@example.com',
-            customerName: 'First customer',
-            id: 10,
+            amount: 1400,
+            createdAt: '2026-09-03T19:07:02.000Z',
+            customerEmail: 'zoe.haase@gmail.com',
+            customerName: 'Zoe Haase',
+            id: 3,
+            items: [
+              {
+                batchSelections: [{ product: { title: 'Biscoff' }, quantity: 2 }],
+                product: { title: 'Build-Your-Own Mini Box' },
+                quantity: 1,
+              },
+            ],
             status: 'processing',
+            stripePaymentIntentID: 'pi_3UBfwdKERhbzQZ7s1q8AuUZS',
           },
           {
             amount: 2400,
@@ -53,17 +62,27 @@ describe('admin dashboard data', () => {
     expect(result.attentionOrders).toEqual({
       docs: [
         {
-          amount: 1800,
-          createdAt: '2026-07-01T10:00:00.000Z',
-          customerName: 'First customer',
-          id: 10,
+          amount: 1400,
+          createdAt: '2026-09-03T19:07:02.000Z',
+          customerEmail: 'zoe.haase@gmail.com',
+          customerName: 'Zoe Haase',
+          id: 3,
+          itemsSummary: '1× Build-Your-Own Mini Box — 2× Biscoff',
+          paymentLabel: 'Paid online',
+          primaryCustomer: 'Zoe Haase',
+          secondaryCustomer: 'zoe.haase@gmail.com',
           status: 'processing',
         },
         {
           amount: 2400,
           createdAt: '2026-07-02T10:00:00.000Z',
+          customerEmail: null,
           customerName: 'Second customer',
           id: 11,
+          itemsSummary: 'Open to see items',
+          paymentLabel: 'Check payment',
+          primaryCustomer: 'Second customer',
+          secondaryCustomer: null,
           status: 'ready',
         },
       ],
@@ -71,9 +90,10 @@ describe('admin dashboard data', () => {
       totalDocs: 7,
     })
     expect(find.mock.calls[0]?.[0]).toMatchObject({
+      depth: 2,
       limit: 5,
       overrideAccess: false,
-      sort: 'createdAt',
+      sort: bakerOrdersSort,
       where: { status: { in: [...attentionOrderStatuses] } },
     })
   })

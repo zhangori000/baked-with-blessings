@@ -25,8 +25,13 @@ describe('admin dashboard order display', () => {
             {
               amount: 1800,
               createdAt,
+              customerEmail: 'test@example.com',
               customerName: 'Test customer',
               id: 10,
+              itemsSummary: '1× S\'mores',
+              paymentLabel: 'Paid online',
+              primaryCustomer: 'Test customer',
+              secondaryCustomer: 'test@example.com',
               status: 'processing',
             },
           ],
@@ -40,5 +45,9 @@ describe('admin dashboard order display', () => {
     expect(businessTimeZone).toBe('America/Chicago')
     expect(time?.textContent).toBe(expectedDate)
     expect(time?.getAttribute('datetime')).toBe(createdAt)
+    expect(container.textContent).toContain('Test customer')
+    expect(container.textContent).toContain('test@example.com')
+    expect(container.textContent).toContain("1× S'mores")
+    expect(container.textContent).toContain('Paid online')
   })
 })

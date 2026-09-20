@@ -94,7 +94,7 @@ test.describe('Admin Panel', () => {
       expect([0, 1, 2].map((index) => url.searchParams.get(`where[status][in][${index}]`))).toEqual(
         ['processing', 'confirmed', 'ready'],
       )
-      expect(url.searchParams.get('sort')).toBe('createdAt')
+      expect(url.searchParams.get('sort')).toBe('-createdAt')
       await expect(page.getByText(fixture.openName, { exact: true })).toBeVisible()
       await expect(page.getByText(fixture.completedName, { exact: true })).toHaveCount(0)
     } finally {

@@ -5,6 +5,7 @@ import {
   supportingDestinations,
 } from '@/components/AdminDashboard/destinations'
 import { attentionOrdersHref, attentionOrderStatuses } from '@/components/AdminDashboard/orderQueue'
+import { bakerOrdersSort } from '@/utilities/bakerOrderDisplay'
 import { describe, expect, it } from 'vitest'
 
 describe('admin dashboard navigation', () => {
@@ -37,7 +38,7 @@ describe('admin dashboard navigation', () => {
     ).toBe(true)
   })
 
-  it('opens the complete attention queue with the same statuses and oldest-first ordering', () => {
+  it('opens the complete attention queue with the same statuses and newest-first ordering', () => {
     const url = new URL(attentionOrdersHref, 'https://admin.example.com')
 
     expect(
@@ -45,6 +46,6 @@ describe('admin dashboard navigation', () => {
         url.searchParams.get(`where[status][in][${index}]`),
       ),
     ).toEqual([...attentionOrderStatuses])
-    expect(url.searchParams.get('sort')).toBe('createdAt')
+    expect(url.searchParams.get('sort')).toBe(bakerOrdersSort)
   })
 })
