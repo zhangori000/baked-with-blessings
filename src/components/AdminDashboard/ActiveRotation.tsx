@@ -13,6 +13,11 @@ export const ActiveRotation = ({ state }: { state: ActiveRotationState }) => {
       >
         <span className={styles.rotationStatus}>Active now</span>
         <strong>{state.rotation.title}</strong>
+        {state.flavorTitles.length > 0 ? (
+          <span className={styles.rotationFlavors}>{state.flavorTitles.join(' · ')}</span>
+        ) : (
+          <span className={styles.rotationFlavors}>No cookies selected yet.</span>
+        )}
         <span>Open this lineup →</span>
       </Link>
     )

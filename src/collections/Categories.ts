@@ -13,7 +13,9 @@ export const Categories: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    group: 'Content',
+    group: 'Daily work',
+    description:
+      'Menu sections such as cookies, trays, and catering. This week\'s specials vs always-available is not here — that comes from Cookie lineups and each cookie\'s "Where it lives" field.',
     defaultColumns: ['title', 'menuOrder'],
   },
   fields: [

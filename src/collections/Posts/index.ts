@@ -30,7 +30,7 @@ export const Posts: CollectionConfig = {
     update: adminOnly,
   },
   admin: {
-    group: 'Content',
+    group: 'Website',
     defaultColumns: ['title', 'authorName', 'publishedOn', '_status'],
     livePreview: {
       url: ({ data, req }) =>

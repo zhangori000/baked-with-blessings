@@ -53,6 +53,7 @@ import { Announcements } from '@/globals/Announcements'
 import { SitePages } from '@/globals/SitePages'
 import { StoreSettings } from '@/globals/StoreSettings'
 import { resolveDatabaseURL } from '@/utilities/resolveDatabaseURL'
+import { ownerAdminNavPlugin } from '@/plugins/ownerAdminNav'
 import { plugins } from './plugins'
 
 const filename = fileURLToPath(import.meta.url)
@@ -192,6 +193,8 @@ export default buildConfig({
         ]
       : []),
     ...plugins,
+    // Last so ecommerce / form-builder collections get the bakery-staff sidebar.
+    ownerAdminNavPlugin,
   ],
   secret: process.env.PAYLOAD_SECRET || '',
   sharp,

@@ -21,18 +21,19 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { RotationShowcaseProductsField as RotationShowcaseProductsField_2f0a79148518000fce2e8f9e4dddb17e } from '@/components/admin/RotationShowcaseProductsField'
+import { FlavorRotationListIntro as FlavorRotationListIntro_7b5e020cd29be9ca7878209a588d2beb } from '@/components/admin/FlavorRotationListIntro'
 import { VariantOptionsSelector as VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
 import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
 import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
+import { ProductGalleryBulkPicker as ProductGalleryBulkPicker_65ad1e7ed294a445202b41adf748d1a4 } from '@/components/admin/ProductGalleryBulkPicker'
 import { GenerateProductDescription as GenerateProductDescription_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
 import { GenerateExpandedMenuDescription as GenerateExpandedMenuDescription_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
-import { ProductGalleryBulkPicker as ProductGalleryBulkPicker_65ad1e7ed294a445202b41adf748d1a4 } from '@/components/admin/ProductGalleryBulkPicker'
 import { GenerateProductInfoPopup as GenerateProductInfoPopup_65f16633f7e985b157f353a9f08c0be0 } from '@/components/admin/ProductWritingGenerators'
 import { ProductTrayPlacementField as ProductTrayPlacementField_4962c40848d1cb71f8b19cf0f9aafcea } from '@/components/admin/ProductTrayPlacementField'
 import { CopyProductDescriptionToSEO as CopyProductDescriptionToSEO_8d82c06baad6b06139ff1391e8f300ea } from '@/components/admin/CopyProductDescriptionToSEO'
+import { ProductListIntro as ProductListIntro_36d936ae1baf0532f2118ebf8d70d79c } from '@/components/admin/ProductListIntro'
 import { BeforeLogin as BeforeLogin_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { AdminQuickNav as AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f } from '@/components/AdminDashboard/AdminQuickNav'
-import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { AdminDashboard as AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698 } from '@/components/AdminDashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -61,18 +62,19 @@ export const importMap = {
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField": RotationShowcaseProductsField_2f0a79148518000fce2e8f9e4dddb17e,
+  "@/components/admin/FlavorRotationListIntro#FlavorRotationListIntro": FlavorRotationListIntro_7b5e020cd29be9ca7878209a588d2beb,
   "@payloadcms/plugin-ecommerce/rsc#VariantOptionsSelector": VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb,
   "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,
   "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
+  "@/components/admin/ProductGalleryBulkPicker#ProductGalleryBulkPicker": ProductGalleryBulkPicker_65ad1e7ed294a445202b41adf748d1a4,
   "@/components/admin/ProductWritingGenerators#GenerateProductDescription": GenerateProductDescription_65f16633f7e985b157f353a9f08c0be0,
   "@/components/admin/ProductWritingGenerators#GenerateExpandedMenuDescription": GenerateExpandedMenuDescription_65f16633f7e985b157f353a9f08c0be0,
-  "@/components/admin/ProductGalleryBulkPicker#ProductGalleryBulkPicker": ProductGalleryBulkPicker_65ad1e7ed294a445202b41adf748d1a4,
   "@/components/admin/ProductWritingGenerators#GenerateProductInfoPopup": GenerateProductInfoPopup_65f16633f7e985b157f353a9f08c0be0,
   "@/components/admin/ProductTrayPlacementField#ProductTrayPlacementField": ProductTrayPlacementField_4962c40848d1cb71f8b19cf0f9aafcea,
   "@/components/admin/CopyProductDescriptionToSEO#CopyProductDescriptionToSEO": CopyProductDescriptionToSEO_8d82c06baad6b06139ff1391e8f300ea,
+  "@/components/admin/ProductListIntro#ProductListIntro": ProductListIntro_36d936ae1baf0532f2118ebf8d70d79c,
   "@/components/BeforeLogin#BeforeLogin": BeforeLogin_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/AdminDashboard/AdminQuickNav#AdminQuickNav": AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f,
-  "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@/components/AdminDashboard#AdminDashboard": AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

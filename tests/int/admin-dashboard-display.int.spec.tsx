@@ -1,3 +1,4 @@
+import { ActiveRotation } from '@/components/AdminDashboard/ActiveRotation'
 import { AttentionOrders } from '@/components/AdminDashboard/AttentionOrders'
 import { businessTimeZone } from '@/utilities/businessInfo'
 import { cleanup, render } from '@testing-library/react'
@@ -40,5 +41,25 @@ describe('admin dashboard order display', () => {
     expect(businessTimeZone).toBe('America/Chicago')
     expect(time?.textContent).toBe(expectedDate)
     expect(time?.getAttribute('datetime')).toBe(createdAt)
+  })
+})
+
+describe('admin dashboard lineup display', () => {
+  it('names the cookies on the active lineup', () => {
+    const { container } = render(
+      <ActiveRotation
+        state={{
+          flavorTitles: ['Biscoff', 'Dubai chocolate'],
+          kind: 'active',
+          rotation: { id: 22, title: 'July cookies' },
+        }}
+      />,
+    )
+
+    expect(container.textContent).toContain('July cookies')
+    expect(container.textContent).toContain('Biscoff · Dubai chocolate')
+    expect(container.querySelector('a')?.getAttribute('href')).toBe(
+      '/admin/collections/flavor-rotations/22',
+    )
   })
 })

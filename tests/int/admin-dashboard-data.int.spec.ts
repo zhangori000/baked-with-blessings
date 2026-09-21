@@ -81,8 +81,21 @@ describe('admin dashboard data', () => {
   it.each([
     [{ docs: [], totalDocs: 0 }, { kind: 'none' }],
     [
-      { docs: [{ id: 22, title: 'July cookies' }], totalDocs: 1 },
-      { kind: 'active', rotation: { id: 22, title: 'July cookies' } },
+      {
+        docs: [
+          {
+            id: 22,
+            individualFlavors: [{ id: 5, title: 'Biscoff' }, { id: 6, title: 'Dubai chocolate' }],
+            title: 'July cookies',
+          },
+        ],
+        totalDocs: 1,
+      },
+      {
+        flavorTitles: ['Biscoff', 'Dubai chocolate'],
+        kind: 'active',
+        rotation: { id: 22, title: 'July cookies' },
+      },
     ],
     [
       { docs: [{ id: 22 }, { id: 23 }], totalDocs: 2 },
@@ -106,6 +119,7 @@ describe('admin dashboard data', () => {
 
     expect(result.attentionOrders).toEqual({ kind: 'unavailable' })
     expect(result.activeRotation).toEqual({
+      flavorTitles: [],
       kind: 'active',
       rotation: { id: 22, title: 'July cookies' },
     })

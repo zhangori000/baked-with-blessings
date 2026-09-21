@@ -16,6 +16,7 @@ export const DiscussionNodes: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'type', 'isRoot', 'moderationStatus', 'lastActivityAt'],
     group: 'Discussion Graph',
+    hidden: true,
     useAsTitle: 'title',
   },
   fields: [

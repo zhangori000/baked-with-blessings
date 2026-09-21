@@ -15,6 +15,7 @@ export const AwarenessMarks: CollectionConfig = {
   admin: {
     defaultColumns: ['node', 'reactionType', 'user', 'visitorKey', 'createdAt'],
     group: 'Discussion Graph',
+    hidden: true,
     useAsTitle: 'id',
   },
   fields: [

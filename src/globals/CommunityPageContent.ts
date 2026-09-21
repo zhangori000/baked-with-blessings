@@ -17,6 +17,7 @@ export const CommunityPageContent: GlobalConfig = {
     update: adminOnly,
   },
   admin: {
+    group: 'Community',
     description:
       'Hero copy shown at the top of /community. Edit here to change what visitors read above the Post-it Wall, without a code change.',
   },

@@ -13,16 +13,17 @@ export const dailyDestinations: AdminDestination[] = [
     href: '/admin/collections/orders',
   },
   {
-    key: 'products',
-    label: 'Products and prices',
-    description: 'Update cookie details, photos, prices, trays, and menu availability.',
-    href: '/admin/collections/products',
+    key: 'flavor-rotations',
+    label: "This week's cookie lineup",
+    description: 'Choose the rotating flavors on Specials of the Week and the homepage.',
+    href: '/admin/collections/flavor-rotations',
   },
   {
-    key: 'flavor-rotations',
-    label: 'Current cookie lineup',
-    description: 'Choose which rotating flavors customers can order right now.',
-    href: '/admin/collections/flavor-rotations',
+    key: 'products',
+    label: 'Standing menu and prices',
+    description:
+      "Always-available cookies, trays, photos, and prices. You can also move one cookie onto this week's lineup from here.",
+    href: '/admin/collections/products',
   },
   {
     key: 'announcements',
@@ -91,8 +92,8 @@ export const supportingDestinations: AdminDestination[] = [
 
 export const quickNavDestinationKeys = [
   'orders',
-  'products',
   'flavor-rotations',
+  'products',
   'announcements',
   'store-settings',
 ] as const

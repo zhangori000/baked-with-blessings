@@ -20,6 +20,7 @@ export const SitePages: GlobalConfig = {
     update: adminOnly,
   },
   admin: {
+    group: 'Website',
     description:
       'Toggle individual public pages on or off. Disabling a page hides it from the Other Pages menu and 404s the route (and any sub-routes). New pages default to enabled.',
   },

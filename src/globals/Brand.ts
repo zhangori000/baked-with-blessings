@@ -4,6 +4,7 @@ export const Brand: GlobalConfig = {
   slug: 'brand',
   label: 'Brand',
   admin: {
+    group: 'Website',
     description:
       'Manage the storefront brand name and logo in one place so the header can change without a code edit.',
   },

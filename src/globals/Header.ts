@@ -5,6 +5,9 @@ import { link } from '@/fields/link'
 
 export const Header: GlobalConfig = {
   slug: 'header',
+  admin: {
+    group: 'Website',
+  },
   access: {
     read: () => true,
     update: adminOnly,
