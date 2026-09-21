@@ -62,6 +62,83 @@ export const Customers: CollectionConfig = {
       },
     },
     {
+      name: 'smsOk',
+      type: 'checkbox',
+      defaultValue: false,
+      access: {
+        update: () => false,
+      },
+      admin: {
+        description:
+          'Customer said yes to bakery texts. The owner cannot turn this on. The customer texts Y or uses their account page.',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'smsOkAt',
+      type: 'date',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'smsOkSource',
+      type: 'text',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'emailOk',
+      type: 'checkbox',
+      defaultValue: false,
+      access: {
+        update: () => false,
+      },
+      admin: {
+        description:
+          'Customer is on bakery emails. New signups start on. They can unsubscribe. Order receipts still send.',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'emailOkAt',
+      type: 'date',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'emailOkSource',
+      type: 'text',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+
+    {
       name: 'stripeCustomerID',
       type: 'text',
       unique: true,

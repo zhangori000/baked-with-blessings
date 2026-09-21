@@ -120,6 +120,11 @@ const optionalSensitiveRules: EnvRule[] = [
     sensitiveOnVercel: true,
   },
   {
+    key: 'TWILIO_FROM_NUMBER',
+    note: 'Twilio Messaging from-number for bakery texts.',
+    placeholders: commonPlaceholders,
+  },
+  {
     key: 'RESEND_API_KEY',
     note: 'Resend API key.',
     placeholders: commonPlaceholders,

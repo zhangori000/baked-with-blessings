@@ -31,6 +31,7 @@ import * as migration_20260621_000000_add_both_payment_collection_mode from './2
 import * as migration_20260629_105210_add_about_nav_toggle from './20260629_105210_add_about_nav_toggle';
 import * as migration_20260920_120000_add_announcement_pin_and_date from './20260920_120000_add_announcement_pin_and_date';
 import * as migration_20260920_180000_add_announcement_archived from './20260920_180000_add_announcement_archived';
+import * as migration_20260920_180000_add_customer_message_consent from './20260920_180000_add_customer_message_consent';
 
 export const migrations = [
   {
@@ -197,5 +198,10 @@ export const migrations = [
     up: migration_20260920_180000_add_announcement_archived.up,
     down: migration_20260920_180000_add_announcement_archived.down,
     name: '20260920_180000_add_announcement_archived',
+  },
+  {
+    up: migration_20260920_180000_add_customer_message_consent.up,
+    down: migration_20260920_180000_add_customer_message_consent.down,
+    name: '20260920_180000_add_customer_message_consent',
   },
 ];

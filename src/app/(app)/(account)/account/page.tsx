@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
 import { AccountForm } from '@/components/forms/AccountForm'
+import { MessageConsentForm } from '@/components/forms/MessageConsentForm'
 import { Order } from '@/payload-types'
 import { OrderItem } from '@/components/OrderItem'
 import { getPayload } from 'payload'
@@ -60,6 +61,16 @@ export default async function AccountPage() {
           <BakeryPageTitle className="accountSettingsTitle">Profile details</BakeryPageTitle>
         </div>
         <AccountForm />
+      </BakeryPageSurface>
+
+      <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
+        <div className="accountSettingsHeading">
+          <p className="accountSettingsEyebrow">Bakery updates</p>
+          <BakeryPageTitle as="h2" className="accountSettingsSectionTitle">
+            Texts and emails
+          </BakeryPageTitle>
+        </div>
+        <MessageConsentForm />
       </BakeryPageSurface>
 
       <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
