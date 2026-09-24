@@ -2472,7 +2472,7 @@ body:has(.accountSceneryRoute) .siteHeaderBannerList {
 .accountSceneryBannerChoice {
   min-height: 2.25rem;
   border-radius: 999px;
-  border: 1px solid rgba(25, 57, 95, 0.16);
+  border: 1px solid rgba(47, 36, 20, 0.16);
   background: var(--route-loading-banner-bg, rgba(255, 253, 246, 0.9));
   padding: 0.48rem 0.88rem;
   color: var(--route-loading-banner-color, #17341f);
@@ -2492,7 +2492,7 @@ body:has(.accountSceneryRoute) .siteHeaderBannerList {
 .accountSceneryBannerButton:hover,
 .accountSceneryBannerChoice:hover,
 .accountSceneryBannerChoice[aria-pressed='true'] {
-  border-color: rgba(25, 57, 95, 0.3);
+  border-color: rgba(47, 36, 20, 0.3);
   background: linear-gradient(90deg, rgba(255, 238, 186, 0.92), rgba(255, 253, 246, 0.94));
   background: linear-gradient(
     90deg,
@@ -2975,7 +2975,7 @@ html[data-menu-scene='fairy-castle'] .accountSceneryBannerTitleCard {
   bottom: clamp(4.4rem, 7vh, 5.6rem) !important;
   justify-content: flex-start !important;
   max-width: min(36rem, calc(100vw - 2rem)) !important;
-  border: 1px solid rgba(25, 57, 95, 0.14);
+  border: 1px solid rgba(47, 36, 20, 0.14);
   border-radius: 1.08rem;
   background: rgba(255, 255, 255, 0.94);
   padding: 0.5rem;
@@ -2995,13 +2995,13 @@ html[data-menu-scene='fairy-castle'] .accountSceneryBannerTitleCard {
   width: 1.1rem;
   height: 1.1rem;
   background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid rgba(25, 57, 95, 0.14);
-  border-right: 1px solid rgba(25, 57, 95, 0.14);
+  border-bottom: 1px solid rgba(47, 36, 20, 0.14);
+  border-right: 1px solid rgba(47, 36, 20, 0.14);
   transform: rotate(45deg);
 }
 
 .accountSceneryBannerChoice {
-  color: #173a63 !important;
+  color: #2f2414 !important;
 }
 
 .accountSceneryShell {
@@ -3514,11 +3514,11 @@ body:has(.accountSceneryRoute) .siteHeaderMobileBagButton:hover {
 }
 
 .bakeryToast--info {
-  border-left: 4px solid #34587a !important;
+  border-left: 4px solid #4b3b24 !important;
 }
 
 .bakeryToast--info [data-icon] svg {
-  color: #34587a !important;
+  color: #4b3b24 !important;
 }
 
 .bakeryToast--warning {

@@ -876,9 +876,9 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
               color-mix(in srgb, var(--poster-scene-charge, rgba(255, 215, 79, 0.85)) 84%, white 16%) 100%
             ),
             rgba(255, 248, 242, 0.9);
-          border: 1px solid rgba(25, 57, 95, 0.16);
+          border: 1px solid rgba(47, 36, 20, 0.16);
           border-radius: 999px;
-          color: #173a63;
+          color: #2f2414;
           cursor: pointer;
           display: inline-flex;
           font-family: var(--font-rounded-display);
@@ -897,8 +897,8 @@ export function CookiePosterGrid({ posters }: { posters: CookiePosterAsset[] }) 
 
         .cookiePosterSceneButton:hover,
         .cookiePosterSceneButton:focus-visible {
-          border-color: rgba(25, 57, 95, 0.28);
-          box-shadow: 0 10px 18px rgba(23, 58, 99, 0.12);
+          border-color: rgba(47, 36, 20, 0.28);
+          box-shadow: 0 10px 18px rgba(23, 21, 16, 0.12);
           transform: translateY(-1px);
         }
 

@@ -1788,10 +1788,10 @@ export function HomeCookieCarousel({
               color-mix(in srgb, var(--home-scene-charge, rgba(255, 215, 79, 0.86)) 84%, white 16%) 100%
             ),
             rgba(255, 248, 242, 0.9);
-          border: 1px solid rgba(25, 57, 95, 0.16);
+          border: 1px solid rgba(47, 36, 20, 0.16);
           border-radius: 999px;
-          box-shadow: 0 12px 20px rgba(23, 58, 99, 0.08);
-          color: #173a63;
+          box-shadow: 0 12px 20px rgba(23, 21, 16, 0.08);
+          color: #2f2414;
           display: inline-flex;
           font-family: var(--font-rounded-display);
           font-size: 0.84rem;
@@ -1807,8 +1807,8 @@ export function HomeCookieCarousel({
 
         .homeCookieSceneButton:hover,
         .homeCookieSceneButton:focus-visible {
-          border-color: rgba(25, 57, 95, 0.28);
-          box-shadow: 0 14px 24px rgba(23, 58, 99, 0.12);
+          border-color: rgba(47, 36, 20, 0.28);
+          box-shadow: 0 14px 24px rgba(23, 21, 16, 0.12);
           transform: translateY(-1px);
         }
 
