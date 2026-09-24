@@ -28,7 +28,7 @@ export type SelectableFlavor = {
   title: string
 }
 
-export type MenuSection = 'catering' | 'regular'
+export type MenuSection = 'bundles' | 'catering' | 'regular'
 
 /** A bundle the Regular-orders nudge can point a stocking-up customer toward. */
 export type BundleSuggestion = {

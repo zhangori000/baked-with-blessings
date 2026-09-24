@@ -43,10 +43,16 @@ import type {
   RegularOrderItem,
   SelectableFlavor,
 } from './catering-menu-types'
+import {
+  CateringPackagesGroupHeader,
+  CateringPackagesIntro,
+  groupCateringPackages,
+} from './catering-packages-panel'
 import { MenuSectionTabs, type MenuSectionTabDef } from './menu-section-tabs'
 import { RegularOrdersPanel } from './regular-orders-panel'
 
 type CateringMenuSectionProps = {
+  cateringPackages?: Partial<Product>[]
   initialSceneryTone?: MenuSceneryTone
   initialSection?: MenuSection
   products: Partial<Product>[]
@@ -55,9 +61,19 @@ type CateringMenuSectionProps = {
 }
 
 const menuSectionTabDefs: MenuSectionTabDef[] = [
-  { detail: 'This week’s single cookies', label: 'Regular orders', value: 'regular' },
-  { detail: 'Boxes, trays & packs', label: 'Bundles', value: 'catering' },
+  { detail: 'Singles', label: 'Regular', value: 'regular' },
+  { detail: 'Boxes & packs', label: 'Bundles', value: 'bundles' },
+  { detail: 'Any flavor', label: 'Catering', value: 'catering' },
 ]
+
+const menuSectionAnnouncements: Record<MenuSection, string> = {
+  bundles: 'Showing bundles.',
+  catering: 'Showing the catering menu.',
+  regular: 'Showing regular orders.',
+}
+
+const parseSectionParam = (value: null | string): MenuSection =>
+  value === 'catering' || value === 'bundles' ? value : 'regular'
 
 const MENU_TABS_ID_BASE = 'menu-section'
 
@@ -219,7 +235,10 @@ function TrayChevronIndicator() {
 }
 
 function CateringMenuRow({
+  anyFlavor = false,
   currentFlavorIDs,
+  displayTitle,
+  flavorStep = 1,
   isSceneryPickerOpen,
   isSceneChanging,
   index,
@@ -228,7 +247,10 @@ function CateringMenuRow({
   product,
   sceneryTone,
 }: {
+  anyFlavor?: boolean
   currentFlavorIDs: Set<number>
+  displayTitle?: string
+  flavorStep?: number
   isSceneryPickerOpen: boolean
   isSceneChanging: boolean
   index: number
@@ -261,10 +283,15 @@ function CateringMenuRow({
   // Mix-and-match boxes only offer currently-available flavors (the baker can't
   // batch legacy flavors on demand); one-flavor binge trays offer everything,
   // marking rare flavors with a badge.
-  const offeredFlavors = useMemo(
-    () => (isMixAndMatch ? selectableFlavors.filter((flavor) => !flavor.isRare) : selectableFlavors),
-    [isMixAndMatch, selectableFlavors],
-  )
+  const offeredFlavors = useMemo(() => {
+    if (anyFlavor) {
+      return [...selectableFlavors].sort(
+        (left, right) => Number(Boolean(left.isRare)) - Number(Boolean(right.isRare)),
+      )
+    }
+
+    return isMixAndMatch ? selectableFlavors.filter((flavor) => !flavor.isRare) : selectableFlavors
+  }, [anyFlavor, isMixAndMatch, selectableFlavors])
   const boxTotal = useMemo(
     () => Object.values(boxCounts).reduce((sum, count) => sum + count, 0),
     [boxCounts],
@@ -339,17 +366,17 @@ function CateringMenuRow({
     setBoxCounts((current) => {
       const total = Object.values(current).reduce((sum, count) => sum + count, 0)
 
-      if (requiredSelectionCount > 0 && total >= requiredSelectionCount) {
+      if (requiredSelectionCount > 0 && total + flavorStep > requiredSelectionCount) {
         return current
       }
 
-      return { ...current, [flavorID]: (current[flavorID] ?? 0) + 1 }
+      return { ...current, [flavorID]: (current[flavorID] ?? 0) + flavorStep }
     })
   }
 
   const handleBoxDecrement = (flavorID: number) => {
     setBoxCounts((current) => {
-      const next = (current[flavorID] ?? 0) - 1
+      const next = (current[flavorID] ?? 0) - flavorStep
       const updated = { ...current }
 
       if (next <= 0) {
@@ -386,7 +413,9 @@ function CateringMenuRow({
         batchSelections,
         product: product.id,
       } as Parameters<typeof addItem>[0])
-      toast.success('Box added — build another?')
+      toast.success(
+        anyFlavor ? `${product.title ?? 'Catering'} added to cart.` : 'Box added — build another?',
+      )
       setBoxCounts({})
     } catch {
       toast.error('Unable to add the box to cart right now.')
@@ -529,7 +558,7 @@ function CateringMenuRow({
           <div className="space-y-3">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
               <h3 className="cateringMenuRoundHeading text-[2.15rem] leading-[0.95] tracking-[-0.04em] text-[#171510] md:text-[2.65rem]">
-                {product.title ?? 'Menu item'}
+                {displayTitle ?? product.title ?? 'Menu item'}
               </h3>
               {product.menuPortionLabel ? (
                 <span className="cateringPortionInline">{product.menuPortionLabel}</span>
@@ -557,6 +586,7 @@ function CateringMenuRow({
       <AccordionContent className="cateringMenuAccordionContent pt-1 pb-9" motion="none">
         {isMixAndMatch ? (
           <MiniBoxBuilderPanel
+            addLabel={anyFlavor ? 'Add catering to cart' : undefined}
             boxCounts={boxCounts}
             boxTotal={boxTotal}
             capacity={requiredSelectionCount}
@@ -570,10 +600,13 @@ function CateringMenuRow({
             onDecrement={handleBoxDecrement}
             onIncrement={handleBoxIncrement}
             priceInUSD={product.priceInUSD}
+            progressLabel={anyFlavor ? 'Choose your flavors' : undefined}
+            rareBadgeLabel={anyFlavor ? 'Past flavor' : undefined}
             renderPersuasionPanel={renderPersuasionPanel}
             renderSceneImage={(props) => <DecorativeSceneImage {...props} />}
             sceneryTone={sceneryTone}
             selectableFlavors={offeredFlavors}
+            step={flavorStep}
           />
         ) : isBatchBuilder ? (
           <BatchBuilderPanel
@@ -606,6 +639,7 @@ function CateringMenuRow({
 }
 
 export function CateringMenuSection({
+  cateringPackages = [],
   initialSceneryTone = 'dawn',
   initialSection = 'regular',
   products,
@@ -613,7 +647,24 @@ export function CateringMenuSection({
   seasonalLabel = "This month's flavor",
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
+  const cateringGroups = useMemo(() => groupCateringPackages(cateringPackages), [cateringPackages])
   const hasRegularItems = regularItems.length > 0
+  const availableSections = useMemo(
+    () =>
+      menuSectionTabDefs.filter((tab) =>
+        tab.value === 'regular'
+          ? hasRegularItems
+          : tab.value === 'bundles'
+            ? orderedProducts.length > 0
+            : cateringGroups.length > 0,
+      ),
+    [cateringGroups.length, hasRegularItems, orderedProducts.length],
+  )
+  const showTabs = availableSections.length > 1
+  const resolveSection = (candidate: MenuSection): MenuSection =>
+    availableSections.some((tab) => tab.value === candidate)
+      ? candidate
+      : (availableSections[0]?.value ?? 'regular')
   // The set of flavors that are individually orderable right now (the active
   // rotation). Mix-and-match boxes are limited to these; binge trays
   // mark anything outside this set as "Rare". Same source as the Regular tab,
@@ -657,9 +708,7 @@ export function CateringMenuSection({
   const { announce } = useBakeryAnnouncer()
   const isSceneChanging = false
   const [sceneryPickerAnchor, setSceneryPickerAnchor] = useState<SceneryPickerAnchor | null>(null)
-  const [section, setSection] = useState<MenuSection>(
-    hasRegularItems ? initialSection : 'catering',
-  )
+  const [section, setSection] = useState<MenuSection>(() => resolveSection(initialSection))
   // Controlled value of the Bundles accordion so a nudge from Regular orders
   // can open the matching bundle.
   const [openBundleSlug, setOpenBundleSlug] = useState<string>('')
@@ -674,19 +723,24 @@ export function CateringMenuSection({
   // buttons (e.g. after a nudge pushed them to the Bundles tab).
   useEffect(() => {
     const handlePopState = () => {
-      const param = new URLSearchParams(window.location.search).get('section')
-      const nextSection: MenuSection = param === 'catering' ? 'catering' : 'regular'
-      setSection(hasRegularItems ? nextSection : 'catering')
-      if (nextSection !== 'catering') {
+      const nextSection = parseSectionParam(
+        new URLSearchParams(window.location.search).get('section'),
+      )
+      setSection(
+        availableSections.some((tab) => tab.value === nextSection)
+          ? nextSection
+          : (availableSections[0]?.value ?? 'regular'),
+      )
+      if (nextSection !== 'bundles') {
         setOpenBundleSlug('')
       }
     }
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [hasRegularItems])
+  }, [availableSections])
 
-  if (orderedProducts.length === 0 && !hasRegularItems) {
+  if (availableSections.length === 0) {
     return null
   }
 
@@ -696,31 +750,46 @@ export function CateringMenuSection({
     }
 
     setSection(nextSection)
-    announce(
-      nextSection === 'regular' ? 'Showing regular orders.' : 'Showing the catering menu.',
-    )
+    announce(menuSectionAnnouncements[nextSection])
 
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href)
 
-      if (nextSection === 'catering') {
-        url.searchParams.set('section', 'catering')
-      } else {
+      if (nextSection === 'regular') {
         url.searchParams.delete('section')
+      } else {
+        url.searchParams.set('section', nextSection)
       }
 
       window.history.replaceState(null, '', url)
     }
   }
 
-  const handleJumpToBundle = (slug: string) => {
+  const handleJumpToCatering = () => {
     setSection('catering')
-    setOpenBundleSlug(slug)
-    announce('Showing the catering menu.')
+    announce(menuSectionAnnouncements.catering)
 
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href)
       url.searchParams.set('section', 'catering')
+      window.history.pushState(null, '', url)
+
+      window.setTimeout(() => {
+        document
+          .getElementById(`${MENU_TABS_ID_BASE}-panel-catering`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 90)
+    }
+  }
+
+  const handleJumpToBundle = (slug: string) => {
+    setSection('bundles')
+    setOpenBundleSlug(slug)
+    announce(menuSectionAnnouncements.bundles)
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      url.searchParams.set('section', 'bundles')
       // pushState (not replaceState) so the browser Back button returns the
       // customer to the Regular-orders view they jumped from, instead of
       // skipping past /menu to wherever they were before.
@@ -778,23 +847,23 @@ export function CateringMenuSection({
         id="catering-menu-items"
       >
         <div className="container pt-0 pb-6 md:pt-0 md:pb-10">
-          {hasRegularItems ? (
+          {showTabs ? (
             <div className="pt-6 md:pt-8">
               <MenuSectionTabs
                 active={section}
                 idBase={MENU_TABS_ID_BASE}
                 onChange={handleSectionChange}
-                tabs={menuSectionTabDefs}
+                tabs={availableSections}
               />
             </div>
           ) : null}
 
           {hasRegularItems ? (
             <div
-              aria-labelledby={`${MENU_TABS_ID_BASE}-tab-regular`}
+              aria-labelledby={showTabs ? `${MENU_TABS_ID_BASE}-tab-regular` : undefined}
               hidden={section !== 'regular'}
               id={`${MENU_TABS_ID_BASE}-panel-regular`}
-              role="tabpanel"
+              role={showTabs ? 'tabpanel' : undefined}
             >
               <RegularOrdersPanel
                 bundleSuggestions={bundleSuggestions}
@@ -806,16 +875,14 @@ export function CateringMenuSection({
             </div>
           ) : null}
 
-          <div
-            aria-labelledby={
-              hasRegularItems ? `${MENU_TABS_ID_BASE}-tab-catering` : undefined
-            }
-            hidden={hasRegularItems ? section !== 'catering' : undefined}
-            id={`${MENU_TABS_ID_BASE}-panel-catering`}
-            role={hasRegularItems ? 'tabpanel' : undefined}
-          >
-            <div className="cateringMenuPanel">
-              {orderedProducts.length > 0 ? (
+          {orderedProducts.length > 0 ? (
+            <div
+              aria-labelledby={showTabs ? `${MENU_TABS_ID_BASE}-tab-bundles` : undefined}
+              hidden={section !== 'bundles'}
+              id={`${MENU_TABS_ID_BASE}-panel-bundles`}
+              role={showTabs ? 'tabpanel' : undefined}
+            >
+              <div className="cateringMenuPanel">
                 <Accordion
                   collapsible
                   onValueChange={(value) =>
@@ -838,14 +905,45 @@ export function CateringMenuSection({
                     />
                   ))}
                 </Accordion>
-              ) : (
-                <p className="py-12 text-base leading-8 text-[rgba(23,21,16,0.72)]">
-                  Catering items are being restocked — check the regular orders tab, or come
-                  back soon.
-                </p>
-              )}
+              </div>
             </div>
-          </div>
+          ) : null}
+
+          {cateringGroups.length > 0 ? (
+            <div
+              aria-labelledby={showTabs ? `${MENU_TABS_ID_BASE}-tab-catering` : undefined}
+              hidden={section !== 'catering'}
+              id={`${MENU_TABS_ID_BASE}-panel-catering`}
+              role={showTabs ? 'tabpanel' : undefined}
+            >
+              <div className="cateringMenuPanel">
+                <CateringPackagesIntro />
+                <Accordion collapsible type="single">
+                  {cateringGroups.map((group) => (
+                    <section key={group.key}>
+                      <CateringPackagesGroupHeader group={group} />
+                      {group.rows.map((row, index) => (
+                        <CateringMenuRow
+                          anyFlavor
+                          currentFlavorIDs={currentFlavorIDs}
+                          displayTitle={row.rowTitle}
+                          flavorStep={row.step}
+                          isSceneryPickerOpen={sceneryPickerAnchor === 'panel'}
+                          isSceneChanging={isSceneChanging}
+                          index={index}
+                          key={row.product.id ?? row.product.slug ?? index}
+                          onSelectScenery={handleSelectHeroScenery}
+                          onToggleSceneryPicker={() => toggleSceneryPicker('panel')}
+                          product={row.product}
+                          sceneryTone={heroSceneryTone}
+                        />
+                      ))}
+                    </section>
+                  ))}
+                </Accordion>
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
 

@@ -7,6 +7,7 @@ import React from 'react'
 
 type ProgressGardenProps = {
   aside?: React.ReactNode
+  bloomEvery?: number
   className?: string
   currentCount: number
   label: string
@@ -16,6 +17,7 @@ type ProgressGardenProps = {
 
 export function ProgressGarden({
   aside,
+  bloomEvery = 1,
   className,
   currentCount,
   label,
@@ -24,6 +26,8 @@ export function ProgressGarden({
 }: ProgressGardenProps) {
   const safeTotal = totalCount > 0 ? totalCount : 1
   const progressPercentage = Math.min(1, currentCount / safeTotal) * 100
+  const safeBloomEvery = bloomEvery > 0 ? bloomEvery : 1
+  const bloomCount = Math.floor(currentCount / safeBloomEvery)
 
   return (
     <BakeryCard
@@ -60,8 +64,11 @@ export function ProgressGarden({
               }}
             />
 
-            {Array.from({ length: currentCount }, (_, index) => (
-              <ProgressBloom key={`slot-${index}`} left={`${((index + 1) / safeTotal) * 100}%`} />
+            {Array.from({ length: bloomCount }, (_, index) => (
+              <ProgressBloom
+                key={`slot-${index}`}
+                left={`${(((index + 1) * safeBloomEvery) / safeTotal) * 100}%`}
+              />
             ))}
           </div>
         </div>

@@ -9,15 +9,15 @@ import type {
 } from 'payload'
 import { addDataAndFileToRequest } from 'payload'
 
+import { CATERING_PACKAGES_CATEGORY_SLUG } from '../../features/products/cateringPackages'
+
 type BatchSelectionLike = {
   product?: DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null
   quantity?: number | null
 }
 
 type ActiveFlavorRotationLike = {
-  individualFlavors?:
-    | (DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null)[]
-    | null
+  individualFlavors?: (DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null)[] | null
 }
 
 type CategoryConfigLike = {
@@ -33,16 +33,12 @@ type TrayBuilderItemLike = {
 }
 
 type ProductConfigLike = {
-  categories?:
-    | (DefaultDocumentIDType | CategoryConfigLike | null)[]
-    | null
+  categories?: (DefaultDocumentIDType | CategoryConfigLike | null)[] | null
   flavorSelection?: null | string
   id?: DefaultDocumentIDType
   menuBehavior?: 'batchBuilder' | 'simple' | string | null
   requiredSelectionCount?: null | number
-  selectableProducts?:
-    | (DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null)[]
-    | null
+  selectableProducts?: (DefaultDocumentIDType | { id?: DefaultDocumentIDType } | null)[] | null
   title?: null | string
 }
 
@@ -174,7 +170,10 @@ const appendBatchSelectionsToItemArrays = ({
     return nextField
   })
 
-const getProductLabel = (product: ProductConfigLike | undefined, fallbackID: DefaultDocumentIDType) => {
+const getProductLabel = (
+  product: ProductConfigLike | undefined,
+  fallbackID: DefaultDocumentIDType,
+) => {
   if (product?.title && typeof product.title === 'string') {
     return product.title
   }
@@ -194,13 +193,10 @@ const validateBatchSelections = async ({
   const productCache = new Map<string, ProductConfigLike>()
   let activeRotationFlavorIDSetPromise: Promise<Set<string> | null> | null = null
   let cookieCategoryIDPromise: Promise<DefaultDocumentIDType | null> | null = null
+  let cateringPackagesCategoryIDPromise: Promise<DefaultDocumentIDType | null> | null = null
 
   const loadProduct = async (
-    relationship:
-      | DefaultDocumentIDType
-      | ProductConfigLike
-      | null
-      | undefined,
+    relationship: DefaultDocumentIDType | ProductConfigLike | null | undefined,
   ): Promise<ProductConfigLike | undefined> => {
     const productID = getRelationshipID(relationship)
 
@@ -300,6 +296,44 @@ const validateBatchSelections = async ({
     return cookieCategoryIDPromise
   }
 
+  const loadCateringPackagesCategoryID = () => {
+    if (!cateringPackagesCategoryIDPromise) {
+      cateringPackagesCategoryIDPromise = req.payload
+        .find({
+          collection: 'categories',
+          depth: 0,
+          limit: 1,
+          overrideAccess: true,
+          pagination: false,
+          req,
+          where: {
+            slug: {
+              equals: CATERING_PACKAGES_CATEGORY_SLUG,
+            },
+          },
+        })
+        .then((result) => {
+          const category = result.docs[0] as CategoryConfigLike | undefined
+
+          return category?.id ?? null
+        })
+    }
+
+    return cateringPackagesCategoryIDPromise
+  }
+
+  const isCateringPackage = async (product: ProductConfigLike | undefined) => {
+    const categoryID = await loadCateringPackagesCategoryID()
+
+    if (categoryID == null) {
+      return false
+    }
+
+    return (Array.isArray(product?.categories) ? product.categories : []).some(
+      (category) => String(getRelationshipID(category)) === String(categoryID),
+    )
+  }
+
   const validateIndividualCookieAvailability = async ({
     label,
     onUnavailable,
@@ -338,7 +372,7 @@ const validateBatchSelections = async ({
       throw new Error(
         onUnavailable
           ? onUnavailable(label)
-          : `${label} is catering-only during the current cookie rotation. Order it through a cookie tray on the menu.`,
+          : `${label} is catering-only during the current cookie rotation. Order it through Catering on the menu.`,
       )
     }
   }
@@ -404,6 +438,7 @@ const validateBatchSelections = async ({
     // One-flavor "binge" trays (flavorSelection !== 'mixAndMatch') allow any
     // flavor, including rare/legacy ones — that is their whole purpose.
     const isMixAndMatch = product?.flavorSelection === 'mixAndMatch'
+    const allowsAnyFlavor = !isMixAndMatch || (await isCateringPackage(product))
 
     let selectedTotal = 0
 
@@ -420,12 +455,12 @@ const validateBatchSelections = async ({
         throw new Error(`${label} includes a product that is not allowed for this tray.`)
       }
 
-      if (isMixAndMatch) {
+      if (!allowsAnyFlavor) {
         const selectionProduct = await loadProduct(selection?.product)
         await validateIndividualCookieAvailability({
           label: getProductLabel(selectionProduct, selectionProductID),
           onUnavailable: (selectionLabel) =>
-            `${selectionLabel} is a rare flavor and isn’t available in build-your-own boxes right now. You can still order ten of it in a one-flavor cookie tray.`,
+            `${selectionLabel} is a past flavor and isn’t available in build-your-own boxes right now. You can still order it through Catering.`,
           product: selectionProduct,
           productID: selectionProductID,
         })
@@ -608,8 +643,9 @@ export const createTrayAwareMergeCartEndpoint = ({
     for (const sourceItem of sourceItems) {
       const existingIndex = mergedItems.findIndex((targetItem) =>
         trayAwareCartItemMatcher({
-          existingItem:
-            targetItem as Parameters<typeof trayAwareCartItemMatcher>[0]['existingItem'],
+          existingItem: targetItem as Parameters<
+            typeof trayAwareCartItemMatcher
+          >[0]['existingItem'],
           newItem: sourceItem as Parameters<typeof trayAwareCartItemMatcher>[0]['newItem'],
         }),
       )
