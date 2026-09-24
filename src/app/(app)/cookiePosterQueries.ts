@@ -12,10 +12,7 @@ import {
   getCookieAllergens,
   type CookiePosterAsset,
 } from '@/features/products/cookieDisplayData'
-import {
-  pickDefaultSizeVariant,
-  summarizeSizeVariants,
-} from '@/features/products/sizeVariants'
+import { pickDefaultSizeVariant, summarizeSizeVariants } from '@/features/products/sizeVariants'
 import type { Variant } from '@/payload-types'
 import { measureServerStep } from '@/utilities/devTiming'
 import { cateringMenuHref } from '@/utilities/routes'
@@ -501,4 +498,21 @@ export const queryPublicRotationCookiePosters = async () => {
   })
 
   return attachDefaultSizeVariants({ payload, posters: postersWithAvailability })
+}
+
+export const queryOldFlavorPosters = async () => {
+  const payload = await measureServerStep('payload init: old flavor posters', () =>
+    getPayload({ config: configPromise }),
+  )
+  const [activeRotation, products] = await Promise.all([
+    queryActiveFlavorRotation(payload),
+    queryCookieCategoryProducts(payload),
+  ])
+  const currentFlavorIDs = new Set(
+    getPublicRotationProductIDs(activeRotation).map((flavorID) => String(flavorID)),
+  )
+
+  return buildCookiePosterAssets(
+    products.filter((product) => !currentFlavorIDs.has(String(product.id))),
+  )
 }

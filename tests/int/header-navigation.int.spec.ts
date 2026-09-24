@@ -29,6 +29,7 @@ describe('header navigation', () => {
     const appsItem = navigationItems.find((item) => item.kind === 'apps')
 
     expect(appsItem?.panel.cards.map((card) => card.href)).toEqual([
+      '/old-flavors',
       '/contact',
       '/community',
       '/reviews',
@@ -50,9 +51,9 @@ describe('header navigation', () => {
     const navigationItems = buildHeaderNavigation([], sitePagesWithAllAppsDisabled)
     const appsItem = navigationItems.find((item) => item.kind === 'apps')
 
-    // Contact has no Site Pages toggle: it moved out of the main nav into
-    // this panel, so it must survive even when every other app is off.
-    expect(appsItem?.panel.cards.map((card) => card.href)).toEqual(['/contact'])
+    // Old Flavors and Contact have no Site Pages toggle, so they must
+    // survive even when every other app is off.
+    expect(appsItem?.panel.cards.map((card) => card.href)).toEqual(['/old-flavors', '/contact'])
   })
 
   it('shows the About card only when its Site Pages toggle is on', () => {
