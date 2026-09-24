@@ -14,10 +14,10 @@
 
 .imageLightboxClose {
   align-items: center;
-  background: var(--bakery-color-bg-primary, #fffdf9);
-  border: 1px solid rgba(23, 21, 16, 0.12);
+  background: #fffaf0;
+  border: 1px solid rgba(47, 36, 20, 0.16);
   border-radius: 999px;
-  color: var(--bakery-color-fg, #171510);
+  color: #2f2414;
   cursor: pointer;
   display: inline-flex;
   height: 2.75rem;
@@ -29,7 +29,7 @@
 }
 
 .imageLightboxClose:focus-visible {
-  outline: 3px solid var(--bakery-color-bg-primary, #fffdf9);
+  outline: 3px solid #fffaf0;
   outline-offset: 3px;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .imageLightboxCaption {
-  color: var(--bakery-color-bg-primary, #fffdf9);
+  color: #fffaf0;
   font-family: var(--font-rounded-display);
   font-size: clamp(1.05rem, 2.4vw, 1.35rem);
   font-weight: 800;
