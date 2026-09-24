@@ -66,6 +66,7 @@ export const Customers: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       access: {
+        create: () => false,
         update: () => false,
       },
       admin: {
@@ -78,6 +79,7 @@ export const Customers: CollectionConfig = {
       name: 'smsOkAt',
       type: 'date',
       access: {
+        create: () => false,
         update: () => false,
       },
       admin: {
@@ -92,6 +94,7 @@ export const Customers: CollectionConfig = {
       name: 'smsOkSource',
       type: 'text',
       access: {
+        create: () => false,
         update: () => false,
       },
       admin: {
@@ -104,6 +107,7 @@ export const Customers: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       access: {
+        create: () => false,
         update: () => false,
       },
       admin: {
@@ -116,6 +120,7 @@ export const Customers: CollectionConfig = {
       name: 'emailOkAt',
       type: 'date',
       access: {
+        create: () => false,
         update: () => false,
       },
       admin: {
@@ -130,6 +135,7 @@ export const Customers: CollectionConfig = {
       name: 'emailOkSource',
       type: 'text',
       access: {
+        create: () => false,
         update: () => false,
       },
       admin: {

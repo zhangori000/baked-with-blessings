@@ -21,11 +21,11 @@ export const getTwilioMessagingConfig = (): TwilioMessagingConfig | null => {
 }
 
 export const sendTwilioSms = async ({
-  body = 'Welcome',
-  to = '+16125550101',
+  body,
+  to,
 }: {
-  body?: string
-  to?: string
+  body: string
+  to: string
 }): Promise<{ sent: boolean; sid?: string }> => {
   const config = getTwilioMessagingConfig()
 
@@ -63,13 +63,13 @@ export const sendTwilioSms = async ({
 }
 
 export const buildTwilioMessagingSignature = ({
-  authToken = 'token',
-  params = {},
-  url = 'https://bakedwithblessings.com/api/twilio/inbound',
+  authToken,
+  params,
+  url,
 }: {
-  authToken?: string
-  params?: Record<string, string>
-  url?: string
+  authToken: string
+  params: Record<string, string>
+  url: string
 }) => {
   const data = Object.keys(params)
     .sort()
@@ -79,15 +79,15 @@ export const buildTwilioMessagingSignature = ({
 }
 
 export const isTwilioMessagingSignatureValid = ({
-  authToken = 'token',
-  params = {},
-  signature = '',
-  url = 'https://bakedwithblessings.com/api/twilio/inbound',
+  authToken,
+  params,
+  signature,
+  url,
 }: {
-  authToken?: string
-  params?: Record<string, string>
-  signature?: string
-  url?: string
+  authToken: string
+  params: Record<string, string>
+  signature: string
+  url: string
 }) => {
   const expected = Buffer.from(buildTwilioMessagingSignature({ authToken, params, url }))
   const actual = Buffer.from(signature)

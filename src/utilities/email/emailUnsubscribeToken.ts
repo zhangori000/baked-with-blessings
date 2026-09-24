@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from 'crypto'
 const getUnsubscribeSecret = () =>
   process.env.PAYLOAD_SECRET?.trim() || 'fallback-email-unsubscribe-secret'
 
-export const createEmailUnsubscribeToken = (customerID: number | string = '0') => {
+export const createEmailUnsubscribeToken = (customerID: number | string) => {
   const id = String(customerID)
   const digest = createHmac('sha256', getUnsubscribeSecret()).update(`email-unsubscribe:${id}`).digest('base64url')
   return `${id}.${digest}`

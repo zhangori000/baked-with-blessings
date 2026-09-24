@@ -55,7 +55,7 @@ export async function setCustomerMessageConsent({
     collection: 'message-consent-events',
     data: {
       channel,
-      customer: customerID,
+      customer: customer.id,
       ok,
       rawBody: rawBody || undefined,
       source,
