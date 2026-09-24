@@ -1,13 +1,19 @@
 import configPromise from '@payload-config'
 import type { Product } from '@/payload-types'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import {
+  BUNDLES_CATEGORY_SLUG,
+  CATERING_FLAVOR_CATEGORY_SLUG,
+  CATERING_PACKAGES_CATEGORY_SLUG,
+} from '@/features/products/cateringPackages'
 import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
 import { measureServerStep } from '@/utilities/devTiming'
 import { Cormorant_Garamond } from 'next/font/google'
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
 import React from 'react'
 
 import { CateringMenuSection } from './_components/catering-menu-section.client'
+import type { MenuSection } from './_components/catering-menu-types'
 import { queryRegularOrderItems } from './regularOrderQueries'
 import './_components/catering-menu-hero.css'
 
@@ -20,7 +26,7 @@ const cateringSerif = Cormorant_Garamond({
 
 export const metadata = buildStaticMetadata({
   description:
-    'Order always-available and seasonal cookie flavors individually in large or mini sizes, or build your own boxes and trays with transparent pricing.',
+    'Order this week’s cookie flavors individually, build your own boxes, or order catering in any flavor we’ve ever baked.',
   path: '/menu',
   title: 'Menu',
 })
@@ -41,24 +47,19 @@ const cateringProductSelect = {
   title: true,
 } as const
 
-export default async function CateringMenuPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ section?: string | string[] }>
-}) {
-  const initialSceneryTone = await getMenuSceneToneFromCookies()
-  const { section } = await searchParams
-  const initialSection = section === 'catering' ? 'catering' : 'regular'
-  const payload = await measureServerStep('payload init: catering menu', () =>
-    getPayload({ config: configPromise }),
-  )
+const parseInitialSection = (section?: string | string[]): MenuSection => {
+  const value = Array.isArray(section) ? section[0] : section
 
-  const regularOrderData = await measureServerStep('query regular order items: menu', () =>
-    queryRegularOrderItems(payload),
-  )
+  if (value === 'catering' || value === 'bundles') {
+    return value
+  }
 
-  const cateringCategoryResult = await measureServerStep(
-    'payload.find categories: catering menu',
+  return 'regular'
+}
+
+const queryPublishedProductsInCategory = async (payload: Payload, categorySlug: string) => {
+  const categoryResult = await measureServerStep(
+    `payload.find categories: menu ${categorySlug}`,
     () =>
       payload.find({
         collection: 'categories',
@@ -73,48 +74,121 @@ export default async function CateringMenuPage({
         },
         where: {
           slug: {
-            equals: 'catering',
+            equals: categorySlug,
           },
         },
       }),
   )
 
-  const cateringCategory = cateringCategoryResult.docs[0]
+  const category = categoryResult.docs[0]
 
-  const cateringProducts = cateringCategory
-    ? (
-        await measureServerStep('payload.find products: catering menu', () =>
-          payload.find({
-            collection: 'products',
-            draft: false,
-            overrideAccess: false,
-            pagination: false,
-            select: cateringProductSelect,
-            sort: 'title',
-            where: {
-              and: [
-                {
-                  _status: {
-                    equals: 'published',
-                  },
-                },
-                {
-                  categories: {
-                    contains: cateringCategory.id,
-                  },
-                },
-              ],
+  if (!category) {
+    return { category: null, products: [] as Partial<Product>[] }
+  }
+
+  const productsResult = await measureServerStep(
+    `payload.find products: menu ${categorySlug}`,
+    () =>
+      payload.find({
+        collection: 'products',
+        draft: false,
+        overrideAccess: false,
+        pagination: false,
+        select: cateringProductSelect,
+        sort: 'title',
+        where: {
+          and: [
+            {
+              _status: {
+                equals: 'published',
+              },
             },
-          }),
-        )
-      ).docs
-    : []
+            {
+              categories: {
+                contains: category.id,
+              },
+            },
+          ],
+        },
+      }),
+  )
 
-  if (!cateringProducts.length && !regularOrderData.items.length) {
+  return { category, products: productsResult.docs as Partial<Product>[] }
+}
+
+const queryCateringFlavors = async (payload: Payload) => {
+  const categoryResult = await measureServerStep('payload.find categories: catering flavors', () =>
+    payload.find({
+      collection: 'categories',
+      depth: 0,
+      limit: 1,
+      overrideAccess: false,
+      pagination: false,
+      select: { slug: true },
+      where: { slug: { equals: CATERING_FLAVOR_CATEGORY_SLUG } },
+    }),
+  )
+  const categoryID = categoryResult.docs[0]?.id
+
+  if (categoryID == null) {
+    return [] as Product[]
+  }
+
+  const flavorsResult = await measureServerStep('payload.find products: catering flavors', () =>
+    payload.find({
+      collection: 'products',
+      depth: 1,
+      draft: false,
+      overrideAccess: false,
+      pagination: false,
+      sort: 'title',
+      where: {
+        and: [
+          { _status: { equals: 'published' } },
+          { categories: { contains: categoryID } },
+          { menuBehavior: { not_equals: 'batchBuilder' } },
+        ],
+      },
+    }),
+  )
+
+  return flavorsResult.docs as Product[]
+}
+
+export default async function CateringMenuPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ section?: string | string[] }>
+}) {
+  const initialSceneryTone = await getMenuSceneToneFromCookies()
+  const { section } = await searchParams
+  const initialSection = parseInitialSection(section)
+  const payload = await measureServerStep('payload init: catering menu', () =>
+    getPayload({ config: configPromise }),
+  )
+
+  const [regularOrderData, bundles, cateringPackages, cateringFlavors] = await Promise.all([
+    measureServerStep('query regular order items: menu', () => queryRegularOrderItems(payload)),
+    queryPublishedProductsInCategory(payload, BUNDLES_CATEGORY_SLUG),
+    queryPublishedProductsInCategory(payload, CATERING_PACKAGES_CATEGORY_SLUG),
+    queryCateringFlavors(payload),
+  ])
+  const cateringPackagesWithFlavors = cateringFlavors.length
+    ? cateringPackages.products.map((cateringPackage) => ({
+        ...cateringPackage,
+        selectableProducts: cateringFlavors,
+      }))
+    : cateringPackages.products
+
+  if (
+    !bundles.products.length &&
+    !cateringPackages.products.length &&
+    !regularOrderData.items.length
+  ) {
     return (
       <div className="container py-16">
         <p className="max-w-[42rem] text-base leading-8 text-[#6b5947]">
-          {cateringCategory
+          {bundles.category
             ? 'The menu is seeded, but no published products were found yet.'
             : 'The catering category has not been seeded yet. Run the seed flow, then refresh this page.'}
         </p>
@@ -125,9 +199,10 @@ export default async function CateringMenuPage({
   return (
     <div className={cateringSerif.variable}>
       <CateringMenuSection
+        cateringPackages={cateringPackagesWithFlavors}
         initialSceneryTone={initialSceneryTone}
         initialSection={initialSection}
-        products={cateringProducts as Partial<Product>[]}
+        products={bundles.products}
         regularItems={regularOrderData.items}
         seasonalLabel={regularOrderData.seasonalLabel}
       />

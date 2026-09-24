@@ -20,8 +20,7 @@ type MenuSectionTabsProps = {
 }
 
 /**
- * Pill segmented control switching the menu between Regular orders and
- * Catering. Both panels stay server-rendered in the DOM; this only toggles
+ * Pill segmented control switching the menu between its sections. All panels stay server-rendered in the DOM; this only toggles
  * visibility, so switching is instant and search engines see everything.
  */
 export function MenuSectionTabs({ active, idBase, onChange, tabs }: MenuSectionTabsProps) {
@@ -66,7 +65,12 @@ export function MenuSectionTabs({ active, idBase, onChange, tabs }: MenuSectionT
 
   return (
     <>
-      <div aria-label="Menu sections" className="menuSectionTabs" role="tablist">
+      <div
+        aria-label="Menu sections"
+        className="menuSectionTabs"
+        role="tablist"
+        style={{ '--menu-section-tab-count': tabs.length } as React.CSSProperties}
+      >
         {tabs.map((tab, index) => {
           const isActive = tab.value === active
 
@@ -101,9 +105,9 @@ export function MenuSectionTabs({ active, idBase, onChange, tabs }: MenuSectionT
           box-shadow: 0 10px 24px rgba(23, 21, 16, 0.06);
           display: grid;
           gap: 0.3rem;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(var(--menu-section-tab-count, 2), minmax(0, 1fr));
           margin-inline: auto;
-          max-width: 36rem;
+          max-width: 44rem;
           padding: 0.3rem;
           width: 100%;
         }
@@ -165,7 +169,7 @@ export function MenuSectionTabs({ active, idBase, onChange, tabs }: MenuSectionT
         @media (max-width: 480px) {
           .menuSectionTab {
             min-height: 3.25rem;
-            padding-inline: 0.5rem;
+            padding-inline: 0.35rem;
           }
 
           .menuSectionTabLabel {
@@ -173,8 +177,8 @@ export function MenuSectionTabs({ active, idBase, onChange, tabs }: MenuSectionT
           }
 
           .menuSectionTabDetail {
-            font-size: 0.6rem;
-            letter-spacing: 0.05em;
+            font-size: 0.58rem;
+            letter-spacing: 0.04em;
           }
         }
       `}</style>

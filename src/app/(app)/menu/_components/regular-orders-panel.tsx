@@ -2,6 +2,7 @@
 
 import { useStorefrontCart } from '@/providers/Ecommerce'
 import { ArrowRight, ChevronDownIcon, Minus, Plus } from 'lucide-react'
+import Link from 'next/link'
 import React, { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/accordion'
 import { BakeryCard, BakeryPressable, SceneButton } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
+import { oldFlavorsHref } from '@/utilities/routes'
 
 import { CookieInfoNote } from './CookieInfoNote'
 import {
@@ -38,6 +40,7 @@ type RegularOrdersPanelProps = {
   bundleSuggestions?: BundleSuggestions
   items: RegularOrderItem[]
   onJumpToBundle?: (slug: string) => void
+  onJumpToCatering?: () => void
   sceneryTone: MenuSceneryTone
   seasonalLabel: string
 }
@@ -100,9 +103,7 @@ function RegularOrderRow({
     sceneryTone === 'blossom'
       ? '/sceneries/blossom-grass-mound.svg'
       : (meadowByScenery[sceneryTone] ?? meadowByScenery.classic)
-  const [selectedSizeValue, setSelectedSizeValue] = useState<string | null>(
-    sizes[0]?.value ?? null,
-  )
+  const [selectedSizeValue, setSelectedSizeValue] = useState<string | null>(sizes[0]?.value ?? null)
   const [quantity, setQuantity] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isInfoOpen, setIsInfoOpen] = useState(false)
@@ -114,12 +115,7 @@ function RegularOrderRow({
   const isCartPending = isLoading || isSubmitting
   const infoId = `${item.slug}-regular-info`
 
-  // Point customers stocking up toward the cheaper bundle: a 4-pack mix box
-  // (quantity 4–9) or a 10-pack one-flavor tray (quantity 10+). Below 4 we
-  // still show a quiet static hint so the option is always discoverable.
   const bundleHint = useMemo(() => {
-    // Box/tray deals are cookies-only; a bread (or other non-cookie) can't go in
-    // a build-your-own cookie box, so don't nudge it toward one.
     if (
       !selectedSize ||
       !bundleSuggestions ||
@@ -128,30 +124,38 @@ function RegularOrderRow({
       return null
     }
 
-    const group = bundleSuggestions[selectedSize.value === 'mini' ? 'mini' : 'large']
-    if (!group) {
-      return null
-    }
+    const group = bundleSuggestions.large
+    const shortNameFor = (title: string) => title.replace(/^Build-Your-Own\s+/i, '')
 
-    // Lead with the dollars: how much they save and the deal in one glance.
     const dealFor = (bundle: { count: number; price: number; slug: string; title: string }) => {
       const singlesPrice = bundle.count * selectedSize.priceInUSD
       const savings = singlesPrice - bundle.price
-      const shortName = bundle.title.replace(/^Build-Your-Own\s+/i, '')
+      const shortName = shortNameFor(bundle.title)
       return {
         detail: `${bundle.count} for ${formatUSD(bundle.price)} instead of ${formatUSD(singlesPrice)}.`,
-        headline: savings > 0 ? `Save ${formatUSD(savings)} with a ${shortName}` : `Try a ${shortName}`,
+        headline:
+          savings > 0 ? `Save ${formatUSD(savings)} with a ${shortName}` : `Try a ${shortName}`,
         kind: 'strong' as const,
         slug: bundle.slug,
       }
     }
 
-    if (quantity >= 10 && group.tray?.count) {
+    if (group.tray?.count && quantity >= group.tray.count) {
       return dealFor(group.tray as { count: number; price: number; slug: string; title: string })
     }
 
-    if (quantity >= 4 && group.box?.count) {
+    if (group.box?.count && quantity >= group.box.count) {
       return dealFor(group.box as { count: number; price: number; slug: string; title: string })
+    }
+
+    const miniBox = bundleSuggestions.mini.box
+    if (miniBox?.count) {
+      return {
+        detail: `Minis come ${miniBox.count} for ${formatUSD(miniBox.price)} in a ${shortNameFor(miniBox.title)}.`,
+        headline: 'Want minis?',
+        kind: 'quiet' as const,
+        slug: miniBox.slug,
+      }
     }
 
     const fallback = group.box ?? group.tray
@@ -160,7 +164,7 @@ function RegularOrderRow({
     }
 
     return {
-      detail: 'Boxes and one-flavor trays cost less per cookie.',
+      detail: 'Boxes cost less per cookie.',
       headline: 'Buying a bunch?',
       kind: 'quiet' as const,
       slug: fallback.slug,
@@ -213,19 +217,8 @@ function RegularOrderRow({
       >
         <div className="regularOrderCollapsed grid w-full gap-4">
           <div className="regularOrderTitleRow">
-            <h3 className="cateringMenuRoundHeading regularOrderTitle">
-              {item.title}
-            </h3>
-            <span
-              className={cn(
-                'regularFlavorBadge',
-                item.availability === 'seasonal'
-                  ? 'regularFlavorBadgeSeasonal'
-                  : 'regularFlavorBadgeAlways',
-              )}
-            >
-              {item.badgeLabel}
-            </span>
+            <h3 className="cateringMenuRoundHeading regularOrderTitle">{item.title}</h3>
+            <span className="regularFlavorBadge regularFlavorBadgeSeasonal">{item.badgeLabel}</span>
             {item.categoryLabel ? (
               <span className="regularFlavorBadge regularFlavorBadgeCategory">
                 {item.categoryLabel}
@@ -261,9 +254,7 @@ function RegularOrderRow({
             </div>
 
             <div className="regularOrderPreviewMeta">
-              {item.summary ? (
-                <p className="regularOrderPreviewSummary">{item.summary}</p>
-              ) : null}
+              {item.summary ? <p className="regularOrderPreviewSummary">{item.summary}</p> : null}
 
               <div className="regularOrderPriceRow">
                 <div className="cateringPriceBlock text-left">
@@ -284,7 +275,11 @@ function RegularOrderRow({
                     {sizes.length > 1 ? 'Choose size & add' : 'Add to cart'}
                   </span>
                   <span className="regularOrderOrderHintWhenOpen">Hide options</span>
-                  <ChevronDownIcon className="regularOrderOrderHintIcon" size={16} strokeWidth={2.6} />
+                  <ChevronDownIcon
+                    className="regularOrderOrderHintIcon"
+                    size={16}
+                    strokeWidth={2.6}
+                  />
                 </span>
               </div>
             </div>
@@ -351,7 +346,10 @@ function RegularOrderRow({
                   >
                     <Minus aria-hidden="true" size={16} strokeWidth={2.6} />
                   </button>
-                  <span aria-live="polite" className="regularQuantityCount cateringMenuRoundHeading">
+                  <span
+                    aria-live="polite"
+                    className="regularQuantityCount cateringMenuRoundHeading"
+                  >
                     {quantity}
                   </span>
                   <button
@@ -494,39 +492,31 @@ function RegularOrderRow({
 }
 
 /**
- * The Regular orders tab: every always-available flavor plus the current
- * rotation's flavors, each orderable in any published size and quantity.
+ * The Regular orders tab: the current rotation's flavors, each orderable in
+ * any published size and quantity.
  */
 export function RegularOrdersPanel({
   bundleSuggestions,
   items,
   onJumpToBundle,
+  onJumpToCatering,
   sceneryTone,
   seasonalLabel,
 }: RegularOrdersPanelProps) {
-  const alwaysItems = items.filter((item) => item.availability === 'always')
-  const seasonalItems = items.filter((item) => item.availability === 'seasonal')
-
   const groups = [
     {
       description: 'Featured this week, straight from the rotation.',
       heading: seasonalLabel,
-      items: seasonalItems,
+      items,
       key: 'seasonal',
-    },
-    {
-      description: 'The standing lineup — baked all year, order any time.',
-      heading: 'Always available',
-      items: alwaysItems,
-      key: 'always',
     },
   ].filter((group) => group.items.length > 0)
 
   if (groups.length === 0) {
     return (
       <p className="py-12 text-base leading-8 text-[rgba(23,21,16,0.72)]">
-        Individual flavors are being restocked — check the Bundles tab for boxes and trays, or
-        come back soon.
+        This week’s flavors are being restocked — check the Bundles tab for boxes and packs, or
+        order any flavor through Catering.
       </p>
     )
   }
@@ -576,30 +566,85 @@ export function RegularOrdersPanel({
               Don’t see your favorite?
             </p>
             <p className="mt-1 max-w-[40rem] text-[0.9rem] leading-6 text-[rgba(23,21,16,0.66)]">
-              Seasonal and retired flavors leave the individual menu when they’re off rotation —
-              but you can still order ten of <em>any</em> flavor, even rare ones, in a one-flavor
-              Cookie Tray.
+              Past flavors leave the weekly menu when they rotate out, but Catering can bake{' '}
+              <em>any</em> flavor we’ve ever made. Browse the old favorites to see what might come
+              back.
             </p>
           </div>
         </div>
-        {onJumpToBundle ? (
-          <button
-            className="cateringMenuRoundHeading group inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 self-start rounded-full border border-[rgba(125,85,18,0.28)] bg-[rgba(125,85,18,0.06)] px-5 py-2.5 text-[0.86rem] tracking-[-0.01em] text-[#5d4119] transition hover:border-[rgba(125,85,18,0.45)] hover:bg-[rgba(125,85,18,0.12)] sm:self-center"
-            onClick={() => onJumpToBundle('cookie-tray')}
-            type="button"
+        <div className="regularOffSeasonActions">
+          {onJumpToCatering ? (
+            <button
+              className="regularOffSeasonAction regularOffSeasonActionPrimary cateringMenuRoundHeading group"
+              onClick={onJumpToCatering}
+              type="button"
+            >
+              Order catering
+              <ArrowRight
+                aria-hidden="true"
+                className="transition-transform group-hover:translate-x-0.5"
+                size={16}
+                strokeWidth={2.4}
+              />
+            </button>
+          ) : null}
+          <Link
+            className="regularOffSeasonAction cateringMenuRoundHeading group"
+            href={oldFlavorsHref}
           >
-            Browse one-flavor trays
+            See old flavors
             <ArrowRight
               aria-hidden="true"
               className="transition-transform group-hover:translate-x-0.5"
               size={16}
               strokeWidth={2.4}
             />
-          </button>
-        ) : null}
+          </Link>
+        </div>
       </BakeryCard>
 
       <style>{`
+        .regularOffSeasonActions {
+          display: flex;
+          flex-shrink: 0;
+          flex-wrap: wrap;
+          gap: 0.6rem;
+        }
+
+        .regularOffSeasonAction {
+          align-items: center;
+          background: rgba(125, 85, 18, 0.06);
+          border: 1px solid rgba(125, 85, 18, 0.28);
+          border-radius: 999px;
+          color: #5d4119;
+          cursor: pointer;
+          display: inline-flex;
+          font-size: 0.86rem;
+          gap: 0.5rem;
+          justify-content: center;
+          letter-spacing: -0.01em;
+          padding: 0.62rem 1.25rem;
+          transition:
+            background-color 160ms ease,
+            border-color 160ms ease;
+        }
+
+        .regularOffSeasonAction:hover {
+          background: rgba(125, 85, 18, 0.12);
+          border-color: rgba(125, 85, 18, 0.45);
+        }
+
+        .regularOffSeasonActionPrimary {
+          background: #5d4119;
+          border-color: #5d4119;
+          color: #fffaf0;
+        }
+
+        .regularOffSeasonActionPrimary:hover {
+          background: #4a3313;
+          border-color: #4a3313;
+        }
+
         /* Section headers outrank individual cookie titles: larger type,
            more vertical space, and a clear break between groups. */
         .regularGroupHeader {
@@ -674,11 +719,6 @@ export function RegularOrdersPanel({
           padding: 0.32rem 0.8rem;
           text-transform: uppercase;
           white-space: nowrap;
-        }
-
-        .regularFlavorBadgeAlways {
-          background: #e3eeda;
-          color: #2d4520;
         }
 
         .regularFlavorBadgeSeasonal {

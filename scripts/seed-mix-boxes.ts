@@ -4,8 +4,11 @@ loadScriptEnv()
 
 /**
  * Provisions the two "Build-Your-Own" mix-and-match boxes:
- *   - Build-Your-Own Mini Box   (6 mini cookies,  $14)
- *   - Build-Your-Own Cookie Box (4 large cookies, $25)
+ *   - Build-Your-Own Mini Box   (6 mini cookies,  $10)
+ *   - Build-Your-Own Cookie Box (3 large cookies, $12)
+ *
+ * It also moves the retired one-flavor 10-packs (Cookie Tray, Mini Cookie
+ * Tray) back to draft. Any-flavor orders now go through Catering.
  *
  *   pnpm seed:mix-boxes            (local Docker database)
  *
@@ -34,7 +37,7 @@ const BOX_SPECS: BoxSpec[] = [
   {
     capacity: 6,
     portionLabel: '6 mini cookies · mix & match',
-    priceCents: 1400,
+    priceCents: 1000,
     slug: 'build-your-own-mini-box',
     title: 'Build-Your-Own Mini Box',
     pitchParagraphs: [
@@ -43,17 +46,19 @@ const BOX_SPECS: BoxSpec[] = [
     ],
   },
   {
-    capacity: 4,
-    portionLabel: '4 large cookies · mix & match',
-    priceCents: 2500,
+    capacity: 3,
+    portionLabel: '3 large cookies · mix & match',
+    priceCents: 1200,
     slug: 'build-your-own-cookie-box',
     title: 'Build-Your-Own Cookie Box',
     pitchParagraphs: [
-      'Build a box of four full-size cookies and mix the flavors however you like — sample four different ones or stock up on a favorite.',
+      'Build a box of three full-size cookies and mix the flavors however you like — one of each or three of a favorite.',
       'Add the box to your cart, then build another. Each box is its own order line, so the kitchen knows exactly what to bake.',
     ],
   },
 ]
+
+const RETIRED_TRAY_SLUGS = ['cookie-tray', 'mini-cookie-tray']
 
 const text = (value: string) => ({
   detail: 0,
@@ -198,6 +203,36 @@ const run = async () => {
           `- Created ${spec.slug} (#${created.id}): ${flavorIDs.length} flavors, ${spec.capacity} for ${spec.priceCents} cents`,
         )
       }
+    }
+
+    for (const slug of RETIRED_TRAY_SLUGS) {
+      const tray = await payload.find({
+        collection: 'products',
+        depth: 0,
+        limit: 1,
+        overrideAccess: true,
+        pagination: false,
+        where: { slug: { equals: slug } },
+      })
+      const doc = tray.docs[0]
+
+      if (!doc) {
+        continue
+      }
+
+      if (doc._status === 'draft') {
+        console.log(`- ${slug} (#${doc.id}) already draft`)
+        continue
+      }
+
+      await payload.update({
+        id: doc.id,
+        collection: 'products',
+        data: { _status: 'draft' },
+        depth: 0,
+        overrideAccess: true,
+      })
+      console.log(`- Moved ${slug} (#${doc.id}) to draft`)
     }
   } finally {
     await destroyWithTimeout(() => payload.destroy())

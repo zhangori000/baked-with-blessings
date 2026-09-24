@@ -6,6 +6,7 @@ import {
   contactHref,
   discussionBoardHref,
   menuHref,
+  oldFlavorsHref,
   reviewsHref,
   rotationsHref,
 } from '@/utilities/routes'
@@ -16,6 +17,7 @@ const staticPublicRoutes = [
   '/',
   rotationsHref,
   menuHref,
+  oldFlavorsHref,
   contactHref,
   blogHref,
   discussionBoardHref,

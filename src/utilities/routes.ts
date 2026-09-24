@@ -2,6 +2,7 @@ export const rotationsHref = '/rotations'
 export const menuHref = '/menu'
 /** Deep link that opens /menu with the Catering tab active. */
 export const cateringMenuHref = `${menuHref}?section=catering`
+export const oldFlavorsHref = '/old-flavors'
 export const aboutHref = '/about'
 export const contactHref = '/contact'
 export const blogHref = '/blog'

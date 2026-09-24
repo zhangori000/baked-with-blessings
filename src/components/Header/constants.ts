@@ -10,6 +10,7 @@ import {
   featureRequestsHref,
   isContactLinkHint,
   menuHref,
+  oldFlavorsHref,
   reviewsHref,
   rotationsHref,
 } from '@/utilities/routes'
@@ -31,6 +32,7 @@ export type HeaderPanelCard = {
 export type HeaderAppPageIcon =
   | 'book-open-text'
   | 'clipboard-check'
+  | 'cookie'
   | 'handshake'
   | 'lightbulb'
   | 'map-pin'
@@ -77,6 +79,19 @@ export const headerAppPages: HeaderAppPage[] = [
       'Meet the home kitchen behind the cookies, see where we are in Plymouth, MN, and learn how ordering and pickup work.',
     mobileTitle: 'About & how it works',
     title: 'About',
+    tone: 'light',
+  },
+  {
+    description:
+      'Every flavor that has rotated off the menu. Any of them might come back, and all of them can be ordered through Catering.',
+    eyebrow: 'Hall of Fame',
+    href: oldFlavorsHref,
+    icon: 'cookie',
+    id: 'old-flavors',
+    mobileDescription:
+      'Browse past flavors that might come back, or order any of them through Catering.',
+    mobileTitle: 'Old flavors',
+    title: 'Old Flavors',
     tone: 'light',
   },
   {
@@ -230,11 +245,11 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     panel: {
       eyebrow: 'Menu',
       description:
-        'Regular orders of single cookies in large or mini, plus build-your-own boxes, trays, and ten-packs.',
+        'This week’s flavors as single cookies, build-your-own boxes, and catering in any flavor.',
       cards: [
         {
           description:
-            'Order always-available and seasonal flavors as single cookies, or switch to the Bundles tab for build-your-own boxes, trays, and honest product notes.',
+            'Order this week’s flavors as single cookies, switch to Bundles for build-your-own boxes, or Catering for any flavor we’ve ever baked.',
           eyebrow: 'Menu landing',
           href: menuHref,
           title: 'Open the menu',
@@ -243,7 +258,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
       ],
       links: [
         {
-          description: 'Go to the menu page for regular orders and bundles.',
+          description: 'Go to the menu page for regular orders, bundles, and catering.',
           href: menuHref,
           label: 'Open the menu',
         },
@@ -388,6 +403,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, aboutHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, oldFlavorsHref)) {
     return item.id === 'more'
   }
 

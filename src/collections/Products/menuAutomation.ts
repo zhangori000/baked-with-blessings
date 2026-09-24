@@ -26,7 +26,7 @@ const ROTATION_CACHE = 'bwbActiveRotationSnapshot'
 const COOKIE_CATEGORY_CACHE = 'bwbCookieCategoryID'
 const PENDING_PLACEMENT = 'bwbPendingMenuPlacement'
 
-export type MenuPlacement = 'always' | 'backlog' | 'currentRotation'
+export type MenuPlacement = 'backlog' | 'currentRotation'
 
 type ActiveRotationSnapshot = null | {
   id: DefaultDocumentIDType
@@ -160,10 +160,6 @@ export const menuPlacementAfterRead: FieldHook = async ({ data, req }) => {
     return null
   }
 
-  if (data.individualAvailability === 'always') {
-    return 'always'
-  }
-
   const rotation = await loadActiveRotation(req)
 
   if (rotation && data.id != null && rotation.individualFlavorIDs.includes(String(data.id))) {
@@ -191,7 +187,7 @@ export const applyMenuPlacementBeforeChange: CollectionBeforeChangeHook = async 
   const productID = data.id ?? originalDoc?.id
 
   if (typeof placement === 'string') {
-    data.individualAvailability = placement === 'always' ? 'always' : 'rotation'
+    data.individualAvailability = 'rotation'
 
     const rotation = await loadActiveRotation(req)
 

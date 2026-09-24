@@ -7,9 +7,10 @@ import { defaultMiniPriceInUSD } from '../src/features/products/sizeVariants'
 import { ensureSizeAxis } from '../src/features/products/sizeVariantProvisioning'
 
 /**
- * Syncs the owner's flavor lineup: which cookie flavors are always available
- * for individual ordering, which are in the seasonal rotation, and their
- * Large/Mini prices.
+ * Syncs the owner's flavor lineup: which flavors are in the current rotation
+ * (the only ones orderable individually), and the Large/Mini cookie prices.
+ * Every other cookie flavor is moved to the backlog, where it stays orderable
+ * through Catering and shows in the Flavor Hall of Fame.
  *
  * The script only writes the simple product fields (the same ones the owner
  * edits in the admin panel). The products afterChange hook then provisions
@@ -24,8 +25,7 @@ import { ensureSizeAxis } from '../src/features/products/sizeVariantProvisioning
  * only point this at preview/prod when explicitly asked, via
  * `vercel env run -e preview -- pnpm update:flavor-lineup`.
  *
- * Idempotent and re-run safe: mini prices are only written when the field
- * is still empty or the spec pins one, so owner edits survive re-runs.
+ * Idempotent and re-run safe.
  */
 
 type FlavorSpec = {
@@ -38,29 +38,17 @@ type FlavorSpec = {
   title: string
 }
 
-const ALWAYS_AVAILABLE_FLAVORS: FlavorSpec[] = [
-  { slug: 'red-velvet-cheesecake', title: 'Red Velvet Cheesecake' },
-  { slug: 'smores', title: "S'mores" },
-  { slug: 'brookie', title: 'Brookie' },
-  { slug: 'biscoff', title: 'Biscoff' },
-  { slug: 'strawberry-cheesecake', title: 'Strawberry Cheesecake' },
-]
+const COOKIE_LARGE_PRICE_IN_USD = 500
 
-const SEASONAL_ROTATION_FLAVORS: FlavorSpec[] = [
+const ROTATION_FLAVORS: FlavorSpec[] = [
   {
-    largePriceInUSD: 700,
-    miniPriceInUSD: 300,
-    slug: 'freshly-baked-dirty-chai-cookie',
-    title: 'Dirty Chai Cookie',
+    largePriceInUSD: COOKIE_LARGE_PRICE_IN_USD,
+    slug: 'red-velvet-cheesecake',
+    title: 'Red Velvet Cheesecake',
   },
+  { largePriceInUSD: COOKIE_LARGE_PRICE_IN_USD, slug: 'smores', title: "S'mores" },
+  { largePriceInUSD: COOKIE_LARGE_PRICE_IN_USD, slug: 'biscoff', title: 'Biscoff' },
   {
-    largePriceInUSD: 700,
-    miniPriceInUSD: 300,
-    slug: 'sticky-mango-rice-krispy-treats',
-    title: 'Sticky Mango Rice Krispy Treats',
-  },
-  {
-    // Single-size bread (no mini) — see bootstrap-focaccia-product.ts.
     largePriceInUSD: 700,
     slug: 'roasted-pesto-focaccia',
     title: 'Roasted Pesto Focaccia',
@@ -149,7 +137,7 @@ const run = async () => {
 
     const ensureFlavor = async (
       spec: FlavorSpec,
-      placement: 'always' | 'currentRotation',
+      placement: 'backlog' | 'currentRotation',
     ) => {
       const product = await resolveProduct(spec)
 
@@ -206,7 +194,7 @@ const run = async () => {
     // instead of aborting the whole sync.
     const ensureFlavorSafely = async (
       spec: FlavorSpec,
-      placement: 'always' | 'currentRotation',
+      placement: 'backlog' | 'currentRotation',
     ) => {
       try {
         return await ensureFlavor(spec, placement)
@@ -218,90 +206,100 @@ const run = async () => {
       }
     }
 
-    const alwaysProducts = []
+    const rotationProducts = []
 
-    for (const spec of ALWAYS_AVAILABLE_FLAVORS) {
-      const product = await ensureFlavorSafely(spec, 'always')
-
-      if (product) {
-        alwaysProducts.push(product)
-      }
-    }
-
-    const seasonalProducts = []
-
-    for (const spec of SEASONAL_ROTATION_FLAVORS) {
+    for (const spec of ROTATION_FLAVORS) {
       const product = await ensureFlavorSafely(spec, 'currentRotation')
 
       if (product) {
-        seasonalProducts.push(product)
+        rotationProducts.push(product)
       }
     }
 
-    // ---------------------------------------------------------------
-    // Point the active rotation's public cookies at the seasonal list,
-    // in the exact order configured above.
-    // ---------------------------------------------------------------
-    if (seasonalProducts.length === 0) {
-      payload.logger.warn('- No seasonal products resolved; leaving the rotation untouched')
-    } else {
-      const activeRotationResult = await payload.find({
+    if (rotationProducts.length === 0) {
+      payload.logger.warn('- No rotation products resolved; leaving the rotation untouched')
+      return
+    }
+
+    const activeRotationResult = await payload.find({
+      collection: 'flavor-rotations',
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      sort: '-updatedAt',
+      where: { status: { equals: 'active' } },
+    })
+
+    const activeRotation = activeRotationResult.docs[0]
+    const rotationIDs = rotationProducts.map((product) => product.id)
+
+    if (activeRotation) {
+      const currentShowcaseIDs = (
+        Array.isArray(activeRotation.showcaseProducts) ? activeRotation.showcaseProducts : []
+      ).map((entry) => (typeof entry === 'object' && entry ? entry.id : entry))
+
+      await payload.update({
+        id: activeRotation.id,
         collection: 'flavor-rotations',
+        data: {
+          ...WEEKLY_ROTATION_LABELS,
+          individualFlavors: rotationIDs,
+          showcaseProducts: Array.from(new Set([...currentShowcaseIDs, ...rotationIDs])),
+        },
         depth: 0,
-        limit: 1,
         overrideAccess: true,
-        pagination: false,
-        sort: '-updatedAt',
-        where: { status: { equals: 'active' } },
       })
+      payload.logger.info(
+        `- Updated rotation #${activeRotation.id}: public cookies -> [${rotationProducts
+          .map((product) => product.title)
+          .join(', ')}]`,
+      )
+    }
 
-      const activeRotation = activeRotationResult.docs[0]
-      const seasonalIDs = seasonalProducts.map((product) => product.id)
+    const cookieCategory = await payload.find({
+      collection: 'categories',
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      where: { slug: { equals: 'cookies' } },
+    })
+    const cookieCategoryID = cookieCategory.docs[0]?.id
 
-      if (!activeRotation) {
-        const created = await payload.create({
-          collection: 'flavor-rotations',
-          data: {
-            ...WEEKLY_ROTATION_LABELS,
-            individualFlavors: seasonalIDs,
-            rotationType: 'seasonal',
-            showcaseProducts: [
-              ...seasonalIDs,
-              ...alwaysProducts.map((product) => product.id),
-            ],
-            status: 'active',
-            title: 'Weekly specials (set by update:flavor-lineup)',
-          },
-          overrideAccess: true,
-        })
-        payload.logger.info(`- Created active rotation #${created.id} with the seasonal lineup`)
-      } else {
-        const currentShowcaseIDs = (
-          Array.isArray(activeRotation.showcaseProducts) ? activeRotation.showcaseProducts : []
-        ).map((entry) => (typeof entry === 'object' && entry ? entry.id : entry))
-        const showcaseWithSeasonal = Array.from(
-          new Set([...currentShowcaseIDs, ...seasonalIDs]),
-        )
+    if (cookieCategoryID == null) {
+      payload.logger.warn('- No cookies category; skipped backlog + price sync')
+      return
+    }
 
-        // Always write — keeps the customer-facing labels and lineup in sync even
-        // when the public cookies already match.
-        await payload.update({
-          id: activeRotation.id,
-          collection: 'flavor-rotations',
-          data: {
-            ...WEEKLY_ROTATION_LABELS,
-            individualFlavors: seasonalIDs,
-            showcaseProducts: showcaseWithSeasonal,
-          },
-          depth: 0,
-          overrideAccess: true,
-        })
-        payload.logger.info(
-          `- Updated rotation #${activeRotation.id}: public cookies -> [${seasonalProducts
-            .map((product) => product.title)
-            .join(', ')}]`,
-        )
+    const rotationIDSet = new Set(rotationIDs.map(String))
+    const cookieFlavors = await payload.find({
+      collection: 'products',
+      depth: 0,
+      limit: 0,
+      overrideAccess: true,
+      pagination: false,
+      where: {
+        and: [
+          { categories: { contains: cookieCategoryID } },
+          { menuBehavior: { not_equals: 'batchBuilder' } },
+        ],
+      },
+    })
+
+    for (const product of cookieFlavors.docs) {
+      if (rotationIDSet.has(String(product.id))) {
+        continue
       }
+
+      await ensureFlavorSafely(
+        {
+          largePriceInUSD: COOKIE_LARGE_PRICE_IN_USD,
+          slug: product.slug ?? String(product.id),
+          title: product.title,
+        },
+        'backlog',
+      )
     }
   } finally {
     await destroyWithTimeout(() => payload.destroy())
@@ -310,7 +308,7 @@ const run = async () => {
 
 void run()
   .then(() => {
-    console.log('Flavor lineup synced (availability, prices, seasonal rotation).')
+    console.log('Flavor lineup synced (rotation, backlog, prices).')
     process.exit(0)
   })
   .catch((error) => {

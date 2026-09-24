@@ -88,6 +88,7 @@ function SelectedFlavorButton() {
 
 type TrayFlavorCardProps = {
   actionLabel: string
+  rareBadgeLabel?: string
   /** When set, replaces the single-select Choose/Selected button (e.g. a box stepper). */
   actionSlot?: React.ReactNode
   clouds: readonly StaticSceneCloud[]
@@ -105,6 +106,7 @@ type TrayFlavorCardProps = {
 
 export function TrayFlavorCard({
   actionLabel,
+  rareBadgeLabel = '✨ Rare flavor',
   actionSlot,
   clouds,
   flavor,
@@ -169,7 +171,7 @@ export function TrayFlavorCard({
 
         {flavor.isRare ? (
           <span className="cateringMenuRoundHeading pointer-events-none absolute left-2.5 top-2.5 z-[4] inline-flex items-center gap-1 rounded-full border border-[rgba(125,85,18,0.32)] bg-[linear-gradient(180deg,#ffe7a6_0%,#f6c95c_100%)] px-2.5 py-1 text-[0.66rem] uppercase tracking-[0.08em] text-[#5a3d0c] shadow-[0_6px_16px_rgba(90,61,12,0.28)]">
-            ✨ Rare flavor
+            {rareBadgeLabel}
           </span>
         ) : null}
 
@@ -416,133 +418,133 @@ export function BatchBuilderPanel({
   return (
     <>
       {renderPersuasionPanel(
-      <div className="space-y-4">
-        <p
-          className={cn(
-            'cateringTraySelectionHint text-[0.96rem] leading-7',
-            shouldPulseTraySummary && 'cateringTraySelectionHintPulse',
-          )}
-        >
-          {selectedFlavor
-            ? `${selectedFlavor.title} is selected — pick another below only if you want to switch.`
-            : 'Pick one cookie flavor for your tray below.'}
-        </p>
+        <div className="space-y-4">
+          <p
+            className={cn(
+              'cateringTraySelectionHint text-[0.96rem] leading-7',
+              shouldPulseTraySummary && 'cateringTraySelectionHintPulse',
+            )}
+          >
+            {selectedFlavor
+              ? `${selectedFlavor.title} is selected — pick another below only if you want to switch.`
+              : 'Pick one cookie flavor for your tray below.'}
+          </p>
 
-        <div
-          aria-label="Cookie flavor chooser"
-          className="cateringFlavorRail"
-          data-edge-stretch-side={edgeStretchSide ?? undefined}
-          role="region"
-          style={
-            {
-              ['--catering-edge-stretch' as string]: `${edgeStretchAmount}px`,
-            } as React.CSSProperties
-          }
-          onScroll={(event) => {
-            const rail = event.currentTarget
-            const maxScrollLeft = Math.max(rail.scrollWidth - rail.clientWidth, 0)
-
-            if (
-              (edgeStretchSide === 'left' && rail.scrollLeft > 1) ||
-              (edgeStretchSide === 'right' && rail.scrollLeft < maxScrollLeft - 1)
-            ) {
-              clearEdgeStretch()
+          <div
+            aria-label="Cookie flavor chooser"
+            className="cateringFlavorRail"
+            data-edge-stretch-side={edgeStretchSide ?? undefined}
+            role="region"
+            style={
+              {
+                ['--catering-edge-stretch' as string]: `${edgeStretchAmount}px`,
+              } as React.CSSProperties
             }
-          }}
-          onTouchEnd={() => {
-            touchStartXRef.current = null
-            releaseEdgeStretch()
-          }}
-          onTouchMove={(event) => {
-            const startX = touchStartXRef.current
+            onScroll={(event) => {
+              const rail = event.currentTarget
+              const maxScrollLeft = Math.max(rail.scrollWidth - rail.clientWidth, 0)
 
-            if (startX == null) {
-              return
-            }
+              if (
+                (edgeStretchSide === 'left' && rail.scrollLeft > 1) ||
+                (edgeStretchSide === 'right' && rail.scrollLeft < maxScrollLeft - 1)
+              ) {
+                clearEdgeStretch()
+              }
+            }}
+            onTouchEnd={() => {
+              touchStartXRef.current = null
+              releaseEdgeStretch()
+            }}
+            onTouchMove={(event) => {
+              const startX = touchStartXRef.current
 
-            const currentX = event.touches[0]?.clientX
+              if (startX == null) {
+                return
+              }
 
-            if (typeof currentX !== 'number') {
-              return
-            }
+              const currentX = event.touches[0]?.clientX
 
-            const deltaX = currentX - startX
-            const rail = event.currentTarget
-            const maxScrollLeft = Math.max(rail.scrollWidth - rail.clientWidth, 0)
-            const isAtLeftEdge = touchScrollLeftRef.current <= 0 && rail.scrollLeft <= 0
-            const isAtRightEdge =
-              touchScrollLeftRef.current >= maxScrollLeft - 1 &&
-              rail.scrollLeft >= maxScrollLeft - 1
+              if (typeof currentX !== 'number') {
+                return
+              }
 
-            if (isAtLeftEdge && deltaX > 0) {
-              event.preventDefault()
-              setEdgeStretchSide('left')
-              setEdgeStretchAmount(Math.min(deltaX * 0.22, 18))
-              return
-            }
+              const deltaX = currentX - startX
+              const rail = event.currentTarget
+              const maxScrollLeft = Math.max(rail.scrollWidth - rail.clientWidth, 0)
+              const isAtLeftEdge = touchScrollLeftRef.current <= 0 && rail.scrollLeft <= 0
+              const isAtRightEdge =
+                touchScrollLeftRef.current >= maxScrollLeft - 1 &&
+                rail.scrollLeft >= maxScrollLeft - 1
 
-            if (isAtRightEdge && deltaX < 0) {
-              event.preventDefault()
-              setEdgeStretchSide('right')
-              setEdgeStretchAmount(Math.min(Math.abs(deltaX) * 0.22, 18))
-              return
-            }
+              if (isAtLeftEdge && deltaX > 0) {
+                event.preventDefault()
+                setEdgeStretchSide('left')
+                setEdgeStretchAmount(Math.min(deltaX * 0.22, 18))
+                return
+              }
 
-            if (edgeStretchAmount !== 0) {
-              clearEdgeStretch()
-            }
-          }}
-          onTouchStart={(event) => {
-            touchStartXRef.current = event.touches[0]?.clientX ?? null
-            touchScrollLeftRef.current = event.currentTarget.scrollLeft
-          }}
-        >
-          <div className="cateringFlavorRailInner">
-            {selectableFlavors.map((flavor) => {
-              const isSelected = selectedFlavor?.id === flavor.id
-              const actionLabel = isSelected
-                ? 'Selected'
-                : selectedFlavor
-                  ? `Switch to ${flavor.title}`
-                  : `Choose ${flavor.title}`
+              if (isAtRightEdge && deltaX < 0) {
+                event.preventDefault()
+                setEdgeStretchSide('right')
+                setEdgeStretchAmount(Math.min(Math.abs(deltaX) * 0.22, 18))
+                return
+              }
 
-              return (
-                <div className="cateringFlavorRailItem" key={flavor.id}>
-                  <TrayFlavorCard
-                    actionLabel={actionLabel}
-                    clouds={flavorCardCloudsForScenery}
-                    flavor={flavor}
-                    isIngredientNoteOpen={areIngredientReceiptsOpen}
-                    isSelected={isSelected}
-                    meadowSrc={flavorCardMeadowForScenery}
-                    mobileSkySrc={flavorCardMobileSkyForScenery}
-                    onChoose={() => onAddFlavor(flavor.id)}
-                    onToggleIngredientNotes={() =>
-                      setAreIngredientReceiptsOpen((current) => !current)
-                    }
-                    renderSceneImage={renderSceneImage}
-                    sceneryTone={sceneryTone}
-                    skySrc={flavorCardSkyForScenery}
-                  />
-                </div>
-              )
-            })}
+              if (edgeStretchAmount !== 0) {
+                clearEdgeStretch()
+              }
+            }}
+            onTouchStart={(event) => {
+              touchStartXRef.current = event.touches[0]?.clientX ?? null
+              touchScrollLeftRef.current = event.currentTarget.scrollLeft
+            }}
+          >
+            <div className="cateringFlavorRailInner">
+              {selectableFlavors.map((flavor) => {
+                const isSelected = selectedFlavor?.id === flavor.id
+                const actionLabel = isSelected
+                  ? 'Selected'
+                  : selectedFlavor
+                    ? `Switch to ${flavor.title}`
+                    : `Choose ${flavor.title}`
+
+                return (
+                  <div className="cateringFlavorRailItem" key={flavor.id}>
+                    <TrayFlavorCard
+                      actionLabel={actionLabel}
+                      clouds={flavorCardCloudsForScenery}
+                      flavor={flavor}
+                      isIngredientNoteOpen={areIngredientReceiptsOpen}
+                      isSelected={isSelected}
+                      meadowSrc={flavorCardMeadowForScenery}
+                      mobileSkySrc={flavorCardMobileSkyForScenery}
+                      onChoose={() => onAddFlavor(flavor.id)}
+                      onToggleIngredientNotes={() =>
+                        setAreIngredientReceiptsOpen((current) => !current)
+                      }
+                      renderSceneImage={renderSceneImage}
+                      sceneryTone={sceneryTone}
+                      skySrc={flavorCardSkyForScenery}
+                    />
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
 
-        <SceneButton
-          className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
-          disabled={!canAddTray}
-          loading={isTrayPending}
-          loadingLabel="Adding tray to cart"
-          onClick={onAddToCart}
-          variant="primary"
-        >
-          {selectedFlavor
-            ? `Add ${selectedFlavor.title} Tray to cart`
-            : 'Choose a tray flavor first'}
-        </SceneButton>
-      </div>,
+          <SceneButton
+            className="cateringAddToCartButton cateringMenuRoundHeading min-h-[3rem] w-full text-[0.98rem] tracking-[-0.02em]"
+            disabled={!canAddTray}
+            loading={isTrayPending}
+            loadingLabel="Adding tray to cart"
+            onClick={onAddToCart}
+            variant="primary"
+          >
+            {selectedFlavor
+              ? `Add ${selectedFlavor.title} Tray to cart`
+              : 'Choose a tray flavor first'}
+          </SceneButton>
+        </div>,
       )}
     </>
   )
@@ -554,12 +556,14 @@ function BoxFlavorStepper({
   flavorTitle,
   onDecrement,
   onIncrement,
+  step = 1,
 }: {
   canIncrement: boolean
   count: number
   flavorTitle: string
   onDecrement: () => void
   onIncrement: () => void
+  step?: number
 }) {
   const stepButton =
     'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[rgba(28,46,16,0.16)] bg-[rgba(28,46,16,0.06)] text-[#1c2e10] transition duration-150 hover:bg-[#1c2e10] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(25,56,34,0.6)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[rgba(28,46,16,0.06)] disabled:hover:text-[#1c2e10]'
@@ -567,7 +571,7 @@ function BoxFlavorStepper({
   return (
     <div className="flex items-center justify-between gap-2 rounded-full border border-[rgba(91,70,37,0.16)] bg-white px-1.5 py-1">
       <button
-        aria-label={`Remove one ${flavorTitle}`}
+        aria-label={step > 1 ? `Remove ${step} ${flavorTitle}` : `Remove one ${flavorTitle}`}
         className={stepButton}
         disabled={count === 0}
         onClick={onDecrement}
@@ -582,7 +586,7 @@ function BoxFlavorStepper({
         {count}
       </span>
       <button
-        aria-label={`Add one ${flavorTitle}`}
+        aria-label={step > 1 ? `Add ${step} ${flavorTitle}` : `Add one ${flavorTitle}`}
         className={stepButton}
         disabled={!canIncrement}
         onClick={onIncrement}
@@ -595,6 +599,7 @@ function BoxFlavorStepper({
 }
 
 type MiniBoxBuilderPanelProps = {
+  addLabel?: string
   boxCounts: Record<number, number>
   boxTotal: number
   capacity: number
@@ -608,13 +613,17 @@ type MiniBoxBuilderPanelProps = {
   onDecrement: (flavorID: number) => void
   onIncrement: (flavorID: number) => void
   priceInUSD?: number | null
+  progressLabel?: string
+  rareBadgeLabel?: string
   renderPersuasionPanel: (children: React.ReactNode) => React.ReactNode
   renderSceneImage: (props: DecorativeSceneImageProps) => React.ReactElement
   sceneryTone: MenuSceneryTone
   selectableFlavors: SelectableFlavor[]
+  step?: number
 }
 
 export function MiniBoxBuilderPanel({
+  addLabel = 'Add box to cart',
   boxCounts,
   boxTotal,
   capacity,
@@ -628,14 +637,18 @@ export function MiniBoxBuilderPanel({
   onDecrement,
   onIncrement,
   priceInUSD,
+  progressLabel = 'Build your box',
+  rareBadgeLabel,
   renderPersuasionPanel,
   renderSceneImage,
   sceneryTone,
   selectableFlavors,
+  step = 1,
 }: MiniBoxBuilderPanelProps) {
   const [areIngredientReceiptsOpen, setAreIngredientReceiptsOpen] = React.useState(false)
   const isFull = boxTotal >= capacity
   const remaining = Math.max(0, capacity - boxTotal)
+  const canAddStep = remaining >= step
 
   return (
     <>
@@ -650,9 +663,14 @@ export function MiniBoxBuilderPanel({
                 />
               ) : undefined
             }
+            bloomEvery={step}
             currentCount={boxTotal}
-            label="Build your box"
-            title={`${boxTotal} of ${capacity} cookies`}
+            label={progressLabel}
+            title={
+              step > 1
+                ? `${boxTotal} of ${capacity} cookies · flavors in sets of ${step}`
+                : `${boxTotal} of ${capacity} cookies`
+            }
             totalCount={capacity}
           />
 
@@ -667,11 +685,12 @@ export function MiniBoxBuilderPanel({
                       actionLabel={`Add ${flavor.title}`}
                       actionSlot={
                         <BoxFlavorStepper
-                          canIncrement={!isFull}
+                          canIncrement={canAddStep}
                           count={count}
                           flavorTitle={flavor.title}
                           onDecrement={() => onDecrement(flavor.id)}
                           onIncrement={() => onIncrement(flavor.id)}
+                          step={step}
                         />
                       }
                       clouds={flavorCardCloudsForScenery}
@@ -684,6 +703,7 @@ export function MiniBoxBuilderPanel({
                       onToggleIngredientNotes={() =>
                         setAreIngredientReceiptsOpen((current) => !current)
                       }
+                      rareBadgeLabel={rareBadgeLabel}
                       renderSceneImage={renderSceneImage}
                       sceneryTone={sceneryTone}
                       skySrc={flavorCardSkyForScenery}
@@ -703,9 +723,7 @@ export function MiniBoxBuilderPanel({
               onClick={onAddBox}
               variant="primary"
             >
-              {isFull
-                ? 'Add box to cart'
-                : `Pick ${remaining} more cookie${remaining === 1 ? '' : 's'}`}
+              {isFull ? addLabel : `Pick ${remaining} more cookie${remaining === 1 ? '' : 's'}`}
             </SceneButton>
 
             {boxTotal > 0 ? (

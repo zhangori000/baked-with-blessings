@@ -12,10 +12,7 @@ import {
   getCookieAllergens,
   type CookiePosterAsset,
 } from '@/features/products/cookieDisplayData'
-import {
-  pickDefaultSizeVariant,
-  summarizeSizeVariants,
-} from '@/features/products/sizeVariants'
+import { pickDefaultSizeVariant, summarizeSizeVariants } from '@/features/products/sizeVariants'
 import type { Variant } from '@/payload-types'
 import { measureServerStep } from '@/utilities/devTiming'
 import { cateringMenuHref } from '@/utilities/routes'
@@ -36,7 +33,6 @@ type ActiveFlavorRotation = {
 const productSelect = {
   gallery: true,
   id: true,
-  individualAvailability: true,
   meta: true,
   poster: true,
   priceInUSD: true,
@@ -117,10 +113,7 @@ export const applyRotationAvailability = ({
     .map((poster) => {
       const productID = typeof poster.productId === 'number' ? String(poster.productId) : null
       const isMonthlyFlavor = Boolean(productID && monthlyFlavorIDs.has(productID))
-      // Standing-menu flavors stay individually orderable even when the
-      // active rotation does not feature them.
-      const isAlwaysAvailable = poster.individualAvailability === 'always'
-      const canBuyIndividually = isMonthlyFlavor || isAlwaysAvailable
+      const canBuyIndividually = isMonthlyFlavor
 
       return {
         ...poster,
@@ -132,21 +125,16 @@ export const applyRotationAvailability = ({
           activeRotation.lockedDescription?.trim() ||
           'Outside the current rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.',
         lockedLabel: activeRotation.lockedLabel?.trim() || 'Catering only',
-        // Focaccia lives on the menu as its tray; buyable singles land on the
-        // menu's regular-orders tab; catering-only flavors go to the bundles tab.
-        menuHref:
-          poster.slug === 'roasted-pesto-focaccia'
-            ? '/menu#bundle-focaccia-tray'
-            : canBuyIndividually
-              ? '/menu'
-              : cateringMenuHref,
+        menuHref: canBuyIndividually
+          ? '/menu'
+          : poster.slug === 'roasted-pesto-focaccia'
+            ? '/menu?section=bundles#bundle-focaccia-tray'
+            : cateringMenuHref,
         menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View on menu',
         monthlyFlavorLabel:
-          !isMonthlyFlavor && isAlwaysAvailable
-            ? 'Always available'
-            : activeRotation.monthlyFlavorLabel?.trim() ||
-              activeRotation.displayLabel?.trim() ||
-              "This week's special",
+          activeRotation.monthlyFlavorLabel?.trim() ||
+          activeRotation.displayLabel?.trim() ||
+          "This week's special",
       }
     })
     .sort((left, right) => {
@@ -510,4 +498,21 @@ export const queryPublicRotationCookiePosters = async () => {
   })
 
   return attachDefaultSizeVariants({ payload, posters: postersWithAvailability })
+}
+
+export const queryOldFlavorPosters = async () => {
+  const payload = await measureServerStep('payload init: old flavor posters', () =>
+    getPayload({ config: configPromise }),
+  )
+  const [activeRotation, products] = await Promise.all([
+    queryActiveFlavorRotation(payload),
+    queryCookieCategoryProducts(payload),
+  ])
+  const currentFlavorIDs = new Set(
+    getPublicRotationProductIDs(activeRotation).map((flavorID) => String(flavorID)),
+  )
+
+  return buildCookiePosterAssets(
+    products.filter((product) => !currentFlavorIDs.has(String(product.id))),
+  )
 }

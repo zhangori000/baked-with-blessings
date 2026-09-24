@@ -1,0 +1,104 @@
+.oldFlavorsTypography {
+  background: #fff8f2;
+}
+
+.oldFlavorsBand {
+  background: #fff8f2;
+  color: #171510;
+  margin-top: -1px;
+  padding-block: clamp(2.25rem, 6vw, 4.5rem);
+}
+
+.oldFlavorsShell {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.oldFlavorsIntro {
+  align-items: end;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.oldFlavorsHeader .bakeryPageEyebrow {
+  color: #7d5512;
+}
+
+.oldFlavorsHeader .bakeryPageTitle {
+  color: #171510;
+}
+
+.oldFlavorsHeader .bakeryPageLead {
+  color: rgba(23, 21, 16, 0.66);
+  max-width: 38rem;
+}
+
+.oldFlavorsActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.oldFlavorsGrid {
+  display: grid;
+  gap: clamp(0.85rem, 2.4vw, 1.4rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.oldFlavorsCard {
+  align-items: center;
+  background: #fffdf9;
+  border: 1px solid rgba(23, 21, 16, 0.08);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 24px rgba(23, 21, 16, 0.05);
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+  padding: 1.1rem 0.9rem 1.2rem;
+  text-align: center;
+}
+
+.oldFlavorsCookie {
+  aspect-ratio: 1;
+  position: relative;
+  width: min(100%, 9.5rem);
+}
+
+.oldFlavorsCookieImage {
+  object-fit: cover;
+  transform: scale(1.04);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.oldFlavorsCard:hover .oldFlavorsCookieImage {
+  transform: scale(1.12);
+}
+
+.oldFlavorsCardTitle {
+  color: #171510;
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.oldFlavorsEmpty {
+  color: rgba(23, 21, 16, 0.66);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+  .oldFlavorsIntro {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oldFlavorsCookieImage {
+    transition: none;
+  }
+}

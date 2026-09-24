@@ -432,7 +432,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior !== 'batchBuilder',
                 description:
-                  'Only for cookie flavors. "Always available" puts it on the menu year-round. "In the current rotation" adds it to the active rotation and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still get it inside catering trays. Saving applies the change everywhere.',
+                  'Only for cookie flavors. "In the current rotation" puts it on this week\'s menu and the /rotations page (arrange the order on the Flavor Rotations page). "Backlog" keeps it off the individual menu — customers can still order it through Catering, and it shows in the Flavor Hall of Fame. Saving applies the change everywhere.',
               },
               defaultValue: 'backlog',
               hooks: {
@@ -440,16 +440,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               },
               options: [
                 {
-                  label: 'Backlog — catering trays only',
+                  label: 'Backlog — catering only',
                   value: 'backlog',
                 },
                 {
                   label: 'In the current rotation',
                   value: 'currentRotation',
-                },
-                {
-                  label: 'Always available on the menu',
-                  value: 'always',
                 },
               ],
               virtual: true,
@@ -513,7 +509,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 condition: (_, siblingData) => siblingData?.menuBehavior === 'batchBuilder',
                 description:
-                  'The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors that are available right now (always-available + this month’s rotation), so rare and backlog flavors stay hidden until they return. One-flavor trays show every flavor selected here, including rare ones — that’s how customers order an out-of-season favorite.',
+                  'The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors in this week’s rotation, so backlog flavors stay hidden until they return. Catering packages ignore this list and always offer every published cookie flavor, including past ones.',
               },
               filterOptions: ({ id }) => {
                 if (id) {

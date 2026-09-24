@@ -94,15 +94,17 @@ const matchedVariants = [
 ]
 
 describe('menuPlacementAfterRead (the derived placement select)', () => {
-  it('reads "always" straight from the stored field', async () => {
-    const { req } = makeEnv()
+  it('treats a legacy "always" stored value as backlog when off the rotation', async () => {
+    const { req } = makeEnv({
+      rotation: { id: 9, individualFlavors: [99], showcaseProducts: [99] },
+    })
 
     await expect(
       menuPlacementAfterRead({
         data: cookieDoc({ individualAvailability: 'always' }),
         req,
       } as never),
-    ).resolves.toBe('always')
+    ).resolves.toBe('backlog')
   })
 
   it('reads rotation membership from the active rotation', async () => {
@@ -137,11 +139,11 @@ describe('applyMenuPlacementBeforeChange (mapping + prechecks)', () => {
     const { req } = makeEnv({
       rotation: { id: 9, individualFlavors: [99], showcaseProducts: [99] },
     })
-    const data = cookieDoc({ menuPlacement: 'always' })
+    const data = cookieDoc({ individualAvailability: 'always', menuPlacement: 'backlog' })
 
     await applyMenuPlacementBeforeChange({ data, originalDoc: undefined, req } as never)
 
-    expect(data.individualAvailability).toBe('always')
+    expect(data.individualAvailability).toBe('rotation')
   })
 
   it('refuses "current rotation" when no rotation is active', async () => {
