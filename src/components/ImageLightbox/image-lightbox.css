@@ -1,0 +1,76 @@
+.imageLightbox {
+  align-items: center;
+  animation: imageLightboxFade 180ms ease-out;
+  backdrop-filter: blur(6px);
+  background: rgba(23, 21, 16, 0.78);
+  cursor: zoom-out;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  position: fixed;
+  z-index: 1000;
+}
+
+.imageLightboxClose {
+  align-items: center;
+  background: var(--bakery-color-bg-primary, #fffdf9);
+  border: 1px solid rgba(23, 21, 16, 0.12);
+  border-radius: 999px;
+  color: var(--bakery-color-fg, #171510);
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  position: absolute;
+  right: clamp(0.75rem, 3vw, 1.5rem);
+  top: clamp(0.75rem, 3vw, 1.5rem);
+  width: 2.75rem;
+}
+
+.imageLightboxClose:focus-visible {
+  outline: 3px solid var(--bakery-color-bg-primary, #fffdf9);
+  outline-offset: 3px;
+}
+
+.imageLightboxFigure {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: center;
+  margin: 0;
+  width: min(92vw, 70vh, 44rem);
+}
+
+.imageLightboxFrame {
+  aspect-ratio: 1;
+  position: relative;
+  width: 100%;
+}
+
+.imageLightboxImage {
+  object-fit: cover;
+}
+
+.imageLightboxCaption {
+  color: var(--bakery-color-bg-primary, #fffdf9);
+  font-family: var(--font-rounded-display);
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+@keyframes imageLightboxFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imageLightbox {
+    animation: none;
+  }
+}

@@ -7,14 +7,22 @@ import {
   MenuHero,
   menuSceneryTones,
   preloadSceneryAssets,
-} from '../menu/_components/catering-menu-scenery'
-import type { MenuSceneryTone } from '../menu/_components/catering-menu-types'
+} from './catering-menu-scenery'
+import type { MenuSceneryTone } from './catering-menu-types'
 
-type OldFlavorsSceneryHeroProps = {
+type SceneryPageHeroProps = {
+  eyebrow: string
   initialSceneryTone?: MenuSceneryTone
+  summary: string
+  title: string
 }
 
-export function OldFlavorsSceneryHero({ initialSceneryTone = 'dawn' }: OldFlavorsSceneryHeroProps) {
+export function SceneryPageHero({
+  eyebrow,
+  initialSceneryTone = 'dawn',
+  summary,
+  title,
+}: SceneryPageHeroProps) {
   const [sceneryTone, setSceneryTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [isSceneryPickerOpen, setIsSceneryPickerOpen] = useState(false)
 
@@ -36,14 +44,14 @@ export function OldFlavorsSceneryHero({ initialSceneryTone = 'dawn' }: OldFlavor
 
   return (
     <MenuHero
-      eyebrow="Hall of Fame"
+      eyebrow={eyebrow}
       isSceneryPickerOpen={isSceneryPickerOpen}
       isSceneChanging={false}
       onSelectScenery={handleSelectScenery}
       onToggleSceneryPicker={() => setIsSceneryPickerOpen((current) => !current)}
       sceneryTone={sceneryTone}
-      summary="Every flavor that has rotated off the menu. Any of them might come back, and all of them can be ordered through Catering."
-      title="Old Flavors"
+      summary={summary}
+      title={title}
     />
   )
 }
