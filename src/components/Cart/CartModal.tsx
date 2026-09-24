@@ -539,21 +539,12 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           .cartModalHeaderTitle {
             color: #fffefa;
             text-transform: none;
-            font-family: var(
-              --font-catering-serif,
-              'Cormorant Garamond',
-              'Iowan Old Style',
-              'Palatino Linotype',
-              serif
-            );
-            font-size: clamp(2.1rem, 10vw, 3rem);
-            font-weight: 800;
-            line-height: 0.9;
-            letter-spacing: -0.035em;
-            text-shadow:
-              0 1px 0 rgba(255, 255, 255, 0.22),
-              0 12px 28px rgba(17, 44, 75, 0.34),
-              0 0 20px rgba(255, 255, 255, 0.22);
+            font-family: var(--font-rounded-display);
+            font-size: clamp(1.9rem, 8vw, 2.5rem);
+            font-weight: 600;
+            line-height: 0.95;
+            letter-spacing: -0.03em;
+            text-shadow: 0 6px 18px rgba(17, 44, 75, 0.28);
           }
 
           .cartModalHeaderTitleWrap {
@@ -710,7 +701,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             }
 
             .cartModalHeaderTitle {
-              font-size: clamp(1.75rem, 8vw, 2.35rem);
+              font-size: clamp(1.6rem, 7vw, 2.1rem);
             }
 
             .cartAuthPanelSurface {

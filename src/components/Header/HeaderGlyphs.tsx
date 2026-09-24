@@ -28,32 +28,48 @@ export function MenuGlyph({ className }: GlyphProps) {
 }
 
 export function AnnouncementsGlyph({ className }: GlyphProps) {
+  const maskId = useId()
+
   return (
     <svg className={cn('siteHeaderGlyph', className)} {...svgProps}>
+      <defs>
+        <mask id={maskId}>
+          <rect fill="#fff" height="24" width="24" />
+          <path
+            d="M4.6 7.6 12 13.1 19.4 7.6"
+            fill="none"
+            stroke="#000"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
+          />
+        </mask>
+      </defs>
       <path
         d="M4.2 7.2h15.6v10.2c0 .7-.5 1.2-1.2 1.2H5.4c-.7 0-1.2-.5-1.2-1.2V7.2Z"
         fill="currentColor"
-      />
-      <path
-        d="M4.6 7.6 12 13.1 19.4 7.6"
-        fill="none"
-        stroke="#fff"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.7"
+        mask={`url(#${maskId})`}
       />
     </svg>
   )
 }
 
 export function PinGlyph({ className }: GlyphProps) {
+  const maskId = useId()
+
   return (
     <svg className={cn('siteHeaderGlyph', className)} {...svgProps}>
+      <defs>
+        <mask id={maskId}>
+          <rect fill="#fff" height="24" width="24" />
+          <circle cx="12" cy="7.1" fill="#000" r="1.25" />
+        </mask>
+      </defs>
       <path
         d="M12 3.4c2.15 0 3.9 1.65 3.9 3.7 0 2.7-3.9 7.3-3.9 7.3S8.1 9.8 8.1 7.1c0-2.05 1.75-3.7 3.9-3.7Z"
         fill="currentColor"
+        mask={`url(#${maskId})`}
       />
-      <circle cx="12" cy="7.1" r="1.25" fill="#fff" />
       <path d="M12 14.2v5.2" stroke="currentColor" strokeLinecap="round" strokeWidth="2.05" />
     </svg>
   )
@@ -74,19 +90,33 @@ export function AccountGlyph({ className }: GlyphProps) {
 }
 
 export function BagGlyph({ className }: GlyphProps) {
+  const maskId = useId()
+
   return (
     <svg className={cn('siteHeaderGlyph', className)} {...svgProps}>
+      <defs>
+        <mask id={maskId}>
+          <rect fill="#fff" height="24" width="24" />
+          <path
+            d="M9 11.4a3 3 0 0 0 6 0"
+            fill="none"
+            stroke="#000"
+            strokeLinecap="round"
+            strokeWidth="1.7"
+          />
+        </mask>
+      </defs>
       <path
-        d="M7.1 8.4h9.8l.85 10.1c.08.9-.62 1.7-1.52 1.7H7.77c-.9 0-1.6-.8-1.52-1.7L7.1 8.4Z"
+        d="M5.3 8.3h13.4l.95 10.3c.09.95-.66 1.7-1.6 1.7H5.95c-.94 0-1.69-.75-1.6-1.7L5.3 8.3Z"
         fill="currentColor"
+        mask={`url(#${maskId})`}
       />
       <path
-        d="M9 8.2V7.1A3 3 0 0 1 12 4.1 3 3 0 0 1 15 7.1v1.1"
+        d="M8.9 8.3v-.9a3.1 3.1 0 0 1 6.2 0v.9"
         stroke="currentColor"
         strokeLinecap="round"
         strokeWidth="1.9"
       />
-      <circle cx="12" cy="13.6" r="1.35" fill="#fff" />
     </svg>
   )
 }

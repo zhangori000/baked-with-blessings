@@ -10,7 +10,6 @@ export const createBakeryThemeCssVars = (theme: BakeryTheme): BakeryCSSVars => {
     '--bakery-color-bg': theme.color.bg,
     '--bakery-color-bg-primary': theme.color.bgPrimary,
     '--bakery-color-bg-secondary': theme.color.bgSecondary,
-    '--bakery-color-blossom-soft': theme.primitive.color.blossomPetalSoft,
     '--bakery-color-cream-50': theme.primitive.color.cream50,
     '--bakery-color-border': theme.color.border,
     '--bakery-color-fg': theme.color.fg,
