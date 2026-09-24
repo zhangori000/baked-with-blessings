@@ -552,7 +552,7 @@ export interface Product {
    */
   requiredSelectionCount?: number | null;
   /**
-   * The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors in this week’s rotation, so backlog flavors stay hidden until they return. Catering packages and one-flavor trays show every flavor selected here, including past ones — that’s how customers order an out-of-season favorite.
+   * The cookie flavors customers can pick for this tray or box. Simplest approach: leave every cookie selected. For "mix and match" boxes the menu automatically shows only the flavors in this week’s rotation, so backlog flavors stay hidden until they return. Catering packages ignore this list and always offer every published cookie flavor, including past ones.
    */
   selectableProducts?: (number | Product)[] | null;
   /**
