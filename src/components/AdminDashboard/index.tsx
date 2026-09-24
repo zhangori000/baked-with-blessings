@@ -134,6 +134,16 @@ export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) =
           </div>
           <div className={styles.toolsGrid}>
             <article className={styles.toolCard}>
+              <h3 className={styles.toolTitle}>Send a bakery update</h3>
+              <p className={styles.toolDescription}>
+                Text and email everyone who said yes to bakery news, like a new flavor or a market
+                date.
+              </p>
+              <Link className={styles.toolLink} href="/admin/bakery-updates" prefetch={false}>
+                Write an update
+              </Link>
+            </article>
+            <article className={styles.toolCard}>
               <h3 className={styles.toolTitle}>Set every cookie price</h3>
               <p className={styles.toolDescription}>
                 Change individual cookie prices together. Tray and catering prices stay unchanged.
