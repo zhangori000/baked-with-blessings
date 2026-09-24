@@ -33,6 +33,7 @@ type TrayBuilderItemLike = {
 }
 
 type ProductConfigLike = {
+  _status?: null | string
   categories?: (DefaultDocumentIDType | CategoryConfigLike | null)[] | null
   flavorSelection?: null | string
   id?: DefaultDocumentIDType
@@ -334,6 +335,22 @@ const validateBatchSelections = async ({
     )
   }
 
+  const isCateringFlavor = async (product: ProductConfigLike | undefined) => {
+    if (!product || product._status === 'draft' || product.menuBehavior === 'batchBuilder') {
+      return false
+    }
+
+    const cookieCategoryID = await loadCookieCategoryID()
+
+    if (cookieCategoryID == null) {
+      return false
+    }
+
+    return (Array.isArray(product.categories) ? product.categories : []).some(
+      (category) => String(getRelationshipID(category)) === String(cookieCategoryID),
+    )
+  }
+
   const validateIndividualCookieAvailability = async ({
     label,
     onUnavailable,
@@ -429,7 +446,9 @@ const validateBatchSelections = async ({
         .map((selectionProductID) => String(selectionProductID)),
     )
 
-    if (allowedProductIDs.size === 0) {
+    const isCatering = await isCateringPackage(product)
+
+    if (allowedProductIDs.size === 0 && !isCatering) {
       throw new Error(`${label} is misconfigured. Add selectable products for this tray.`)
     }
 
@@ -438,7 +457,7 @@ const validateBatchSelections = async ({
     // One-flavor "binge" trays (flavorSelection !== 'mixAndMatch') allow any
     // flavor, including rare/legacy ones — that is their whole purpose.
     const isMixAndMatch = product?.flavorSelection === 'mixAndMatch'
-    const allowsAnyFlavor = !isMixAndMatch || (await isCateringPackage(product))
+    const allowsAnyFlavor = !isMixAndMatch || isCatering
 
     let selectedTotal = 0
 
@@ -451,7 +470,11 @@ const validateBatchSelections = async ({
         )
       }
 
-      if (!allowedProductIDs.has(String(selectionProductID))) {
+      const isAllowedSelection = isCatering
+        ? await isCateringFlavor(await loadProduct(selection?.product))
+        : allowedProductIDs.has(String(selectionProductID))
+
+      if (!isAllowedSelection) {
         throw new Error(`${label} includes a product that is not allowed for this tray.`)
       }
 

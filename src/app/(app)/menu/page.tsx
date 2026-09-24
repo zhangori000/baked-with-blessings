@@ -3,6 +3,7 @@ import type { Product } from '@/payload-types'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import {
   BUNDLES_CATEGORY_SLUG,
+  CATERING_FLAVOR_CATEGORY_SLUG,
   CATERING_PACKAGES_CATEGORY_SLUG,
 } from '@/features/products/cateringPackages'
 import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
@@ -115,6 +116,45 @@ const queryPublishedProductsInCategory = async (payload: Payload, categorySlug: 
   return { category, products: productsResult.docs as Partial<Product>[] }
 }
 
+const queryCateringFlavors = async (payload: Payload) => {
+  const categoryResult = await measureServerStep('payload.find categories: catering flavors', () =>
+    payload.find({
+      collection: 'categories',
+      depth: 0,
+      limit: 1,
+      overrideAccess: false,
+      pagination: false,
+      select: { slug: true },
+      where: { slug: { equals: CATERING_FLAVOR_CATEGORY_SLUG } },
+    }),
+  )
+  const categoryID = categoryResult.docs[0]?.id
+
+  if (categoryID == null) {
+    return [] as Product[]
+  }
+
+  const flavorsResult = await measureServerStep('payload.find products: catering flavors', () =>
+    payload.find({
+      collection: 'products',
+      depth: 1,
+      draft: false,
+      overrideAccess: false,
+      pagination: false,
+      sort: 'title',
+      where: {
+        and: [
+          { _status: { equals: 'published' } },
+          { categories: { contains: categoryID } },
+          { menuBehavior: { not_equals: 'batchBuilder' } },
+        ],
+      },
+    }),
+  )
+
+  return flavorsResult.docs as Product[]
+}
+
 export default async function CateringMenuPage({
   searchParams,
 }: {
@@ -127,11 +167,18 @@ export default async function CateringMenuPage({
     getPayload({ config: configPromise }),
   )
 
-  const [regularOrderData, bundles, cateringPackages] = await Promise.all([
+  const [regularOrderData, bundles, cateringPackages, cateringFlavors] = await Promise.all([
     measureServerStep('query regular order items: menu', () => queryRegularOrderItems(payload)),
     queryPublishedProductsInCategory(payload, BUNDLES_CATEGORY_SLUG),
     queryPublishedProductsInCategory(payload, CATERING_PACKAGES_CATEGORY_SLUG),
+    queryCateringFlavors(payload),
   ])
+  const cateringPackagesWithFlavors = cateringFlavors.length
+    ? cateringPackages.products.map((cateringPackage) => ({
+        ...cateringPackage,
+        selectableProducts: cateringFlavors,
+      }))
+    : cateringPackages.products
 
   if (
     !bundles.products.length &&
@@ -152,7 +199,7 @@ export default async function CateringMenuPage({
   return (
     <div className={cateringSerif.variable}>
       <CateringMenuSection
-        cateringPackages={cateringPackages.products}
+        cateringPackages={cateringPackagesWithFlavors}
         initialSceneryTone={initialSceneryTone}
         initialSection={initialSection}
         products={bundles.products}

@@ -6,6 +6,7 @@ const COOKIE_CATEGORY_ID = 77
 const CATERING_PACKAGES_CATEGORY_ID = 88
 
 type MockProduct = {
+  _status?: 'draft' | 'published'
   categories?: number[]
   flavorSelection?: 'mixAndMatch' | 'single'
   id: number
@@ -220,5 +221,60 @@ describe('mix-and-match flavor availability', () => {
         rotationFlavorIDs: [currentFlavor.id],
       }),
     ).resolves.toBeTruthy()
+  })
+
+  it('allows newly added cookie flavors in catering packages without editing the package', async () => {
+    const newFlavor: MockProduct = {
+      categories: [COOKIE_CATEGORY_ID],
+      id: 8,
+      menuBehavior: 'simple',
+      title: 'Lemon Crinkle',
+    }
+
+    await expect(
+      runHook({
+        items: [
+          {
+            batchSelections: [{ product: newFlavor.id, quantity: 18 }],
+            product: cateringPackage.id,
+            quantity: 1,
+          },
+        ],
+        products: [newFlavor, cateringPackage],
+        rotationFlavorIDs: [currentFlavor.id],
+      }),
+    ).resolves.toBeTruthy()
+  })
+
+  it('rejects non-cookie and unpublished products in catering packages', async () => {
+    const pudding: MockProduct = {
+      categories: [],
+      id: 9,
+      menuBehavior: 'simple',
+      title: 'Banana Pudding 10-Pack',
+    }
+    const draftFlavor: MockProduct = {
+      _status: 'draft',
+      categories: [COOKIE_CATEGORY_ID],
+      id: 10,
+      menuBehavior: 'simple',
+      title: 'Unreleased Cookie',
+    }
+
+    for (const product of [pudding, draftFlavor]) {
+      await expect(
+        runHook({
+          items: [
+            {
+              batchSelections: [{ product: product.id, quantity: 18 }],
+              product: cateringPackage.id,
+              quantity: 1,
+            },
+          ],
+          products: [product, cateringPackage],
+          rotationFlavorIDs: [currentFlavor.id],
+        }),
+      ).rejects.toThrow(/not allowed/)
+    }
   })
 })
