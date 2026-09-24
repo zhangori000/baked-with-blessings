@@ -7,28 +7,9 @@ import {
   type CookieSeedSpec,
   defaultCookieMiniPriceInUSD,
 } from './cookie-catalog'
-import { createParagraphRichText, createSegmentedParagraphsRichText } from './richText'
+import { getCookieAllergens } from '@/features/products/cookieDisplayData'
 
-const textureNoteBySlug: Record<string, string> = {
-  'apple-snickerdoodle': 'Apple pie meets snickerdoodle',
-  'banana-choc-chip-walnut': 'Banana bread cookie',
-  'banana-crumble': 'Soft banana streusel cookie',
-  biscoff: 'Cookie butter loaded',
-  brookie: 'Brownie cookie mashup',
-  'cinnamon-roll': 'Bakery roll in cookie form',
-  'dubai-chocolate': 'Pistachio chocolate cookie',
-  'oreo-cheesecake': 'Creamy Oreo center',
-  'peanut-butter-cup': 'Chocolate peanut butter cookie',
-  'salted-caramel-nest': 'Salted caramel nest cookie',
-  smores: 'Campfire cookie',
-  'strawberry-cheesecake': 'Berry cheesecake cookie',
-  'strawberry-matcha': 'Matcha berry swirl',
-  'strawberry-matcha-marble': 'Marbled berry matcha cookie',
-  'red-velvet-cheesecake': 'Red velvet cheesecake cookie',
-  'toasted-and-tasseled': 'S’more graduation cookie',
-  'sticky-mango-rice-krispy-treats': 'Mango mochi krispy cookie',
-  'freshly-baked-dirty-chai-cookie': 'Chai espresso cookie',
-}
+import { createParagraphRichText, createSegmentedParagraphsRichText } from './richText'
 
 const allergyNoteBySlug: Record<string, string> = {
   'banana-choc-chip-walnut':
@@ -41,20 +22,47 @@ const allergyNoteBySlug: Record<string, string> = {
     'Allergy: marshmallow may contain gelatin; baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.',
 }
 
+const SHARED_KITCHEN = ['wheat', 'milk', 'eggs', 'soy', 'peanuts', 'tree nuts']
+
 const getAllergyNote = (slug: string) =>
   allergyNoteBySlug[slug] ??
   'Allergy: baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts.'
 
+const formatList = (items: string[]) => {
+  if (items.length <= 1) return items[0] ?? ''
+  if (items.length === 2) return `${items[0]} and ${items[1]}`
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`
+}
+
+const mentions = (text: string, item: string) => text.toLowerCase().includes(item.toLowerCase())
+
+// Written into Payload poster.receiptBody. The storefront prints that field as-is.
+const buildStoredAllergenLine = (slug: string) => {
+  const contains = getCookieAllergens(slug)
+  const extra = getAllergyNote(slug)
+    .replace(/^Allergy:\s*/i, '')
+    .replace(/baked in a shared kitchen with wheat, milk, eggs, soy, peanuts, and tree nuts\.?/i, '')
+    .replace(/^contains\s+/i, '')
+    .replace(/\s+and is\s*$/i, '')
+    .replace(/[.;]\s*$/g, '')
+    .trim()
+  const named = contains.filter((item) => !extra || !mentions(extra, item))
+  const also = SHARED_KITCHEN.filter(
+    (item) =>
+      !contains.some((namedItem) => mentions(namedItem, item) || mentions(item, namedItem)) &&
+      !mentions(extra, item),
+  )
+  const parts = [
+    extra ? extra.charAt(0).toUpperCase() + extra.slice(1) : '',
+    named.length > 0 ? `Contains ${formatList(named)}` : '',
+    also.length > 0 ? `Baked in a shared kitchen with ${formatList(also)}` : '',
+  ].filter(Boolean)
+
+  return `${parts.join('. ')}.`
+}
+
 const createCookieInfoBody = (spec: CookieSeedSpec) =>
-  createSegmentedParagraphsRichText([
-    [spec.summary],
-    [
-      'Texture: ',
-      { bold: true, text: textureNoteBySlug[spec.slug] ?? 'Bakery-style cookie' },
-      '. Best served warm.',
-    ],
-    [{ bold: true, text: 'Allergy: ' }, getAllergyNote(spec.slug).replace(/^Allergy:\s*/, '')],
-  ])
+  createSegmentedParagraphsRichText([[spec.summary], [buildStoredAllergenLine(spec.slug)]])
 
 export const buildPosterData = (spec: CookieSeedSpec) => {
   return {

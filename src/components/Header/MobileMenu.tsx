@@ -1,16 +1,25 @@
 'use client'
 
 import {
-  BakeryAction,
-  BakeryCard,
   BakeryPressable,
   bakeryMediaQueries,
   useBakeryAnnouncer,
   useBakeryMediaQuery,
 } from '@/design-system/bakery'
 import { cn } from '@/utilities/cn'
-import { Megaphone, MenuIcon, ShoppingBag, UserRound, X } from 'lucide-react'
-import Link from 'next/link'
+import {
+  AccountGlyph,
+  AnnouncementsGlyph,
+  BagGlyph,
+  MenuGlyph,
+} from './HeaderGlyphs'
+import {
+  appMenuFlowerTones,
+  HeaderMenuCard,
+  type HeaderMenuFlowerTone,
+  mainMenuFlowerTones,
+} from './HeaderMenuCard'
+import { X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 
@@ -19,8 +28,10 @@ type Props = {
   cartQuantity: number
   hasUnseenAnnouncements: boolean
   isAccountOpen: boolean
+  isAnnouncementsOpen: boolean
   onOpenAccount: () => void
-  onOpenAnnouncements: () => void
+  onOpenAnnouncements: (event?: { stopPropagation: () => void }) => void
+  onOpenMenu: () => void
   onOpenCart: () => void
   items: Array<{
     id: string
@@ -41,20 +52,17 @@ type Props = {
   }>
 }
 
-type MobileFlowerTone = 'orange' | 'plum' | 'rose' | 'sage' | 'sunflower'
-
-const mainCardFlowerTones: MobileFlowerTone[] = ['orange', 'sage']
-const appCardFlowerTones: MobileFlowerTone[] = ['rose', 'sunflower', 'plum']
-
 export function MobileMenu({
   accountButtonLabel,
   cartQuantity,
   hasUnseenAnnouncements,
   isAccountOpen,
+  isAnnouncementsOpen,
   items,
   onOpenAccount,
   onOpenAnnouncements,
   onOpenCart,
+  onOpenMenu,
 }: Props) {
   const pathname = usePathname()
   const { announce } = useBakeryAnnouncer()
@@ -115,37 +123,19 @@ export function MobileMenu({
     href: string
     key: string
     title: string
-    tone: MobileFlowerTone
+    tone: HeaderMenuFlowerTone
   }) => (
-    <BakeryCard
-      as="article"
-      className="siteHeaderMobileCard"
-      data-flower-tone={tone}
+    <HeaderMenuCard
+      description={description}
+      eyebrow={eyebrow}
+      href={href}
       key={key}
-      radius="lg"
-      spacing="none"
-      tone="transparent"
-    >
-      <div className="siteHeaderMobileCardCopy">
-        <p className="siteHeaderMobileCardEyebrow">{eyebrow}</p>
-        <h3 className="siteHeaderMobileCardTitle">{title}</h3>
-        <p className="siteHeaderMobileCardDescription">{description}</p>
-      </div>
-
-      <BakeryAction
-        as={Link}
-        aria-label={`Open ${title}`}
-        className="siteHeaderMobileCardAction"
-        href={href}
-        onClick={() => {
-          setIsOpen(false)
-        }}
-        size="sm"
-        variant="secondary"
-      >
-        <span className="siteHeaderMobileCardActionLabel">GO</span>
-      </BakeryAction>
-    </BakeryCard>
+      onNavigate={() => {
+        setIsOpen(false)
+      }}
+      title={title}
+      tone={tone}
+    />
   )
 
   return (
@@ -157,28 +147,33 @@ export function MobileMenu({
           className="siteHeaderMobileIconButton"
           onClick={() => {
             const nextOpen = !isOpen
+            if (nextOpen) onOpenMenu()
             setIsOpen(nextOpen)
             announce(nextOpen ? 'Mobile navigation opened.' : 'Mobile navigation closed.')
           }}
           type="button"
         >
-          {isOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
+          {isOpen ? <X className="h-5 w-5" /> : <MenuGlyph className="h-5 w-5" />}
         </BakeryPressable>
 
         <BakeryPressable
+          aria-expanded={isAnnouncementsOpen}
           aria-label={
-            hasUnseenAnnouncements
-              ? 'Open announcements. New announcements available'
-              : 'Open announcements'
+            isAnnouncementsOpen
+              ? 'Close announcements'
+              : hasUnseenAnnouncements
+                ? 'Open announcements. New announcements available'
+                : 'Open announcements'
           }
           className="siteHeaderMobileIconButton siteHeaderMobileAnnouncementsButton"
-          onClick={() => {
+          onClick={(event) => {
+            event.stopPropagation()
             setIsOpen(false)
-            onOpenAnnouncements()
+            onOpenAnnouncements(event)
           }}
           type="button"
         >
-          <Megaphone className="h-4 w-4" />
+          <AnnouncementsGlyph className="h-5 w-5" />
           {hasUnseenAnnouncements ? (
             <span aria-hidden="true" className="siteHeaderNewDot" />
           ) : null}
@@ -195,7 +190,7 @@ export function MobileMenu({
           }}
           type="button"
         >
-          <UserRound className="h-4 w-4" />
+          <AccountGlyph className="h-5 w-5" />
         </BakeryPressable>
 
         <BakeryPressable
@@ -207,7 +202,7 @@ export function MobileMenu({
           }}
           type="button"
         >
-          <ShoppingBag className="siteHeaderMobileBagIcon h-4 w-4" />
+          <BagGlyph className="siteHeaderMobileBagIcon h-5 w-5" />
           <span className="siteHeaderMobileBagCount">[{cartQuantity}]</span>
         </BakeryPressable>
       </div>
@@ -221,12 +216,12 @@ export function MobileMenu({
               href: item.href,
               key: item.id,
               title: item.label,
-              tone: mainCardFlowerTones[index % mainCardFlowerTones.length],
+              tone: mainMenuFlowerTones[index % mainMenuFlowerTones.length],
             }),
           )}
 
           {appCards.length ? (
-            <div className="siteHeaderMobileSectionDivider" role="separator">
+            <div className="siteHeaderMenuSectionDivider" role="separator">
               <span>Apps</span>
             </div>
           ) : null}
@@ -240,7 +235,7 @@ export function MobileMenu({
                   href: card.href,
                   key: `${item.id}-${card.href}`,
                   title: card.title,
-                  tone: appCardFlowerTones[index % appCardFlowerTones.length],
+                  tone: appMenuFlowerTones[index % appMenuFlowerTones.length],
                 }),
               )}
             </div>

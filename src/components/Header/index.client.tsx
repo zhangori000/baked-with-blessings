@@ -30,36 +30,28 @@ import {
 import { isPayloadMediaFileURL, resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
   ArrowRight,
-  BookOpenText,
   ChevronDown,
-  ClipboardCheck,
   Eye,
   EyeOff,
-  Handshake,
-  Lightbulb,
   LoaderCircle,
-  MapPin,
-  Megaphone,
-  MessageSquareText,
-  PanelsTopLeft,
-  StickyNote,
   ShoppingBag,
-  type LucideIcon,
-  UserRound,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { type FormEvent, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 
+import { AnnouncementsInbox } from './AnnouncementsInbox'
 import {
   buildHeaderNavigation,
   getEnabledHeaderAppPages,
-  type HeaderAppPageIcon,
   isHeaderNavigationItemActive,
 } from './constants'
+import { AccountGlyph, BagGlyph } from './HeaderGlyphs'
+import { appMenuFlowerTones, HeaderMenuCard } from './HeaderMenuCard'
 import { MobileMenu } from './MobileMenu'
 import { useHeaderVisibility } from './useHeaderVisibility'
 
@@ -68,12 +60,13 @@ type AccountAuthMode = 'create' | 'login'
 
 const customerCreateResendDelayMs = 7 * 1000
 const announcementsSeenStorageKey = 'bwb-announcements-seen-at'
+const announcementsAutoOpenStorageKey = 'bwb-announcements-auto-opened'
 
 export type HeaderAnnouncementItem = {
   id?: null | string
-  linkHref?: null | string
-  linkLabel?: null | string
   message: string
+  pinned?: boolean | null
+  postedOn?: null | string
   title: string
 }
 
@@ -151,16 +144,6 @@ const getActiveAppLabel = (pathname: string) => {
 
 const appsNavigationLabel = 'Other pages'
 
-const appIconByKey: Record<HeaderAppPageIcon, LucideIcon> = {
-  'book-open-text': BookOpenText,
-  'clipboard-check': ClipboardCheck,
-  handshake: Handshake,
-  lightbulb: Lightbulb,
-  'map-pin': MapPin,
-  'message-square-text': MessageSquareText,
-  'sticky-note': StickyNote,
-}
-
 const formatCartQuantity = (quantity: number) => `${quantity} item${quantity === 1 ? '' : 's'}`
 
 const getSafeLocalRedirect = (value: null | string) => {
@@ -178,6 +161,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
   const router = useRouter()
   const headerRef = useRef<HTMLElement | null>(null)
   const panelInnerRef = useRef<HTMLDivElement | null>(null)
+  const announcementsSheetRef = useRef<HTMLDivElement | null>(null)
   const lastAutoSubmittedCreateCodeRef = useRef('')
   const { isScrolled } = useHeaderVisibility()
   const { announce } = useBakeryAnnouncer()
@@ -207,6 +191,8 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [showCustomerLoginPassword, setShowCustomerLoginPassword] = useState(false)
   const [adminSessionUser, setAdminSessionUser] = useState<HeaderAdminUser | null>(null)
+  const [portalReady, setPortalReady] = useState(false)
+  const [announcementsBackdropReady, setAnnouncementsBackdropReady] = useState(false)
   const [isAdminSessionLoading, setIsAdminSessionLoading] = useState(true)
 
   const hasSignedInAccount = Boolean(user || adminSessionUser)
@@ -263,8 +249,21 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
     setHasUnseenAnnouncements(false)
   }
 
-  const openAnnouncementsPanel = () => {
-    toggleHeaderPanel('announcements', 'Announcements opened.', 'Announcements closed.')
+  const openAnnouncementsPanel = (event?: {
+    preventDefault?: () => void
+    stopPropagation: () => void
+  }) => {
+    event?.preventDefault?.()
+    event?.stopPropagation()
+
+    if (activePanel === 'announcements') {
+      setActivePanel(null)
+      announce('Announcements closed.')
+      return
+    }
+
+    setActivePanel('announcements')
+    announce('Announcements opened.')
     markAnnouncementsSeen()
   }
 
@@ -353,14 +352,18 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
   useEffect(() => {
     const closePanel = () => setActivePanel(null)
     const onPointerDown = (event: PointerEvent) => {
-      if (!panelInnerRef.current || !event.target || !activePanel) return
-      if (panelInnerRef.current.contains(event.target as Node)) return
+      if (!event.target || !activePanel) return
+      if (panelInnerRef.current?.contains(event.target as Node)) return
+      if (announcementsSheetRef.current?.contains(event.target as Node)) return
 
       const target = event.target as HTMLElement
       if (target.closest(`.${headerClassNames.actionButton}`)) return
       if (target.closest(`.${headerClassNames.bannerLink}`)) return
+      if (target.closest('.siteHeaderBannerButton')) return
       if (target.closest('.siteHeaderMobileAccountButton')) return
       if (target.closest('.siteHeaderMobileBagButton')) return
+      if (target.closest('.siteHeaderMobileAnnouncementsButton')) return
+      if (target.closest('.siteHeaderMobileIconButton')) return
 
       closePanel()
     }
@@ -440,7 +443,18 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
 
     if (panel === 'bag') {
       announce('Cart panel closed.')
+      return
     }
+
+    if (panel === 'announcements') {
+      announce('Announcements closed.')
+    }
+  }
+
+  const closeActiveHeaderPanel = () => {
+    if (!activePanel) return
+    announceHeaderPanelClosed(activePanel)
+    setActivePanel(null)
   }
 
   const toggleHeaderPanel = (
@@ -825,14 +839,44 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
     }
   }
 
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!portalReady) return
+
+    try {
+      if (window.localStorage.getItem(announcementsAutoOpenStorageKey)) return
+      window.localStorage.setItem(announcementsAutoOpenStorageKey, '1')
+    } catch {
+      return
+    }
+
+    setActivePanel('announcements')
+    markAnnouncementsSeen()
+    announce('Announcements opened.')
+  }, [announce, portalReady])
+
+  useEffect(() => {
+    if (activePanel !== 'announcements') {
+      setAnnouncementsBackdropReady(false)
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => setAnnouncementsBackdropReady(true), 50)
+    return () => window.clearTimeout(timeoutId)
+  }, [activePanel])
+
   return (
+    <>
     <header
       className={headerClassNames.root}
       data-open={Boolean(activePanel)}
       data-scrolled={isScrolled}
       ref={headerRef}
     >
-      {activePanel ? (
+      {activePanel && activePanel !== 'announcements' ? (
         <BakeryPressable
           aria-label="Close open header panel"
           className="siteHeaderPanelBackdrop"
@@ -891,6 +935,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
               cartQuantity={cartQuantity}
               hasUnseenAnnouncements={hasUnseenAnnouncements}
               isAccountOpen={activePanel === 'account'}
+              isAnnouncementsOpen={activePanel === 'announcements'}
               items={navigationItems}
               onOpenAnnouncements={openAnnouncementsPanel}
               onOpenAccount={() => {
@@ -901,6 +946,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                 )
               }}
               onOpenCart={openCartModal}
+              onOpenMenu={closeActiveHeaderPanel}
             />
 
             <nav className={headerClassNames.banner} aria-label="Main sections">
@@ -928,16 +974,19 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                           <ChevronDown className="siteHeaderBannerDropdownIcon" />
                         </BakeryPressable>
                       ) : item.kind === 'announcements' ? (
-                        <BakeryPressable
+                        <button
                           aria-expanded={activePanel === 'announcements'}
                           aria-label={
-                            hasUnseenAnnouncements
-                              ? 'Open announcements. New announcements available'
-                              : 'Open announcements'
+                            activePanel === 'announcements'
+                              ? 'Close announcements'
+                              : hasUnseenAnnouncements
+                                ? 'Open announcements. New announcements available'
+                                : 'Open announcements'
                           }
                           className={cn(headerClassNames.bannerLink, 'siteHeaderBannerButton', {
                             'is-active': activePanel === 'announcements',
                           })}
+                          data-testid="open-announcements-desktop"
                           onClick={openAnnouncementsPanel}
                           type="button"
                         >
@@ -946,13 +995,14 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                             <span aria-hidden="true" className="siteHeaderNewDot" />
                           ) : null}
                           <ChevronDown className="siteHeaderBannerDropdownIcon" />
-                        </BakeryPressable>
+                        </button>
                       ) : (
                         <Link
                           className={cn(headerClassNames.bannerLink, {
                             'is-active': item.isActive,
                           })}
                           href={item.href}
+                          onClick={closeActiveHeaderPanel}
                         >
                           {item.label}
                         </Link>
@@ -991,7 +1041,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                 }}
                 type="button"
               >
-                <UserRound className="h-4 w-4" />
+                <AccountGlyph className="h-5 w-5" />
                 <span className="hidden md:inline">Account</span>
                 <ChevronDown className="h-3 w-3" />
               </BakeryPressable>
@@ -1007,7 +1057,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                 }}
                 type="button"
               >
-                <ShoppingBag className="h-4 w-4" />
+                <BagGlyph className="h-5 w-5" />
                 <span className="hidden md:inline">Cart</span>
                 <span className={headerClassNames.actionBadge}>{cartQuantity}</span>
                 <ChevronDown className="h-3 w-3" />
@@ -1019,12 +1069,12 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
             aria-live="polite"
             className={cn(
               headerClassNames.actionPanel,
-              activePanel ? 'is-open' : null,
+              activePanel && activePanel !== 'announcements' ? 'is-open' : null,
               activePanel === 'account'
                 ? 'is-account'
                 : activePanel === 'bag'
                   ? 'is-bag'
-                  : activePanel === 'more' || activePanel === 'announcements'
+                  : activePanel === 'more'
                     ? 'is-more'
                     : '',
             )}
@@ -1038,93 +1088,23 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
             >
               {activePanel === 'more' ? (
                 <div className="siteHeaderAppsPanel">
-                  <div className="siteHeaderAppsHeader">
-                    <div className="siteHeaderAppsBadge">
-                      <PanelsTopLeft className="h-4 w-4" />
-                      <span>{appsNavigationLabel}</span>
-                    </div>
-                    <div>
-                      <p className="siteHeaderAppsTitle">Other Pages</p>
-                      <p className="siteHeaderAppsDescription">
-                        Open reusable public tools connected to the bakery.
-                      </p>
-                    </div>
+                  <div className="siteHeaderMenuSectionDivider" role="separator">
+                    <span>{appsNavigationLabel}</span>
                   </div>
 
-                  {enabledAppPages.map((appPage) => {
-                    const Icon = appIconByKey[appPage.icon]
-
-                    return (
-                      <BakeryCard
-                        as={Link}
-                        className="siteHeaderAppCard"
+                  <div className="siteHeaderAppsGrid">
+                    {enabledAppPages.map((appPage, index) => (
+                      <HeaderMenuCard
+                        description={appPage.description}
+                        eyebrow={appPage.eyebrow}
                         href={appPage.href}
                         key={appPage.id}
-                        onClick={() => setActivePanel(null)}
-                        radius="md"
-                        spacing="none"
-                        tone="transparent"
-                      >
-                        <span className="siteHeaderAppIcon" aria-hidden="true">
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span className="siteHeaderAppCopy">
-                          <span className="siteHeaderAppEyebrow">{appPage.eyebrow}</span>
-                          <span className="siteHeaderAppTitle">{appPage.title}</span>
-                          <span className="siteHeaderAppDescription">{appPage.description}</span>
-                        </span>
-                        <ArrowRight className="siteHeaderAppArrow h-4 w-4" />
-                      </BakeryCard>
-                    )
-                  })}
-                </div>
-              ) : null}
-
-              {activePanel === 'announcements' ? (
-                <div className="siteHeaderAppsPanel">
-                  <div className="siteHeaderAppsHeader">
-                    <div className="siteHeaderAppsBadge">
-                      <Megaphone className="h-4 w-4" />
-                      <span>Announcements</span>
-                    </div>
-                    <div>
-                      <p className="siteHeaderAppsTitle">From the baker</p>
-                      <p className="siteHeaderAppsDescription">
-                        Bake days, market dates, pickup windows, and other news.
-                      </p>
-                    </div>
+                        onNavigate={() => setActivePanel(null)}
+                        title={appPage.title}
+                        tone={appMenuFlowerTones[index % appMenuFlowerTones.length]}
+                      />
+                    ))}
                   </div>
-
-                  {announcements.items.length ? (
-                    <div className="siteHeaderAnnouncementsList">
-                      {announcements.items.map((entry, index) => (
-                        <article
-                          className="siteHeaderAnnouncementCard"
-                          key={entry.id || `${entry.title}-${index}`}
-                        >
-                          <h3 className="siteHeaderAnnouncementTitle">{entry.title}</h3>
-                          <p className="siteHeaderAnnouncementMessage">{entry.message}</p>
-                          {entry.linkHref && entry.linkLabel ? (
-                            <BakeryAction
-                              as={Link}
-                              className="siteHeaderAnnouncementLink"
-                              end={<ArrowRight className="h-4 w-4" />}
-                              href={entry.linkHref}
-                              onClick={() => setActivePanel(null)}
-                              size="sm"
-                              variant="secondary"
-                            >
-                              <span>{entry.linkLabel}</span>
-                            </BakeryAction>
-                          ) : null}
-                        </article>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="siteHeaderAnnouncementsEmpty">
-                      Nothing new right now. Check back soon.
-                    </p>
-                  )}
                 </div>
               ) : null}
 
@@ -1426,7 +1406,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                 <div className="siteHeaderCartQuickPanel">
                   <div className="siteHeaderCartQuickHeader">
                     <div className="siteHeaderCartQuickBadge">
-                      <ShoppingBag className="h-4 w-4" />
+                      <BagGlyph className="h-4 w-4" />
                       <span>
                         {cartQuantity} item{cartQuantity === 1 ? '' : 's'}
                       </span>
@@ -1637,5 +1617,30 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
       </div>
       <CartModal renderTrigger={false} />
     </header>
+    {portalReady && activePanel === 'announcements'
+      ? createPortal(
+          <div className="announcementsPortal" role="dialog" aria-label="Announcements">
+            {announcementsBackdropReady ? (
+              <button
+                aria-label="Close announcements"
+                className="announcementsPortalBackdrop"
+                onClick={() => {
+                  announceHeaderPanelClosed('announcements')
+                  setActivePanel(null)
+                }}
+                type="button"
+              />
+            ) : null}
+            <div className="announcementsPortalSheet" ref={announcementsSheetRef}>
+              <AnnouncementsInbox
+                items={announcements.items}
+                onClose={() => setActivePanel(null)}
+              />
+            </div>
+          </div>,
+          document.body,
+        )
+      : null}
+    </>
   )
 }
