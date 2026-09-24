@@ -171,34 +171,25 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
             key={`${panel}-${paintKey}`}
           >
             {!hasItems && panel !== 'complete' ? (
-              <div className="flex flex-1 flex-col px-4 py-4">
-                <CartSceneShell
-                  className="flex min-h-0 flex-1 items-center justify-center rounded-[6px] border border-black/8 px-6 py-8 text-center"
-                  contentClassName="mx-auto max-w-[20rem] space-y-5"
+              <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-10 text-center">
+                <div className="mx-auto max-w-[20rem] space-y-2">
+                  <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
+                  <p className="text-sm leading-6 text-black/60">
+                    Add a few bakery items first, then come back here to review quantity and
+                    checkout.
+                  </p>
+                </div>
+
+                <BakeryAction
+                  as={Link}
+                  className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
+                  href={menuHref}
+                  size="md"
+                  variant="primary"
                 >
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-black/10 bg-white">
-                    <ShoppingBag className="h-8 w-8 text-black/70" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-2xl font-medium tracking-[-0.04em]">Your cart is empty.</p>
-                    <p className="text-sm leading-6 text-black/60">
-                      Add a few bakery items first, then come back here to review quantity and
-                      checkout.
-                    </p>
-                  </div>
-
-                  <BakeryAction
-                    as={Link}
-                    className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black px-5 py-3 text-[11px] font-medium uppercase tracking-[0.24em] text-white transition duration-200 hover:bg-black/85"
-                    href={menuHref}
-                    size="md"
-                    variant="primary"
-                  >
-                    Browse the menu
-                    <ArrowRight className="h-4 w-4" />
-                  </BakeryAction>
-                </CartSceneShell>
+                  Browse the menu
+                  <ArrowRight className="h-4 w-4" />
+                </BakeryAction>
               </div>
             ) : panel === 'auth' ? (
               <CartAuthGate
