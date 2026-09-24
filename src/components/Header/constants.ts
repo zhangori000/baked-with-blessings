@@ -8,6 +8,7 @@ import {
   contactHref,
   discussionBoardHref,
   featureRequestsHref,
+  flavorVoteHref,
   isContactLinkHint,
   menuHref,
   oldFlavorsHref,
@@ -92,6 +93,19 @@ export const headerAppPages: HeaderAppPage[] = [
       'Browse past flavors that might come back, or order any of them through Catering.',
     mobileTitle: 'Old flavors',
     title: 'Old Flavors',
+    tone: 'light',
+  },
+  {
+    description:
+      'Spend your cookie tokens on the flavors you want next week. A new vote opens every week.',
+    enabledFlag: 'flavorVoteEnabled',
+    eyebrow: 'You pick, we bake',
+    href: flavorVoteHref,
+    icon: 'cookie',
+    id: 'flavor-vote',
+    mobileDescription: 'Vote for next week’s cookies before the countdown runs out.',
+    mobileTitle: 'Flavor vote',
+    title: 'Flavor Vote',
     tone: 'light',
   },
   {
@@ -407,6 +421,10 @@ export const isHeaderNavigationItemActive = (
   }
 
   if (isRouteActive(pathname, oldFlavorsHref)) {
+    return item.id === 'more'
+  }
+
+  if (isRouteActive(pathname, flavorVoteHref)) {
     return item.id === 'more'
   }
 
