@@ -13,7 +13,7 @@
 }
 
 .cateringMenuEyebrow {
-  color: rgba(25, 57, 95, 0.76);
+  color: rgba(47, 36, 20, 0.76);
   font-family: var(--font-rounded-display);
   font-size: clamp(0.74rem, 1.1vw, 0.86rem);
   font-weight: 850;
@@ -25,11 +25,11 @@
 }
 
 .cateringHeroEyebrow {
-  color: var(--scene-hero-muted, var(--scene-muted-text, rgba(11, 38, 68, 0.92)));
+  color: var(--scene-hero-muted, var(--scene-muted-text, rgba(47, 36, 20, 0.78)));
 }
 
 .cateringHeroSummary {
-  color: var(--scene-hero-text, var(--scene-text, rgba(10, 32, 55, 0.96)));
+  color: var(--scene-hero-text, var(--scene-text, #2f2414));
   font-family: var(--font-rounded-display);
   font-size: clamp(1.08rem, 2.25vw, 1.3rem);
   font-weight: 860;
@@ -187,9 +187,9 @@
   background-size:
     0% 100%,
     100% 100%;
-  border: 1px solid rgba(25, 57, 95, 0.16);
+  border: 1px solid rgba(47, 36, 20, 0.16);
   border-radius: 999px;
-  color: #173a63;
+  color: #2f2414;
   cursor: pointer;
   display: inline-flex;
   font-family: var(--font-rounded-display);
@@ -235,12 +235,12 @@
 .cateringSpawnButton:hover,
 .cateringSpawnButton:focus-visible {
   background: #fff8f2;
-  border-color: rgba(25, 57, 95, 0.26);
+  border-color: rgba(47, 36, 20, 0.26);
   transform: translateY(-1px);
 }
 
 .cateringSpawnButtonCharging {
-  border-color: rgba(25, 57, 95, 0.24);
+  border-color: rgba(47, 36, 20, 0.24);
   box-shadow: 0 10px 22px
     color-mix(
       in srgb,
@@ -282,7 +282,7 @@
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(25, 57, 95, 0.14);
+  border: 1px solid rgba(47, 36, 20, 0.14);
   border-radius: 1.08rem;
   box-shadow:
     0 18px 38px rgba(23, 21, 16, 0.14),
@@ -314,7 +314,7 @@
   padding: 0 0 0.24rem;
   scroll-padding-inline: 0.1rem;
   scroll-snap-type: x proximity;
-  scrollbar-color: rgba(23, 58, 99, 0.34) rgba(255, 255, 255, 0.58);
+  scrollbar-color: rgba(23, 21, 16, 0.34) rgba(255, 255, 255, 0.58);
   scrollbar-width: thin;
   touch-action: pan-x;
 }
@@ -329,7 +329,7 @@
 }
 
 .cateringSceneryChooserRail::-webkit-scrollbar-thumb {
-  background: rgba(23, 58, 99, 0.28);
+  background: rgba(23, 21, 16, 0.28);
   border-radius: 999px;
 }
 
@@ -381,7 +381,7 @@
 }
 
 .cateringSceneryChoiceLabel {
-  color: #173a63;
+  color: #2f2414;
   font-family: var(--font-rounded-display);
   font-size: 0.82rem;
   font-weight: 800;
@@ -390,7 +390,7 @@
 }
 
 .cateringSceneryChoiceMeta {
-  color: rgba(23, 58, 99, 0.62);
+  color: rgba(23, 21, 16, 0.62);
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.06em;

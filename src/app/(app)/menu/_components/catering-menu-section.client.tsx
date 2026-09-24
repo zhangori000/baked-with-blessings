@@ -976,7 +976,7 @@ export function CateringMenuSection({
         }
 
         .cateringPersuasionBody :is(p, li) {
-          color: var(--scene-text, #27496b);
+          color: var(--scene-text, #2f2414);
           font-weight: 650;
         }
 
@@ -1413,7 +1413,7 @@ export function CateringMenuSection({
         }
 
         .cateringPhotoEndLabel {
-          color: rgba(23, 58, 99, 0.64);
+          color: rgba(23, 21, 16, 0.64);
           font-size: clamp(0.98rem, 3.6vw, 1.36rem);
           letter-spacing: 0.24em;
           line-height: 1.1;
@@ -1443,7 +1443,7 @@ export function CateringMenuSection({
         }
 
         .cateringPersuasionHeading {
-          color: var(--scene-text, #143e63);
+          color: var(--scene-text, #2f2414);
           font-weight: 520;
           text-wrap: balance;
         }
@@ -1569,7 +1569,7 @@ export function CateringMenuSection({
           align-items: center;
           min-height: 2rem;
           border-radius: 999px;
-          background: #d5e3f1;
+          background: #f7ead2;
           color: rgba(23, 21, 16, 0.72);
           font-size: 0.82rem;
           font-family: var(--font-rounded-display);
