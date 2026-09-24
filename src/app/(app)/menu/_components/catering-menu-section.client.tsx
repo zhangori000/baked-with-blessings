@@ -869,6 +869,7 @@ export function CateringMenuSection({
                 bundleSuggestions={bundleSuggestions}
                 items={regularItems}
                 onJumpToBundle={handleJumpToBundle}
+                onJumpToCatering={cateringGroups.length > 0 ? handleJumpToCatering : undefined}
                 sceneryTone={heroSceneryTone}
                 seasonalLabel={seasonalLabel}
               />
