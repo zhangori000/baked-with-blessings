@@ -492,7 +492,7 @@ export interface Product {
    */
   poster?: {
     /**
-     * Rich text shown in the Info popup. This is reused on the rotating cookie page and in tray flavor choices. Use paragraphs and bold text for flavor notes, serving notes, ingredients, and allergy warnings.
+     * The note customers see when they tap a cookie name. Write the flavor and the allergen line here. The storefront shows this text as you save it.
      */
     receiptBody?: {
       root: {
@@ -3431,7 +3431,7 @@ export interface StoreSetting {
 export interface Announcement {
   id: number;
   /**
-   * Drag to reorder. Keep these short and current: bake days, market dates, pickup windows. Delete old ones so the list stays fresh.
+   * Drag to reorder regular notes. Pinned notes always sit at the top of the inbox. Archive a note to hide it from the website and keep the row. Delete only if you do not need the record.
    */
   items?:
     | {
@@ -3440,16 +3440,22 @@ export interface Announcement {
          */
         title: string;
         /**
-         * A few friendly sentences: where, when, what is available, how to claim an order.
+         * A few friendly sentences. No sales button is shown on the site.
          */
         message: string;
         /**
-         * Optional button text, for example "Preorder now". Leave empty for no button.
+         * The date customers see on this note.
          */
-        linkLabel?: string | null;
+        postedOn: string;
         /**
-         * Where the optional button goes, for example /menu. Required if button text is set.
+         * Keep this at the top of the inbox with a pin. Use for lasting news, not weekly flavor notes.
          */
+        pinned?: boolean | null;
+        /**
+         * Hide this note from the website. The row stays here so you can look it up later.
+         */
+        archived?: boolean | null;
+        linkLabel?: string | null;
         linkHref?: string | null;
         id?: string | null;
       }[]
@@ -3697,6 +3703,9 @@ export interface AnnouncementsSelect<T extends boolean = true> {
     | {
         title?: T;
         message?: T;
+        postedOn?: T;
+        pinned?: T;
+        archived?: T;
         linkLabel?: T;
         linkHref?: T;
         id?: T;

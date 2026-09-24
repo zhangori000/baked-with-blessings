@@ -41,9 +41,9 @@ import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacemen
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
-import { CookieInfoNote } from './menu/_components/CookieInfoNote'
 import type { CookiePosterAsset } from '@/features/products/cookieDisplayData'
 import { CookieSheepRig } from './menu/_components/cookie-sheep-rig'
+import { CookieNameNote } from './menu/_components/CookieInfoNote'
 
 type HomeCookieCarouselProps = {
   initialSceneryTone?: SceneTone
@@ -55,13 +55,6 @@ type CarouselTransition = {
   direction: -1 | 1
   outgoingIndex: number
 } | null
-
-type CarouselInfoPhase = 'hidden' | 'ready' | 'open'
-
-type InfoPromptLayout = {
-  maxHeight: number | null
-  x: number
-}
 
 type ShowcaseSceneCloud = {
   className?: string
@@ -633,9 +626,11 @@ function useIsMobileViewport() {
 type HomeCookieJumpRigPhase = 'active' | 'incoming' | 'outgoing'
 
 type HomeCookieJumpRigProps = {
+  cookieClickLabel?: string
   direction?: -1 | 1
   durationSeconds: number
   isReducedMotion: boolean
+  onCookieClick?: () => void
   onJumpComplete?: () => void
   phase: HomeCookieJumpRigPhase
   poster: CookiePosterAsset
@@ -644,9 +639,11 @@ type HomeCookieJumpRigProps = {
 }
 
 function HomeCookieJumpRig({
+  cookieClickLabel,
   direction = 1,
   durationSeconds,
   isReducedMotion,
+  onCookieClick,
   onJumpComplete,
   phase,
   poster,
@@ -700,6 +697,15 @@ function HomeCookieJumpRig({
           />
         </div>
       </div>
+      {phase === 'active' && onCookieClick ? (
+        <button
+          aria-label={cookieClickLabel}
+          className="homeCookieCookieHit"
+          data-testid="home-cookie-image-hit"
+          onClick={onCookieClick}
+          type="button"
+        />
+      ) : null}
     </div>
   )
 }
@@ -726,15 +732,9 @@ export function HomeCookieCarousel({
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
   const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
-  const [infoPhase, setInfoPhase] = useState<CarouselInfoPhase>('hidden')
-  const [infoPromptLayout, setInfoPromptLayout] = useState<InfoPromptLayout>({
-    maxHeight: null,
-    x: 0,
-  })
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
   const activeIndexRef = useRef(0)
   const addedStateTimeoutRef = useRef<number | null>(null)
-  const floatingInfoPromptRef = useRef<HTMLElement | null>(null)
   const isTransitioningRef = useRef(false)
   const measureRef = useRef<HTMLDivElement | null>(null)
   const pendingDirectionRef = useRef<-1 | 1 | null>(null)
@@ -818,75 +818,6 @@ export function HomeCookieCarousel({
     activeIndexRef.current = activeIndex
   }, [activeIndex])
 
-  useLayoutEffect(() => {
-    if (infoPhase !== 'open') {
-      setInfoPromptLayout((current) =>
-        current.x === 0 && current.maxHeight == null ? current : { maxHeight: null, x: 0 },
-      )
-      return
-    }
-
-    const updateInfoPromptLayout = () => {
-      const prompt = floatingInfoPromptRef.current
-      if (!prompt || window.getComputedStyle(prompt).display === 'none') {
-        return
-      }
-
-      const infoButton = prompt.parentElement?.querySelector<HTMLElement>('.homeCookieInfoButton')
-      const rect = prompt.getBoundingClientRect()
-      const viewportPadding = 12
-      const promptGap = 14
-      const headerBoundary =
-        document.querySelector<HTMLElement>('.siteHeaderShellRow') ??
-        document.querySelector<HTMLElement>('.siteHeader')
-      const headerBottom = headerBoundary?.getBoundingClientRect().bottom ?? 0
-      const minTop = Math.max(viewportPadding, headerBottom + 10)
-      const maxRight = window.innerWidth - viewportPadding
-      const anchorTop = infoButton?.getBoundingClientRect().top ?? rect.bottom + promptGap
-      const availableHeight = Math.max(150, anchorTop - promptGap - minTop)
-      const baseRect = {
-        left: rect.left - infoPromptLayout.x,
-        right: rect.right - infoPromptLayout.x,
-      }
-      let nextShiftX = 0
-
-      if (baseRect.left < viewportPadding) {
-        nextShiftX = viewportPadding - baseRect.left
-      } else if (baseRect.right > maxRight) {
-        nextShiftX = maxRight - baseRect.right
-      }
-
-      if (
-        Math.abs(nextShiftX - infoPromptLayout.x) < 1 &&
-        Math.abs(availableHeight - (infoPromptLayout.maxHeight ?? 0)) < 1
-      ) {
-        return
-      }
-
-      setInfoPromptLayout({ maxHeight: availableHeight, x: nextShiftX })
-    }
-
-    const animationFrame = window.requestAnimationFrame(updateInfoPromptLayout)
-    const resizeObserver =
-      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateInfoPromptLayout) : null
-
-    if (floatingInfoPromptRef.current) {
-      resizeObserver?.observe(floatingInfoPromptRef.current)
-    }
-
-    window.addEventListener('resize', updateInfoPromptLayout)
-    window.visualViewport?.addEventListener('resize', updateInfoPromptLayout)
-    window.visualViewport?.addEventListener('scroll', updateInfoPromptLayout)
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame)
-      resizeObserver?.disconnect()
-      window.removeEventListener('resize', updateInfoPromptLayout)
-      window.visualViewport?.removeEventListener('resize', updateInfoPromptLayout)
-      window.visualViewport?.removeEventListener('scroll', updateInfoPromptLayout)
-    }
-  }, [activeIndex, infoPhase, infoPromptLayout.maxHeight, infoPromptLayout.x])
-
   useEffect(() => {
     if (sceneVariant !== 'scenery') {
       return
@@ -907,7 +838,6 @@ export function HomeCookieCarousel({
       slug: null,
     })
 
-    setInfoPhase(transition ? 'hidden' : 'ready')
   }, [activeIndex, transition])
 
   useEffect(() => {
@@ -1035,8 +965,6 @@ export function HomeCookieCarousel({
   const activePosterCanAddToCart =
     !activePosterIsCateringOnly && typeof activePoster.productId === 'number'
   const activePosterMenuHref = activePoster.menuHref ?? menuHref
-  const isInfoPromptOpen = infoPhase === 'open'
-  const shouldShowInlineInfoControl = sceneVariant === 'scenery' && infoPhase !== 'hidden'
   const isCartPromptOpen =
     activePosterPromptPhase === 'open' ||
     activePosterPromptPhase === 'loading' ||
@@ -1095,23 +1023,6 @@ export function HomeCookieCarousel({
     })
   }
 
-  const startCloseInfo = () => {
-    setInfoPhase('ready')
-  }
-
-  const startOpenInfo = () => {
-    setInfoPhase('open')
-  }
-
-  const handleInfoControlClick = () => {
-    if (infoPhase === 'open') {
-      startCloseInfo()
-      return
-    }
-
-    startOpenInfo()
-  }
-
   const handleNavigate = (direction: -1 | 1) => {
     if (!hasMultiplePosters) {
       return
@@ -1122,7 +1033,6 @@ export function HomeCookieCarousel({
       return
     }
 
-    setInfoPhase('hidden')
     beginCarouselTransition(direction)
   }
 
@@ -1133,6 +1043,18 @@ export function HomeCookieCarousel({
     }
 
     if (activePosterPromptPhase === 'loading') {
+      return
+    }
+
+    if (activePosterPromptPhase === 'open' || activePosterPromptPhase === 'added') {
+      if (addedStateTimeoutRef.current != null) {
+        window.clearTimeout(addedStateTimeoutRef.current)
+        addedStateTimeoutRef.current = null
+      }
+      setCartPromptState({
+        phase: 'idle',
+        slug: null,
+      })
       return
     }
 
@@ -1162,6 +1084,54 @@ export function HomeCookieCarousel({
       slug: null,
     })
   }
+
+  useEffect(() => {
+    if (activePosterPromptPhase === 'idle') {
+      return
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Element)) {
+        return
+      }
+      if (target.closest('.homeCookieCartPrompt, [data-testid="home-cookie-name-button"]')) {
+        return
+      }
+      if (activePosterPromptPhase === 'loading') {
+        return
+      }
+      if (addedStateTimeoutRef.current != null) {
+        window.clearTimeout(addedStateTimeoutRef.current)
+        addedStateTimeoutRef.current = null
+      }
+      setCartPromptState({
+        phase: 'idle',
+        slug: null,
+      })
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || activePosterPromptPhase === 'loading') {
+        return
+      }
+      if (addedStateTimeoutRef.current != null) {
+        window.clearTimeout(addedStateTimeoutRef.current)
+        addedStateTimeoutRef.current = null
+      }
+      setCartPromptState({
+        phase: 'idle',
+        slug: null,
+      })
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [activePosterPromptPhase])
 
   const handleConfirmAddToCart = async () => {
     if (!activePosterCanAddToCart || activePosterPromptPhase === 'loading') {
@@ -1206,44 +1176,6 @@ export function HomeCookieCarousel({
       toast.error('Unable to add this cookie to cart right now.')
     }
   }
-
-  const renderInfoPrompt = (id: string, placement: 'floating' | 'inline' = 'inline') =>
-    isInfoPromptOpen ? (
-      <BakeryCard
-        aria-label={`${activePoster.title} info`}
-        className="homeCookieCartPrompt homeCookieInfoPrompt"
-        id={id}
-        radius="lg"
-        ref={placement === 'floating' ? floatingInfoPromptRef : undefined}
-        role="dialog"
-        spacing="none"
-        style={
-          placement === 'floating'
-            ? ({
-                ['--home-info-arrow-shift-x' as string]: `${infoPromptLayout.x * -1}px`,
-                ['--home-info-popover-max-height' as string]:
-                  infoPromptLayout.maxHeight == null
-                    ? undefined
-                    : `${infoPromptLayout.maxHeight}px`,
-                ['--home-info-popover-shift-x' as string]: `${infoPromptLayout.x}px`,
-              } as CSSProperties)
-            : undefined
-        }
-        tone="transparent"
-      >
-        <BakeryPressable
-          aria-label={`Close info for ${activePoster.title}`}
-          className="homeCookieCartPromptClose homeCookieInfoPromptClose"
-          onClick={startCloseInfo}
-          type="button"
-        >
-          <X aria-hidden="true" size={14} />
-        </BakeryPressable>
-        <div className="homeCookieInfoPromptBody">
-          <CookieInfoNote allergens={activePoster.allergens} body={activePoster.receiptBody} />
-        </div>
-      </BakeryCard>
-    ) : null
 
   return (
     <section
@@ -1350,20 +1282,6 @@ export function HomeCookieCarousel({
                 ))}
 
                 <div className="homeCookieSceneActions">
-                  {shouldShowInlineInfoControl ? (
-                    <div className="homeCookieInfoDock homeCookieInfoDock--inline">
-                      {renderInfoPrompt(`home-cookie-info-inline-${activePoster.slug}`)}
-                      <BakeryPressable
-                        aria-controls={`home-cookie-info-inline-${activePoster.slug}`}
-                        aria-expanded={isInfoPromptOpen}
-                        className={`homeCookieInfoButton${isInfoPromptOpen ? ' is-active' : ''}`}
-                        onClick={handleInfoControlClick}
-                        type="button"
-                      >
-                        {activePoster.infoButtonLabel}
-                      </BakeryPressable>
-                    </div>
-                  ) : null}
                   <BakeryAction
                     className="homeCookieSceneButton"
                     onClick={() => {
@@ -1465,36 +1383,21 @@ export function HomeCookieCarousel({
               </>
             ) : (
               <HomeCookieJumpRig
-                key={`active-${activeIndex}`}
+                cookieClickLabel={
+                  activePosterIsCateringOnly
+                    ? `Open catering details for ${activePoster.title}`
+                    : `Open add to cart prompt for ${activePoster.title}`
+                }
                 durationSeconds={jumpDurationSeconds}
                 isReducedMotion={Boolean(prefersReducedMotion)}
+                key={`active-${activeIndex}`}
+                onCookieClick={handleOpenCartPrompt}
                 phase="active"
                 poster={activePoster}
                 shellRef={rigShellRef}
                 style={{ top: rigTop }}
               />
             )}
-
-            {sceneVariant === 'scenery' && infoPhase !== 'hidden' ? (
-              <div
-                className="homeCookieInfoDock homeCookieInfoDock--floating"
-                style={{
-                  left: '50%',
-                  top: `calc(${rigTop} - var(--cookie-size) * var(--mobile-info-offset, 0.66))`,
-                }}
-              >
-                {renderInfoPrompt(`home-cookie-info-floating-${activePoster.slug}`, 'floating')}
-                <BakeryPressable
-                  aria-controls={`home-cookie-info-floating-${activePoster.slug}`}
-                  aria-expanded={isInfoPromptOpen}
-                  className={`homeCookieInfoButton${isInfoPromptOpen ? ' is-active' : ''}`}
-                  onClick={handleInfoControlClick}
-                  type="button"
-                >
-                  {activePoster.infoButtonLabel}
-                </BakeryPressable>
-              </div>
-            ) : null}
 
             {sceneVariant === 'scenery' ? (
               <>
@@ -1610,7 +1513,7 @@ export function HomeCookieCarousel({
                         : `Add ${activePoster.title} to cart`
                     }
                     aria-live="polite"
-                    className="homeCookieCartPrompt"
+                    className="homeCookieCartPrompt homeCookieCartPrompt--note"
                     radius="lg"
                     role="dialog"
                     spacing="none"
@@ -1620,7 +1523,7 @@ export function HomeCookieCarousel({
                       aria-label={
                         activePosterIsCateringOnly
                           ? 'Close catering details'
-                          : 'Close add to cart prompt'
+                          : 'Close cookie details'
                       }
                       className="homeCookieCartPromptClose"
                       disabled={activePosterPromptPhase === 'loading'}
@@ -1629,70 +1532,42 @@ export function HomeCookieCarousel({
                     >
                       <X aria-hidden="true" size={14} />
                     </BakeryPressable>
-                    <p className="homeCookieCartPromptText">
-                      {activePosterIsCateringOnly
-                        ? (activePoster.lockedLabel ?? 'Catering only')
-                        : activePosterPromptPhase === 'loading'
-                          ? 'Adding to cart...'
-                          : activePosterPromptPhase === 'added'
-                            ? 'Added to cart.'
-                            : 'Add this to cart?'}
-                    </p>
-                    {activePosterIsCateringOnly ? (
-                      <p className="homeCookieCartPromptSubtext">
-                        {activePoster.lockedDescription ??
-                          'Outside the current rotation, this flavor is available through larger catering batches only. Making a separate dough batch for one small order creates too much waste, and the bakery is not set up with the equipment or production space to do that efficiently yet.'}
-                      </p>
-                    ) : activePoster.addToCartSizeLabel && activePosterPromptPhase === 'open' ? (
-                      <p className="homeCookieCartPromptSubtext">
-                        Adds the {activePoster.addToCartSizeLabel.toLowerCase()} size — every size
-                        and quantity is{' '}
-                        <Link
-                          href={activePosterMenuHref}
-                          onClick={handleCloseCartPrompt}
-                          style={{ color: 'inherit', textDecoration: 'underline' }}
-                        >
-                          on the menu
-                        </Link>
-                        .
-                      </p>
-                    ) : null}
+                    <div className="homeCookieCartPromptScroll">
+                      {activePosterIsCateringOnly ? (
+                        <p className="cookieNameNote">
+                          {activePoster.lockedLabel ?? 'Catering only'}.{' '}
+                          {activePoster.lockedDescription ??
+                            'This flavor is available through larger catering batches only.'}
+                        </p>
+                      ) : activePosterPromptPhase === 'loading' ? (
+                        <p className="cookieNameNote">Adding to cart.</p>
+                      ) : activePosterPromptPhase === 'added' ? (
+                        <p className="cookieNameNote">Added to cart.</p>
+                      ) : (
+                        <CookieNameNote
+                          body={activePoster.receiptBody}
+                          sizeLabel={activePoster.addToCartSizeLabel}
+                        />
+                      )}
+                    </div>
                     {activePosterPromptPhase === 'open' ? (
                       <div className="homeCookieCartPromptActions">
                         {activePosterIsCateringOnly ? (
-                          <>
-                            <Link
-                              className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm"
-                              href={activePosterMenuHref}
-                              onClick={handleCloseCartPrompt}
-                            >
-                              {activePoster.menuLinkLabel ?? 'View menu'}
-                            </Link>
-                            <BakeryPressable
-                              className="homeCookieCartPromptButton homeCookieCartPromptButton--cancel"
-                              onClick={handleCloseCartPrompt}
-                              type="button"
-                            >
-                              Close
-                            </BakeryPressable>
-                          </>
+                          <Link
+                            className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm homeCookieCartPromptButton--full"
+                            href={activePosterMenuHref}
+                            onClick={handleCloseCartPrompt}
+                          >
+                            {activePoster.menuLinkLabel ?? 'View menu'}
+                          </Link>
                         ) : (
-                          <>
-                            <BakeryPressable
-                              className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm"
-                              onClick={handleConfirmAddToCart}
-                              type="button"
-                            >
-                              Yes
-                            </BakeryPressable>
-                            <BakeryPressable
-                              className="homeCookieCartPromptButton homeCookieCartPromptButton--cancel"
-                              onClick={handleCloseCartPrompt}
-                              type="button"
-                            >
-                              No
-                            </BakeryPressable>
-                          </>
+                          <BakeryPressable
+                            className="homeCookieCartPromptButton homeCookieCartPromptButton--confirm homeCookieCartPromptButton--full"
+                            onClick={handleConfirmAddToCart}
+                            type="button"
+                          >
+                            Add to cart
+                          </BakeryPressable>
                         )}
                       </div>
                     ) : null}
@@ -1701,8 +1576,9 @@ export function HomeCookieCarousel({
 
                 {activePosterIsCateringOnly ? (
                   <BakeryPressable
-                    aria-label={`Open catering details for ${activePoster.title}`}
+                    aria-label={`Open details for ${activePoster.title}`}
                     className="homeCookieNameButton"
+                    data-testid="home-cookie-name-button"
                     onClick={handleOpenCartPrompt}
                     style={nameButtonWidth ? { width: `${nameButtonWidth}px` } : undefined}
                     type="button"
@@ -1717,14 +1593,15 @@ export function HomeCookieCarousel({
                   </BakeryPressable>
                 ) : (
                   <BakeryPressable
-                    aria-label={`Open add to cart prompt for ${activePoster.title}`}
+                    aria-label={`Open details for ${activePoster.title}`}
                     className="homeCookieNameButton"
+                    data-testid="home-cookie-name-button"
                     disabled={!activePosterCanAddToCart || cartIsLoading}
                     onClick={handleOpenCartPrompt}
                     style={nameButtonWidth ? { width: `${nameButtonWidth}px` } : undefined}
                     type="button"
                   >
-                    {activePoster.title}
+                    <span>{activePoster.title}</span>
                   </BakeryPressable>
                 )}
               </div>
@@ -2098,34 +1975,42 @@ export function HomeCookieCarousel({
           transform: none;
         }
 
-        .homeCookieInfoDock {
-          opacity: 0;
-          pointer-events: none;
+        .homeCookieCookieHit {
+          background: transparent;
+          border: 0;
+          border-radius: 50%;
+          cursor: pointer;
+          inset: 7%;
+          pointer-events: auto;
           position: absolute;
-          transform: translate(-50%, 0.5rem);
-          transition:
-            opacity 220ms ease,
-            transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-          z-index: 33;
+          z-index: 50;
         }
 
-        .homeCookieInfoDock--inline {
+        .homeCookieCookieHit:focus-visible {
+          outline: 3px solid rgba(255, 255, 255, 0.72);
+          outline-offset: 4px;
+        }
+
+        .homeCookieInfoDock {
+          align-items: center;
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 0.55rem;
           opacity: 1;
           pointer-events: auto;
           position: relative;
           transform: none;
+          z-index: 40;
         }
 
-        .homeCookieInfoDock--floating {
-          display: none;
+        .homeCookieInfoDock--beside-name,
+        .homeCookieInfoDock--scenery {
+          margin-bottom: 0;
         }
 
-        .homeCookieInfoDock--floating.is-open,
-        .homeCookieInfoDock--floating:not(.is-open) {
-          opacity: 1;
-          pointer-events: auto;
-          transform: translate(-50%, 0);
-          z-index: 120;
+        .homeCookieInfoDock--on-cookie {
+          margin-bottom: 0;
+          position: relative;
         }
 
         .homeCookieInfoButton {
@@ -2334,7 +2219,10 @@ export function HomeCookieCarousel({
         }
 
         .homeCookieCopy {
+          align-items: center;
           bottom: var(--copy-bottom);
+          display: flex;
+          flex-direction: column;
           left: 50%;
           opacity: 1;
           position: absolute;
@@ -2374,6 +2262,31 @@ export function HomeCookieCarousel({
           position: absolute;
           transform: translateX(-50%);
           z-index: 48;
+        }
+
+        .homeCookieCartPrompt--note {
+          display: flex;
+          flex-direction: column;
+          max-height: min(15.5rem, 38svh);
+          padding: 1.05rem 1.15rem 1rem;
+          width: min(19.5rem, calc(100vw - 1.8rem));
+        }
+
+        .homeCookieCartPromptScroll {
+          max-height: 6.4rem;
+          min-height: 0;
+          overflow-y: auto;
+          padding-right: 1.8rem;
+          text-align: left;
+        }
+
+        .cookieNameNote {
+          color: rgba(74, 54, 23, 0.92);
+          font-family: var(--font-rounded-body);
+          font-size: 0.9rem;
+          font-weight: 400;
+          line-height: 1.45;
+          margin: 0;
         }
 
         .homeCookieInfoPrompt {
@@ -2467,8 +2380,8 @@ export function HomeCookieCarousel({
           justify-content: center;
           position: absolute;
           pointer-events: auto;
-          right: 0.7rem;
-          top: 0.62rem;
+          right: 0.85rem;
+          top: 0.78rem;
           transition:
             transform 150ms ease,
             background-color 150ms ease;
@@ -2539,6 +2452,10 @@ export function HomeCookieCarousel({
         .homeCookieCartPromptButton--confirm {
           background: #1b1917;
           color: #fff;
+        }
+
+        .homeCookieCartPromptButton--full {
+          width: 100%;
         }
 
         .homeCookieCartPromptButton--cancel {
@@ -2788,13 +2705,6 @@ export function HomeCookieCarousel({
             width: auto;
           }
 
-          .homeCookieInfoDock--inline {
-            display: none;
-          }
-
-          .homeCookieInfoDock--floating {
-            display: block;
-          }
         }
 
         @media (min-width: 640px) and (max-width: 1040px),
@@ -2850,14 +2760,6 @@ export function HomeCookieCarousel({
             padding: 0.42rem 0.78rem;
             white-space: nowrap;
             width: auto;
-          }
-
-          .homeCookieInfoDock {
-            top: calc(${rigTop} - var(--cookie-size) * var(--mobile-info-offset, 1.08));
-          }
-
-          .homeCookieInfoDock--inline {
-            display: none;
           }
 
           .homeCookieInfoButton {

@@ -20,7 +20,7 @@ export const Announcements: GlobalConfig = {
       type: 'array',
       admin: {
         description:
-          'Drag to reorder. Keep these short and current: bake days, market dates, pickup windows. Delete old ones so the list stays fresh.',
+          'Drag to reorder regular notes. Pinned notes always sit at the top of the inbox. Archive a note to hide it from the website and keep the row. Delete only if you do not need the record.',
       },
       fields: [
         {
@@ -36,22 +36,49 @@ export const Announcements: GlobalConfig = {
           type: 'textarea',
           required: true,
           admin: {
+            description: 'A few friendly sentences. No sales button is shown on the site.',
+          },
+        },
+        {
+          name: 'postedOn',
+          type: 'date',
+          required: true,
+          defaultValue: () => new Date().toISOString(),
+          admin: {
+            date: { pickerAppearance: 'dayOnly' },
+            description: 'The date customers see on this note.',
+          },
+        },
+        {
+          name: 'pinned',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
             description:
-              'A few friendly sentences: where, when, what is available, how to claim an order.',
+              'Keep this at the top of the inbox with a pin. Use for lasting news, not weekly flavor notes.',
+          },
+        },
+        {
+          name: 'archived',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description:
+              'Hide this note from the website. The row stays here so you can look it up later.',
           },
         },
         {
           name: 'linkLabel',
           type: 'text',
           admin: {
-            description: 'Optional button text, for example "Preorder now". Leave empty for no button.',
+            hidden: true,
           },
         },
         {
           name: 'linkHref',
           type: 'text',
           admin: {
-            description: 'Where the optional button goes, for example /menu. Required if button text is set.',
+            hidden: true,
           },
         },
       ],

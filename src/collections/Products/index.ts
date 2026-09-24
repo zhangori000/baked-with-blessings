@@ -307,7 +307,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                   type: 'richText',
                   admin: {
                     description:
-                      'Rich text shown in the Info popup. This is reused on the rotating cookie page and in tray flavor choices. Use paragraphs and bold text for flavor notes, serving notes, ingredients, and allergy warnings.',
+                      'The note customers see when they tap a cookie name. Write the flavor and the allergen line here. The storefront shows this text as you save it.',
                   },
                   editor: lexicalEditor({
                     features: ({ rootFeatures }) => {

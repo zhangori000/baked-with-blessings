@@ -69,10 +69,11 @@ const buildHeaderBrand = (brand: BrandGlobalDocument | null): HeaderBrand => {
 type AnnouncementsGlobalDocument = {
   items?:
     | Array<{
+        archived?: boolean | null
         id?: null | string
-        linkHref?: null | string
-        linkLabel?: null | string
         message?: null | string
+        pinned?: boolean | null
+        postedOn?: null | string
         title?: null | string
       }>
     | null
@@ -83,13 +84,13 @@ const buildHeaderAnnouncements = (
   document: AnnouncementsGlobalDocument | null,
 ): HeaderAnnouncementsData => ({
   items: (document?.items ?? []).flatMap((item) =>
-    item?.title && item?.message
+    item?.title && item?.message && !item.archived
       ? [
           {
             id: item.id ?? null,
-            linkHref: item.linkHref ?? null,
-            linkLabel: item.linkLabel ?? null,
             message: item.message,
+            pinned: item.pinned ?? false,
+            postedOn: item.postedOn ?? null,
             title: item.title,
           },
         ]

@@ -57,6 +57,35 @@ type CookieInfoNoteProps = {
   className?: string
 }
 
+const paragraphPlainText = (node: InfoElementNode) =>
+  (node.children ?? [])
+    .filter(isInfoTextNode)
+    .map((child) => child.text ?? '')
+    .join('')
+    .trim()
+
+export function CookieNameNote({
+  body,
+  sizeLabel,
+}: {
+  body: CookieInfoRichText
+  sizeLabel?: string | null
+}) {
+  const note = (body.root?.children ?? [])
+    .filter(isInfoElementNode)
+    .map(paragraphPlainText)
+    .filter((text) => text && !/^texture:/i.test(text) && !/^best served warm/i.test(text))
+    .map((text) => text.replace(/^allergy:\s*/i, ''))
+    .join(' ')
+
+  return (
+    <p className="cookieNameNote">
+      {note}
+      {sizeLabel ? ` ${sizeLabel} size.` : null}
+    </p>
+  )
+}
+
 export function CookieInfoNote({ allergens, body, className }: CookieInfoNoteProps) {
   return (
     <div className={className ? `cookieInfoNote ${className}` : 'cookieInfoNote'}>

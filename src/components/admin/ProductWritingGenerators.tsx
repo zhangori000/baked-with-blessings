@@ -122,12 +122,7 @@ const buildProductInfoRichText = (title: string, productDescription: string): Ri
     `${title} is a bakery-style ${productKind} built around ${flavorName.toLowerCase()} flavor.`
 
   return createRichText([
-    createParagraphNode([{ bold: true, text: 'Flavor notes: ' }, flavorNote]),
-    createParagraphNode([
-      { bold: true, text: 'Serving notes: ' },
-      'Best enjoyed fresh. Warm slightly if you want a softer bite.',
-    ]),
-    createParagraphNode([{ bold: true, text: 'Allergy: ' }, sharedKitchenAllergyNote]),
+    createParagraphNode([`${flavorNote} ${sharedKitchenAllergyNote}`]),
   ])
 }
 

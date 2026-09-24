@@ -10,11 +10,19 @@ import type { Payload, PayloadRequest } from 'payload'
  */
 export const announcementItems = [
   {
-    linkHref: '/menu',
-    linkLabel: 'Preorder now',
+    pinned: true,
+    postedOn: '2026-09-20T12:00:00.000Z',
+    title: 'The owners are at Carleton',
     message:
-      'Find us at the downtown farmers market every Wednesday, 2pm to 6pm, now through September. Preorder by Tuesday night and your order will be waiting at the stand with your name on it.',
+      'The bakers are now in college at Carleton College in Northfield, Minnesota. We will be back at the Minneapolis farmers market November 24 through January 3.',
+  },
+  {
+    archived: true,
+    pinned: false,
+    postedOn: '2026-09-18T12:00:00.000Z',
     title: 'Farmers market — every Wednesday through September',
+    message:
+      'Find us at the downtown farmers market every Wednesday, 2pm to 6pm, now through September. Come say hello at the stand.',
   },
 ]
 

@@ -11,5 +11,5 @@ Standing rules only. Keep this file under ~20 lines; concepts and decisions live
 - Business data (orders, customers, carts, transactions) never syncs between environments, in either direction.
 - One feature per commit, so each is individually revertable. Plain branches (`git checkout -b`); never use `.claude/worktrees/`.
 - Verify UI changes in a real browser (`pnpm dev`, storefront at localhost:3000) — typecheck/lint alone is not verification.
-- The site has multiple themes/scenery variants. Build UI with the existing design system (`src/design-system/bakery`) and existing CSS variables — no one-off colors or fonts.
+- The site has multiple themes/scenery variants. Build UI with the existing design system (`src/design-system/bakery`) and existing CSS variables — no one-off colors or fonts. Storefront agent UI: `documentation/agents/design.md` and `documentation/agents/anti-ai.md`.
 - The admin panel's primary user is a non-technical business owner: plain-language field descriptions, few knobs, hide advanced fields rather than exposing them.
