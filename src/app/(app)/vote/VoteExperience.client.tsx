@@ -60,6 +60,8 @@ const useCountdown = (closesAt: string) => {
   return remaining
 }
 
+const MAX_CARD_TOKEN_SLOTS = 5
+
 function TokenRow({ filled, total }: { filled: number; total: number }) {
   return (
     <span aria-hidden="true" className="voteTokenRow">
@@ -106,13 +108,17 @@ function VoteCard({
   onChange,
   onExpand,
   option,
+  votesPerPerson,
 }: {
   canAdd: boolean
   count: number
   onChange: (next: number) => void
   onExpand: () => void
   option: PollOption
+  votesPerPerson: number
 }) {
+  const slots = votesPerPerson <= MAX_CARD_TOKEN_SLOTS ? votesPerPerson : 1
+
   return (
     <li className="voteCard" data-picked={count > 0 || undefined}>
       <button
@@ -142,8 +148,8 @@ function VoteCard({
             <Minus aria-hidden="true" className="h-4 w-4" />
           </button>
           <span aria-live="polite" className="voteStepperCount">
-            {count > 0 ? <TokenRow filled={count} total={count} /> : null}
-            {pluralTokens(count)}
+            <TokenRow filled={Math.min(count, slots)} total={slots} />
+            <span className="voteStepperLabel">{pluralTokens(count)}</span>
           </span>
           <button
             aria-label={`Put a token on ${option.title}`}
@@ -504,6 +510,7 @@ function ActiveVote({
                     })
                   }
                   option={option}
+                  votesPerPerson={poll.votesPerPerson}
                 />
               )
             })}

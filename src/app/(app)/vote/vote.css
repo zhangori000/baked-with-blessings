@@ -144,7 +144,9 @@
   box-shadow: 0 10px 24px rgba(23, 21, 16, 0.05);
   display: grid;
   gap: 0.4rem;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr;
+  min-width: 0;
   overflow: hidden;
   transition:
     border-color 180ms ease,
@@ -215,9 +217,10 @@
 }
 
 .voteCardBody {
-  align-content: start;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.45rem;
+  min-width: 0;
   padding: 0.25rem 1.15rem 1.15rem;
 }
 
@@ -246,8 +249,9 @@
   align-items: center;
   display: grid;
   gap: 0.5rem;
-  grid-template-columns: auto 1fr auto;
-  margin-top: 0.45rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin-top: auto;
+  padding-top: 0.45rem;
 }
 
 .voteStepperButton {
@@ -287,19 +291,29 @@
 }
 
 .voteStepperCount {
-  align-items: center;
   color: #171510;
-  display: inline-flex;
+  display: grid;
   font-family: var(--font-rounded-display);
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  gap: 0.4rem;
-  justify-content: center;
+  gap: 0.2rem;
+  justify-items: center;
+  min-width: 0;
+}
+
+.voteStepperCount .voteTokenRow {
+  gap: 0.15rem;
 }
 
 .voteStepperCount .voteToken {
-  height: 1.1rem;
-  width: 1.1rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.voteStepperLabel {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .voteIdea {
@@ -464,7 +478,7 @@
   align-items: center;
   display: grid;
   gap: 0.85rem;
-  grid-template-columns: 1.75rem 1fr;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
 }
 
 .voteStandingsRank {
