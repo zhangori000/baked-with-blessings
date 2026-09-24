@@ -7,7 +7,6 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { InitMenuScene } from '@/components/scenery/InitMenuScene'
 import { ViewportFlowers } from '@/components/ViewportFlowers'
 import { Providers } from '@/providers'
-import { InitTheme } from '@/providers/Theme/InitTheme'
 import { getServerSideURL } from '@/utilities/getURL'
 import { defaultSocialImage, siteDescription, siteName } from '@/utilities/siteMetadata'
 import { Patrick_Hand, Rubik } from 'next/font/google'
@@ -72,11 +71,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html
       className={`${rubik.variable} ${patrickHand.variable}`}
+      data-theme="light"
       lang="en"
       suppressHydrationWarning
     >
       <head>
-        <InitTheme />
         <InitMenuScene />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
         <link href="/favicon.ico" rel="alternate icon" sizes="32x32" />
