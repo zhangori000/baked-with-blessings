@@ -90,6 +90,8 @@ export interface Config {
     pages: Page;
     posts: Post;
     'flavor-rotations': FlavorRotation;
+    'flavor-polls': FlavorPoll;
+    'flavor-poll-votes': FlavorPollVote;
     categories: Category;
     'community-notes': CommunityNote;
     'feature-requests': FeatureRequest;
@@ -139,6 +141,8 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
+    'flavor-polls': FlavorPollsSelect<false> | FlavorPollsSelect<true>;
+    'flavor-poll-votes': FlavorPollVotesSelect<false> | FlavorPollVotesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'community-notes': CommunityNotesSelect<false> | CommunityNotesSelect<true>;
     'feature-requests': FeatureRequestsSelect<false> | FeatureRequestsSelect<true>;
@@ -1976,6 +1980,64 @@ export interface FlavorRotation {
   createdAt: string;
 }
 /**
+ * Weekly flavor votes for /vote. Make a new one each week: pick the flavors, set it to Live, and it closes on its own. Only the newest Live vote shows on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-polls".
+ */
+export interface FlavorPoll {
+  id: number;
+  /**
+   * The big heading customers see on the vote page.
+   */
+  title: string;
+  /**
+   * Keep it Hidden while you set it up. Switch to Live to open voting.
+   */
+  status: 'draft' | 'live';
+  /**
+   * Filled in with the next Sunday at 8pm Central. Only change it if this week is different.
+   */
+  closesAt: string;
+  /**
+   * Pick the flavors people can vote for. Any cookie works, including old flavors that are not on the menu right now.
+   */
+  options: (number | Product)[];
+  /**
+   * How many cookie tokens each person gets. They can stack them on one flavor.
+   */
+  votesPerPerson: number;
+  /**
+   * People see the current totals only after they vote, so the first votes are not swayed. Untick to keep totals secret until voting closes.
+   */
+  showStandingsAfterVoting?: boolean | null;
+  /**
+   * Shows an optional “What flavor would you love to see?” box on the ballot.
+   */
+  allowFlavorIdeas?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-poll-votes".
+ */
+export interface FlavorPollVote {
+  id: number;
+  poll: number | FlavorPoll;
+  voterKey: string;
+  picks?:
+    | {
+        product: number | Product;
+        count: number;
+        id?: string | null;
+      }[]
+    | null;
+  flavorIdea?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Customer-written post-it notes shown on the Community Post-it Wall. Toggle "isHidden" to take a note off the public wall without deleting it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2218,6 +2280,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'flavor-rotations';
         value: number | FlavorRotation;
+      } | null)
+    | ({
+        relationTo: 'flavor-polls';
+        value: number | FlavorPoll;
+      } | null)
+    | ({
+        relationTo: 'flavor-poll-votes';
+        value: number | FlavorPollVote;
       } | null)
     | ({
         relationTo: 'categories';
@@ -2809,6 +2879,39 @@ export interface FlavorRotationsSelect<T extends boolean = true> {
   lockedDescription?: T;
   menuLinkLabel?: T;
   ownerNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-polls_select".
+ */
+export interface FlavorPollsSelect<T extends boolean = true> {
+  title?: T;
+  status?: T;
+  closesAt?: T;
+  options?: T;
+  votesPerPerson?: T;
+  showStandingsAfterVoting?: T;
+  allowFlavorIdeas?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-poll-votes_select".
+ */
+export interface FlavorPollVotesSelect<T extends boolean = true> {
+  poll?: T;
+  voterKey?: T;
+  picks?:
+    | T
+    | {
+        product?: T;
+        count?: T;
+        id?: T;
+      };
+  flavorIdea?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3680,6 +3783,10 @@ export interface SitePage {
    * Untick to hide Request Features from the Other Pages menu and 404 the /feature-requests route.
    */
   featureRequestsEnabled?: boolean | null;
+  /**
+   * Untick to hide Flavor Vote from the Other Pages menu and 404 the /vote route.
+   */
+  flavorVoteEnabled?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3834,6 +3941,7 @@ export interface SitePagesSelect<T extends boolean = true> {
   discussionBoardEnabled?: T;
   blessingsNetworkEnabled?: T;
   featureRequestsEnabled?: T;
+  flavorVoteEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

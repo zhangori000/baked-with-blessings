@@ -9,6 +9,7 @@ export const SITE_PAGES_DEFAULTS = {
   communityEnabled: true,
   discussionBoardEnabled: false,
   featureRequestsEnabled: true,
+  flavorVoteEnabled: true,
   reviewsEnabled: true,
 } as const
 
@@ -92,6 +93,16 @@ export const SitePages: GlobalConfig = {
       admin: {
         description:
           'Untick to hide Request Features from the Other Pages menu and 404 the /feature-requests route.',
+      },
+    },
+    {
+      name: 'flavorVoteEnabled',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Flavor Vote (/vote)',
+      admin: {
+        description:
+          'Untick to hide Flavor Vote from the Other Pages menu and 404 the /vote route.',
       },
     },
   ],

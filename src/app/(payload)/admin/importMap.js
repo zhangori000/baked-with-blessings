@@ -21,6 +21,7 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { RotationShowcaseProductsField as RotationShowcaseProductsField_2f0a79148518000fce2e8f9e4dddb17e } from '@/components/admin/RotationShowcaseProductsField'
+import { FlavorPollResultsField as FlavorPollResultsField_3afafb02db48dc8e8b686742affc47f5 } from '@/components/admin/FlavorPollResultsField'
 import { VariantOptionsSelector as VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
 import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
 import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
@@ -61,6 +62,7 @@ export const importMap = {
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/components/admin/RotationShowcaseProductsField#RotationShowcaseProductsField": RotationShowcaseProductsField_2f0a79148518000fce2e8f9e4dddb17e,
+  "@/components/admin/FlavorPollResultsField#FlavorPollResultsField": FlavorPollResultsField_3afafb02db48dc8e8b686742affc47f5,
   "@payloadcms/plugin-ecommerce/rsc#VariantOptionsSelector": VariantOptionsSelector_b91672ccd6e8b071c11142ab941fedfb,
   "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,
   "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
