@@ -17,8 +17,8 @@ export type SelectableFlavor = {
   image: MediaType | null
   infoButtonLabel?: string
   /**
-   * True when this flavor is NOT individually available right now (not on the
-   * standing menu and not in the active rotation). Rare flavors are excluded
+   * True when this flavor is NOT individually available right now (not in the
+   * active rotation). Rare flavors are excluded
    * from mix-and-match boxes and shown with a "Rare — trays only" badge in the
    * one-flavor binge trays, which are the only way to order them.
    */
@@ -63,8 +63,6 @@ export type RegularOrderSize = {
 
 export type RegularOrderItem = {
   allergens?: string[]
-  /** 'seasonal' = featured in the active rotation; 'always' = standing menu. */
-  availability: 'always' | 'seasonal'
   badgeLabel: string
   bodyFallbackSrc: string
   /** Category tag for the row, e.g. "Cookie" or "Bread". */

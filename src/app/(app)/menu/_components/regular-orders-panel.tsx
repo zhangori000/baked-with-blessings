@@ -114,12 +114,7 @@ function RegularOrderRow({
   const isCartPending = isLoading || isSubmitting
   const infoId = `${item.slug}-regular-info`
 
-  // Point customers stocking up toward the cheaper bundle: a 4-pack mix box
-  // (quantity 4–9) or a 10-pack one-flavor tray (quantity 10+). Below 4 we
-  // still show a quiet static hint so the option is always discoverable.
   const bundleHint = useMemo(() => {
-    // Box/tray deals are cookies-only; a bread (or other non-cookie) can't go in
-    // a build-your-own cookie box, so don't nudge it toward one.
     if (
       !selectedSize ||
       !bundleSuggestions ||
@@ -128,16 +123,13 @@ function RegularOrderRow({
       return null
     }
 
-    const group = bundleSuggestions[selectedSize.value === 'mini' ? 'mini' : 'large']
-    if (!group) {
-      return null
-    }
+    const group = bundleSuggestions.large
+    const shortNameFor = (title: string) => title.replace(/^Build-Your-Own\s+/i, '')
 
-    // Lead with the dollars: how much they save and the deal in one glance.
     const dealFor = (bundle: { count: number; price: number; slug: string; title: string }) => {
       const singlesPrice = bundle.count * selectedSize.priceInUSD
       const savings = singlesPrice - bundle.price
-      const shortName = bundle.title.replace(/^Build-Your-Own\s+/i, '')
+      const shortName = shortNameFor(bundle.title)
       return {
         detail: `${bundle.count} for ${formatUSD(bundle.price)} instead of ${formatUSD(singlesPrice)}.`,
         headline: savings > 0 ? `Save ${formatUSD(savings)} with a ${shortName}` : `Try a ${shortName}`,
@@ -146,12 +138,22 @@ function RegularOrderRow({
       }
     }
 
-    if (quantity >= 10 && group.tray?.count) {
+    if (group.tray?.count && quantity >= group.tray.count) {
       return dealFor(group.tray as { count: number; price: number; slug: string; title: string })
     }
 
-    if (quantity >= 4 && group.box?.count) {
+    if (group.box?.count && quantity >= group.box.count) {
       return dealFor(group.box as { count: number; price: number; slug: string; title: string })
+    }
+
+    const miniBox = bundleSuggestions.mini.box
+    if (miniBox?.count) {
+      return {
+        detail: `Minis come ${miniBox.count} for ${formatUSD(miniBox.price)} in a ${shortNameFor(miniBox.title)}.`,
+        headline: 'Want minis?',
+        kind: 'quiet' as const,
+        slug: miniBox.slug,
+      }
     }
 
     const fallback = group.box ?? group.tray
@@ -160,7 +162,7 @@ function RegularOrderRow({
     }
 
     return {
-      detail: 'Boxes and one-flavor trays cost less per cookie.',
+      detail: 'Boxes cost less per cookie.',
       headline: 'Buying a bunch?',
       kind: 'quiet' as const,
       slug: fallback.slug,
@@ -216,14 +218,7 @@ function RegularOrderRow({
             <h3 className="cateringMenuRoundHeading regularOrderTitle">
               {item.title}
             </h3>
-            <span
-              className={cn(
-                'regularFlavorBadge',
-                item.availability === 'seasonal'
-                  ? 'regularFlavorBadgeSeasonal'
-                  : 'regularFlavorBadgeAlways',
-              )}
-            >
+            <span className="regularFlavorBadge regularFlavorBadgeSeasonal">
               {item.badgeLabel}
             </span>
             {item.categoryLabel ? (
@@ -494,8 +489,8 @@ function RegularOrderRow({
 }
 
 /**
- * The Regular orders tab: every always-available flavor plus the current
- * rotation's flavors, each orderable in any published size and quantity.
+ * The Regular orders tab: the current rotation's flavors, each orderable in
+ * any published size and quantity.
  */
 export function RegularOrdersPanel({
   bundleSuggestions,
@@ -504,21 +499,12 @@ export function RegularOrdersPanel({
   sceneryTone,
   seasonalLabel,
 }: RegularOrdersPanelProps) {
-  const alwaysItems = items.filter((item) => item.availability === 'always')
-  const seasonalItems = items.filter((item) => item.availability === 'seasonal')
-
   const groups = [
     {
       description: 'Featured this week, straight from the rotation.',
       heading: seasonalLabel,
-      items: seasonalItems,
+      items,
       key: 'seasonal',
-    },
-    {
-      description: 'The standing lineup — baked all year, order any time.',
-      heading: 'Always available',
-      items: alwaysItems,
-      key: 'always',
     },
   ].filter((group) => group.items.length > 0)
 
@@ -674,11 +660,6 @@ export function RegularOrdersPanel({
           padding: 0.32rem 0.8rem;
           text-transform: uppercase;
           white-space: nowrap;
-        }
-
-        .regularFlavorBadgeAlways {
-          background: #e3eeda;
-          color: #2d4520;
         }
 
         .regularFlavorBadgeSeasonal {

@@ -88,14 +88,14 @@ describe('individual cookie availability (cart/order validation)', () => {
     title: 'Dirty Chai',
   }
 
-  it('allows always-available flavors even when the rotation excludes them', async () => {
+  it('rejects legacy always-available flavors when the rotation excludes them', async () => {
     await expect(
       runHook({
         items: [{ product: alwaysFlavor.id, quantity: 3 }],
         products: [alwaysFlavor],
         rotationFlavorIDs: [999],
       }),
-    ).resolves.toBeTruthy()
+    ).rejects.toThrow(/catering-only/)
   })
 
   it('allows rotation flavors while they are in the active rotation', async () => {

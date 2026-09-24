@@ -55,7 +55,7 @@ type CateringMenuSectionProps = {
 }
 
 const menuSectionTabDefs: MenuSectionTabDef[] = [
-  { detail: 'Single cookies · large or mini', label: 'Regular orders', value: 'regular' },
+  { detail: 'This week’s single cookies', label: 'Regular orders', value: 'regular' },
   { detail: 'Boxes, trays & packs', label: 'Bundles', value: 'catering' },
 ]
 
@@ -165,8 +165,8 @@ const buildSelectableFlavors = (
         id: selectableProduct.id,
         image: posterAsset?.image ?? normalizeImage(selectableProduct),
         infoButtonLabel: posterAsset?.infoButtonLabel ?? 'Info',
-        // "Rare" = not individually orderable right now (off the standing menu
-        // and not in the active rotation). Derived from the same set Regular
+        // "Rare" = not individually orderable right now (not in the active
+        // rotation). Derived from the same set Regular
         // orders shows, so it stays in step with the rotation automatically.
         isRare: !currentFlavorIDs.has(selectableProduct.id),
         receiptBody,
@@ -614,8 +614,8 @@ export function CateringMenuSection({
 }: CateringMenuSectionProps) {
   const orderedProducts = useMemo(() => sortProductsForDisplay(products), [products])
   const hasRegularItems = regularItems.length > 0
-  // The set of flavors that are individually orderable right now (standing menu
-  // + active rotation). Mix-and-match boxes are limited to these; binge trays
+  // The set of flavors that are individually orderable right now (the active
+  // rotation). Mix-and-match boxes are limited to these; binge trays
   // mark anything outside this set as "Rare". Same source as the Regular tab,
   // so the two never drift.
   const currentFlavorIDs = useMemo(
@@ -767,7 +767,7 @@ export function CateringMenuSection({
         sceneryTone={heroSceneryTone}
         summary={
           hasRegularItems
-            ? 'Order the always-available lineup and this season’s flavors as single cookies — large or mini, as many as you like. Build-your-own boxes, trays, and ten-packs are one tab away.'
+            ? 'Order this week’s flavors as single cookies or build-your-own boxes. Planning an event? Catering comes in any flavor we’ve ever baked.'
             : undefined
         }
         title="Menu"

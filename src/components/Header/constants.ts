@@ -230,11 +230,11 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
     panel: {
       eyebrow: 'Menu',
       description:
-        'Regular orders of single cookies in large or mini, plus build-your-own boxes, trays, and ten-packs.',
+        'This week’s flavors as single cookies, build-your-own boxes, and catering in any flavor.',
       cards: [
         {
           description:
-            'Order always-available and seasonal flavors as single cookies, or switch to the Bundles tab for build-your-own boxes, trays, and honest product notes.',
+            'Order this week’s flavors as single cookies, switch to Bundles for build-your-own boxes, or Catering for any flavor we’ve ever baked.',
           eyebrow: 'Menu landing',
           href: menuHref,
           title: 'Open the menu',
@@ -243,7 +243,7 @@ const fallbackHeaderNavigation: HeaderNavigationItem[] = [
       ],
       links: [
         {
-          description: 'Go to the menu page for regular orders and bundles.',
+          description: 'Go to the menu page for regular orders, bundles, and catering.',
           href: menuHref,
           label: 'Open the menu',
         },

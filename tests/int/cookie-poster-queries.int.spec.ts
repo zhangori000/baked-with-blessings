@@ -56,24 +56,10 @@ describe('applyRotationAvailability (who can be ordered individually)', () => {
     })
   })
 
-  it('keeps always-available flavors buyable even outside the rotation', () => {
-    const [poster] = applyRotationAvailability({
-      activeRotation,
-      posters: [makePoster({ individualAvailability: 'always', productId: 99 })],
-    })
-
-    expect(poster).toMatchObject({
-      amount: '$7.00',
-      canBuyIndividually: true,
-      isMonthlyFlavor: false,
-      monthlyFlavorLabel: 'Always available',
-    })
-  })
-
   it('locks rotation-scoped flavors that are not in the active rotation', () => {
     const [poster] = applyRotationAvailability({
       activeRotation,
-      posters: [makePoster({ individualAvailability: 'rotation', productId: 99 })],
+      posters: [makePoster({ productId: 99 })],
     })
 
     expect(poster).toMatchObject({
@@ -87,7 +73,7 @@ describe('applyRotationAvailability (who can be ordered individually)', () => {
     const posters = applyRotationAvailability({
       activeRotation,
       posters: [
-        makePoster({ individualAvailability: 'always', productId: 99, slug: 'biscoff' }),
+        makePoster({ productId: 99, slug: 'biscoff' }),
         makePoster({ productId: 20, slug: 'dirty-chai' }),
         makePoster({ productId: 10, slug: 'rice-krispy-mango' }),
       ],

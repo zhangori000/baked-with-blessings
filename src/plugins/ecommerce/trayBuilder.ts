@@ -38,7 +38,6 @@ type ProductConfigLike = {
     | null
   flavorSelection?: null | string
   id?: DefaultDocumentIDType
-  individualAvailability?: null | string
   menuBehavior?: 'batchBuilder' | 'simple' | string | null
   requiredSelectionCount?: null | number
   selectableProducts?:
@@ -312,12 +311,6 @@ const validateBatchSelections = async ({
     product: ProductConfigLike | undefined
     productID: DefaultDocumentIDType
   }) => {
-    // Standing-menu flavors are individually orderable year-round; the
-    // rotation gate below only applies to rotation-scoped flavors.
-    if (product?.individualAvailability === 'always') {
-      return
-    }
-
     const activeRotationFlavorIDs = await loadActiveRotationFlavorIDSet()
 
     if (!activeRotationFlavorIDs) {
@@ -407,7 +400,7 @@ const validateBatchSelections = async ({
     }
 
     // Mix-and-match boxes (build-your-own) only allow flavors that are
-    // individually available right now (standing menu + active rotation).
+    // individually available right now (the active rotation).
     // One-flavor "binge" trays (flavorSelection !== 'mixAndMatch') allow any
     // flavor, including rare/legacy ones — that is their whole purpose.
     const isMixAndMatch = product?.flavorSelection === 'mixAndMatch'

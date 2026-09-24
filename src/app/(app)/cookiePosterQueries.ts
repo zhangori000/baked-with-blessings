@@ -36,7 +36,6 @@ type ActiveFlavorRotation = {
 const productSelect = {
   gallery: true,
   id: true,
-  individualAvailability: true,
   meta: true,
   poster: true,
   priceInUSD: true,
@@ -117,10 +116,7 @@ export const applyRotationAvailability = ({
     .map((poster) => {
       const productID = typeof poster.productId === 'number' ? String(poster.productId) : null
       const isMonthlyFlavor = Boolean(productID && monthlyFlavorIDs.has(productID))
-      // Standing-menu flavors stay individually orderable even when the
-      // active rotation does not feature them.
-      const isAlwaysAvailable = poster.individualAvailability === 'always'
-      const canBuyIndividually = isMonthlyFlavor || isAlwaysAvailable
+      const canBuyIndividually = isMonthlyFlavor
 
       return {
         ...poster,
@@ -142,11 +138,9 @@ export const applyRotationAvailability = ({
               : cateringMenuHref,
         menuLinkLabel: activeRotation.menuLinkLabel?.trim() || 'View on menu',
         monthlyFlavorLabel:
-          !isMonthlyFlavor && isAlwaysAvailable
-            ? 'Always available'
-            : activeRotation.monthlyFlavorLabel?.trim() ||
-              activeRotation.displayLabel?.trim() ||
-              "This week's special",
+          activeRotation.monthlyFlavorLabel?.trim() ||
+          activeRotation.displayLabel?.trim() ||
+          "This week's special",
       }
     })
     .sort((left, right) => {

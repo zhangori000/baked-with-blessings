@@ -1,9 +1,4 @@
-import type {
-  CollectionSlug,
-  DefaultDocumentIDType,
-  Payload,
-  Where,
-} from 'payload'
+import type { CollectionSlug, DefaultDocumentIDType, Payload } from 'payload'
 
 import { queryPublishedSizeVariantsByProduct } from '@/app/(app)/cookiePosterQueries'
 import { buildCookiePosterAsset } from '@/features/products/cookieDisplayData'
@@ -24,7 +19,6 @@ const regularProductSelect = {
   description: true,
   gallery: true,
   id: true,
-  individualAvailability: true,
   meta: true,
   poster: true,
   priceInUSD: true,
@@ -39,8 +33,8 @@ export type RegularOrderMenuData = {
 }
 
 /**
- * The flavors customers can order individually on /menu: every
- * always-available flavor plus whatever the active rotation features.
+ * The flavors customers can order individually on /menu: whatever the
+ * active rotation features.
  * Each item carries its published Large/Mini sizes so the storefront can
  * sell exact variants instead of bare products.
  */
@@ -104,20 +98,8 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
   )
   const cateringCategoryID = cateringCategoryResult.docs[0]?.id
 
-  const availabilityOr: Where[] = [
-    {
-      individualAvailability: {
-        equals: 'always',
-      },
-    },
-  ]
-
-  if (rotationFlavorIDs.length > 0) {
-    availabilityOr.push({
-      id: {
-        in: rotationFlavorIDs,
-      },
-    })
+  if (rotationFlavorIDs.length === 0) {
+    return { items: [], seasonalLabel }
   }
 
   const productsResult = await measureServerStep('payload.find products: regular order menu', () =>
@@ -144,7 +126,9 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
             },
           },
           {
-            or: availabilityOr,
+            id: {
+              in: rotationFlavorIDs,
+            },
           },
         ],
       },
@@ -164,10 +148,6 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
         return null
       }
 
-      // Rotation membership wins the badge: a standing flavor that is also
-      // featured this rotation reads as featured, and stays orderable later.
-      const isSeasonal = rotationFlavorOrder.has(String(product.id))
-
       const firstCategory = (Array.isArray(product.categories) ? product.categories : [])
         .map((category) => (category && typeof category === 'object' ? category : null))
         .find(Boolean) as { slug?: null | string; title?: null | string } | null | undefined
@@ -178,8 +158,7 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
 
       return {
         allergens: poster.allergens,
-        availability: isSeasonal ? 'seasonal' : 'always',
-        badgeLabel: isSeasonal ? seasonalLabel : 'Always available',
+        badgeLabel: seasonalLabel,
         bodyFallbackSrc: poster.bodyFallbackSrc,
         categoryLabel,
         categorySlug,
@@ -188,36 +167,25 @@ export const queryRegularOrderItems = async (payload: Payload): Promise<RegularO
         infoButtonLabel: poster.infoButtonLabel,
         priceInUSD: typeof product.priceInUSD === 'number' ? product.priceInUSD : null,
         receiptBody: poster.receiptBody,
-        sizes: summarizeSizeVariants(variantsByProduct.get(String(product.id)) ?? []).map(
-          (size) => ({
+        sizes: summarizeSizeVariants(variantsByProduct.get(String(product.id)) ?? [])
+          .filter((size) => size.value !== 'mini')
+          .map((size) => ({
             label: size.label,
             priceInUSD: size.priceInUSD,
             value: size.value,
             variantId: size.id,
-          }),
-        ),
+          })),
         slug: poster.slug,
         summary: poster.summary,
         title: poster.title,
       }
     })
     .filter((item): item is RegularOrderItem => Boolean(item))
-    .sort((left, right) => {
-      // Standing menu first (alphabetical from the query sort), then the
-      // rotation flavors in the order the owner arranged them.
-      if (left.availability !== right.availability) {
-        return left.availability === 'always' ? -1 : 1
-      }
-
-      if (left.availability === 'seasonal') {
-        return (
-          (rotationFlavorOrder.get(String(left.id)) ?? Number.MAX_SAFE_INTEGER) -
-          (rotationFlavorOrder.get(String(right.id)) ?? Number.MAX_SAFE_INTEGER)
-        )
-      }
-
-      return 0
-    })
+    .sort(
+      (left, right) =>
+        (rotationFlavorOrder.get(String(left.id)) ?? Number.MAX_SAFE_INTEGER) -
+        (rotationFlavorOrder.get(String(right.id)) ?? Number.MAX_SAFE_INTEGER),
+    )
 
   return { items, seasonalLabel }
 }
