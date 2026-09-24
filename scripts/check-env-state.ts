@@ -18,7 +18,7 @@ const KEY_SLUGS = [
   'strawberry-cheesecake',
   'toasted-and-tasseled',
   'sticky-mango-rice-krispy-treats',
-  'freshly-baked-dirty-chai-cookie',
+  'dirty-chai',
   'cookie-tray',
   'mini-cookie-tray',
   'build-your-own-mini-box',

@@ -195,10 +195,10 @@ export const cookieCatalog: CookieSeedSpec[] = [
     metaDescription:
       'Freshly baked Dirty Chai with a brown butter chai-infused base, espresso white chocolate, caramelized white chocolate, and flaky sea salt. The sophisticated way to handle your morning caffeine fix.',
     priceInUSD: 700,
-    slug: 'freshly-baked-dirty-chai-cookie',
+    slug: 'dirty-chai',
     sourceFilename: 'dirty-chai.png',
     summary:
       'Freshly baked Dirty Chai with a brown butter chai-infused base, espresso white chocolate, caramelized white chocolate, and flaky sea salt. The sophisticated way to handle your morning caffeine fix.',
-    title: 'Dirty Chai Cookie',
+    title: 'Dirty Chai',
   },
 ]
