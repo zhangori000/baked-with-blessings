@@ -3567,6 +3567,10 @@ export interface StoreSetting {
    * Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over. Let customers choose offers both, so each person picks at checkout.
    */
   paymentCollectionMode: 'payNow' | 'payAtPickup' | 'both';
+  /**
+   * US email law requires a postal address at the bottom of every bakery email. A PO box works if you would rather not share your home address. Bakery emails cannot be sent until this is filled in. It is not shown on the website.
+   */
+  mailingAddress?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3837,6 +3841,7 @@ export interface SitePage {
  */
 export interface StoreSettingsSelect<T extends boolean = true> {
   paymentCollectionMode?: T;
+  mailingAddress?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
