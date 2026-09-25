@@ -61,6 +61,7 @@ const useCountdown = (closesAt: string) => {
 }
 
 const MAX_CARD_TOKEN_SLOTS = 5
+const CLOSE_REFRESH_RETRY_MS = 5000
 
 function TokenRow({ filled, total }: { filled: number; total: number }) {
   return (
@@ -263,8 +264,8 @@ function ThankYouDialog({
         {featureRequestsEnabled ? (
           <div className="voteDialogNote">
             <p>
-              Got a bigger idea? A flavor we have never made, a box size, anything for the site?
-              You can always post it on our Request Features page.
+              Got a bigger idea? A flavor we have never made, a box size, anything for the site? You
+              can always post it on our Request Features page.
             </p>
             <BakeryAction
               as={Link}
@@ -292,8 +293,8 @@ function EmptyState() {
       <p className="voteEyebrow">No vote open right now</p>
       <h2 className="voteHeadline">The next flavor vote is coming soon</h2>
       <p className="voteLead">
-        Every week we open a vote for the next week’s cookies. Check back soon, and in the
-        meantime see what is baking now.
+        Every week we open a vote for the next week’s cookies. Check back soon, and in the meantime
+        see what is baking now.
       </p>
       <div className="voteActions">
         <BakeryAction as={Link} href={menuHref} size="lg" variant="primary">
@@ -326,7 +327,7 @@ function ActiveVote({
   const [error, setError] = useState<string | null>(null)
   const [isThankYouOpen, setIsThankYouOpen] = useState(false)
   const [lightboxItem, setLightboxItem] = useState<ImageLightboxItem | null>(null)
-  const hasRefreshedAtClose = useRef(false)
+  const changeVotesRef = useRef<HTMLElement>(null)
 
   const spent = countTokens(picks)
   const savedSpent = savedBallot ? countTokens(savedBallot.picks) : 0
@@ -336,14 +337,20 @@ function ActiveVote({
   const [isGridVisible, setIsGridVisible] = useState(false)
   const [isSubmitBarVisible, setIsSubmitBarVisible] = useState(false)
   const closeLightbox = useCallback(() => setLightboxItem(null), [])
-  const closeThankYou = useCallback(() => setIsThankYouOpen(false), [])
+  const closeThankYou = useCallback(() => {
+    setIsThankYouOpen(false)
+    window.requestAnimationFrame(() => changeVotesRef.current?.focus({ preventScroll: true }))
+  }, [])
+
+  const hasClockClosed = remainingMs <= 0
 
   useEffect(() => {
-    if (poll.isOpen && remainingMs <= 0 && !hasRefreshedAtClose.current) {
-      hasRefreshedAtClose.current = true
-      router.refresh()
-    }
-  }, [poll.isOpen, remainingMs, router])
+    if (!poll.isOpen || !hasClockClosed) return
+
+    router.refresh()
+    const retry = window.setInterval(() => router.refresh(), CLOSE_REFRESH_RETRY_MS)
+    return () => window.clearInterval(retry)
+  }, [hasClockClosed, poll.isOpen, router])
 
   useEffect(() => {
     const grid = gridRef.current
@@ -440,7 +447,11 @@ function ActiveVote({
           </div>
         </header>
         {standings ? (
-          <Standings myPicks={savedBallot?.picks ?? {}} standings={standings} title="Final results" />
+          <Standings
+            myPicks={savedBallot?.picks ?? {}}
+            standings={standings}
+            title="Final results"
+          />
         ) : null}
       </div>
     )
@@ -485,7 +496,12 @@ function ActiveVote({
               <p className="voteMuted">Your idea: “{savedBallot.flavorIdea}”</p>
             ) : null}
           </div>
-          <BakeryAction onClick={() => setIsEditing(true)} size="md" variant="secondary">
+          <BakeryAction
+            onClick={() => setIsEditing(true)}
+            ref={changeVotesRef}
+            size="md"
+            variant="secondary"
+          >
             Change my votes
           </BakeryAction>
         </div>
@@ -519,8 +535,7 @@ function ActiveVote({
           {poll.allowFlavorIdeas ? (
             <div className="voteIdea">
               <label className="voteIdeaLabel" htmlFor="vote-flavor-idea">
-                What flavor would you love to see?{' '}
-                <span className="voteMuted">(optional)</span>
+                What flavor would you love to see? <span className="voteMuted">(optional)</span>
               </label>
               <input
                 className="voteIdeaInput"
@@ -578,7 +593,11 @@ function ActiveVote({
       ) : null}
 
       {!isEditing && standings ? (
-        <Standings myPicks={savedBallot?.picks ?? {}} standings={standings} title="Current standings" />
+        <Standings
+          myPicks={savedBallot?.picks ?? {}}
+          standings={standings}
+          title="Current standings"
+        />
       ) : null}
 
       {!isEditing && !standings ? (
@@ -618,5 +637,11 @@ function ActiveVote({
 
 export function VoteExperience(props: VoteExperienceProps) {
   if (!props.poll) return <EmptyState />
-  return <ActiveVote {...props} poll={props.poll} />
+  return (
+    <ActiveVote
+      {...props}
+      key={`${props.poll.id}-${props.poll.isOpen ? 'open' : 'closed'}`}
+      poll={props.poll}
+    />
+  )
 }

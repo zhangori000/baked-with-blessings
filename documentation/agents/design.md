@@ -69,7 +69,7 @@ How to hold it:
 - Pin controls to the bottom of equal-height cards (`margin-top: auto` in a flex column) so rows of cards line up however long the titles are.
 - Swap `visibility` or `opacity` instead of mounting and unmounting inline content. Float new UI (toasts, tallies) above the layout instead of inserting it.
 
-Check it with `expectLayoutStable` in `tests/helpers/layoutStability.ts`: it measures the watched elements, runs the action, and fails on any shift over 0.5px. See `tests/e2e/vote-layout.e2e.spec.ts`. Test at a width where the component is at its narrowest; the vote-card bug only showed at 1440px, where the cards are about 246px wide.
+Check it with `expectLayoutStable` in `tests/helpers/layoutStability.ts`: it measures the watched elements, runs the action, and fails on any shift over 0.5px. See `tests/e2e/vote.e2e.spec.ts`. Test at a width where the component is at its narrowest; the vote-card bug only showed at 1440px, where the cards are about 246px wide.
 
 ## What “done” means for UI
 

@@ -18,6 +18,7 @@ const viewports = [
 
 let payload: Payload
 let pollID: number | string | undefined
+let optionIDs: number[] = []
 
 const openVotePage = async (page: Page) => {
   await page.goto(`${baseURL}/vote`, { waitUntil: 'networkidle' })
@@ -27,7 +28,7 @@ const openVotePage = async (page: Page) => {
   await expect(page.locator('.voteCard').first()).toBeVisible()
 }
 
-test.describe('Flavor vote layout stability', () => {
+test.describe('Flavor vote', () => {
   test.beforeAll(async () => {
     payload = await getPayload({ config })
 
@@ -71,6 +72,7 @@ test.describe('Flavor vote layout stability', () => {
     })
 
     pollID = poll.id
+    optionIDs = products.docs.map((product) => product.id)
   })
 
   test.afterAll(async () => {
@@ -120,4 +122,89 @@ test.describe('Flavor vote layout stability', () => {
       }
     })
   }
+
+  test('keeps keyboard focus inside the enlarged photo', async ({ page }) => {
+    await openVotePage(page)
+
+    const expand = page.getByRole('button', { name: /Enlarge photo of/ }).first()
+    await expand.click()
+
+    const lightbox = page.locator('.imageLightbox')
+    await expect(page.getByRole('button', { name: 'Close enlarged image' })).toBeFocused()
+
+    for (let press = 0; press < 3; press += 1) {
+      await page.keyboard.press('Tab')
+      expect(await lightbox.evaluate((node) => node.contains(document.activeElement))).toBe(true)
+    }
+    await page.keyboard.press('Shift+Tab')
+    expect(await lightbox.evaluate((node) => node.contains(document.activeElement))).toBe(true)
+
+    await page.keyboard.press('Escape')
+    await expect(lightbox).toHaveCount(0)
+    await expect(expand).toBeFocused()
+  })
+
+  test('keeps focus in the thank-you dialog and returns it to the saved ballot', async ({
+    page,
+  }) => {
+    await openVotePage(page)
+
+    await page
+      .getByRole('button', { name: /Put a token on/ })
+      .first()
+      .click()
+    await page.getByRole('button', { name: 'Submit my votes' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Thanks for voting!' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Close' })).toBeFocused()
+
+    for (let press = 0; press < 6; press += 1) {
+      await page.keyboard.press('Tab')
+      expect(await dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true)
+    }
+
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Change my votes' })).toBeFocused()
+  })
+
+  test('lets a voter re-vote after their flavor leaves the ballot', async ({ page }) => {
+    test.skip(optionIDs.length < 3, 'Needs three flavors on the ballot')
+
+    await openVotePage(page)
+    const removedTitle = ((await page.locator('.voteCardTitle').first().textContent()) ?? '').trim()
+    await page.getByRole('button', { name: `Put a token on ${removedTitle}` }).click()
+    await page.getByRole('button', { name: 'Submit my votes' }).click()
+    await page.keyboard.press('Escape')
+    await expect(page.getByText('Your votes are in')).toBeVisible()
+
+    const [, ...remaining] = optionIDs
+    try {
+      await payload.update({
+        collection: 'flavor-polls',
+        data: { options: remaining },
+        id: pollID as number,
+        overrideAccess: true,
+      })
+
+      await openVotePage(page)
+      await expect(page.getByText('Your votes are in')).toHaveCount(0)
+      await expect(page.locator('.voteCardTitle', { hasText: removedTitle })).toHaveCount(0)
+
+      await page
+        .getByRole('button', { name: /Put a token on/ })
+        .first()
+        .click()
+      await page.getByRole('button', { name: 'Submit my votes' }).click()
+      await expect(page.getByRole('dialog', { name: 'Thanks for voting!' })).toBeVisible()
+    } finally {
+      await payload.update({
+        collection: 'flavor-polls',
+        data: { options: optionIDs },
+        id: pollID as number,
+        overrideAccess: true,
+      })
+    }
+  })
 })
