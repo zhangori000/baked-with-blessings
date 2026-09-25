@@ -105,7 +105,7 @@ export const headerAppPages: HeaderAppPage[] = [
     id: 'flavor-vote',
     mobileDescription: 'Vote for next week’s cookies before the countdown runs out.',
     mobileTitle: 'Flavor vote',
-    title: 'Flavor Vote',
+    title: 'Pick next week’s flavors!',
     tone: 'light',
   },
   {
