@@ -1567,6 +1567,23 @@ export interface BakeryUpdate {
   id: number;
   subject: string;
   message: string;
+  template: 'note' | 'flavor' | 'market';
+  /**
+   * The cookie a "New flavor" update shows.
+   */
+  product?: (number | null) | Product;
+  /**
+   * Where and when, for a "Market date" update.
+   */
+  market?: {
+    place?: string | null;
+    /**
+     * YYYY-MM-DD
+     */
+    date?: string | null;
+    hours?: string | null;
+    address?: string | null;
+  };
   sendText?: boolean | null;
   sendEmail?: boolean | null;
   status: 'preparing' | 'sending' | 'sent';
@@ -2516,6 +2533,16 @@ export interface MessageConsentEventsSelect<T extends boolean = true> {
 export interface BakeryUpdatesSelect<T extends boolean = true> {
   subject?: T;
   message?: T;
+  template?: T;
+  product?: T;
+  market?:
+    | T
+    | {
+        place?: T;
+        date?: T;
+        hours?: T;
+        address?: T;
+      };
   sendText?: T;
   sendEmail?: T;
   status?: T;

@@ -1,7 +1,7 @@
 import { APIError } from 'payload'
 import type { Payload } from 'payload'
 
-import type { BakeryUpdate, Customer } from '@/payload-types'
+import type { BakeryUpdate, Customer, Media, Product } from '@/payload-types'
 import { getCustomerContactEmails } from '@/utilities/email/contactChannels'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { createEmailUnsubscribeToken } from '@/utilities/email/emailUnsubscribeToken'
@@ -11,12 +11,21 @@ import { getTwilioMessagingConfig, sendTwilioSms } from '@/utilities/sms/twilioM
 import {
   type BakeryUpdateChannel,
   type BakeryUpdateDraft,
-  buildBakeryUpdateEmail,
+  type BakeryUpdateMarket,
+  type BakeryUpdateTemplate,
+  bakeryUpdateSmsDetails,
   buildBakeryUpdateSms,
+  emptyBakeryUpdateMarket,
   formatMailingAddress,
   missingMailingAddressMessage,
   validateBakeryUpdateDraft,
 } from './content'
+import {
+  BAKERY_EMAIL_LOGO_PATH,
+  type BakeryUpdateEmailFeature,
+  type BakeryUpdateEmailFlavor,
+  buildBakeryUpdateEmail,
+} from './email'
 import {
   type BakeryUpdateTally,
   type ClaimedDelivery,
@@ -60,6 +69,177 @@ export const getBakeryCompanyName = () =>
   process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
 
 export const areBakeryTextsReady = () => Boolean(getTwilioMessagingConfig())
+
+// Gmail and other inboxes fetch email images from their own servers, which
+// cannot get past the Vercel login on preview deployments. The logo is a
+// public file, so it always loads from the production site.
+export const getBakeryEmailLinks = () => {
+  const siteURL = getServerSideURL()
+  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
+  const assetsURL = productionHost ? `https://${productionHost}` : siteURL
+
+  return { logoURL: `${assetsURL}${BAKERY_EMAIL_LOGO_PATH}`, siteURL }
+}
+
+// The blob adapter stores uploads under their filename at this public host.
+// Inboxes can load that URL directly, while /api/media on a preview deployment
+// sits behind the Vercel login. Without a blob token (local dev) files are
+// served by this app.
+const getPublicMediaBaseURL = () => {
+  const override = process.env.STORAGE_VERCEL_BLOB_BASE_URL?.trim()
+
+  if (override) {
+    return override.replace(/\/$/, '')
+  }
+
+  const storeId = process.env.BLOB_READ_WRITE_TOKEN?.match(
+    /^vercel_blob_rw_([a-z\d]+)_[a-z\d]+$/i,
+  )?.[1]?.toLowerCase()
+
+  return storeId ? `https://${storeId}.public.blob.vercel-storage.com` : null
+}
+
+export const getPublicMediaURL = (media: Media | null | number | undefined): null | string => {
+  if (!media || typeof media !== 'object') {
+    return null
+  }
+
+  // About 500px wide in the email, so the 768px size stays sharp on phones.
+  const file = [media.sizes?.poster, media.sizes?.tablet, media.sizes?.card, media].find(
+    (candidate) => candidate?.filename && candidate.url,
+  )
+
+  if (!file?.filename || !file.url) {
+    return null
+  }
+
+  const blobBaseURL = getPublicMediaBaseURL()
+
+  if (blobBaseURL) {
+    return `${blobBaseURL}/${encodeURIComponent(file.filename)}`
+  }
+
+  return /^https?:\/\//.test(file.url) ? file.url : `${getServerSideURL()}${file.url}`
+}
+
+const formatPriceLabel = (product: Pick<Product, 'priceInUSD' | 'priceInUSDEnabled'>) =>
+  product.priceInUSDEnabled && typeof product.priceInUSD === 'number' && product.priceInUSD > 0
+    ? new Intl.NumberFormat('en-US', { currency: 'USD', style: 'currency' }).format(
+        product.priceInUSD / 100,
+      )
+    : null
+
+export type BakeryUpdateProduct = Omit<BakeryUpdateEmailFlavor, 'kind'> & { id: number }
+
+const toBakeryUpdateProduct = (
+  product: Pick<Product, 'gallery' | 'id' | 'priceInUSD' | 'priceInUSDEnabled' | 'title'>,
+): BakeryUpdateProduct => ({
+  id: product.id,
+  imageURL: getPublicMediaURL(product.gallery?.[0]?.image),
+  name: product.title,
+  priceLabel: formatPriceLabel(product),
+})
+
+const productSelect = {
+  gallery: true,
+  priceInUSD: true,
+  priceInUSDEnabled: true,
+  title: true,
+} as const
+
+export const listBakeryUpdateProducts = async (payload: Payload) => {
+  const result = await payload.find({
+    collection: 'products',
+    depth: 1,
+    overrideAccess: true,
+    pagination: false,
+    select: productSelect,
+    sort: 'title',
+    where: { _status: { equals: 'published' } },
+  })
+
+  return result.docs.map(toBakeryUpdateProduct)
+}
+
+export const findBakeryUpdateProduct = async (
+  payload: Payload,
+  id: null | number | Product | undefined,
+): Promise<BakeryUpdateProduct | null> => {
+  const productID = typeof id === 'object' ? id?.id : id
+
+  if (!productID) {
+    return null
+  }
+
+  const product = await payload.findByID({
+    collection: 'products',
+    depth: 1,
+    disableErrors: true,
+    id: productID,
+    overrideAccess: true,
+    select: productSelect,
+  })
+
+  return product ? toBakeryUpdateProduct(product) : null
+}
+
+type TemplateFields = {
+  market: BakeryUpdateMarket
+  productID: null | number
+  template: BakeryUpdateTemplate
+}
+
+// Keeps only the fields the chosen template uses, trimmed, so a leftover
+// cookie on a market update is not stored.
+const templateFieldsFromDraft = (draft: BakeryUpdateDraft): TemplateFields => {
+  const template = draft.template ?? 'note'
+  const market = draft.market ?? emptyBakeryUpdateMarket()
+
+  return {
+    market:
+      template === 'market'
+        ? {
+            address: market.address.trim(),
+            date: market.date.trim(),
+            hours: market.hours.trim(),
+            place: market.place.trim(),
+          }
+        : emptyBakeryUpdateMarket(),
+    productID: template === 'flavor' ? (draft.productID ?? null) : null,
+    template,
+  }
+}
+
+export const templateFieldsFromUpdate = (
+  update: Pick<BakeryUpdate, 'market' | 'product' | 'template'>,
+): TemplateFields => ({
+  market: {
+    address: update.market?.address ?? '',
+    date: update.market?.date ?? '',
+    hours: update.market?.hours ?? '',
+    place: update.market?.place ?? '',
+  },
+  productID:
+    typeof update.product === 'object' ? (update.product?.id ?? null) : (update.product ?? null),
+  template: update.template ?? 'note',
+})
+
+/** The block above the message. A flavor whose cookie was deleted falls back to a plain note. */
+export const loadBakeryUpdateEmailFeature = async (
+  payload: Payload,
+  { market, productID, template }: TemplateFields,
+): Promise<BakeryUpdateEmailFeature | null> => {
+  if (template === 'market') {
+    return { ...market, kind: 'market' }
+  }
+
+  if (template === 'flavor') {
+    const product = await findBakeryUpdateProduct(payload, productID)
+    return product ? { ...product, kind: 'flavor' } : null
+  }
+
+  return null
+}
 
 export const getBakeryMailingAddress = async (payload: Payload): Promise<null | string> => {
   const settings = await payload.findGlobal({
@@ -272,6 +452,15 @@ export const startBakeryUpdate = async ({
     throw new APIError(problem, 400)
   }
 
+  const templateFields = templateFieldsFromDraft(draft)
+
+  if (
+    templateFields.template === 'flavor' &&
+    !(await findBakeryUpdateProduct(payload, templateFields.productID))
+  ) {
+    throw new APIError('That cookie is no longer on the site. Pick another one.', 400)
+  }
+
   const audience = {
     email: draft.sendEmail ? await findBakeryUpdateAudience(payload, 'email') : [],
     sms: draft.sendText ? await findBakeryUpdateAudience(payload, 'sms') : [],
@@ -287,13 +476,16 @@ export const startBakeryUpdate = async ({
     update = await payload.create({
       collection: 'bakery-updates',
       data: {
+        market: templateFields.market,
         message: draft.message.trim(),
+        product: templateFields.productID,
         requestKey,
         sendEmail: draft.sendEmail,
         sendText: draft.sendText,
         sentBy,
         status: 'preparing',
         subject: draft.subject.trim() || draft.message.trim().slice(0, 60),
+        template: templateFields.template,
       },
       depth: 0,
       overrideAccess: true,
@@ -315,24 +507,39 @@ export const startBakeryUpdate = async ({
 type SendContext = {
   accountURL: string
   companyName: string
+  feature: BakeryUpdateEmailFeature | null
+  logoURL: string
   mailingAddress: string
   message: string
   serverURL: string
+  siteURL: string
   smsBody: string
   subject: string
 }
 
-const buildSendContext = (update: BakeryUpdate, mailingAddress: string): SendContext => {
+const buildSendContext = async (
+  payload: Payload,
+  update: BakeryUpdate,
+  mailingAddress: string,
+): Promise<SendContext> => {
   const companyName = getBakeryCompanyName()
-  const serverURL = getServerSideURL()
+  const { logoURL, siteURL } = getBakeryEmailLinks()
+  const templateFields = templateFieldsFromUpdate(update)
 
   return {
-    accountURL: `${serverURL}/account`,
+    accountURL: `${siteURL}/account`,
     companyName,
+    feature: update.sendEmail ? await loadBakeryUpdateEmailFeature(payload, templateFields) : null,
+    logoURL,
     mailingAddress,
     message: update.message,
-    serverURL,
-    smsBody: buildBakeryUpdateSms({ companyName, message: update.message }),
+    serverURL: siteURL,
+    siteURL,
+    smsBody: buildBakeryUpdateSms({
+      companyName,
+      details: bakeryUpdateSmsDetails(templateFields),
+      message: update.message,
+    }),
     subject: update.subject,
   }
 }
@@ -344,7 +551,14 @@ export const buildBakeryUpdateEmailFor = ({
 }: {
   context: Pick<
     SendContext,
-    'accountURL' | 'companyName' | 'mailingAddress' | 'message' | 'subject'
+    | 'accountURL'
+    | 'companyName'
+    | 'feature'
+    | 'logoURL'
+    | 'mailingAddress'
+    | 'message'
+    | 'siteURL'
+    | 'subject'
   >
   to: string
   unsubscribeURL: string
@@ -352,8 +566,11 @@ export const buildBakeryUpdateEmailFor = ({
   ...buildBakeryUpdateEmail({
     accountURL: context.accountURL,
     companyName: context.companyName,
+    feature: context.feature,
+    logoURL: context.logoURL,
     mailingAddress: context.mailingAddress,
     message: context.message,
+    siteURL: context.siteURL,
     subject: context.subject,
     unsubscribeURL,
   }),
@@ -487,7 +704,7 @@ export const continueBakeryUpdate = async ({
     throw new APIError(missingMailingAddressMessage, 400)
   }
 
-  const context = buildSendContext(update, mailingAddress ?? '')
+  const context = await buildSendContext(payload, update, mailingAddress ?? '')
   const startedAt = Date.now()
 
   while (Date.now() - startedAt < timeBudgetMs) {
@@ -536,7 +753,7 @@ export const sendBakeryUpdateTestEmail = async ({
   senders = createBakeryUpdateSenders(payload),
   to,
 }: {
-  draft: Pick<BakeryUpdateDraft, 'message' | 'subject'>
+  draft: Pick<BakeryUpdateDraft, 'market' | 'message' | 'productID' | 'subject' | 'template'>
   payload: Payload
   senders?: BakeryUpdateSenders
   to: string
@@ -555,11 +772,21 @@ export const sendBakeryUpdateTestEmail = async ({
     throw new APIError('Your admin account has no email address to send a test to.', 400)
   }
 
-  const serverURL = getServerSideURL()
+  const templateFields = templateFieldsFromDraft({ ...draft, sendEmail: true, sendText: false })
+  const feature = await loadBakeryUpdateEmailFeature(payload, templateFields)
+
+  if (templateFields.template === 'flavor' && !feature) {
+    throw new APIError('That cookie is no longer on the site. Pick another one.', 400)
+  }
+
+  const { logoURL, siteURL } = getBakeryEmailLinks()
   const context = {
-    accountURL: `${serverURL}/account`,
+    accountURL: `${siteURL}/account`,
     companyName: getBakeryCompanyName(),
+    feature,
+    logoURL,
     mailingAddress: mailingAddress ?? '',
+    siteURL,
     message: draft.message.trim(),
     subject: `[Test] ${draft.subject.trim()}`,
   }
@@ -576,9 +803,10 @@ export const sendBakeryUpdateTestEmail = async ({
 }
 
 export const loadBakeryUpdatesOverview = async (payload: Payload, { limit = 8 } = {}) => {
-  const [audience, mailingAddress, recent] = await Promise.all([
+  const [audience, mailingAddress, products, recent] = await Promise.all([
     countBakeryUpdateAudience(payload),
     getBakeryMailingAddress(payload),
+    listBakeryUpdateProducts(payload),
     payload.find({
       collection: 'bakery-updates',
       depth: 0,
@@ -595,10 +823,84 @@ export const loadBakeryUpdatesOverview = async (payload: Payload, { limit = 8 } 
 
   return {
     audience,
+    emailLinks: getBakeryEmailLinks(),
     mailingAddress,
+    products,
     textsReady: areBakeryTextsReady(),
     updates: recent.docs.map((update) => toProgress(update, tallies.get(update.id))),
   }
 }
 
 export type BakeryUpdatesOverview = Awaited<ReturnType<typeof loadBakeryUpdatesOverview>>
+
+const templateTitles: Record<BakeryUpdateTemplate, string> = {
+  flavor: 'New flavor',
+  market: 'Market date',
+  note: 'Just a note',
+}
+
+/** Everything the past-update page shows, rebuilt from what was stored when it was sent. */
+export const loadBakeryUpdateDetail = async (payload: Payload, id: number) => {
+  const update = await payload.findByID({
+    collection: 'bakery-updates',
+    depth: 1,
+    disableErrors: true,
+    id,
+    overrideAccess: true,
+  })
+
+  if (!update) {
+    return null
+  }
+
+  const templateFields = templateFieldsFromUpdate(update)
+  const [tallies, mailingAddress, feature] = await Promise.all([
+    tallyDeliveries({ payload, updateIDs: [update.id] }),
+    getBakeryMailingAddress(payload),
+    loadBakeryUpdateEmailFeature(payload, templateFields),
+  ])
+  const companyName = getBakeryCompanyName()
+  const sender = typeof update.sentBy === 'object' ? update.sentBy : null
+
+  return {
+    // Links point nowhere in the preview, so a click cannot leave the admin.
+    emailHTML: update.sendEmail
+      ? buildBakeryUpdateEmail({
+          accountURL: '#',
+          companyName,
+          feature,
+          logoURL: getBakeryEmailLinks().logoURL,
+          mailingAddress: mailingAddress ?? '',
+          message: update.message,
+          siteURL: '#',
+          subject: update.subject,
+          unsubscribeURL: '#',
+        }).html
+      : null,
+    finishedAt: update.finishedAt ?? null,
+    kind:
+      feature?.kind === 'flavor'
+        ? `${templateTitles.flavor}: ${feature.name}`
+        : templateTitles[templateFields.template],
+    progress: toProgress(update, tallies.get(update.id)),
+    reuse: {
+      market: templateFields.market,
+      message: update.message,
+      productID: templateFields.productID,
+      sendEmail: Boolean(update.sendEmail),
+      sendText: Boolean(update.sendText),
+      subject: update.subject,
+      template: templateFields.template,
+    } satisfies BakeryUpdateDraft,
+    sentBy: sender?.name?.trim() || sender?.email || null,
+    smsBody: update.sendText
+      ? buildBakeryUpdateSms({
+          companyName,
+          details: bakeryUpdateSmsDetails(templateFields),
+          message: update.message,
+        })
+      : null,
+  }
+}
+
+export type BakeryUpdateDetail = NonNullable<Awaited<ReturnType<typeof loadBakeryUpdateDetail>>>

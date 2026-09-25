@@ -3,7 +3,11 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 
 import { isAdminUser } from '@/access/utilities'
-import type { BakeryUpdateDraft } from '@/features/bakery-updates/content'
+import {
+  type BakeryUpdateDraft,
+  type BakeryUpdateMarket,
+  isBakeryUpdateTemplate,
+} from '@/features/bakery-updates/content'
 import {
   continueBakeryUpdate,
   sendBakeryUpdateTestEmail,
@@ -15,20 +19,43 @@ export const maxDuration = 60
 
 type BakeryUpdateRequest = {
   action?: unknown
+  market?: unknown
   message?: unknown
+  productID?: unknown
   requestKey?: unknown
   sendEmail?: unknown
   sendText?: unknown
   subject?: unknown
+  template?: unknown
   updateID?: unknown
 }
 
-const readDraft = (body: BakeryUpdateRequest): BakeryUpdateDraft => ({
-  message: typeof body.message === 'string' ? body.message : '',
-  sendEmail: body.sendEmail === true,
-  sendText: body.sendText === true,
-  subject: typeof body.subject === 'string' ? body.subject : '',
-})
+const readString = (value: unknown) => (typeof value === 'string' ? value : '')
+
+const readMarket = (value: unknown): BakeryUpdateMarket => {
+  const market = value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
+
+  return {
+    address: readString(market.address),
+    date: readString(market.date),
+    hours: readString(market.hours),
+    place: readString(market.place),
+  }
+}
+
+const readDraft = (body: BakeryUpdateRequest): BakeryUpdateDraft => {
+  const productID = Number(body.productID)
+
+  return {
+    market: readMarket(body.market),
+    message: readString(body.message),
+    productID: Number.isInteger(productID) && productID > 0 ? productID : null,
+    sendEmail: body.sendEmail === true,
+    sendText: body.sendText === true,
+    subject: readString(body.subject),
+    template: isBakeryUpdateTemplate(body.template) ? body.template : 'note',
+  }
+}
 
 const jsonError = (error: string, status: number) =>
   Response.json({ error, success: false }, { status })

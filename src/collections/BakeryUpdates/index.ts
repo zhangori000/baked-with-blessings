@@ -33,6 +33,38 @@ export const BakeryUpdates: CollectionConfig = {
       required: true,
     },
     {
+      name: 'template',
+      type: 'select',
+      defaultValue: 'note',
+      options: [
+        { label: 'Just a note', value: 'note' },
+        { label: 'New flavor', value: 'flavor' },
+        { label: 'Market date', value: 'market' },
+      ],
+      required: true,
+    },
+    {
+      name: 'product',
+      type: 'relationship',
+      admin: {
+        description: 'The cookie a "New flavor" update shows.',
+      },
+      relationTo: 'products',
+    },
+    {
+      name: 'market',
+      type: 'group',
+      admin: {
+        description: 'Where and when, for a "Market date" update.',
+      },
+      fields: [
+        { name: 'place', type: 'text' },
+        { name: 'date', type: 'text', admin: { description: 'YYYY-MM-DD' } },
+        { name: 'hours', type: 'text' },
+        { name: 'address', type: 'text' },
+      ],
+    },
+    {
       name: 'sendText',
       type: 'checkbox',
       defaultValue: false,
