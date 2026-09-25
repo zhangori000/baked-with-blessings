@@ -343,19 +343,69 @@
   list-style: none;
 }
 
+.historyList > li {
+  border-top: 1px solid var(--theme-elevation-100);
+}
+
 .historyRow {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  align-items: center;
   gap: 0.35rem 1.5rem;
-  border-top: 1px solid var(--theme-elevation-100);
-  padding: 0.75rem 0;
+  margin: 0.2rem -0.6rem;
+  border-radius: 0.6rem;
+  padding: 0.6rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.historyRow:hover {
+  background: var(--theme-elevation-50);
+}
+
+.historyRow:focus-visible {
+  outline: 2px solid var(--theme-success-500);
+  outline-offset: 2px;
 }
 
 .historyMain,
 .historyCounts {
   display: grid;
   gap: 0.15rem;
+}
+
+.historyMain {
+  flex: 1 1 16rem;
+}
+
+.historyChevron {
+  color: var(--theme-elevation-400);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.kind {
+  margin: 0;
+  color: var(--theme-success-600);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detailCounts {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--theme-elevation-800);
+}
+
+.detailPreviews {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 38rem;
 }
 
 .historySubject {

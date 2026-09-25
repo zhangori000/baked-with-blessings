@@ -19,6 +19,7 @@ import {
   continueBakeryUpdate,
   getPublicMediaURL,
   listBakeryUpdateProducts,
+  loadBakeryUpdateDetail,
   sendBakeryUpdateTestEmail,
   startBakeryUpdate,
 } from '@/features/bakery-updates/service'
@@ -803,6 +804,29 @@ describe('sending a bakery update', () => {
         body.includes('When: Saturday, October 3, 9 AM to 1 PM\nWhere: Mill City Farmers Market'),
       ),
     ).toBe(true)
+
+    // The past-update page rebuilds the same email and text, and can refill the writer.
+    const detail = await loadBakeryUpdateDetail(payload, progress.id)
+    expect(detail?.kind).toBe('Market date')
+    expect(detail?.progress.done).toBe(true)
+    expect(detail?.emailHTML).toContain('>Get directions</a>')
+    expect(detail?.emailHTML).not.toContain('email-unsubscribe?token=')
+    expect(detail?.smsBody).toContain('Where: Mill City Farmers Market, 704 S 2nd St, Minneapolis')
+    expect(detail?.reuse).toEqual({
+      market: {
+        address: '704 S 2nd St, Minneapolis',
+        date: '2026-10-03',
+        hours: '9 AM to 1 PM',
+        place: 'Mill City Farmers Market',
+      },
+      message: 'Come say hi!',
+      productID: null,
+      sendEmail: true,
+      sendText: true,
+      subject: 'Find us Saturday',
+      template: 'market',
+    })
+    expect(await loadBakeryUpdateDetail(payload, 999_999_999)).toBeNull()
   })
 
   it('shows the picked cookie in a new flavor email, and refuses a cookie that is gone', async () => {

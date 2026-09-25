@@ -832,3 +832,75 @@ export const loadBakeryUpdatesOverview = async (payload: Payload, { limit = 8 } 
 }
 
 export type BakeryUpdatesOverview = Awaited<ReturnType<typeof loadBakeryUpdatesOverview>>
+
+const templateTitles: Record<BakeryUpdateTemplate, string> = {
+  flavor: 'New flavor',
+  market: 'Market date',
+  note: 'Just a note',
+}
+
+/** Everything the past-update page shows, rebuilt from what was stored when it was sent. */
+export const loadBakeryUpdateDetail = async (payload: Payload, id: number) => {
+  const update = await payload.findByID({
+    collection: 'bakery-updates',
+    depth: 1,
+    disableErrors: true,
+    id,
+    overrideAccess: true,
+  })
+
+  if (!update) {
+    return null
+  }
+
+  const templateFields = templateFieldsFromUpdate(update)
+  const [tallies, mailingAddress, feature] = await Promise.all([
+    tallyDeliveries({ payload, updateIDs: [update.id] }),
+    getBakeryMailingAddress(payload),
+    loadBakeryUpdateEmailFeature(payload, templateFields),
+  ])
+  const companyName = getBakeryCompanyName()
+  const sender = typeof update.sentBy === 'object' ? update.sentBy : null
+
+  return {
+    // Links point nowhere in the preview, so a click cannot leave the admin.
+    emailHTML: update.sendEmail
+      ? buildBakeryUpdateEmail({
+          accountURL: '#',
+          companyName,
+          feature,
+          logoURL: getBakeryEmailLinks().logoURL,
+          mailingAddress: mailingAddress ?? '',
+          message: update.message,
+          siteURL: '#',
+          subject: update.subject,
+          unsubscribeURL: '#',
+        }).html
+      : null,
+    finishedAt: update.finishedAt ?? null,
+    kind:
+      feature?.kind === 'flavor'
+        ? `${templateTitles.flavor}: ${feature.name}`
+        : templateTitles[templateFields.template],
+    progress: toProgress(update, tallies.get(update.id)),
+    reuse: {
+      market: templateFields.market,
+      message: update.message,
+      productID: templateFields.productID,
+      sendEmail: Boolean(update.sendEmail),
+      sendText: Boolean(update.sendText),
+      subject: update.subject,
+      template: templateFields.template,
+    } satisfies BakeryUpdateDraft,
+    sentBy: sender?.name?.trim() || sender?.email || null,
+    smsBody: update.sendText
+      ? buildBakeryUpdateSms({
+          companyName,
+          details: bakeryUpdateSmsDetails(templateFields),
+          message: update.message,
+        })
+      : null,
+  }
+}
+
+export type BakeryUpdateDetail = NonNullable<Awaited<ReturnType<typeof loadBakeryUpdateDetail>>>

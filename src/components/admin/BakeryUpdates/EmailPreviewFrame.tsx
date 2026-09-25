@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useDeferredValue, useRef, useState } from 'react'
+import React, { useDeferredValue, useEffect, useRef, useState } from 'react'
 
 import styles from './index.module.css'
 
@@ -13,18 +13,40 @@ export const EmailPreviewFrame = ({ html, title }: { html: string; title: string
   const [height, setHeight] = useState(720)
   const deferredHTML = useDeferredValue(html)
 
-  const fitToContent = useCallback(() => {
-    const document = frameRef.current?.contentDocument
+  // A server-rendered frame can finish loading before React attaches onLoad,
+  // so this listens natively and also measures a frame that already loaded.
+  useEffect(() => {
+    const frame = frameRef.current
 
-    if (document?.documentElement) {
-      setHeight(document.documentElement.scrollHeight)
+    if (!frame) {
+      return
+    }
+
+    const fitToContent = () => {
+      const body = frame.contentDocument?.body
+
+      if (body) {
+        const border = frame.offsetHeight - frame.clientHeight
+        setHeight(Math.ceil(body.getBoundingClientRect().height) + border)
+      }
+    }
+
+    if (frame.contentDocument?.readyState === 'complete') {
+      fitToContent()
+    }
+
+    frame.addEventListener('load', fitToContent)
+    window.addEventListener('resize', fitToContent)
+
+    return () => {
+      frame.removeEventListener('load', fitToContent)
+      window.removeEventListener('resize', fitToContent)
     }
   }, [])
 
   return (
     <iframe
       className={styles.emailFrame}
-      onLoad={fitToContent}
       ref={frameRef}
       sandbox="allow-same-origin"
       srcDoc={deferredHTML}

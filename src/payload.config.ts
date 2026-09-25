@@ -87,8 +87,14 @@ export default buildConfig({
       beforeLogin: ['@/components/BeforeLogin#BeforeLogin'],
       beforeNavLinks: ['@/components/AdminDashboard/AdminQuickNav#AdminQuickNav'],
       views: {
+        bakeryUpdate: {
+          Component: '@/components/admin/BakeryUpdates#BakeryUpdateDetailView',
+          exact: true,
+          path: '/bakery-updates/:id',
+        },
         bakeryUpdates: {
           Component: '@/components/admin/BakeryUpdates#BakeryUpdatesView',
+          exact: true,
           path: '/bakery-updates',
         },
         dashboard: {

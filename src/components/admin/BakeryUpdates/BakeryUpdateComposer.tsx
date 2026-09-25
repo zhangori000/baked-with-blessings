@@ -29,11 +29,12 @@ import type {
   BakeryUpdatesOverview,
 } from '@/features/bakery-updates/service'
 
+import { DRAFT_STORAGE_KEY, newRequestKey } from './draftStorage'
 import { EmailPreviewFrame } from './EmailPreviewFrame'
+import { channelSummary, formatDate } from './format'
 import styles from './index.module.css'
 
 const CONFIRM_SEND_MODAL = 'confirm-bakery-update-send'
-const DRAFT_STORAGE_KEY = 'bwb-bakery-update-draft'
 const ENDPOINT = '/next/admin-bakery-updates'
 
 type StoredDraft = BakeryUpdateDraft & {
@@ -113,24 +114,11 @@ class RequestError extends Error {
   }
 }
 
-const newRequestKey = () =>
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const people = (count: number) => (count === 1 ? '1 person' : `${count} people`)
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`
-
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    month: 'short',
-  }).format(new Date(value))
 
 const postJSON = async <T,>(body: Record<string, unknown>): Promise<T> => {
   let response: Response
@@ -168,24 +156,6 @@ const countProgress = (progress: BakeryUpdateProgress) => {
   const waiting = channels.reduce((sum, tally) => sum + tally.queued + tally.sending, 0)
 
   return { finished: total - waiting, total, waiting }
-}
-
-const channelSummary = (label: 'emails' | 'texts', tally: BakeryUpdateProgress['sms']) => {
-  const parts = [`${tally.sent} sent`]
-
-  if (tally.failed) {
-    parts.push(`${tally.failed} did not go through`)
-  }
-
-  if (tally.skipped) {
-    parts.push(`${tally.skipped} skipped`)
-  }
-
-  if (tally.queued + tally.sending) {
-    parts.push(`${tally.queued + tally.sending} waiting`)
-  }
-
-  return `${label === 'texts' ? 'Texts' : 'Emails'}: ${parts.join(', ')}`
 }
 
 const SendResult = ({ progress }: { progress: BakeryUpdateProgress }) => {
@@ -834,18 +804,29 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
           </h2>
           <ul className={styles.historyList}>
             {updates.map((update) => (
-              <li className={styles.historyRow} key={update.id}>
-                <div className={styles.historyMain}>
-                  <span className={styles.historySubject}>{update.subject}</span>
-                  <span className={styles.historyDate}>
-                    {formatDate(update.createdAt)}
-                    {update.done ? '' : ', still sending'}
+              <li key={update.id}>
+                <Link
+                  className={styles.historyRow}
+                  href={`/admin/bakery-updates/${update.id}`}
+                  prefetch={false}
+                >
+                  <span className={styles.historyMain}>
+                    <span className={styles.historySubject}>{update.subject}</span>
+                    <span className={styles.historyDate}>
+                      {formatDate(update.createdAt)}
+                      {update.done ? '' : ', still sending'}
+                    </span>
                   </span>
-                </div>
-                <div className={styles.historyCounts}>
-                  {update.sendText ? <span>{channelSummary('texts', update.sms)}</span> : null}
-                  {update.sendEmail ? <span>{channelSummary('emails', update.email)}</span> : null}
-                </div>
+                  <span className={styles.historyCounts}>
+                    {update.sendText ? <span>{channelSummary('texts', update.sms)}</span> : null}
+                    {update.sendEmail ? (
+                      <span>{channelSummary('emails', update.email)}</span>
+                    ) : null}
+                  </span>
+                  <span aria-hidden="true" className={styles.historyChevron}>
+                    &rsaquo;
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
