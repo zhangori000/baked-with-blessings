@@ -12,6 +12,9 @@ export type MessageConsentSource =
   | 'signup_sms'
   | 'unsubscribe_link'
 
+export const emailUpdatesSignupNote =
+  'Add your email to hear about new flavors and market dates. You can unsubscribe anytime.'
+
 export const bakeryTextsDisclosure =
   'Msg frequency varies. Msg & data rates may apply. Reply HELP for help, STOP to cancel.'
 

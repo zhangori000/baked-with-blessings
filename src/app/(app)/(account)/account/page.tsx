@@ -14,6 +14,7 @@ import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { buildCustomerLoginHref } from '@/utilities/routes'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 
 export default async function AccountPage() {
   const headers = await getHeaders()
@@ -53,6 +54,9 @@ export default async function AccountPage() {
     // console.error(error)
   }
 
+  // Someone who already said yes keeps the text switch so they can turn it off.
+  const showTexts = areBakeryTextsOffered() || Boolean(user?.smsOk)
+
   return (
     <>
       <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
@@ -67,10 +71,10 @@ export default async function AccountPage() {
         <div className="accountSettingsHeading">
           <p className="accountSettingsEyebrow">Bakery updates</p>
           <BakeryPageTitle as="h2" className="accountSettingsSectionTitle">
-            Texts and emails
+            {showTexts ? 'Texts and emails' : 'Emails'}
           </BakeryPageTitle>
         </div>
-        <MessageConsentForm />
+        <MessageConsentForm showTexts={showTexts} />
       </BakeryPageSurface>
 
       <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">

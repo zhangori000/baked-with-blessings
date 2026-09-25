@@ -30,6 +30,7 @@ import {
   rotationsHref,
   termsHref,
 } from '@/utilities/routes'
+import { emailUpdatesSignupNote } from '@/utilities/messageConsent'
 import { isPayloadMediaFileURL, resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
   ArrowRight,
@@ -1241,6 +1242,10 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
                                     : 'Send code'}
                             </button>
                           </div>
+
+                          {customerCreateNeedsVerification ? null : (
+                            <p className="siteHeaderAuthMicrocopy">{emailUpdatesSignupNote}</p>
+                          )}
 
                           <AnimatePresence initial={false} mode="wait">
                             {customerCreateNeedsVerification ? (

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { BakeryCheckbox } from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
-import { bakeryTextsDisclosure } from '@/utilities/messageConsent'
+import { bakeryTextsDisclosure, emailUpdatesSignupNote } from '@/utilities/messageConsent'
 import { customerLoginHref, privacyHref, termsHref } from '@/utilities/routes'
 import { ArrowRight, Mail, ShieldCheck, Smartphone, UserRound } from 'lucide-react'
 import Link from 'next/link'
@@ -29,7 +29,7 @@ type FormData = {
 
 const contactRequirementMessage = 'Enter at least an email address or a phone number.'
 
-export const CreateAccountForm: React.FC = () => {
+export const CreateAccountForm: React.FC<{ textsOffered: boolean }> = ({ textsOffered }) => {
   const searchParams = useSearchParams()
   const { create } = useAuth()
   const router = useRouter()
@@ -106,7 +106,10 @@ export const CreateAccountForm: React.FC = () => {
       }, 1000)
 
       try {
-        const result = await create({ ...data, smsOptIn: smsOptIn && Boolean(trimmedPhone) })
+        const result = await create({
+          ...data,
+          smsOptIn: textsOffered && smsOptIn && Boolean(trimmedPhone),
+        })
         clearTimeout(timer)
 
         if (result.requiresPhoneVerification) {
@@ -133,7 +136,7 @@ export const CreateAccountForm: React.FC = () => {
         setSubmitError('There was an error with the credentials provided. Please try again.')
       }
     },
-    [create, router, searchParams, setFieldError, smsOptIn],
+    [create, router, searchParams, setFieldError, smsOptIn, textsOffered],
   )
 
   const emailRegistration = register('email', {
@@ -269,22 +272,26 @@ export const CreateAccountForm: React.FC = () => {
             </FormItem>
           </div>
 
-          <div className={styles.textsConsent}>
-            <BakeryCheckbox
-              checked={smsOptIn && canChooseTexts}
-              description={`Optional. You agree to get recurring marketing texts from Baked with Blessings at this number. Consent is not a condition of purchase. ${bakeryTextsDisclosure}`}
-              disabled={!canChooseTexts}
-              id="smsOptIn"
-              onChange={(event) => setSmsOptIn(event.target.checked)}
-            >
-              Text me when you drop a flavor or post a market date
-            </BakeryCheckbox>
-            <p className={styles.textsConsentLinks}>
-              {canChooseTexts ? null : 'Add a phone number above to choose texts. '}
-              See our <Link href={termsHref}>Terms</Link> and{' '}
-              <Link href={privacyHref}>Privacy Policy</Link>.
-            </p>
-          </div>
+          <p className={styles.emailNote}>{emailUpdatesSignupNote}</p>
+
+          {textsOffered ? (
+            <div className={styles.textsConsent}>
+              <BakeryCheckbox
+                checked={smsOptIn && canChooseTexts}
+                description={`Optional. You agree to get recurring marketing texts from Baked with Blessings at this number. Consent is not a condition of purchase. ${bakeryTextsDisclosure}`}
+                disabled={!canChooseTexts}
+                id="smsOptIn"
+                onChange={(event) => setSmsOptIn(event.target.checked)}
+              >
+                Text me when you drop a flavor or post a market date
+              </BakeryCheckbox>
+              <p className={styles.textsConsentLinks}>
+                {canChooseTexts ? null : 'Add a phone number above to choose texts. '}
+                See our <Link href={termsHref}>Terms</Link> and{' '}
+                <Link href={privacyHref}>Privacy Policy</Link>.
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className={styles.section}>

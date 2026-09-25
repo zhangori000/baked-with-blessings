@@ -14,6 +14,7 @@ import { startPhoneVerificationOnce } from '@/utilities/phoneVerificationStartGu
 import { isEmailIdentifier, maskPhoneNumber } from '@/utilities/phone'
 import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
 import { sendCustomerWelcomeSms } from '@/utilities/sms/sendCustomerWelcomeSms'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 import { checkPhoneVerification } from '@/utilities/twilioVerify'
 
 type SignupBody = {
@@ -228,7 +229,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (phone && body.smsOptIn === true) {
+    if (phone && body.smsOptIn === true && areBakeryTextsOffered()) {
       try {
         await setCustomerMessageConsent({
           channel: 'sms',

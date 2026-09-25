@@ -165,6 +165,14 @@
   line-height: 1.5;
 }
 
+.emailNote {
+  color: var(--signup-text-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 1rem 0 0;
+}
+
 .textsConsent {
   background: var(--signup-field-bg);
   border: 1px solid var(--signup-field-border);

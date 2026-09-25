@@ -11,6 +11,7 @@ import { getPayload } from 'payload'
 import { CreateAccountForm } from '@/components/forms/CreateAccountForm'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 
 export default async function CreateAccount() {
   const headers = await getHeaders()
@@ -24,7 +25,7 @@ export default async function CreateAccount() {
   return (
     <BakeryPageShell as="main" spacing="lg" width="wide">
       <RenderParams />
-      <CreateAccountForm />
+      <CreateAccountForm textsOffered={areBakeryTextsOffered()} />
     </BakeryPageShell>
   )
 }

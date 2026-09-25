@@ -7,6 +7,7 @@ import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import type { MessageConsentChannel } from '@/utilities/messageConsent'
 import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
 import { sendCustomerWelcomeSms } from '@/utilities/sms/sendCustomerWelcomeSms'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 
 const jsonError = (message: string, status = 400) =>
   Response.json(
@@ -37,6 +38,11 @@ export async function POST(request: Request) {
 
   if (typeof body.ok !== 'boolean') {
     return jsonError('Choose on or off.')
+  }
+
+  // Turning texts off always works; turning them on waits until texts exist.
+  if (channel === 'sms' && body.ok && !areBakeryTextsOffered()) {
+    return jsonError('Bakery texts are not available yet.')
   }
 
   try {

@@ -11,6 +11,7 @@ import {
   parseInboundSmsBody,
 } from '@/utilities/messageConsent'
 import { normalizePhoneNumber } from '@/utilities/phone'
+import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
 import {
   buildTwilioMessagingSignature,
   buildTwilioMessagingTwiml,
@@ -124,6 +125,7 @@ const randomPhone = () => {
 describe('text consent routes', () => {
   let payload: Payload
   let savedAuthToken: string | undefined
+  let savedShowTextSignup: string | undefined
   const stamp = `${Date.now()}-${Math.floor(Math.random() * 1000)}`
   const createdCustomerIDs: number[] = []
 
@@ -204,6 +206,8 @@ describe('text consent routes', () => {
   beforeAll(async () => {
     savedAuthToken = process.env.TWILIO_AUTH_TOKEN
     process.env.TWILIO_AUTH_TOKEN = 'test-token'
+    savedShowTextSignup = process.env.BWB_SHOW_TEXT_SIGNUP
+    process.env.BWB_SHOW_TEXT_SIGNUP = 'true'
     payload = await getPayload({ config: await config })
   })
 
@@ -217,6 +221,12 @@ describe('text consent routes', () => {
       delete process.env.TWILIO_AUTH_TOKEN
     } else {
       process.env.TWILIO_AUTH_TOKEN = savedAuthToken
+    }
+
+    if (savedShowTextSignup === undefined) {
+      delete process.env.BWB_SHOW_TEXT_SIGNUP
+    } else {
+      process.env.BWB_SHOW_TEXT_SIGNUP = savedShowTextSignup
     }
 
     if (!payload) {
@@ -279,6 +289,40 @@ describe('text consent routes', () => {
 
     expect(mocks.welcomeSmsTo).toEqual([phone])
     expect((await findCustomer(customer.id)).smsOk).toBe(false)
+  })
+
+  it('offers no texts before texting is set up, but still lets people turn texts off', async () => {
+    const savedFromNumber = process.env.TWILIO_FROM_NUMBER
+    delete process.env.BWB_SHOW_TEXT_SIGNUP
+    delete process.env.TWILIO_FROM_NUMBER
+
+    try {
+      const phone = randomPhone()
+      const result = await signup({ phone, smsOptIn: true, verificationCode: '123456' })
+      expect(result.status).toBe(200)
+      createdCustomerIDs.push(result.json.doc!.id)
+      expect((await findCustomer(result.json.doc!.id)).smsOk).toBe(false)
+
+      mocks.authenticatedCustomerID = result.json.doc!.id
+      expect(await accountToggle(true)).toBe(400)
+      expect((await findCustomer(result.json.doc!.id)).smsOk).toBe(false)
+
+      await setCustomerMessageConsent({
+        channel: 'sms',
+        customerID: result.json.doc!.id,
+        ok: true,
+        payload,
+        source: 'account',
+      })
+      expect(await accountToggle(false)).toBe(200)
+      expect((await findCustomer(result.json.doc!.id)).smsOk).toBe(false)
+      expect(mocks.welcomeSmsTo).toEqual([])
+    } finally {
+      process.env.BWB_SHOW_TEXT_SIGNUP = 'true'
+      if (savedFromNumber !== undefined) {
+        process.env.TWILIO_FROM_NUMBER = savedFromNumber
+      }
+    }
   })
 
   it('stays quiet on keywords Twilio already answered, and answers the rest', async () => {
