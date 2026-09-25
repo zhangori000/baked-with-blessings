@@ -82,3 +82,44 @@
 .flavor-poll-results-field__ideas li {
   font-size: 13px;
 }
+
+.flavor-poll-results-field__share {
+  background: var(--theme-elevation-50);
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.flavor-poll-results-field__shareRow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.flavor-poll-results-field__shareRow .btn {
+  margin: 0;
+}
+
+.flavor-poll-results-field__shareInput,
+.flavor-poll-results-field__shareMessage {
+  background: var(--theme-input-bg);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  color: var(--theme-text);
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.flavor-poll-results-field__shareInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.flavor-poll-results-field__shareMessage {
+  line-height: 1.5;
+  resize: vertical;
+}

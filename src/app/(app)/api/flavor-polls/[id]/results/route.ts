@@ -2,8 +2,11 @@ import config from '@payload-config'
 import { getPayload } from 'payload'
 
 import { isAdminUser } from '@/access/utilities'
+import { buildResultsShareMessage } from '@/features/flavor-polls/results'
 import { tallyPoll, toPublicPoll } from '@/features/flavor-polls/services'
 import type { FlavorPoll } from '@/payload-types'
+import { getServerSideURL } from '@/utilities/getURL'
+import { flavorVoteResultsHref } from '@/utilities/routes'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,6 +36,21 @@ export const GET = async (request: Request, { params }: RouteContext) => {
 
   const poll = toPublicPoll(pollDoc)
   const { flavorIdeas, standings } = await tallyPoll(payload, poll)
+  const isLive = pollDoc.status === 'live'
+  const hasClosed = new Date(pollDoc.closesAt).getTime() <= Date.now()
+  const resultsUrl = `${getServerSideURL()}${flavorVoteResultsHref(poll.id)}`
+  const canShare = isLive && hasClosed
 
-  return Response.json({ flavorIdeas, isOpen: poll.isOpen, standings, success: true })
+  return Response.json({
+    flavorIdeas,
+    hasClosed,
+    isLive,
+    isOpen: poll.isOpen,
+    resultsUrl: canShare ? resultsUrl : null,
+    shareMessage: canShare
+      ? buildResultsShareMessage({ rows: standings.rows, url: resultsUrl })
+      : null,
+    standings,
+    success: true,
+  })
 }
