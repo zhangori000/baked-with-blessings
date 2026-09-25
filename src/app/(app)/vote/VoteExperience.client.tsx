@@ -227,8 +227,8 @@ function EmptyState({ next }: { next: NextVoteStatus }) {
         <NextVoteStat next={next} />
       </div>
       <p className="voteLead">
-        Every week we open a vote for the next week’s cookies. Check back soon, and in the meantime
-        see what is baking now.
+        The baker opens a vote once she has picked the flavors for it. Check back soon, and in the
+        meantime see what is baking now.
       </p>
       <div className="voteActions">
         <BakeryAction as={Link} href={menuHref} size="lg" variant="primary">

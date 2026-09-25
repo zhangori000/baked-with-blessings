@@ -47,8 +47,8 @@ export function NextVoteStat({ next }: { next: NextVoteStatus }) {
   return (
     <div className="voteStat" data-next-vote="unknown">
       <span className="voteStatLabel">Next vote</span>
-      <span className="voteStatValue">Opening soon</span>
-      <span className="voteStatHint">{EMAIL_PROMISE}</span>
+      <span className="voteStatValue">To be announced</span>
+      <span className="voteStatHint">It opens once the baker picks the next lineup.</span>
     </div>
   )
 }
