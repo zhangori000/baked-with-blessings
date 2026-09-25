@@ -728,7 +728,7 @@ export function MiniBoxBuilderPanel({
 
             {boxTotal > 0 ? (
               <BakeryPressable
-                className="inline-flex min-h-[3rem] items-center justify-center rounded-full border border-[rgba(244,237,226,0.28)] bg-[rgba(244,237,226,0.08)] px-4 text-[0.84rem] font-semibold tracking-[-0.01em] text-[#f4ede2] transition duration-200 hover:bg-[rgba(244,237,226,0.16)]"
+                className="cateringPanelClearButton inline-flex min-h-[3rem] items-center justify-center rounded-full px-4 text-[0.84rem] font-semibold tracking-[-0.01em] transition duration-200"
                 onClick={onClearBox}
                 type="button"
               >
