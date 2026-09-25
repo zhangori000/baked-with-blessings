@@ -37,7 +37,7 @@ const loadVoteData = async () => {
   const poll = toPublicPoll(pollDoc)
   const cookieStore = await cookies()
   const voterKey = readVoterKey(cookieStore.get(FLAVOR_POLL_VOTER_COOKIE)?.value)
-  const ballot = await findBallot(payload, poll.id, voterKey)
+  const ballot = await findBallot(payload, poll, voterKey)
   const canSeeStandings = !poll.isOpen || (Boolean(ballot) && poll.showStandingsAfterVoting)
   const standings = canSeeStandings ? (await tallyPoll(payload, poll)).standings : null
 

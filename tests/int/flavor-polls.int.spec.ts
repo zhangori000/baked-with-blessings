@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { getNextScheduledPollClose } from '@/features/flavor-polls/schedule'
-import { FlavorPollError, submitBallot } from '@/features/flavor-polls/services'
+import {
+  findBallot,
+  FlavorPollError,
+  submitBallot,
+  tallyPoll,
+} from '@/features/flavor-polls/services'
 import type { PublicPoll } from '@/features/flavor-polls/types'
 
 describe('flavor poll schedule', () => {
@@ -93,5 +98,34 @@ describe('flavor poll ballots', () => {
   it('drops the flavor idea when the poll does not ask for one', async () => {
     const ballot = await submit({ 1: 1 }, makePayload(), { allowFlavorIdeas: false })
     expect(ballot.flavorIdea).toBe('')
+  })
+})
+
+describe('saved ballots after the ballot changes', () => {
+  const staleVote = {
+    flavorIdea: 'Ube',
+    id: 9,
+    picks: [
+      { count: 2, product: 1 },
+      { count: 1, product: 99 },
+    ],
+    poll: 7,
+    voterKey: 'voter',
+  }
+
+  it('drops picks for flavors that left the ballot', async () => {
+    const ballot = await findBallot(makePayload(staleVote) as never, poll, 'voter')
+    expect(ballot).toEqual({ flavorIdea: 'Ube', picks: { 1: 2 } })
+  })
+
+  it('treats a ballot with only removed flavors as not voted yet', async () => {
+    const onlyRemoved = { ...staleVote, picks: [{ count: 3, product: 99 }] }
+    expect(await findBallot(makePayload(onlyRemoved) as never, poll, 'voter')).toBeNull()
+  })
+
+  it('only counts tokens for flavors still on the ballot', async () => {
+    const { standings } = await tallyPoll(makePayload(staleVote) as never, poll)
+    expect(standings.totalVotes).toBe(2)
+    expect(standings.rows.reduce((sum, row) => sum + row.votes, 0)).toBe(2)
   })
 })

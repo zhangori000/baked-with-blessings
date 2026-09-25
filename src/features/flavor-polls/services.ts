@@ -105,10 +105,24 @@ const toBallot = (vote: FlavorPollVote): PollBallot => {
   return { flavorIdea: vote.flavorIdea ?? '', picks }
 }
 
-export const findBallot = async (payload: Payload, pollID: number, voterKey: string | null) => {
+export const findBallot = async (
+  payload: Payload,
+  poll: Pick<PublicPoll, 'id' | 'options'>,
+  voterKey: string | null,
+) => {
   if (!voterKey) return null
-  const vote = await findVoteDoc(payload, pollID, voterKey)
-  return vote ? toBallot(vote) : null
+  const vote = await findVoteDoc(payload, poll.id, voterKey)
+  if (!vote) return null
+
+  const ballot = toBallot(vote)
+  const allowedIDs = new Set(poll.options.map((option) => option.productId))
+  const picks: Record<number, number> = {}
+  for (const [id, count] of Object.entries(ballot.picks)) {
+    if (allowedIDs.has(Number(id))) picks[Number(id)] = count
+  }
+
+  if (Object.keys(picks).length === 0) return null
+  return { ...ballot, picks }
 }
 
 export const tallyPoll = async (payload: Payload, poll: PublicPoll) => {
@@ -136,15 +150,17 @@ export const tallyPoll = async (payload: Payload, poll: PublicPoll) => {
     if (idea) flavorIdeas.push(idea)
   }
 
+  const rows = poll.options
+    .map((option) => ({
+      productId: option.productId,
+      title: option.title,
+      votes: totals.get(option.productId) ?? 0,
+    }))
+    .sort((a, b) => b.votes - a.votes || a.title.localeCompare(b.title))
+
   const standings: PollStandings = {
-    rows: poll.options
-      .map((option) => ({
-        productId: option.productId,
-        title: option.title,
-        votes: totals.get(option.productId) ?? 0,
-      }))
-      .sort((a, b) => b.votes - a.votes || a.title.localeCompare(b.title)),
-    totalVotes: [...totals.values()].reduce((sum, value) => sum + value, 0),
+    rows,
+    totalVotes: rows.reduce((sum, row) => sum + row.votes, 0),
     voterCount: result.docs.length,
   }
 
