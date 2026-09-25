@@ -1,0 +1,322 @@
+export type BakeryUpdateChannel = 'email' | 'sms'
+
+export const BAKERY_UPDATE_SUBJECT_MAX = 120
+export const BAKERY_UPDATE_MESSAGE_MAX = 1000
+
+export const BAKERY_UPDATE_TEMPLATES = ['note', 'flavor', 'market'] as const
+export type BakeryUpdateTemplate = (typeof BAKERY_UPDATE_TEMPLATES)[number]
+
+export const isBakeryUpdateTemplate = (value: unknown): value is BakeryUpdateTemplate =>
+  typeof value === 'string' && (BAKERY_UPDATE_TEMPLATES as readonly string[]).includes(value)
+
+export const BAKERY_UPDATE_MARKET_LIMITS = {
+  address: 200,
+  hours: 60,
+  place: 120,
+} as const
+
+export type BakeryUpdateMarket = {
+  address: string
+  /** YYYY-MM-DD, the value an <input type="date"> gives. */
+  date: string
+  hours: string
+  place: string
+}
+
+export const emptyBakeryUpdateMarket = (): BakeryUpdateMarket => ({
+  address: '',
+  date: '',
+  hours: '',
+  place: '',
+})
+
+export type BakeryUpdateDraft = {
+  market?: BakeryUpdateMarket
+  message: string
+  productID?: null | number
+  sendEmail: boolean
+  sendText: boolean
+  subject: string
+  template?: BakeryUpdateTemplate
+}
+
+/**
+ * Same rules on the client (to disable Send) and the server (to refuse the
+ * request). Returns the first problem in owner-facing words, or null.
+ */
+export const missingMailingAddressMessage =
+  "Add the bakery's mailing address in Store Settings first. The law requires it at the bottom of every bakery email."
+
+/** Store Settings keeps the address on several lines; emails show it on one. */
+export const formatMailingAddress = (value?: null | string): null | string =>
+  value
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(', ') || null
+
+export const validateBakeryUpdateDraft = (
+  draft: BakeryUpdateDraft,
+  { emailsReady, textsReady }: { emailsReady: boolean; textsReady: boolean },
+): null | string => {
+  const message = draft.message.trim()
+  const subject = draft.subject.trim()
+
+  if (!draft.sendText && !draft.sendEmail) {
+    return 'Choose texts, emails, or both.'
+  }
+
+  if (draft.sendText && !textsReady) {
+    return 'Texts are not set up yet. Send this as an email for now.'
+  }
+
+  if (draft.sendEmail && !emailsReady) {
+    return missingMailingAddressMessage
+  }
+
+  if (draft.template === 'flavor' && !draft.productID) {
+    return 'Pick the cookie this update is about.'
+  }
+
+  if (draft.template === 'market') {
+    const problem = validateBakeryUpdateMarket(draft.market ?? emptyBakeryUpdateMarket())
+
+    if (problem) {
+      return problem
+    }
+  }
+
+  if (!message) {
+    return 'Write a message first.'
+  }
+
+  if (message.length > BAKERY_UPDATE_MESSAGE_MAX) {
+    return `Keep the message under ${BAKERY_UPDATE_MESSAGE_MAX} characters.`
+  }
+
+  if (draft.sendEmail && !subject) {
+    return 'Add an email subject.'
+  }
+
+  if (subject.length > BAKERY_UPDATE_SUBJECT_MAX) {
+    return `Keep the subject under ${BAKERY_UPDATE_SUBJECT_MAX} characters.`
+  }
+
+  return null
+}
+
+const validateBakeryUpdateMarket = (market: BakeryUpdateMarket): null | string => {
+  if (!market.place.trim()) {
+    return 'Add where the market is.'
+  }
+
+  if (!parseMarketDate(market.date)) {
+    return 'Pick the market date.'
+  }
+
+  if (market.place.trim().length > BAKERY_UPDATE_MARKET_LIMITS.place) {
+    return `Keep the market name under ${BAKERY_UPDATE_MARKET_LIMITS.place} characters.`
+  }
+
+  if (market.hours.trim().length > BAKERY_UPDATE_MARKET_LIMITS.hours) {
+    return `Keep the hours under ${BAKERY_UPDATE_MARKET_LIMITS.hours} characters.`
+  }
+
+  if (market.address.trim().length > BAKERY_UPDATE_MARKET_LIMITS.address) {
+    return `Keep the address under ${BAKERY_UPDATE_MARKET_LIMITS.address} characters.`
+  }
+
+  return null
+}
+
+/**
+ * A market date is a calendar day, not a moment. Noon UTC keeps the weekday
+ * and day the same when formatted in UTC on any server or browser.
+ */
+export const parseMarketDate = (value?: null | string): Date | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value?.trim() ?? '')
+
+  if (!match) {
+    return null
+  }
+
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])]
+  const date = new Date(Date.UTC(year, month - 1, day, 12))
+
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+    ? date
+    : null
+}
+
+export type MarketDateParts = {
+  day: string
+  long: string
+  month: string
+  weekday: string
+}
+
+export const formatMarketDate = (value?: null | string): MarketDateParts | null => {
+  const date = parseMarketDate(value)
+
+  if (!date) {
+    return null
+  }
+
+  const part = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'UTC' }).format(date)
+
+  return {
+    day: part({ day: 'numeric' }),
+    long: part({ day: 'numeric', month: 'long', weekday: 'long' }),
+    month: part({ month: 'short' }).toUpperCase(),
+    weekday: part({ weekday: 'long' }),
+  }
+}
+
+/** "Saturday, October 4, 9 AM to 1 PM" */
+export const marketWhenLine = (market: BakeryUpdateMarket): string =>
+  [formatMarketDate(market.date)?.long, market.hours.trim()].filter(Boolean).join(', ')
+
+/** "Union Square Greenmarket, 1 Union Sq W, New York" */
+export const marketWhereLine = (market: BakeryUpdateMarket): string =>
+  [market.place.trim(), market.address.trim()].filter(Boolean).join(', ')
+
+export const marketDirectionsURL = (market: BakeryUpdateMarket): null | string => {
+  const where = marketWhereLine(market)
+
+  return where
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(where)}`
+    : null
+}
+
+/** Lines a text adds under the owner's message so a market text says where and when. */
+export const bakeryUpdateSmsDetails = ({
+  market,
+  template,
+}: Pick<BakeryUpdateDraft, 'market' | 'template'>): string[] => {
+  if (template !== 'market' || !market) {
+    return []
+  }
+
+  const when = marketWhenLine(market)
+  const where = marketWhereLine(market)
+
+  return [...(when ? [`When: ${when}`] : []), ...(where ? [`Where: ${where}`] : [])]
+}
+
+// Phones auto-insert curly quotes and long dashes. One of those forces the
+// whole text into Unicode, which fits 70 characters per part instead of 160.
+const smsReplacements: Array<[RegExp, string]> = [
+  [/[\u2018\u2019\u201A\u2032]/g, "'"],
+  [/[\u201C\u201D\u201E\u2033]/g, '"'],
+  [/[\u2013\u2014\u2212]/g, '-'],
+  [/\u2026/g, '...'],
+  [/[\u00A0\u2009\u202F]/g, ' '],
+]
+
+export const toSmsFriendlyText = (text: string): string =>
+  smsReplacements.reduce(
+    (result, [pattern, replacement]) => result.replace(pattern, replacement),
+    text,
+  )
+
+export const buildBakeryUpdateSms = ({
+  companyName,
+  details = [],
+  message,
+}: {
+  companyName: string
+  details?: string[]
+  message: string
+}): string =>
+  [
+    `${companyName}: ${toSmsFriendlyText(message.trim())}`,
+    ...(details.length ? [toSmsFriendlyText(details.join('\n'))] : []),
+    'Reply STOP to opt out.',
+  ].join('\n\n')
+
+const gsmBasic = new Set(
+  '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà',
+)
+const gsmExtended = new Set('^{}\\[~]|€\f')
+
+export type SmsSize = {
+  characters: number
+  encoding: 'gsm' | 'unicode'
+  parts: number
+}
+
+/**
+ * How many billable parts a text becomes. Plain text fits 160 characters in
+ * one part and 153 per part after that. Emoji and other symbols switch the
+ * whole text to Unicode: 70 in one part, 67 per part after that.
+ */
+export const measureSms = (text: string): SmsSize => {
+  let gsmLength = 0
+
+  for (const character of text) {
+    if (gsmBasic.has(character)) {
+      gsmLength += 1
+    } else if (gsmExtended.has(character)) {
+      gsmLength += 2
+    } else {
+      const unicodeLength = text.length
+      return {
+        characters: unicodeLength,
+        encoding: 'unicode',
+        parts: unicodeLength <= 70 ? 1 : Math.ceil(unicodeLength / 67),
+      }
+    }
+  }
+
+  return {
+    characters: gsmLength,
+    encoding: 'gsm',
+    parts: gsmLength <= 160 ? 1 : Math.ceil(gsmLength / 153),
+  }
+}
+
+export const escapeHTML = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+const urlPattern = /https?:\/\/[^\s<>"']+/g
+
+// Escapes the owner's words and turns bare http(s) links into anchors. Links
+// are found on the raw text so a trailing period or quote stays outside them.
+export const toParagraphHTML = (raw: string, linkStyle = '') => {
+  let html = ''
+  let cursor = 0
+
+  for (const match of raw.matchAll(urlPattern)) {
+    const url = match[0].replace(/[.,:;!?)]+$/, '')
+    const start = match.index ?? 0
+
+    html += escapeHTML(raw.slice(cursor, start))
+    html += `<a href="${escapeHTML(url)}"${linkStyle ? ` style="${linkStyle}"` : ''}>${escapeHTML(url)}</a>`
+    cursor = start + url.length
+  }
+
+  html += escapeHTML(raw.slice(cursor))
+
+  return html.replace(/\n/g, '<br/>')
+}
+
+export const splitMessageParagraphs = (message: string): string[] =>
+  message
+    .trim()
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+
+export const bakeryUpdateEmailFooter = (companyName: string, mailingAddress: string) => ({
+  address: mailingAddress.trim() ? `${companyName}, ${mailingAddress.trim()}` : null,
+  reason: `You're getting this because you signed up for bakery emails from ${companyName}.`,
+  receipts: 'Order receipts and login codes still arrive even if you unsubscribe.',
+})

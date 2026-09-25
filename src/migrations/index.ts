@@ -31,9 +31,13 @@ import * as migration_20260621_000000_add_both_payment_collection_mode from './2
 import * as migration_20260629_105210_add_about_nav_toggle from './20260629_105210_add_about_nav_toggle';
 import * as migration_20260920_120000_add_announcement_pin_and_date from './20260920_120000_add_announcement_pin_and_date';
 import * as migration_20260920_180000_add_announcement_archived from './20260920_180000_add_announcement_archived';
+import * as migration_20260920_180000_add_customer_message_consent from './20260920_180000_add_customer_message_consent';
 import * as migration_20260924_183438_add_flavor_votes from './20260924_183438_add_flavor_votes';
+import * as migration_20260924_190000_add_bakery_updates from './20260924_190000_add_bakery_updates';
 import * as migration_20260925_013001_relax_vote_pick_product from './20260925_013001_relax_vote_pick_product';
+import * as migration_20260925_034500_add_store_settings_mailing_address from './20260925_034500_add_store_settings_mailing_address';
 import * as migration_20260925_044709_add_flavor_poll_opens_at from './20260925_044709_add_flavor_poll_opens_at';
+import * as migration_20260925_060000_add_bakery_update_templates from './20260925_060000_add_bakery_update_templates';
 
 export const migrations = [
   {
@@ -202,9 +206,19 @@ export const migrations = [
     name: '20260920_180000_add_announcement_archived',
   },
   {
+    up: migration_20260920_180000_add_customer_message_consent.up,
+    down: migration_20260920_180000_add_customer_message_consent.down,
+    name: '20260920_180000_add_customer_message_consent',
+  },
+  {
     up: migration_20260924_183438_add_flavor_votes.up,
     down: migration_20260924_183438_add_flavor_votes.down,
     name: '20260924_183438_add_flavor_votes',
+  },
+  {
+    up: migration_20260924_190000_add_bakery_updates.up,
+    down: migration_20260924_190000_add_bakery_updates.down,
+    name: '20260924_190000_add_bakery_updates',
   },
   {
     up: migration_20260925_013001_relax_vote_pick_product.up,
@@ -212,8 +226,18 @@ export const migrations = [
     name: '20260925_013001_relax_vote_pick_product',
   },
   {
+    up: migration_20260925_034500_add_store_settings_mailing_address.up,
+    down: migration_20260925_034500_add_store_settings_mailing_address.down,
+    name: '20260925_034500_add_store_settings_mailing_address',
+  },
+  {
     up: migration_20260925_044709_add_flavor_poll_opens_at.up,
     down: migration_20260925_044709_add_flavor_poll_opens_at.down,
-    name: '20260925_044709_add_flavor_poll_opens_at'
+    name: '20260925_044709_add_flavor_poll_opens_at',
+  },
+  {
+    up: migration_20260925_060000_add_bakery_update_templates.up,
+    down: migration_20260925_060000_add_bakery_update_templates.down,
+    name: '20260925_060000_add_bakery_update_templates',
   },
 ];

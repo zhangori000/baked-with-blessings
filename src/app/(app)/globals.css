@@ -2686,6 +2686,34 @@ body:has(.accountSceneryRoute) .siteHeaderBannerList {
   opacity: 1;
 }
 
+.accountSettingsConsentRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.accountSettingsConsentLabel {
+  color: #28310f;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.45;
+}
+
+.accountSettingsConsentHint {
+  margin: 0;
+  color: rgba(54, 64, 22, 0.68);
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.accountSettingsConsentHint a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 @media (max-width: 767px) {
   .accountSceneryRoute {
     --account-header-underlap: 5.35rem;

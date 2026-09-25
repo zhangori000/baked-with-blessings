@@ -8,8 +8,10 @@ import {
   flavorVoteHref,
   menuHref,
   oldFlavorsHref,
+  privacyHref,
   reviewsHref,
   rotationsHref,
+  termsHref,
 } from '@/utilities/routes'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getPayload } from 'payload'
@@ -24,6 +26,8 @@ const staticPublicRoutes = [
   blogHref,
   discussionBoardHref,
   reviewsHref,
+  privacyHref,
+  termsHref,
 ]
 
 const staticPublicRouteSet = new Set(staticPublicRoutes)

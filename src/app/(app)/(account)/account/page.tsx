@@ -7,12 +7,14 @@ import Link from 'next/link'
 import { headers as getHeaders } from 'next/headers.js'
 import configPromise from '@payload-config'
 import { AccountForm } from '@/components/forms/AccountForm'
+import { MessageConsentForm } from '@/components/forms/MessageConsentForm'
 import { Order } from '@/payload-types'
 import { OrderItem } from '@/components/OrderItem'
 import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import { buildCustomerLoginHref } from '@/utilities/routes'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 
 export default async function AccountPage() {
   const headers = await getHeaders()
@@ -52,6 +54,9 @@ export default async function AccountPage() {
     // console.error(error)
   }
 
+  // Someone who already said yes keeps the text switch so they can turn it off.
+  const showTexts = areBakeryTextsOffered() || Boolean(user?.smsOk)
+
   return (
     <>
       <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
@@ -60,6 +65,16 @@ export default async function AccountPage() {
           <BakeryPageTitle className="accountSettingsTitle">Profile details</BakeryPageTitle>
         </div>
         <AccountForm />
+      </BakeryPageSurface>
+
+      <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">
+        <div className="accountSettingsHeading">
+          <p className="accountSettingsEyebrow">Bakery updates</p>
+          <BakeryPageTitle as="h2" className="accountSettingsSectionTitle">
+            {showTexts ? 'Texts and emails' : 'Emails'}
+          </BakeryPageTitle>
+        </div>
+        <MessageConsentForm showTexts={showTexts} />
       </BakeryPageSurface>
 
       <BakeryPageSurface className="accountSettingsCard" spacing="lg" width="full">

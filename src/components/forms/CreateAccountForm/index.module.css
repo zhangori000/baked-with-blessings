@@ -165,6 +165,47 @@
   line-height: 1.5;
 }
 
+.emailNote {
+  color: var(--signup-text-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 1rem 0 0;
+}
+
+.textsConsent {
+  background: var(--signup-field-bg);
+  border: 1px solid var(--signup-field-border);
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+}
+
+.textsConsent :global(.bakeryCheckboxLabel) {
+  color: var(--signup-text-strong);
+  font-weight: 650;
+}
+
+.textsConsent :global(.bakeryCheckboxDescription) {
+  color: var(--signup-text-muted);
+  line-height: 1.5;
+}
+
+.textsConsentLinks {
+  color: var(--signup-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.textsConsentLinks a {
+  color: var(--signup-text-soft);
+  text-decoration: underline;
+}
+
 .fieldLabel {
   color: var(--signup-text-strong);
   font-family: inherit;

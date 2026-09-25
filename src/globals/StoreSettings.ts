@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { adminOnly } from '@/access/adminOnly'
+import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
 
 export type PaymentCollectionMode = 'payAtPickup' | 'payNow' | 'both'
 
@@ -42,6 +43,20 @@ export const StoreSettings: GlobalConfig = {
         },
       ],
       required: true,
+    },
+    {
+      name: 'mailingAddress',
+      label: 'Mailing address for bakery emails',
+      type: 'textarea',
+      access: {
+        read: adminOnlyFieldAccess,
+      },
+      admin: {
+        description:
+          'US email law requires a postal address at the bottom of every bakery email. A PO box works if you would rather not share your home address. Bakery emails cannot be sent until this is filled in. It is not shown on the website.',
+        placeholder: 'PO Box 123, Plymouth, MN 55441',
+        rows: 3,
+      },
     },
   ],
 }

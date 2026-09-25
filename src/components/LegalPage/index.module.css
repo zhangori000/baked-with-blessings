@@ -1,0 +1,55 @@
+.page {
+  margin-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.header {
+  border-bottom: 1px solid var(--bakery-page-border);
+  display: grid;
+  gap: 0.75rem;
+  padding-bottom: 1.5rem;
+}
+
+.updated {
+  color: var(--bakery-page-muted);
+  font-family: var(--font-rounded-body);
+  font-size: 0.9rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.body {
+  display: grid;
+  gap: 1.75rem;
+  padding-top: 1.75rem;
+}
+
+.section {
+  color: var(--bakery-page-fg);
+  display: grid;
+  font-family: var(--font-rounded-body);
+  font-size: 1rem;
+  font-weight: 550;
+  gap: 0.7rem;
+  line-height: 1.65;
+  scroll-margin-top: 6rem;
+}
+
+.section p,
+.section ul {
+  margin: 0;
+}
+
+.section ul {
+  display: grid;
+  gap: 0.35rem;
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.section a {
+  text-decoration: underline;
+}
+
+.section strong {
+  font-weight: 800;
+}

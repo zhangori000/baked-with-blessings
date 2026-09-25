@@ -78,6 +78,9 @@ export interface Config {
     admins: Admin;
     customers: Customer;
     'email-verification-starts': EmailVerificationStart;
+    'message-consent-events': MessageConsentEvent;
+    'bakery-updates': BakeryUpdate;
+    'bakery-update-deliveries': BakeryUpdateDelivery;
     'phone-verification-starts': PhoneVerificationStart;
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
@@ -129,6 +132,9 @@ export interface Config {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'email-verification-starts': EmailVerificationStartsSelect<false> | EmailVerificationStartsSelect<true>;
+    'message-consent-events': MessageConsentEventsSelect<false> | MessageConsentEventsSelect<true>;
+    'bakery-updates': BakeryUpdatesSelect<false> | BakeryUpdatesSelect<true>;
+    'bakery-update-deliveries': BakeryUpdateDeliveriesSelect<false> | BakeryUpdateDeliveriesSelect<true>;
     'phone-verification-starts': PhoneVerificationStartsSelect<false> | PhoneVerificationStartsSelect<true>;
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
@@ -296,6 +302,18 @@ export interface Customer {
    */
   phone?: string | null;
   phoneVerifiedAt?: string | null;
+  /**
+   * Customer said yes to bakery texts. The owner cannot turn this on. The customer texts Y or uses their account page.
+   */
+  smsOk?: boolean | null;
+  smsOkAt?: string | null;
+  smsOkSource?: string | null;
+  /**
+   * Customer is on bakery emails. New signups start on. They can unsubscribe. Order receipts still send.
+   */
+  emailOk?: boolean | null;
+  emailOkAt?: string | null;
+  emailOkSource?: string | null;
   /**
    * Stripe Customer ID used to link this Payload customer to Stripe payments.
    */
@@ -1522,6 +1540,91 @@ export interface EmailVerificationStart {
   createdAt: string;
 }
 /**
+ * History of bakery text and email opt-in changes. Hidden from daily work.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-consent-events".
+ */
+export interface MessageConsentEvent {
+  id: number;
+  customer: number | Customer;
+  channel: 'sms' | 'email';
+  ok: boolean;
+  /**
+   * Where this yes or no came from, such as signup, a text reply, or the account page.
+   */
+  source: string;
+  /**
+   * The exact text we received, when this change came from an inbound SMS.
+   */
+  rawBody?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Updates sent to customers by text and email. Send new ones from Bulk tools.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-updates".
+ */
+export interface BakeryUpdate {
+  id: number;
+  subject: string;
+  message: string;
+  template: 'note' | 'flavor' | 'market';
+  /**
+   * The cookie a "New flavor" update shows.
+   */
+  product?: (number | null) | Product;
+  /**
+   * Where and when, for a "Market date" update.
+   */
+  market?: {
+    place?: string | null;
+    /**
+     * YYYY-MM-DD
+     */
+    date?: string | null;
+    hours?: string | null;
+    address?: string | null;
+  };
+  sendText?: boolean | null;
+  sendEmail?: boolean | null;
+  status: 'preparing' | 'sending' | 'sent';
+  /**
+   * Stops a double click or a retry from sending the same update twice.
+   */
+  requestKey: string;
+  sentBy?: (number | null) | Admin;
+  finishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Who each bakery update went to. Hidden from daily work.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-update-deliveries".
+ */
+export interface BakeryUpdateDelivery {
+  id: number;
+  bakeryUpdate: number | BakeryUpdate;
+  customer: number | Customer;
+  channel: 'sms' | 'email';
+  /**
+   * The phone number or email address this was sent to.
+   */
+  address: string;
+  status: 'queued' | 'sending' | 'sent' | 'failed' | 'skipped';
+  /**
+   * The Twilio or Resend id, for looking a message up in their logs.
+   */
+  providerMessageId?: string | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "phone-verification-starts".
  */
@@ -2238,6 +2341,18 @@ export interface PayloadLockedDocument {
         value: number | EmailVerificationStart;
       } | null)
     | ({
+        relationTo: 'message-consent-events';
+        value: number | MessageConsentEvent;
+      } | null)
+    | ({
+        relationTo: 'bakery-updates';
+        value: number | BakeryUpdate;
+      } | null)
+    | ({
+        relationTo: 'bakery-update-deliveries';
+        value: number | BakeryUpdateDelivery;
+      } | null)
+    | ({
         relationTo: 'phone-verification-starts';
         value: number | PhoneVerificationStart;
       } | null)
@@ -2429,6 +2544,12 @@ export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
   phoneVerifiedAt?: T;
+  smsOk?: T;
+  smsOkAt?: T;
+  smsOkSource?: T;
+  emailOk?: T;
+  emailOkAt?: T;
+  emailOkSource?: T;
   stripeCustomerID?: T;
   orders?: T;
   cart?: T;
@@ -2463,6 +2584,60 @@ export interface EmailVerificationStartsSelect<T extends boolean = true> {
   attempts?: T;
   consumedAt?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-consent-events_select".
+ */
+export interface MessageConsentEventsSelect<T extends boolean = true> {
+  customer?: T;
+  channel?: T;
+  ok?: T;
+  source?: T;
+  rawBody?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-updates_select".
+ */
+export interface BakeryUpdatesSelect<T extends boolean = true> {
+  subject?: T;
+  message?: T;
+  template?: T;
+  product?: T;
+  market?:
+    | T
+    | {
+        place?: T;
+        date?: T;
+        hours?: T;
+        address?: T;
+      };
+  sendText?: T;
+  sendEmail?: T;
+  status?: T;
+  requestKey?: T;
+  sentBy?: T;
+  finishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-update-deliveries_select".
+ */
+export interface BakeryUpdateDeliveriesSelect<T extends boolean = true> {
+  bakeryUpdate?: T;
+  customer?: T;
+  channel?: T;
+  address?: T;
+  status?: T;
+  providerMessageId?: T;
+  error?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3527,6 +3702,10 @@ export interface StoreSetting {
    * Pay online keeps the current Stripe and Venmo checkout. Pay at pickup turns online payment off: customers place the order and pay in person when you hand it over. Let customers choose offers both, so each person picks at checkout.
    */
   paymentCollectionMode: 'payNow' | 'payAtPickup' | 'both';
+  /**
+   * US email law requires a postal address at the bottom of every bakery email. A PO box works if you would rather not share your home address. Bakery emails cannot be sent until this is filled in. It is not shown on the website.
+   */
+  mailingAddress?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3801,6 +3980,7 @@ export interface SitePage {
  */
 export interface StoreSettingsSelect<T extends boolean = true> {
   paymentCollectionMode?: T;
+  mailingAddress?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
