@@ -223,46 +223,12 @@
   overflow-wrap: anywhere;
 }
 
-.emailCard {
-  display: grid;
-  gap: 0.75rem;
+.emailFrame {
+  display: block;
+  width: 100%;
   border: 1px solid var(--theme-elevation-150);
   border-radius: 0.6rem;
-  padding: 1rem 1.1rem;
   background: var(--theme-elevation-0);
-}
-
-.emailSubject {
-  margin: 0;
-  border-bottom: 1px solid var(--theme-elevation-100);
-  padding-bottom: 0.6rem;
-  color: var(--theme-elevation-1000);
-  font-weight: 700;
-}
-
-.emailParagraph {
-  margin: 0;
-  color: var(--theme-elevation-900);
-  line-height: 1.5;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.placeholder {
-  color: var(--theme-elevation-400);
-}
-
-.emailFooter {
-  margin: 0;
-  border-top: 1px solid var(--theme-elevation-100);
-  padding-top: 0.6rem;
-  color: var(--theme-elevation-600);
-  font-size: 0.8rem;
-  line-height: 1.45;
-}
-
-.fakeLink {
-  text-decoration: underline;
 }
 
 .status {

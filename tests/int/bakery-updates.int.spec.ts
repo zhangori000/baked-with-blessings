@@ -5,12 +5,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { ALLOW_CUSTOMER_PHONE_IDENTITY_WRITE } from '@/collections/Customers/hooks/customerPhoneIdentity'
 import {
-  buildBakeryUpdateEmail,
   buildBakeryUpdateSms,
   formatMailingAddress,
   measureSms,
   validateBakeryUpdateDraft,
 } from '@/features/bakery-updates/content'
+import { bakeryEmailTheme, buildBakeryUpdateEmail } from '@/features/bakery-updates/email'
 import {
   type BakeryUpdateSenders,
   continueBakeryUpdate,
@@ -51,18 +51,22 @@ describe('bakery update content', () => {
     const { html, subject, text } = buildBakeryUpdateEmail({
       accountURL: 'https://example.test/account',
       companyName: 'Baked with Blessings',
+      logoURL: 'https://cdn.example.test/logo.png',
       mailingAddress: 'PO Box 1 & Co, Plymouth, MN 55441',
       message: 'New flavor <b>today</b>!\nSee https://example.test/menu.\n\nSecond paragraph',
+      siteURL: 'https://example.test',
       subject: '  Flavor drop  ',
       unsubscribeURL: 'https://example.test/api/customer-auth/email-unsubscribe?token=1.abc',
     })
 
     expect(subject).toBe('Flavor drop')
     expect(html).toContain('New flavor &lt;b&gt;today&lt;/b&gt;!<br/>')
-    expect(html).toContain('<a href="https://example.test/menu">https://example.test/menu</a>.')
-    expect(html).toContain('<p>Second paragraph</p>')
-    expect(html).toContain(
-      '<a href="https://example.test/api/customer-auth/email-unsubscribe?token=1.abc">Unsubscribe</a>',
+    expect(html).toMatch(
+      /<a href="https:\/\/example\.test\/menu" style="[^"]+">https:\/\/example\.test\/menu<\/a>\./,
+    )
+    expect(html).toMatch(/<p style="[^"]+">Second paragraph<\/p>/)
+    expect(html).toMatch(
+      /<a href="https:\/\/example\.test\/api\/customer-auth\/email-unsubscribe\?token=1\.abc" style="[^"]+">Unsubscribe<\/a>/,
     )
     expect(text).toContain('Unsubscribe: https://example.test/api/customer-auth/email-unsubscribe')
     expect(text).toContain('Manage texts and emails: https://example.test/account')
@@ -70,6 +74,47 @@ describe('bakery update content', () => {
     expect(text).toContain('Baked with Blessings, PO Box 1 & Co, Plymouth, MN 55441')
     expect(html).toContain('Baked with Blessings, PO Box 1 &amp; Co, Plymouth, MN 55441')
     expect(text).not.toContain('\u2014')
+  })
+
+  it('wraps every email in the bakery layout: logo, heading, one site button, sign-off', () => {
+    const { html, text } = buildBakeryUpdateEmail({
+      accountURL: 'https://example.test/account',
+      companyName: 'Baked with Blessings',
+      logoURL: 'https://cdn.example.test/logo.png',
+      mailingAddress: 'PO Box 1, Plymouth, MN 55441',
+      message: 'Lemon is back Saturday.',
+      siteURL: 'https://example.test',
+      subject: 'Lemon <3',
+      unsubscribeURL: 'https://example.test/unsubscribe',
+    })
+
+    expect(html).toMatch(/^<!DOCTYPE html>/)
+    expect(html).toContain('<img src="https://cdn.example.test/logo.png"')
+    expect(html).toContain('alt="Baked with Blessings"')
+    expect(html).toMatch(/<h1 style="[^"]+">Lemon &lt;3<\/h1>/)
+    expect(html).toMatch(/<a href="https:\/\/example\.test" style="[^"]+">Visit our site<\/a>/)
+    expect(html).not.toMatch(/<a [^>]*>Order/)
+    expect(html).toContain('With love,<br>the Baked with Blessings family')
+    expect(html).toContain(bakeryEmailTheme.paper)
+    expect(html).toContain('Lemon is back Saturday.</div>')
+    expect(text).toContain('Visit our site: https://example.test')
+    expect(text).toContain('With love,\nthe Baked with Blessings family')
+  })
+
+  it('leaves the address line out of a preview when Store Settings has none yet', () => {
+    const { html, text } = buildBakeryUpdateEmail({
+      accountURL: '#',
+      companyName: 'Baked with Blessings',
+      logoURL: 'https://cdn.example.test/logo.png',
+      mailingAddress: '  ',
+      message: 'Hi',
+      siteURL: '#',
+      subject: 'Hi',
+      unsubscribeURL: '#',
+    })
+
+    expect(html).not.toContain('Baked with Blessings, ')
+    expect(text).not.toContain('Baked with Blessings, ')
   })
 
   it('puts a multi-line mailing address on one line, and treats blank as missing', () => {

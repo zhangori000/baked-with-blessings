@@ -9,14 +9,14 @@ import {
   BAKERY_UPDATE_MESSAGE_MAX,
   BAKERY_UPDATE_SUBJECT_MAX,
   type BakeryUpdateDraft,
-  bakeryUpdateEmailFooter,
   buildBakeryUpdateSms,
   measureSms,
-  splitMessageParagraphs,
   validateBakeryUpdateDraft,
 } from '@/features/bakery-updates/content'
+import { buildBakeryUpdateEmail } from '@/features/bakery-updates/email'
 import type { BakeryUpdateProgress, BakeryUpdatesOverview } from '@/features/bakery-updates/service'
 
+import { EmailPreviewFrame } from './EmailPreviewFrame'
 import styles from './index.module.css'
 
 const CONFIRM_SEND_MODAL = 'confirm-bakery-update-send'
@@ -145,7 +145,7 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
   companyName,
   overview,
 }) => {
-  const { audience, mailingAddress, textsReady, updates } = overview
+  const { audience, emailLinks, mailingAddress, textsReady, updates } = overview
   const emailsReady = Boolean(mailingAddress)
   const router = useRouter()
   const { openModal } = useModal()
@@ -336,8 +336,17 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
       : null)
   const smsBody = buildBakeryUpdateSms({ companyName, message: draft.message })
   const smsSize = measureSms(smsBody)
-  const paragraphs = splitMessageParagraphs(draft.message)
-  const footer = bakeryUpdateEmailFooter(companyName, mailingAddress ?? '')
+  // Links point nowhere in the preview, so a click cannot leave the admin.
+  const emailPreview = buildBakeryUpdateEmail({
+    accountURL: '#',
+    companyName,
+    logoURL: emailLinks.logoURL,
+    mailingAddress: mailingAddress ?? '',
+    message: draft.message.trim() || 'Your message goes here.',
+    siteURL: '#',
+    subject: draft.subject.trim() || 'Your subject goes here',
+    unsubscribeURL: '#',
+  })
   const testProblem = validateBakeryUpdateDraft(
     { ...draft, sendEmail: true, sendText: false },
     { emailsReady, textsReady },
@@ -576,28 +585,7 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
             {draft.sendEmail ? (
               <figure className={styles.preview}>
                 <figcaption className={styles.previewLabel}>Email preview</figcaption>
-                <div className={styles.emailCard}>
-                  <p className={styles.emailSubject}>
-                    {draft.subject.trim() || 'Your subject goes here'}
-                  </p>
-                  {paragraphs.length ? (
-                    paragraphs.map((paragraph, index) => (
-                      <p className={styles.emailParagraph} key={index}>
-                        {paragraph}
-                      </p>
-                    ))
-                  ) : (
-                    <p className={`${styles.emailParagraph} ${styles.placeholder}`}>
-                      Your message goes here.
-                    </p>
-                  )}
-                  <p className={styles.emailFooter}>
-                    {footer.reason} <span className={styles.fakeLink}>Unsubscribe</span> or{' '}
-                    <span className={styles.fakeLink}>manage texts and emails</span>.{' '}
-                    {footer.receipts}
-                  </p>
-                  {emailsReady ? <p className={styles.emailFooter}>{footer.address}</p> : null}
-                </div>
+                <EmailPreviewFrame html={emailPreview.html} title="Email preview" />
               </figure>
             ) : null}
           </aside>

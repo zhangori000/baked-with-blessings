@@ -128,7 +128,7 @@ export const measureSms = (text: string): SmsSize => {
   }
 }
 
-const escapeHTML = (value: string) =>
+export const escapeHTML = (value: string) =>
   value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -140,7 +140,7 @@ const urlPattern = /https?:\/\/[^\s<>"']+/g
 
 // Escapes the owner's words and turns bare http(s) links into anchors. Links
 // are found on the raw text so a trailing period or quote stays outside them.
-const toParagraphHTML = (raw: string) => {
+export const toParagraphHTML = (raw: string, linkStyle = '') => {
   let html = ''
   let cursor = 0
 
@@ -149,7 +149,7 @@ const toParagraphHTML = (raw: string) => {
     const start = match.index ?? 0
 
     html += escapeHTML(raw.slice(cursor, start))
-    html += `<a href="${escapeHTML(url)}">${escapeHTML(url)}</a>`
+    html += `<a href="${escapeHTML(url)}"${linkStyle ? ` style="${linkStyle}"` : ''}>${escapeHTML(url)}</a>`
     cursor = start + url.length
   }
 
@@ -166,46 +166,7 @@ export const splitMessageParagraphs = (message: string): string[] =>
     .filter(Boolean)
 
 export const bakeryUpdateEmailFooter = (companyName: string, mailingAddress: string) => ({
-  address: `${companyName}, ${mailingAddress}`,
+  address: mailingAddress.trim() ? `${companyName}, ${mailingAddress.trim()}` : null,
   reason: `You're getting this because you signed up for bakery emails from ${companyName}.`,
   receipts: 'Order receipts and login codes still arrive even if you unsubscribe.',
 })
-
-export const buildBakeryUpdateEmail = ({
-  accountURL,
-  companyName,
-  mailingAddress,
-  message,
-  subject,
-  unsubscribeURL,
-}: {
-  accountURL: string
-  companyName: string
-  mailingAddress: string
-  message: string
-  subject: string
-  unsubscribeURL: string
-}) => {
-  const paragraphs = splitMessageParagraphs(message)
-  const footer = bakeryUpdateEmailFooter(companyName, mailingAddress)
-
-  const text = [
-    paragraphs.join('\n\n'),
-    '',
-    '--',
-    footer.reason,
-    `Unsubscribe: ${unsubscribeURL}`,
-    `Manage texts and emails: ${accountURL}`,
-    footer.receipts,
-    footer.address,
-  ].join('\n')
-
-  const html = [
-    ...paragraphs.map((paragraph) => `<p>${toParagraphHTML(paragraph)}</p>`),
-    '<hr/>',
-    `<p><small>${escapeHTML(footer.reason)} <a href="${escapeHTML(unsubscribeURL)}">Unsubscribe</a> or <a href="${escapeHTML(accountURL)}">manage texts and emails</a>. ${escapeHTML(footer.receipts)}</small></p>`,
-    `<p><small>${escapeHTML(footer.address)}</small></p>`,
-  ].join('\n')
-
-  return { html, subject: subject.trim(), text }
-}

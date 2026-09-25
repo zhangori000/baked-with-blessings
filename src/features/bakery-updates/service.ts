@@ -11,12 +11,12 @@ import { getTwilioMessagingConfig, sendTwilioSms } from '@/utilities/sms/twilioM
 import {
   type BakeryUpdateChannel,
   type BakeryUpdateDraft,
-  buildBakeryUpdateEmail,
   buildBakeryUpdateSms,
   formatMailingAddress,
   missingMailingAddressMessage,
   validateBakeryUpdateDraft,
 } from './content'
+import { BAKERY_EMAIL_LOGO_PATH, buildBakeryUpdateEmail } from './email'
 import {
   type BakeryUpdateTally,
   type ClaimedDelivery,
@@ -60,6 +60,17 @@ export const getBakeryCompanyName = () =>
   process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
 
 export const areBakeryTextsReady = () => Boolean(getTwilioMessagingConfig())
+
+// Gmail and other inboxes fetch email images from their own servers, which
+// cannot get past the Vercel login on preview deployments. The logo is a
+// public file, so it always loads from the production site.
+export const getBakeryEmailLinks = () => {
+  const siteURL = getServerSideURL()
+  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
+  const assetsURL = productionHost ? `https://${productionHost}` : siteURL
+
+  return { logoURL: `${assetsURL}${BAKERY_EMAIL_LOGO_PATH}`, siteURL }
+}
 
 export const getBakeryMailingAddress = async (payload: Payload): Promise<null | string> => {
   const settings = await payload.findGlobal({
@@ -315,23 +326,27 @@ export const startBakeryUpdate = async ({
 type SendContext = {
   accountURL: string
   companyName: string
+  logoURL: string
   mailingAddress: string
   message: string
   serverURL: string
+  siteURL: string
   smsBody: string
   subject: string
 }
 
 const buildSendContext = (update: BakeryUpdate, mailingAddress: string): SendContext => {
   const companyName = getBakeryCompanyName()
-  const serverURL = getServerSideURL()
+  const { logoURL, siteURL } = getBakeryEmailLinks()
 
   return {
-    accountURL: `${serverURL}/account`,
+    accountURL: `${siteURL}/account`,
     companyName,
+    logoURL,
     mailingAddress,
     message: update.message,
-    serverURL,
+    serverURL: siteURL,
+    siteURL,
     smsBody: buildBakeryUpdateSms({ companyName, message: update.message }),
     subject: update.subject,
   }
@@ -344,7 +359,7 @@ export const buildBakeryUpdateEmailFor = ({
 }: {
   context: Pick<
     SendContext,
-    'accountURL' | 'companyName' | 'mailingAddress' | 'message' | 'subject'
+    'accountURL' | 'companyName' | 'logoURL' | 'mailingAddress' | 'message' | 'siteURL' | 'subject'
   >
   to: string
   unsubscribeURL: string
@@ -352,8 +367,10 @@ export const buildBakeryUpdateEmailFor = ({
   ...buildBakeryUpdateEmail({
     accountURL: context.accountURL,
     companyName: context.companyName,
+    logoURL: context.logoURL,
     mailingAddress: context.mailingAddress,
     message: context.message,
+    siteURL: context.siteURL,
     subject: context.subject,
     unsubscribeURL,
   }),
@@ -555,11 +572,13 @@ export const sendBakeryUpdateTestEmail = async ({
     throw new APIError('Your admin account has no email address to send a test to.', 400)
   }
 
-  const serverURL = getServerSideURL()
+  const { logoURL, siteURL } = getBakeryEmailLinks()
   const context = {
-    accountURL: `${serverURL}/account`,
+    accountURL: `${siteURL}/account`,
     companyName: getBakeryCompanyName(),
+    logoURL,
     mailingAddress: mailingAddress ?? '',
+    siteURL,
     message: draft.message.trim(),
     subject: `[Test] ${draft.subject.trim()}`,
   }
@@ -595,6 +614,7 @@ export const loadBakeryUpdatesOverview = async (payload: Payload, { limit = 8 } 
 
   return {
     audience,
+    emailLinks: getBakeryEmailLinks(),
     mailingAddress,
     textsReady: areBakeryTextsReady(),
     updates: recent.docs.map((update) => toProgress(update, tallies.get(update.id))),
