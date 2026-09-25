@@ -68,6 +68,51 @@
   font-weight: 700;
 }
 
+.subLabel {
+  color: var(--theme-elevation-700);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.7rem;
+}
+
+.templateOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+.templateOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.8rem;
+  background: var(--theme-elevation-0);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.templateOption:hover {
+  border-color: var(--theme-elevation-300);
+}
+
+.templateOption:has(input:checked) {
+  border-color: var(--theme-success-500);
+  background: var(--theme-success-50);
+}
+
+.templateOption:has(input:focus-visible) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-success-500) 18%, transparent);
+}
+
 .checkboxRow {
   display: flex;
   align-items: flex-start;

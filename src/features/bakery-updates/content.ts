@@ -3,11 +3,41 @@ export type BakeryUpdateChannel = 'email' | 'sms'
 export const BAKERY_UPDATE_SUBJECT_MAX = 120
 export const BAKERY_UPDATE_MESSAGE_MAX = 1000
 
+export const BAKERY_UPDATE_TEMPLATES = ['note', 'flavor', 'market'] as const
+export type BakeryUpdateTemplate = (typeof BAKERY_UPDATE_TEMPLATES)[number]
+
+export const isBakeryUpdateTemplate = (value: unknown): value is BakeryUpdateTemplate =>
+  typeof value === 'string' && (BAKERY_UPDATE_TEMPLATES as readonly string[]).includes(value)
+
+export const BAKERY_UPDATE_MARKET_LIMITS = {
+  address: 200,
+  hours: 60,
+  place: 120,
+} as const
+
+export type BakeryUpdateMarket = {
+  address: string
+  /** YYYY-MM-DD, the value an <input type="date"> gives. */
+  date: string
+  hours: string
+  place: string
+}
+
+export const emptyBakeryUpdateMarket = (): BakeryUpdateMarket => ({
+  address: '',
+  date: '',
+  hours: '',
+  place: '',
+})
+
 export type BakeryUpdateDraft = {
+  market?: BakeryUpdateMarket
   message: string
+  productID?: null | number
   sendEmail: boolean
   sendText: boolean
   subject: string
+  template?: BakeryUpdateTemplate
 }
 
 /**
@@ -44,6 +74,18 @@ export const validateBakeryUpdateDraft = (
     return missingMailingAddressMessage
   }
 
+  if (draft.template === 'flavor' && !draft.productID) {
+    return 'Pick the cookie this update is about.'
+  }
+
+  if (draft.template === 'market') {
+    const problem = validateBakeryUpdateMarket(draft.market ?? emptyBakeryUpdateMarket())
+
+    if (problem) {
+      return problem
+    }
+  }
+
   if (!message) {
     return 'Write a message first.'
   }
@@ -61,6 +103,107 @@ export const validateBakeryUpdateDraft = (
   }
 
   return null
+}
+
+const validateBakeryUpdateMarket = (market: BakeryUpdateMarket): null | string => {
+  if (!market.place.trim()) {
+    return 'Add where the market is.'
+  }
+
+  if (!parseMarketDate(market.date)) {
+    return 'Pick the market date.'
+  }
+
+  if (market.place.trim().length > BAKERY_UPDATE_MARKET_LIMITS.place) {
+    return `Keep the market name under ${BAKERY_UPDATE_MARKET_LIMITS.place} characters.`
+  }
+
+  if (market.hours.trim().length > BAKERY_UPDATE_MARKET_LIMITS.hours) {
+    return `Keep the hours under ${BAKERY_UPDATE_MARKET_LIMITS.hours} characters.`
+  }
+
+  if (market.address.trim().length > BAKERY_UPDATE_MARKET_LIMITS.address) {
+    return `Keep the address under ${BAKERY_UPDATE_MARKET_LIMITS.address} characters.`
+  }
+
+  return null
+}
+
+/**
+ * A market date is a calendar day, not a moment. Noon UTC keeps the weekday
+ * and day the same when formatted in UTC on any server or browser.
+ */
+export const parseMarketDate = (value?: null | string): Date | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value?.trim() ?? '')
+
+  if (!match) {
+    return null
+  }
+
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])]
+  const date = new Date(Date.UTC(year, month - 1, day, 12))
+
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+    ? date
+    : null
+}
+
+export type MarketDateParts = {
+  day: string
+  long: string
+  month: string
+  weekday: string
+}
+
+export const formatMarketDate = (value?: null | string): MarketDateParts | null => {
+  const date = parseMarketDate(value)
+
+  if (!date) {
+    return null
+  }
+
+  const part = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'UTC' }).format(date)
+
+  return {
+    day: part({ day: 'numeric' }),
+    long: part({ day: 'numeric', month: 'long', weekday: 'long' }),
+    month: part({ month: 'short' }).toUpperCase(),
+    weekday: part({ weekday: 'long' }),
+  }
+}
+
+/** "Saturday, October 4, 9 AM to 1 PM" */
+export const marketWhenLine = (market: BakeryUpdateMarket): string =>
+  [formatMarketDate(market.date)?.long, market.hours.trim()].filter(Boolean).join(', ')
+
+/** "Union Square Greenmarket, 1 Union Sq W, New York" */
+export const marketWhereLine = (market: BakeryUpdateMarket): string =>
+  [market.place.trim(), market.address.trim()].filter(Boolean).join(', ')
+
+export const marketDirectionsURL = (market: BakeryUpdateMarket): null | string => {
+  const where = marketWhereLine(market)
+
+  return where
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(where)}`
+    : null
+}
+
+/** Lines a text adds under the owner's message so a market text says where and when. */
+export const bakeryUpdateSmsDetails = ({
+  market,
+  template,
+}: Pick<BakeryUpdateDraft, 'market' | 'template'>): string[] => {
+  if (template !== 'market' || !market) {
+    return []
+  }
+
+  const when = marketWhenLine(market)
+  const where = marketWhereLine(market)
+
+  return [...(when ? [`When: ${when}`] : []), ...(where ? [`Where: ${where}`] : [])]
 }
 
 // Phones auto-insert curly quotes and long dashes. One of those forces the
@@ -81,11 +224,18 @@ export const toSmsFriendlyText = (text: string): string =>
 
 export const buildBakeryUpdateSms = ({
   companyName,
+  details = [],
   message,
 }: {
   companyName: string
+  details?: string[]
   message: string
-}): string => `${companyName}: ${toSmsFriendlyText(message.trim())}\n\nReply STOP to opt out.`
+}): string =>
+  [
+    `${companyName}: ${toSmsFriendlyText(message.trim())}`,
+    ...(details.length ? [toSmsFriendlyText(details.join('\n'))] : []),
+    'Reply STOP to opt out.',
+  ].join('\n\n')
 
 const gsmBasic = new Set(
   '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà',

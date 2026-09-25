@@ -6,7 +6,12 @@ import {
 
 import {
   bakeryUpdateEmailFooter,
+  type BakeryUpdateMarket,
   escapeHTML,
+  formatMarketDate,
+  marketDirectionsURL,
+  marketWhenLine,
+  marketWhereLine,
   splitMessageParagraphs,
   toParagraphHTML,
 } from './content'
@@ -36,9 +41,22 @@ export const bakeryEmailTheme = {
   tile: bakeryLightColorTokens.actionFg,
 } as const
 
+export type BakeryUpdateEmailFlavor = {
+  imageURL: null | string
+  kind: 'flavor'
+  name: string
+  priceLabel: null | string
+}
+
+export type BakeryUpdateEmailMarket = BakeryUpdateMarket & { kind: 'market' }
+
+/** The block a template adds above the owner's message. A plain note has none. */
+export type BakeryUpdateEmailFeature = BakeryUpdateEmailFlavor | BakeryUpdateEmailMarket
+
 export type BakeryUpdateEmailInput = {
   accountURL: string
   companyName: string
+  feature?: BakeryUpdateEmailFeature | null
   logoURL: string
   mailingAddress: string
   message: string
@@ -54,13 +72,94 @@ const linkStyle = `color:${theme.heading};text-decoration:underline;`
 const footerLinkStyle = `color:${theme.muted};text-decoration:underline;`
 const headingStyle = `margin:8px 0 16px;font-family:${theme.headingFont};font-size:28px;font-weight:700;line-height:1.25;color:${theme.heading};`
 
+const eyebrowStyle = `margin:20px 0 0;font-family:${theme.bodyFont};font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${theme.eyebrow};`
+
 const buttonHTML = (href: string, label: string) =>
   [
     '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 28px;">',
     `<tr><td style="border-radius:999px;background-color:${theme.button};">`,
-    `<a href="${escapeHTML(href)}" style="display:inline-block;padding:14px 28px;border-radius:999px;font-family:${theme.bodyFont};font-size:16px;font-weight:700;line-height:1;color:${theme.buttonText};text-decoration:none;">${escapeHTML(label)}</a>`,
+    `<a href="${escapeHTML(href)}" style="display:inline-block;padding:14px 28px;border-radius:999px;font-family:${theme.bodyFont};font-size:16px;font-weight:700;line-height:1;color:${theme.buttonText};text-decoration:none;white-space:nowrap;">${escapeHTML(label)}</a>`,
     '</td></tr></table>',
   ].join('')
+
+const outlineButtonHTML = (href: string, label: string) =>
+  `<a href="${escapeHTML(href)}" style="display:inline-block;margin-top:14px;padding:10px 20px;border:2px solid ${theme.button};border-radius:999px;font-family:${theme.bodyFont};font-size:14px;font-weight:700;line-height:1;color:${theme.button};text-decoration:none;white-space:nowrap;">${escapeHTML(label)}</a>`
+
+const flavorHTML = (flavor: BakeryUpdateEmailFlavor) =>
+  [
+    flavor.imageURL
+      ? `<img src="${escapeHTML(flavor.imageURL)}" width="496" alt="${escapeHTML(flavor.name)}" style="display:block;width:100%;max-width:496px;height:auto;margin:8px 0 0;border:0;border-radius:18px;">`
+      : '',
+    `<p style="${eyebrowStyle}">New flavor</p>`,
+    `<h1 style="${headingStyle}${flavor.priceLabel ? 'margin-bottom:4px;' : ''}">${escapeHTML(flavor.name)}</h1>`,
+    flavor.priceLabel
+      ? `<p style="margin:0 0 16px;font-family:${theme.bodyFont};font-size:15px;font-weight:700;color:${theme.muted};">${escapeHTML(flavor.priceLabel)}</p>`
+      : '',
+  ].join('')
+
+const marketCardHTML = (market: BakeryUpdateEmailMarket) => {
+  const date = formatMarketDate(market.date)
+  const directionsURL = marketDirectionsURL(market)
+  const detailStyle = `margin:4px 0 0;font-family:${theme.bodyFont};font-size:15px;line-height:1.5;color:${theme.text};`
+
+  const calendar = date
+    ? [
+        '<td width="76" valign="top" style="width:76px;padding:0 16px 0 0;">',
+        `<table role="presentation" width="76" cellpadding="0" cellspacing="0" border="0" style="width:76px;border-radius:14px;overflow:hidden;border:2px solid ${theme.button};">`,
+        `<tr><td align="center" style="padding:6px 0;background-color:${theme.button};font-family:${theme.bodyFont};font-size:12px;font-weight:700;letter-spacing:0.12em;color:${theme.buttonText};">${escapeHTML(date.month)}</td></tr>`,
+        `<tr><td align="center" style="padding:6px 0 8px;background-color:${theme.tile};font-family:${theme.headingFont};font-size:32px;font-weight:700;line-height:1;color:${theme.heading};">${escapeHTML(date.day)}</td></tr>`,
+        '</table>',
+        '</td>',
+      ].join('')
+    : ''
+
+  return [
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background-color:${theme.tile};border-radius:18px;">`,
+    '<tr><td style="padding:20px;">',
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>',
+    calendar,
+    '<td valign="top">',
+    date
+      ? `<p style="margin:0;font-family:${theme.headingFont};font-size:19px;font-weight:700;line-height:1.3;color:${theme.heading};">${escapeHTML(date.long)}</p>`
+      : '',
+    market.hours.trim() ? `<p style="${detailStyle}">${escapeHTML(market.hours.trim())}</p>` : '',
+    `<p style="${detailStyle}font-weight:700;">${escapeHTML(market.place.trim())}</p>`,
+    market.address.trim()
+      ? `<p style="${detailStyle}color:${theme.muted};">${escapeHTML(market.address.trim())}</p>`
+      : '',
+    '</td>',
+    '</tr>',
+    // Its own row, so the button never squeezes next to the date block on a narrow phone.
+    directionsURL
+      ? `<tr><td${date ? ' colspan="2"' : ''}>${outlineButtonHTML(directionsURL, 'Get directions')}</td></tr>`
+      : '',
+    '</table>',
+    '</td></tr></table>',
+  ].join('')
+}
+
+const featureTextLines = (feature: BakeryUpdateEmailFeature | null | undefined): string[] => {
+  if (feature?.kind === 'flavor') {
+    return [
+      `New flavor: ${feature.name}${feature.priceLabel ? ` (${feature.priceLabel})` : ''}`,
+      '',
+    ]
+  }
+
+  if (feature?.kind === 'market') {
+    const when = marketWhenLine(feature)
+    const directionsURL = marketDirectionsURL(feature)
+
+    return [
+      ...(when ? [`When: ${when}`] : []),
+      `Where: ${marketWhereLine(feature)}`,
+      ...(directionsURL ? [`Directions: ${directionsURL}`] : []),
+      '',
+    ]
+  }
+
+  return []
+}
 
 // Inbox apps show this line next to the subject. It stays hidden in the email.
 const preheaderHTML = (paragraphs: string[]) => {
@@ -79,6 +178,7 @@ export const bakeryUpdateSignOff = (companyName: string) => ({
 export const buildBakeryUpdateEmail = ({
   accountURL,
   companyName,
+  feature,
   logoURL,
   mailingAddress,
   message,
@@ -92,6 +192,7 @@ export const buildBakeryUpdateEmail = ({
   const trimmedSubject = subject.trim()
 
   const text = [
+    ...featureTextLines(feature),
     paragraphs.join('\n\n'),
     '',
     `Visit our site: ${siteURL}`,
@@ -125,7 +226,13 @@ export const buildBakeryUpdateEmail = ({
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">',
     `<tr><td style="background-color:${theme.paper};border-radius:24px;padding:8px 32px 36px;">`,
     `<a href="${escapeHTML(siteURL)}" style="display:block;text-align:center;"><img src="${escapeHTML(logoURL)}" width="300" alt="${escapeHTML(companyName)}" style="display:inline-block;width:300px;max-width:100%;height:auto;border:0;"></a>`,
-    `<h1 style="${headingStyle}">${escapeHTML(trimmedSubject)}</h1>`,
+    feature?.kind === 'flavor'
+      ? flavorHTML(feature)
+      : [
+          feature?.kind === 'market' ? `<p style="${eyebrowStyle}">Market date</p>` : '',
+          `<h1 style="${headingStyle}">${escapeHTML(trimmedSubject)}</h1>`,
+          feature?.kind === 'market' ? marketCardHTML(feature) : '',
+        ].join(''),
     ...paragraphs.map(
       (paragraph) => `<p style="${paragraphStyle}">${toParagraphHTML(paragraph, linkStyle)}</p>`,
     ),
