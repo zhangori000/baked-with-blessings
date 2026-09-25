@@ -7,6 +7,7 @@ const build = (name?: string) =>
     accountURL: 'https://example.test/account',
     companyName: 'Baked with Blessings',
     name,
+    unsubscribeURL: 'https://example.test/api/customer-auth/email-unsubscribe?token=unsub-token',
   })
 
 describe('buildCustomerWelcomeEmail', () => {
@@ -18,6 +19,12 @@ describe('buildCustomerWelcomeEmail', () => {
     expect(text).not.toMatch(/placeholder/i)
     expect(text).toContain('bakedwithblessings@gmail.com')
     expect(html).toContain('mailto:bakedwithblessings@gmail.com')
+    expect(text).toContain('signed up for bakery emails')
+    expect(text).toContain('Unsubscribe')
+    expect(text).toContain('https://example.test/account')
+    expect(text).toContain('https://example.test/api/customer-auth/email-unsubscribe?token=unsub-token')
+    expect(html).toContain('https://example.test/api/customer-auth/email-unsubscribe?token=unsub-token')
+    expect(text).toContain('Order receipts')
     // Stays consistent with the site-wide em-dash cleanup.
     expect(text).not.toContain('—')
     expect(html).not.toContain('—')

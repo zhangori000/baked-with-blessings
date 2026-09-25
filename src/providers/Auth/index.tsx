@@ -9,9 +9,11 @@ import { toast } from 'sonner'
 
 type StorefrontCustomer = CollectionAuthUser & {
   email?: null | string
+  emailOk?: boolean | null
   id: number | string
   name?: null | string
   phone?: null | string
+  smsOk?: boolean | null
   username?: null | string
 }
 

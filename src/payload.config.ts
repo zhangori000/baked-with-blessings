@@ -29,6 +29,7 @@ import { Posts } from '@/collections/Posts'
 import { Admins } from '@/collections/Admins'
 import { Customers } from '@/collections/Customers'
 import { EmailVerificationStarts } from '@/collections/EmailVerificationStarts'
+import { MessageConsentEvents } from '@/collections/MessageConsentEvents'
 import { PhoneVerificationStarts } from '@/collections/PhoneVerificationStarts'
 import {
   BlessingsNetworkAnswers,
@@ -98,6 +99,7 @@ export default buildConfig({
     Admins,
     Customers,
     EmailVerificationStarts,
+    MessageConsentEvents,
     PhoneVerificationStarts,
     DiscussionNodes,
     DiscussionEdges,

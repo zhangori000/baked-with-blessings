@@ -12,6 +12,8 @@ import { checkEmailVerification, startEmailVerificationOnce } from '@/utilities/
 import { maskEmailAddress } from '@/utilities/emailVerification'
 import { startPhoneVerificationOnce } from '@/utilities/phoneVerificationStartGuard'
 import { isEmailIdentifier, maskPhoneNumber } from '@/utilities/phone'
+import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
+import { sendCustomerWelcomeSms } from '@/utilities/sms/sendCustomerWelcomeSms'
 import { checkPhoneVerification } from '@/utilities/twilioVerify'
 
 type SignupBody = {
@@ -191,7 +193,7 @@ export async function POST(request: Request) {
           : {}),
       },
       data: {
-        ...(email ? { email } : {}),
+        ...(email ? { email, emailOk: true } : {}),
         ...(name ? { name } : {}),
         ...(phone ? { phone, username: phone } : {}),
         password,
@@ -202,7 +204,20 @@ export async function POST(request: Request) {
 
     if (email) {
       try {
+        await setCustomerMessageConsent({
+          channel: 'email',
+          customerID: customer.id,
+          ok: true,
+          payload,
+          source: 'signup_email',
+        })
+      } catch (consentError) {
+        payload.logger.error({ err: consentError, email }, 'Customer email consent record failed')
+      }
+
+      try {
         await sendCustomerWelcomeEmail({
+          customerID: customer.id,
           email,
           name,
           payload,
@@ -210,6 +225,13 @@ export async function POST(request: Request) {
       } catch (emailError) {
         payload.logger.error({ err: emailError, email }, 'Customer welcome email failed')
       }
+    }
+
+    if (phone) {
+      await sendCustomerWelcomeSms({
+        payload,
+        phone,
+      })
     }
 
     return Response.json({

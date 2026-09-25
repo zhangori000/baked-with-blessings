@@ -78,6 +78,7 @@ export interface Config {
     admins: Admin;
     customers: Customer;
     'email-verification-starts': EmailVerificationStart;
+    'message-consent-events': MessageConsentEvent;
     'phone-verification-starts': PhoneVerificationStart;
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
@@ -127,6 +128,7 @@ export interface Config {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'email-verification-starts': EmailVerificationStartsSelect<false> | EmailVerificationStartsSelect<true>;
+    'message-consent-events': MessageConsentEventsSelect<false> | MessageConsentEventsSelect<true>;
     'phone-verification-starts': PhoneVerificationStartsSelect<false> | PhoneVerificationStartsSelect<true>;
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
@@ -292,6 +294,18 @@ export interface Customer {
    */
   phone?: string | null;
   phoneVerifiedAt?: string | null;
+  /**
+   * Customer said yes to bakery texts. The owner cannot turn this on. The customer texts Y or uses their account page.
+   */
+  smsOk?: boolean | null;
+  smsOkAt?: string | null;
+  smsOkSource?: string | null;
+  /**
+   * Customer is on bakery emails. New signups start on. They can unsubscribe. Order receipts still send.
+   */
+  emailOk?: boolean | null;
+  emailOkAt?: string | null;
+  emailOkSource?: string | null;
   /**
    * Stripe Customer ID used to link this Payload customer to Stripe payments.
    */
@@ -1518,6 +1532,28 @@ export interface EmailVerificationStart {
   createdAt: string;
 }
 /**
+ * History of bakery text and email opt-in changes. Hidden from daily work.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-consent-events".
+ */
+export interface MessageConsentEvent {
+  id: number;
+  customer: number | Customer;
+  channel: 'sms' | 'email';
+  ok: boolean;
+  /**
+   * Where this yes or no came from, such as signup, a text reply, or the account page.
+   */
+  source: string;
+  /**
+   * The exact text we received, when this change came from an inbound SMS.
+   */
+  rawBody?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "phone-verification-starts".
  */
@@ -2172,6 +2208,10 @@ export interface PayloadLockedDocument {
         value: number | EmailVerificationStart;
       } | null)
     | ({
+        relationTo: 'message-consent-events';
+        value: number | MessageConsentEvent;
+      } | null)
+    | ({
         relationTo: 'phone-verification-starts';
         value: number | PhoneVerificationStart;
       } | null)
@@ -2355,6 +2395,12 @@ export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
   phoneVerifiedAt?: T;
+  smsOk?: T;
+  smsOkAt?: T;
+  smsOkSource?: T;
+  emailOk?: T;
+  emailOkAt?: T;
+  emailOkSource?: T;
   stripeCustomerID?: T;
   orders?: T;
   cart?: T;
@@ -2389,6 +2435,19 @@ export interface EmailVerificationStartsSelect<T extends boolean = true> {
   attempts?: T;
   consumedAt?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "message-consent-events_select".
+ */
+export interface MessageConsentEventsSelect<T extends boolean = true> {
+  customer?: T;
+  channel?: T;
+  ok?: T;
+  source?: T;
+  rawBody?: T;
   updatedAt?: T;
   createdAt?: T;
 }

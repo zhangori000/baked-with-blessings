@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import { businessCity, businessState } from '@/utilities/businessInfo'
 import { BAKERY_INBOX, getCustomerContactEmails } from '@/utilities/email/contactChannels'
+import { createEmailUnsubscribeToken } from '@/utilities/email/emailUnsubscribeToken'
 import { decorateEmailEnvelope } from '@/utilities/email/decorateEmailEnvelope'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -17,6 +18,7 @@ type BuildCustomerWelcomeEmailArgs = {
   accountURL: string
   companyName: string
   name?: string
+  unsubscribeURL: string
 }
 
 /**
@@ -28,6 +30,7 @@ export const buildCustomerWelcomeEmail = ({
   accountURL,
   companyName,
   name,
+  unsubscribeURL,
 }: BuildCustomerWelcomeEmailArgs) => {
   const greeting = name?.trim() ? `Hi ${name.trim()},` : 'Hi,'
   const subject = `Welcome to ${companyName}!`
@@ -35,6 +38,9 @@ export const buildCustomerWelcomeEmail = ({
   const intro = `Thanks so much for creating an account. We're a small, family-run home bakery in ${businessCity}, ${businessState}, baking small-batch cookies and treats to order for local pickup and friendly meetup hand-offs around the Twin Cities.`
   const how =
     "Here's how it works: browse the menu and place an order, we bake it fresh, and we reach out to arrange your pickup."
+  const updates =
+    "You're signed up for bakery emails (new flavors, market dates, and announcements). Unsubscribe here if you do not want those. Order receipts and login codes still arrive even if you unsubscribe."
+  const settings = `Change these later on your account: ${accountURL}`
   const closing = `Questions? Just reply to this email, or reach us anytime at ${BAKERY_INBOX}. We can't wait to bake for you.`
 
   const text = [
@@ -46,7 +52,10 @@ export const buildCustomerWelcomeEmail = ({
     '',
     how,
     '',
-    `Your account lives here: ${accountURL}`,
+    updates,
+    '',
+    `Unsubscribe: ${unsubscribeURL}`,
+    settings,
     '',
     closing,
     '',
@@ -59,7 +68,8 @@ export const buildCustomerWelcomeEmail = ({
     <p>${escapeHTML(greeting)}</p>
     <p>${escapeHTML(intro)}</p>
     <p>${escapeHTML(how)}</p>
-    <p>Your account lives <a href="${escapeHTML(accountURL)}">here</a>.</p>
+    <p>${escapeHTML(updates)}</p>
+    <p><a href="${escapeHTML(unsubscribeURL)}">Unsubscribe</a> from bakery emails. Manage texts and emails anytime on your <a href="${escapeHTML(accountURL)}">account</a>.</p>
     <p>Questions? Just reply to this email, or reach us anytime at <a href="mailto:${escapeHTML(BAKERY_INBOX)}">${escapeHTML(BAKERY_INBOX)}</a>. We can't wait to bake for you.</p>
     <p>Warmly,<br/>${escapeHTML(companyName)}</p>
   `
@@ -68,12 +78,14 @@ export const buildCustomerWelcomeEmail = ({
 }
 
 type SendCustomerWelcomeEmailArgs = {
+  customerID: number | string
   email: string
   name?: string
   payload: Payload
 }
 
 export async function sendCustomerWelcomeEmail({
+  customerID,
   email,
   name,
   payload,
@@ -82,7 +94,13 @@ export async function sendCustomerWelcomeEmail({
     process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
   const serverURL = getServerSideURL()
   const accountURL = `${serverURL}/account`
-  const { html, subject, text } = buildCustomerWelcomeEmail({ accountURL, companyName, name })
+  const unsubscribeURL = `${serverURL}/api/customer-auth/email-unsubscribe?token=${createEmailUnsubscribeToken(customerID)}`
+  const { html, subject, text } = buildCustomerWelcomeEmail({
+    accountURL,
+    companyName,
+    name,
+    unsubscribeURL,
+  })
 
   await payload.sendEmail(
     decorateEmailEnvelope({
