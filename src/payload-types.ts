@@ -1980,7 +1980,7 @@ export interface FlavorRotation {
   createdAt: string;
 }
 /**
- * Weekly flavor votes for /vote. Make a new one each week: pick the flavors, set it to Live, and it closes on its own. Only the newest Live vote shows on the site.
+ * Weekly flavor votes for /vote. Make a new one each week: pick the flavors and set it to Live. It opens and closes on its own. After it closes, its results stay on /vote until the next vote opens, and they always stay at their own results link.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "flavor-polls".
@@ -1992,9 +1992,13 @@ export interface FlavorPoll {
    */
   title: string;
   /**
-   * Keep it Hidden while you set it up. Switch to Live to open voting.
+   * Keep it Hidden while you set it up. Switch to Live to put it on the site. Voting starts at the opening time below, or right away if that is empty.
    */
   status: 'draft' | 'live';
+  /**
+   * Leave empty to open as soon as it is Live. Pick a time to set it up early: the vote page counts down to it and opens on its own.
+   */
+  opensAt?: string | null;
   /**
    * Filled in with the next Sunday at 8pm Central. Only change it if this week is different.
    */
@@ -2889,6 +2893,7 @@ export interface FlavorRotationsSelect<T extends boolean = true> {
 export interface FlavorPollsSelect<T extends boolean = true> {
   title?: T;
   status?: T;
+  opensAt?: T;
   closesAt?: T;
   options?: T;
   votesPerPerson?: T;

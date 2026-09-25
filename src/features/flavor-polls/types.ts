@@ -14,6 +14,7 @@ export type PublicPoll = {
   closesAt: string
   id: number
   isOpen: boolean
+  opensAt: string | null
   options: PollOption[]
   showStandingsAfterVoting: boolean
   title: string
@@ -27,6 +28,7 @@ export type PollBallot = {
 
 export type PollStandingsRow = {
   productId: number
+  rank: number
   title: string
   votes: number
 }
@@ -35,4 +37,15 @@ export type PollStandings = {
   rows: PollStandingsRow[]
   totalVotes: number
   voterCount: number
+}
+
+export type NextVoteStatus =
+  | { kind: 'open' }
+  | { kind: 'scheduled'; opensAt: string }
+  | { kind: 'unknown' }
+
+export type ClosedPollResults = {
+  myPicks: Record<number, number>
+  poll: PublicPoll
+  standings: PollStandings
 }

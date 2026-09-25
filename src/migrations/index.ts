@@ -33,6 +33,7 @@ import * as migration_20260920_120000_add_announcement_pin_and_date from './2026
 import * as migration_20260920_180000_add_announcement_archived from './20260920_180000_add_announcement_archived';
 import * as migration_20260924_183438_add_flavor_votes from './20260924_183438_add_flavor_votes';
 import * as migration_20260925_013001_relax_vote_pick_product from './20260925_013001_relax_vote_pick_product';
+import * as migration_20260925_044709_add_flavor_poll_opens_at from './20260925_044709_add_flavor_poll_opens_at';
 
 export const migrations = [
   {
@@ -208,6 +209,11 @@ export const migrations = [
   {
     up: migration_20260925_013001_relax_vote_pick_product.up,
     down: migration_20260925_013001_relax_vote_pick_product.down,
-    name: '20260925_013001_relax_vote_pick_product'
+    name: '20260925_013001_relax_vote_pick_product',
+  },
+  {
+    up: migration_20260925_044709_add_flavor_poll_opens_at.up,
+    down: migration_20260925_044709_add_flavor_poll_opens_at.down,
+    name: '20260925_044709_add_flavor_poll_opens_at'
   },
 ];

@@ -97,3 +97,14 @@ export const formatPollCloseLabel = (closesAt: Date | string) =>
     timeZoneName: 'short',
     weekday: 'long',
   }).format(new Date(closesAt))
+
+export const formatPollDateLabel = (value: Date | string) =>
+  new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    month: 'short',
+    timeZone: FLAVOR_POLL_SCHEDULE.timeZone,
+    timeZoneName: 'short',
+    weekday: 'long',
+  }).format(new Date(value))

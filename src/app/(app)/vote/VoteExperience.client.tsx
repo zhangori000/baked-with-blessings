@@ -4,7 +4,7 @@ import { ArrowRight, Cookie, Maximize2, Minus, Plus, X } from 'lucide-react'
 import NextImage from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { ImageLightbox, type ImageLightboxItem } from '@/components/ImageLightbox'
@@ -14,6 +14,8 @@ import { BakeryAction } from '@/design-system/bakery'
 import { FLAVOR_IDEA_MAX_LENGTH } from '@/features/flavor-polls/constants'
 import { formatPollCloseLabel } from '@/features/flavor-polls/schedule'
 import type {
+  ClosedPollResults,
+  NextVoteStatus,
   PollBallot,
   PollOption,
   PollStandings,
@@ -21,47 +23,27 @@ import type {
 } from '@/features/flavor-polls/types'
 import { featureRequestsHref, menuHref, oldFlavorsHref } from '@/utilities/routes'
 
+import { formatRemaining, useCountdown, useRefreshOnceReached } from './useVoteClock'
+import { ClosedResults, NextVoteStat, PastResults } from './VoteResults.client'
+import { pluralTokens, Standings } from './VoteStandings'
+
+type OpenVote = {
+  ballot: PollBallot | null
+  poll: PublicPoll
+  standings: PollStandings | null
+}
+
 type VoteExperienceProps = {
   featureRequestsEnabled: boolean
-  initialBallot: PollBallot | null
-  initialStandings: PollStandings | null
-  poll: PublicPoll | null
+  lastResults: ClosedPollResults | null
+  next: NextVoteStatus
+  openVote: OpenVote | null
 }
 
 const countTokens = (picks: Record<number, number>) =>
   Object.values(picks).reduce((sum, value) => sum + value, 0)
 
-const pluralTokens = (count: number) => `${count} ${count === 1 ? 'token' : 'tokens'}`
-
-const formatRemaining = (ms: number) => {
-  if (ms <= 0) return 'Closed'
-  const totalSeconds = Math.floor(ms / 1000)
-  const days = Math.floor(totalSeconds / 86400)
-  const hours = Math.floor((totalSeconds % 86400) / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-
-  if (days > 0) return `${days}d ${hours}h ${minutes}m`
-  if (hours > 0) return `${hours}h ${minutes}m`
-  return `${minutes}m ${seconds.toString().padStart(2, '0')}s`
-}
-
-const useCountdown = (closesAt: string) => {
-  const closesAtMs = useMemo(() => Date.parse(closesAt), [closesAt])
-  const [remaining, setRemaining] = useState(() => closesAtMs - Date.now())
-
-  useEffect(() => {
-    const tick = () => setRemaining(closesAtMs - Date.now())
-    tick()
-    const interval = window.setInterval(tick, 1000)
-    return () => window.clearInterval(interval)
-  }, [closesAtMs])
-
-  return remaining
-}
-
 const MAX_CARD_TOKEN_SLOTS = 5
-const CLOSE_REFRESH_RETRY_MS = 5000
 
 function TokenRow({ filled, total }: { filled: number; total: number }) {
   return (
@@ -168,57 +150,6 @@ function VoteCard({
   )
 }
 
-function Standings({
-  myPicks,
-  standings,
-  title,
-}: {
-  myPicks: Record<number, number>
-  standings: PollStandings
-  title: string
-}) {
-  const topVotes = Math.max(1, ...standings.rows.map((row) => row.votes))
-
-  return (
-    <section aria-labelledby="vote-standings-title" className="voteStandings">
-      <div className="voteStandingsHeader">
-        <h2 className="voteSectionTitle" id="vote-standings-title">
-          {title}
-        </h2>
-        <p className="voteMuted">
-          {standings.voterCount} {standings.voterCount === 1 ? 'person' : 'people'} voted ·{' '}
-          {pluralTokens(standings.totalVotes)} spent
-        </p>
-      </div>
-      <ol className="voteStandingsList">
-        {standings.rows.map((row, index) => {
-          const mine = myPicks[row.productId] ?? 0
-          return (
-            <li className="voteStandingsRow" key={row.productId}>
-              <span className="voteStandingsRank">{index + 1}</span>
-              <div className="voteStandingsMain">
-                <div className="voteStandingsLabel">
-                  <span className="voteStandingsName">{row.title}</span>
-                  {mine > 0 ? <span className="voteStandingsMine">You: {mine}</span> : null}
-                  <span className="voteStandingsVotes">{pluralTokens(row.votes)}</span>
-                </div>
-                <span aria-hidden="true" className="voteStandingsTrack">
-                  {row.votes > 0 ? (
-                    <span
-                      className="voteStandingsBar"
-                      style={{ width: `${(row.votes / topVotes) * 100}%` }}
-                    />
-                  ) : null}
-                </span>
-              </div>
-            </li>
-          )
-        })}
-      </ol>
-    </section>
-  )
-}
-
 function ThankYouDialog({
   closeLabel,
   featureRequestsEnabled,
@@ -287,11 +218,14 @@ function ThankYouDialog({
   )
 }
 
-function EmptyState() {
+function EmptyState({ next }: { next: NextVoteStatus }) {
   return (
     <div className="voteEmpty">
       <p className="voteEyebrow">No vote open right now</p>
       <h2 className="voteHeadline">The next flavor vote is coming soon</h2>
+      <div className="voteStats">
+        <NextVoteStat next={next} />
+      </div>
       <p className="voteLead">
         Every week we open a vote for the next week’s cookies. Check back soon, and in the meantime
         see what is baking now.
@@ -313,7 +247,12 @@ function ActiveVote({
   initialBallot,
   initialStandings,
   poll,
-}: VoteExperienceProps & { poll: PublicPoll }) {
+}: {
+  featureRequestsEnabled: boolean
+  initialBallot: PollBallot | null
+  initialStandings: PollStandings | null
+  poll: PublicPoll
+}) {
   const router = useRouter()
   const remainingMs = useCountdown(poll.closesAt)
   const isOpen = poll.isOpen && remainingMs > 0
@@ -344,13 +283,7 @@ function ActiveVote({
 
   const hasClockClosed = remainingMs <= 0
 
-  useEffect(() => {
-    if (!poll.isOpen || !hasClockClosed) return
-
-    router.refresh()
-    const retry = window.setInterval(() => router.refresh(), CLOSE_REFRESH_RETRY_MS)
-    return () => window.clearInterval(retry)
-  }, [hasClockClosed, poll.isOpen, router])
+  useRefreshOnceReached({ isReached: hasClockClosed, isWaiting: poll.isOpen })
 
   useEffect(() => {
     const grid = gridRef.current
@@ -434,25 +367,13 @@ function ActiveVote({
   if (!isOpen) {
     return (
       <div className="voteLayout">
-        <header className="voteIntro">
-          <p className="voteEyebrow">Voting closed</p>
+        <header aria-live="polite" className="voteIntro">
+          <p className="voteEyebrow">Voting just closed</p>
           <h2 className="voteHeadline">{poll.title}</h2>
           <p className="voteLead">
-            Thanks to everyone who voted. Here is how it landed. The next vote opens soon.
+            Counting the cookie tokens. The final results will show here in a moment.
           </p>
-          <div className="voteActions">
-            <BakeryAction as={Link} href={menuHref} size="lg" variant="primary">
-              See this week’s menu
-            </BakeryAction>
-          </div>
         </header>
-        {standings ? (
-          <Standings
-            myPicks={savedBallot?.picks ?? {}}
-            standings={standings}
-            title="Final results"
-          />
-        ) : null}
       </div>
     )
   }
@@ -635,13 +556,30 @@ function ActiveVote({
   )
 }
 
-export function VoteExperience(props: VoteExperienceProps) {
-  if (!props.poll) return <EmptyState />
-  return (
-    <ActiveVote
-      {...props}
-      key={`${props.poll.id}-${props.poll.isOpen ? 'open' : 'closed'}`}
-      poll={props.poll}
-    />
-  )
+export function VoteExperience({
+  featureRequestsEnabled,
+  lastResults,
+  next,
+  openVote,
+}: VoteExperienceProps) {
+  if (openVote) {
+    return (
+      <div className="voteLayout">
+        <ActiveVote
+          featureRequestsEnabled={featureRequestsEnabled}
+          initialBallot={openVote.ballot}
+          initialStandings={openVote.standings}
+          key={openVote.poll.id}
+          poll={openVote.poll}
+        />
+        {lastResults ? <PastResults results={lastResults} /> : null}
+      </div>
+    )
+  }
+
+  if (lastResults) {
+    return <ClosedResults key={lastResults.poll.id} next={next} results={lastResults} />
+  }
+
+  return <EmptyState next={next} />
 }

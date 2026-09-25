@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { getNextScheduledPollClose } from '@/features/flavor-polls/schedule'
+import { buildResultsShareMessage, getPodium, rankStandings } from '@/features/flavor-polls/results'
 import {
   findBallot,
   FlavorPollError,
+  isPollOpen,
   submitBallot,
   tallyPoll,
 } from '@/features/flavor-polls/services'
@@ -37,6 +39,7 @@ const poll: PublicPoll = {
   closesAt: '2999-01-01T00:00:00.000Z',
   id: 7,
   isOpen: true,
+  opensAt: null,
   options: [
     { fallbackSrc: '', image: null, productId: 1, slug: 'a', summary: '', title: 'A' },
     { fallbackSrc: '', image: null, productId: 2, slug: 'b', summary: '', title: 'B' },
@@ -127,5 +130,71 @@ describe('saved ballots after the ballot changes', () => {
     const { standings } = await tallyPoll(makePayload(staleVote) as never, poll)
     expect(standings.totalVotes).toBe(2)
     expect(standings.rows.reduce((sum, row) => sum + row.votes, 0)).toBe(2)
+  })
+})
+
+describe('poll opening window', () => {
+  const now = Date.parse('2026-09-24T12:00:00Z')
+  const base = { closesAt: '2026-09-28T01:00:00Z', status: 'live' as const }
+
+  it('opens as soon as it is live when no opening time is set', () => {
+    expect(isPollOpen({ ...base, opensAt: null }, now)).toBe(true)
+  })
+
+  it('waits for a scheduled opening time', () => {
+    expect(isPollOpen({ ...base, opensAt: '2026-09-25T14:00:00Z' }, now)).toBe(false)
+    expect(isPollOpen({ ...base, opensAt: '2026-09-24T11:00:00Z' }, now)).toBe(true)
+  })
+
+  it('stays shut while hidden or after closing', () => {
+    expect(isPollOpen({ ...base, opensAt: null, status: 'draft' }, now)).toBe(false)
+    expect(isPollOpen({ ...base, closesAt: '2026-09-24T11:59:00Z', opensAt: null }, now)).toBe(
+      false,
+    )
+  })
+})
+
+describe('results sharing', () => {
+  const rows = rankStandings([
+    { productId: 1, title: 'Brookie', votes: 4 },
+    { productId: 2, title: 'Biscoff', votes: 4 },
+    { productId: 3, title: 'Dirty Chai', votes: 3 },
+    { productId: 4, title: 'Cinnamon Roll', votes: 1 },
+    { productId: 5, title: 'Banana Crumble', votes: 0 },
+  ])
+
+  it('gives tied flavors the same place', () => {
+    expect(rows.map((row) => [row.title, row.rank])).toEqual([
+      ['Biscoff', 1],
+      ['Brookie', 1],
+      ['Dirty Chai', 3],
+      ['Cinnamon Roll', 4],
+      ['Banana Crumble', 5],
+    ])
+  })
+
+  it('keeps the podium to the top three places with votes', () => {
+    expect(getPodium(rows).map((group) => [group.rank, group.titles])).toEqual([
+      [1, ['Biscoff', 'Brookie']],
+      [3, ['Dirty Chai']],
+    ])
+  })
+
+  it('builds a ready-to-send message with the link', () => {
+    expect(buildResultsShareMessage({ rows, url: 'https://example.test/vote/results/7' })).toBe(
+      [
+        'The flavor vote results are in!',
+        '',
+        '1. Biscoff and Brookie (tie)',
+        '3. Dirty Chai',
+        '',
+        'See the full results: https://example.test/vote/results/7',
+      ].join('\n'),
+    )
+  })
+
+  it('has nothing to send when no one voted', () => {
+    const empty = rankStandings([{ productId: 1, title: 'Brookie', votes: 0 }])
+    expect(buildResultsShareMessage({ rows: empty, url: 'https://example.test' })).toBeNull()
   })
 })

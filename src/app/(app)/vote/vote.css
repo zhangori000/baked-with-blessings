@@ -541,6 +541,82 @@
   transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.votePodium {
+  display: grid;
+  gap: 0.55rem;
+  list-style: none;
+  margin: 0.25rem 0 0;
+  max-width: 34rem;
+  padding: 0;
+}
+
+.votePodiumItem {
+  align-items: center;
+  background: #fff8f2;
+  border: 1px solid rgba(23, 21, 16, 0.08);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  padding: 0.6rem 0.9rem 0.6rem 0.6rem;
+}
+
+.votePodiumItem[data-rank='1'] {
+  background: #fff8e6;
+  border-color: rgba(125, 85, 18, 0.35);
+}
+
+.votePodiumRank {
+  align-items: center;
+  border: 1.5px solid rgba(125, 85, 18, 0.45);
+  border-radius: 999px;
+  color: #7d5512;
+  display: inline-flex;
+  font-family: var(--font-rounded-display);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  height: 2.1rem;
+  justify-content: center;
+  width: 2.1rem;
+}
+
+.votePodiumItem[data-rank='1'] .votePodiumRank {
+  background: #7d5512;
+  border-color: #7d5512;
+  color: #fffdf9;
+}
+
+.votePodiumName {
+  color: #171510;
+  font-family: var(--font-rounded-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.votePodiumVotes {
+  color: rgba(23, 21, 16, 0.62);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.votePast {
+  border: 1px dashed rgba(23, 21, 16, 0.18);
+  border-radius: 1.5rem;
+  display: grid;
+  gap: 1rem;
+  margin-top: clamp(0.75rem, 2vw, 1.5rem);
+  padding: clamp(1.25rem, 3.5vw, 2rem);
+}
+
+.votePastHeader {
+  display: grid;
+  gap: 0.35rem;
+}
+
 .voteDialogBackdrop {
   align-items: center;
   animation: voteFade 180ms ease-out;

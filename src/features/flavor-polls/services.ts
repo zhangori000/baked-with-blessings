@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto'
 
-import type { Payload } from 'payload'
+import type { Payload, Where } from 'payload'
 
 import { buildCookiePosterAsset } from '@/features/products/cookieDisplayData'
 import type { FlavorPoll, FlavorPollVote, Product } from '@/payload-types'
 
 import { FLAVOR_IDEA_MAX_LENGTH } from './constants'
+import { rankStandings } from './results'
 import type { PollBallot, PollOption, PollStandings, PublicPoll } from './types'
 
 export class FlavorPollError extends Error {
@@ -31,8 +32,13 @@ export const hashVoterToken = (token: string) =>
     .update(`${process.env.PAYLOAD_SECRET ?? ''}:flavor-vote:${token}`)
     .digest('hex')
 
-export const isPollOpen = (poll: Pick<FlavorPoll, 'closesAt' | 'status'>, now = Date.now()) =>
-  poll.status === 'live' && new Date(poll.closesAt).getTime() > now
+export const isPollOpen = (
+  poll: Pick<FlavorPoll, 'closesAt' | 'opensAt' | 'status'>,
+  now = Date.now(),
+) =>
+  poll.status === 'live' &&
+  (!poll.opensAt || new Date(poll.opensAt).getTime() <= now) &&
+  new Date(poll.closesAt).getTime() > now
 
 const toPollOption = (product: Product): PollOption | null => {
   const poster = buildCookiePosterAsset(product)
@@ -53,6 +59,7 @@ export const toPublicPoll = (poll: FlavorPoll): PublicPoll => ({
   closesAt: poll.closesAt,
   id: poll.id,
   isOpen: isPollOpen(poll),
+  opensAt: poll.opensAt ?? null,
   options: (poll.options ?? [])
     .filter((option): option is Product => typeof option === 'object' && option !== null)
     .filter((product) => product._status !== 'draft')
@@ -63,19 +70,48 @@ export const toPublicPoll = (poll: FlavorPoll): PublicPoll => ({
   votesPerPerson: Math.max(1, Math.floor(Number(poll.votesPerPerson) || 1)),
 })
 
-export const findCurrentPoll = async (payload: Payload) => {
+const findFirstLivePoll = async (
+  payload: Payload,
+  { sort, where }: { sort: string; where: Where[] },
+) => {
   const result = await payload.find({
     collection: 'flavor-polls',
     depth: 2,
     limit: 1,
     overrideAccess: false,
     pagination: false,
-    sort: '-closesAt',
-    where: { status: { equals: 'live' } },
+    sort,
+    where: { and: [{ status: { equals: 'live' } }, ...where] },
   })
 
   return (result.docs[0] as FlavorPoll | undefined) ?? null
 }
+
+export const findOpenPoll = (payload: Payload, now = new Date()) =>
+  findFirstLivePoll(payload, {
+    sort: '-closesAt',
+    where: [
+      { closesAt: { greater_than: now.toISOString() } },
+      {
+        or: [{ opensAt: { exists: false } }, { opensAt: { less_than_equal: now.toISOString() } }],
+      },
+    ],
+  })
+
+export const findUpcomingPoll = (payload: Payload, now = new Date()) =>
+  findFirstLivePoll(payload, {
+    sort: 'opensAt',
+    where: [{ opensAt: { greater_than: now.toISOString() } }],
+  })
+
+export const findLatestClosedPoll = (payload: Payload, now = new Date()) =>
+  findFirstLivePoll(payload, {
+    sort: '-closesAt',
+    where: [{ closesAt: { less_than_equal: now.toISOString() } }],
+  })
+
+export const findLivePollByID = (payload: Payload, pollID: number) =>
+  findFirstLivePoll(payload, { sort: '-closesAt', where: [{ id: { equals: pollID } }] })
 
 const findVoteDoc = async (payload: Payload, pollID: number, voterKey: string) => {
   const result = await payload.find({
@@ -150,13 +186,13 @@ export const tallyPoll = async (payload: Payload, poll: PublicPoll) => {
     if (idea) flavorIdeas.push(idea)
   }
 
-  const rows = poll.options
-    .map((option) => ({
+  const rows = rankStandings(
+    poll.options.map((option) => ({
       productId: option.productId,
       title: option.title,
       votes: totals.get(option.productId) ?? 0,
-    }))
-    .sort((a, b) => b.votes - a.votes || a.title.localeCompare(b.title))
+    })),
+  )
 
   const standings: PollStandings = {
     rows,

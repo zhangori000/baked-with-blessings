@@ -207,4 +207,59 @@ test.describe('Flavor vote', () => {
       })
     }
   })
+
+  test('keeps closed results at their own link and under the next ballot', async ({ page }) => {
+    const winnerID = optionIDs[1] ?? optionIDs[0]
+    const winner = await payload.findByID({
+      collection: 'products',
+      depth: 0,
+      id: winnerID,
+      overrideAccess: true,
+    })
+    const closed = await payload.create({
+      collection: 'flavor-polls',
+      data: {
+        closesAt: new Date(Date.now() - 60_000).toISOString(),
+        options: optionIDs,
+        status: 'live',
+        title: 'Results link check',
+        votesPerPerson: 3,
+      },
+      overrideAccess: true,
+    })
+
+    try {
+      await payload.create({
+        collection: 'flavor-poll-votes',
+        data: {
+          picks: [{ count: 3, product: winnerID }],
+          poll: closed.id,
+          voterKey: 'e2e-results',
+        },
+        overrideAccess: true,
+      })
+
+      await page.goto(`${baseURL}/vote/results/${closed.id}`, { waitUntil: 'networkidle' })
+      await expect(page.getByRole('heading', { name: `You picked ${winner.title}` })).toBeVisible()
+      await expect(page.getByText('Open now')).toBeVisible()
+      await expect(page.getByRole('link', { name: /Vote in the next one/ })).toHaveAttribute(
+        'href',
+        '/vote',
+      )
+
+      await openVotePage(page)
+      const past = page.locator('.votePast')
+      await expect(past.getByRole('heading', { name: 'Results from the last vote' })).toBeVisible()
+      await expect(past.getByText(winner.title)).toBeVisible()
+      await expect(past.getByRole('link', { name: /See the full results/ })).toHaveAttribute(
+        'href',
+        `/vote/results/${closed.id}`,
+      )
+
+      await page.goto(`${baseURL}/vote/results/${pollID}`, { waitUntil: 'networkidle' })
+      await expect(page).toHaveURL(`${baseURL}/vote`)
+    } finally {
+      await payload.delete({ collection: 'flavor-polls', id: closed.id, overrideAccess: true })
+    }
+  })
 })

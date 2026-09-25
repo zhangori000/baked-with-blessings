@@ -9,6 +9,7 @@ import {
   FLAVOR_POLL_MAX_VOTES_PER_PERSON,
 } from '@/features/flavor-polls/constants'
 import { getNextScheduledPollClose } from '@/features/flavor-polls/schedule'
+import type { FlavorPoll } from '@/payload-types'
 
 const buildBallotProductWhere = async (req: PayloadRequest): Promise<Where> => {
   const categoryResult = await req.payload.find({
@@ -52,7 +53,7 @@ export const FlavorPolls: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'status', 'closesAt', 'updatedAt'],
     description:
-      'Weekly flavor votes for /vote. Make a new one each week: pick the flavors, set it to Live, and it closes on its own. Only the newest Live vote shows on the site.',
+      'Weekly flavor votes for /vote. Make a new one each week: pick the flavors and set it to Live. It opens and closes on its own. After it closes, its results stay on /vote until the next vote opens, and they always stay at their own results link.',
     group: 'Content',
     useAsTitle: 'title',
   },
@@ -84,7 +85,8 @@ export const FlavorPolls: CollectionConfig = {
       name: 'status',
       type: 'select',
       admin: {
-        description: 'Keep it Hidden while you set it up. Switch to Live to open voting.',
+        description:
+          'Keep it Hidden while you set it up. Switch to Live to put it on the site. Voting starts at the opening time below, or right away if that is empty.',
         position: 'sidebar',
       },
       defaultValue: 'draft',
@@ -94,6 +96,29 @@ export const FlavorPolls: CollectionConfig = {
         { label: 'Live on the site', value: 'live' },
       ],
       required: true,
+    },
+    {
+      name: 'opensAt',
+      label: 'Voting opens',
+      type: 'date',
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        description:
+          'Leave empty to open as soon as it is Live. Pick a time to set it up early: the vote page counts down to it and opens on its own.',
+        position: 'sidebar',
+      },
+      index: true,
+      validate: (
+        value: Date | string | null | undefined,
+        { siblingData }: { siblingData: Partial<FlavorPoll> },
+      ) => {
+        if (!value || !siblingData?.closesAt) return true
+        return new Date(value).getTime() < new Date(siblingData.closesAt).getTime()
+          ? true
+          : 'Voting has to open before it closes.'
+      },
     },
     {
       name: 'closesAt',
@@ -146,7 +171,8 @@ export const FlavorPolls: CollectionConfig = {
           label: 'Votes per person',
           type: 'number',
           admin: {
-            description: 'How many cookie tokens each person gets. They can stack them on one flavor.',
+            description:
+              'How many cookie tokens each person gets. They can stack them on one flavor.',
           },
           defaultValue: FLAVOR_POLL_DEFAULT_VOTES_PER_PERSON,
           max: FLAVOR_POLL_MAX_VOTES_PER_PERSON,
@@ -168,7 +194,8 @@ export const FlavorPolls: CollectionConfig = {
           label: 'Ask for new flavor ideas',
           type: 'checkbox',
           admin: {
-            description: 'Shows an optional “What flavor would you love to see?” box on the ballot.',
+            description:
+              'Shows an optional “What flavor would you love to see?” box on the ballot.',
           },
           defaultValue: true,
         },
