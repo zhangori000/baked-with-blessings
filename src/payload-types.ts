@@ -2028,7 +2028,7 @@ export interface FlavorPollVote {
   voterKey: string;
   picks?:
     | {
-        product: number | Product;
+        product?: (number | null) | Product;
         count: number;
         id?: string | null;
       }[]

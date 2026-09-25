@@ -47,7 +47,6 @@ export const FlavorPollVotes: CollectionConfig = {
           name: 'product',
           type: 'relationship',
           relationTo: 'products',
-          required: true,
         },
         {
           name: 'count',
