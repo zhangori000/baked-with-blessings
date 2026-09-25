@@ -145,7 +145,8 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
   companyName,
   overview,
 }) => {
-  const { audience, textsReady, updates } = overview
+  const { audience, mailingAddress, textsReady, updates } = overview
+  const emailsReady = Boolean(mailingAddress)
   const router = useRouter()
   const { openModal } = useModal()
   const mounted = useRef(true)
@@ -329,17 +330,17 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
     sms: draft.sendText ? audience.sms : 0,
   }
   const problem =
-    validateBakeryUpdateDraft(draft, { textsReady }) ||
+    validateBakeryUpdateDraft(draft, { emailsReady, textsReady }) ||
     (recipients.email + recipients.sms === 0
       ? 'Nobody has said yes to the messages you picked yet.'
       : null)
   const smsBody = buildBakeryUpdateSms({ companyName, message: draft.message })
   const smsSize = measureSms(smsBody)
   const paragraphs = splitMessageParagraphs(draft.message)
-  const footer = bakeryUpdateEmailFooter(companyName)
+  const footer = bakeryUpdateEmailFooter(companyName, mailingAddress ?? '')
   const testProblem = validateBakeryUpdateDraft(
     { ...draft, sendEmail: true, sendText: false },
-    { textsReady },
+    { emailsReady, textsReady },
   )
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -482,6 +483,14 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
                   <span className={styles.optionTitle}>Email</span>
                   <span className={styles.optionHint}>
                     {people(audience.email)} said yes to emails.
+                    {emailsReady ? null : (
+                      <>
+                        {' '}
+                        Add the bakery&apos;s mailing address in{' '}
+                        <Link href="/admin/globals/store-settings">Store Settings</Link> before
+                        sending.
+                      </>
+                    )}
                   </span>
                 </span>
               </label>
@@ -587,6 +596,7 @@ export const BakeryUpdateComposer: React.FC<BakeryUpdateComposerProps> = ({
                     <span className={styles.fakeLink}>manage texts and emails</span>.{' '}
                     {footer.receipts}
                   </p>
+                  {emailsReady ? <p className={styles.emailFooter}>{footer.address}</p> : null}
                 </div>
               </figure>
             ) : null}

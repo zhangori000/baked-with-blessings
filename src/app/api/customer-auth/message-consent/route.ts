@@ -6,6 +6,8 @@ import config from '@payload-config'
 import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
 import type { MessageConsentChannel } from '@/utilities/messageConsent'
 import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
+import { sendCustomerWelcomeSms } from '@/utilities/sms/sendCustomerWelcomeSms'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 
 const jsonError = (message: string, status = 400) =>
   Response.json(
@@ -38,7 +40,19 @@ export async function POST(request: Request) {
     return jsonError('Choose on or off.')
   }
 
+  // Turning texts off always works; turning them on waits until texts exist.
+  if (channel === 'sms' && body.ok && !areBakeryTextsOffered()) {
+    return jsonError('Bakery texts are not available yet.')
+  }
+
   try {
+    const before = await payload.findByID({
+      collection: 'customers',
+      depth: 0,
+      id: user.id,
+      overrideAccess: true,
+    })
+
     const customer = await setCustomerMessageConsent({
       channel: channel as MessageConsentChannel,
       customerID: user.id,
@@ -46,6 +60,13 @@ export async function POST(request: Request) {
       payload,
       source: 'account',
     })
+
+    if (channel === 'sms' && body.ok && !before.smsOk && customer.phone) {
+      await sendCustomerWelcomeSms({
+        payload,
+        phone: customer.phone,
+      })
+    }
 
     return Response.json({
       doc: customer,

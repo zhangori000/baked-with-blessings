@@ -13,6 +13,8 @@ import {
   type BakeryUpdateDraft,
   buildBakeryUpdateEmail,
   buildBakeryUpdateSms,
+  formatMailingAddress,
+  missingMailingAddressMessage,
   validateBakeryUpdateDraft,
 } from './content'
 import {
@@ -58,6 +60,16 @@ export const getBakeryCompanyName = () =>
   process.env.COMPANY_NAME?.trim() || process.env.SITE_NAME?.trim() || 'Baked with Blessings'
 
 export const areBakeryTextsReady = () => Boolean(getTwilioMessagingConfig())
+
+export const getBakeryMailingAddress = async (payload: Payload): Promise<null | string> => {
+  const settings = await payload.findGlobal({
+    depth: 0,
+    overrideAccess: true,
+    slug: 'store-settings',
+  })
+
+  return formatMailingAddress(settings.mailingAddress)
+}
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -251,7 +263,10 @@ export const startBakeryUpdate = async ({
     )
   }
 
-  const problem = validateBakeryUpdateDraft(draft, { textsReady: areBakeryTextsReady() })
+  const problem = validateBakeryUpdateDraft(draft, {
+    emailsReady: Boolean(await getBakeryMailingAddress(payload)),
+    textsReady: areBakeryTextsReady(),
+  })
 
   if (problem) {
     throw new APIError(problem, 400)
@@ -300,19 +315,21 @@ export const startBakeryUpdate = async ({
 type SendContext = {
   accountURL: string
   companyName: string
+  mailingAddress: string
   message: string
   serverURL: string
   smsBody: string
   subject: string
 }
 
-const buildSendContext = (update: BakeryUpdate): SendContext => {
+const buildSendContext = (update: BakeryUpdate, mailingAddress: string): SendContext => {
   const companyName = getBakeryCompanyName()
   const serverURL = getServerSideURL()
 
   return {
     accountURL: `${serverURL}/account`,
     companyName,
+    mailingAddress,
     message: update.message,
     serverURL,
     smsBody: buildBakeryUpdateSms({ companyName, message: update.message }),
@@ -325,13 +342,17 @@ export const buildBakeryUpdateEmailFor = ({
   to,
   unsubscribeURL,
 }: {
-  context: Pick<SendContext, 'accountURL' | 'companyName' | 'message' | 'subject'>
+  context: Pick<
+    SendContext,
+    'accountURL' | 'companyName' | 'mailingAddress' | 'message' | 'subject'
+  >
   to: string
   unsubscribeURL: string
 }): BakeryUpdateEmail => ({
   ...buildBakeryUpdateEmail({
     accountURL: context.accountURL,
     companyName: context.companyName,
+    mailingAddress: context.mailingAddress,
     message: context.message,
     subject: context.subject,
     unsubscribeURL,
@@ -458,7 +479,15 @@ export const continueBakeryUpdate = async ({
     return getProgress(payload, update)
   }
 
-  const context = buildSendContext(update)
+  // Checked again here in case the address was cleared mid-send. Throwing
+  // leaves the queue untouched, so "Finish sending" works once it is back.
+  const mailingAddress = update.sendEmail ? await getBakeryMailingAddress(payload) : ''
+
+  if (update.sendEmail && !mailingAddress) {
+    throw new APIError(missingMailingAddressMessage, 400)
+  }
+
+  const context = buildSendContext(update, mailingAddress ?? '')
   const startedAt = Date.now()
 
   while (Date.now() - startedAt < timeBudgetMs) {
@@ -512,9 +541,10 @@ export const sendBakeryUpdateTestEmail = async ({
   senders?: BakeryUpdateSenders
   to: string
 }) => {
+  const mailingAddress = await getBakeryMailingAddress(payload)
   const problem = validateBakeryUpdateDraft(
     { ...draft, sendEmail: true, sendText: false },
-    { textsReady: false },
+    { emailsReady: Boolean(mailingAddress), textsReady: false },
   )
 
   if (problem) {
@@ -529,6 +559,7 @@ export const sendBakeryUpdateTestEmail = async ({
   const context = {
     accountURL: `${serverURL}/account`,
     companyName: getBakeryCompanyName(),
+    mailingAddress: mailingAddress ?? '',
     message: draft.message.trim(),
     subject: `[Test] ${draft.subject.trim()}`,
   }
@@ -545,8 +576,9 @@ export const sendBakeryUpdateTestEmail = async ({
 }
 
 export const loadBakeryUpdatesOverview = async (payload: Payload, { limit = 8 } = {}) => {
-  const [audience, recent] = await Promise.all([
+  const [audience, mailingAddress, recent] = await Promise.all([
     countBakeryUpdateAudience(payload),
+    getBakeryMailingAddress(payload),
     payload.find({
       collection: 'bakery-updates',
       depth: 0,
@@ -563,6 +595,7 @@ export const loadBakeryUpdatesOverview = async (payload: Payload, { limit = 8 } 
 
   return {
     audience,
+    mailingAddress,
     textsReady: areBakeryTextsReady(),
     updates: recent.docs.map((update) => toProgress(update, tallies.get(update.id))),
   }

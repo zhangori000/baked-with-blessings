@@ -2709,6 +2709,11 @@ body:has(.accountSceneryRoute) .siteHeaderBannerList {
   line-height: 1.55;
 }
 
+.accountSettingsConsentHint a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 @media (max-width: 767px) {
   .accountSceneryRoute {
     --account-header-underlap: 5.35rem;

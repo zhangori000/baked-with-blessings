@@ -14,9 +14,20 @@ export type BakeryUpdateDraft = {
  * Same rules on the client (to disable Send) and the server (to refuse the
  * request). Returns the first problem in owner-facing words, or null.
  */
+export const missingMailingAddressMessage =
+  "Add the bakery's mailing address in Store Settings first. The law requires it at the bottom of every bakery email."
+
+/** Store Settings keeps the address on several lines; emails show it on one. */
+export const formatMailingAddress = (value?: null | string): null | string =>
+  value
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(', ') || null
+
 export const validateBakeryUpdateDraft = (
   draft: BakeryUpdateDraft,
-  { textsReady }: { textsReady: boolean },
+  { emailsReady, textsReady }: { emailsReady: boolean; textsReady: boolean },
 ): null | string => {
   const message = draft.message.trim()
   const subject = draft.subject.trim()
@@ -27,6 +38,10 @@ export const validateBakeryUpdateDraft = (
 
   if (draft.sendText && !textsReady) {
     return 'Texts are not set up yet. Send this as an email for now.'
+  }
+
+  if (draft.sendEmail && !emailsReady) {
+    return missingMailingAddressMessage
   }
 
   if (!message) {
@@ -150,7 +165,8 @@ export const splitMessageParagraphs = (message: string): string[] =>
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
 
-export const bakeryUpdateEmailFooter = (companyName: string) => ({
+export const bakeryUpdateEmailFooter = (companyName: string, mailingAddress: string) => ({
+  address: `${companyName}, ${mailingAddress}`,
   reason: `You're getting this because you signed up for bakery emails from ${companyName}.`,
   receipts: 'Order receipts and login codes still arrive even if you unsubscribe.',
 })
@@ -158,18 +174,20 @@ export const bakeryUpdateEmailFooter = (companyName: string) => ({
 export const buildBakeryUpdateEmail = ({
   accountURL,
   companyName,
+  mailingAddress,
   message,
   subject,
   unsubscribeURL,
 }: {
   accountURL: string
   companyName: string
+  mailingAddress: string
   message: string
   subject: string
   unsubscribeURL: string
 }) => {
   const paragraphs = splitMessageParagraphs(message)
-  const footer = bakeryUpdateEmailFooter(companyName)
+  const footer = bakeryUpdateEmailFooter(companyName, mailingAddress)
 
   const text = [
     paragraphs.join('\n\n'),
@@ -179,12 +197,14 @@ export const buildBakeryUpdateEmail = ({
     `Unsubscribe: ${unsubscribeURL}`,
     `Manage texts and emails: ${accountURL}`,
     footer.receipts,
+    footer.address,
   ].join('\n')
 
   const html = [
     ...paragraphs.map((paragraph) => `<p>${toParagraphHTML(paragraph)}</p>`),
     '<hr/>',
     `<p><small>${escapeHTML(footer.reason)} <a href="${escapeHTML(unsubscribeURL)}">Unsubscribe</a> or <a href="${escapeHTML(accountURL)}">manage texts and emails</a>. ${escapeHTML(footer.receipts)}</small></p>`,
+    `<p><small>${escapeHTML(footer.address)}</small></p>`,
   ].join('\n')
 
   return { html, subject: subject.trim(), text }

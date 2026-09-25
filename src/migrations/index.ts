@@ -33,6 +33,7 @@ import * as migration_20260920_120000_add_announcement_pin_and_date from './2026
 import * as migration_20260920_180000_add_announcement_archived from './20260920_180000_add_announcement_archived';
 import * as migration_20260920_180000_add_customer_message_consent from './20260920_180000_add_customer_message_consent';
 import * as migration_20260924_190000_add_bakery_updates from './20260924_190000_add_bakery_updates';
+import * as migration_20260925_034500_add_store_settings_mailing_address from './20260925_034500_add_store_settings_mailing_address';
 
 export const migrations = [
   {
@@ -209,5 +210,10 @@ export const migrations = [
     up: migration_20260924_190000_add_bakery_updates.up,
     down: migration_20260924_190000_add_bakery_updates.down,
     name: '20260924_190000_add_bakery_updates',
+  },
+  {
+    up: migration_20260925_034500_add_store_settings_mailing_address.up,
+    down: migration_20260925_034500_add_store_settings_mailing_address.down,
+    name: '20260925_034500_add_store_settings_mailing_address',
   },
 ];

@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 
 import { getServerSideURL } from '@/utilities/getURL'
+import { bakeryTextsDisclosure } from '@/utilities/messageConsent'
 import { sendTwilioSms } from '@/utilities/sms/twilioMessages'
 
 type BuildCustomerWelcomeSmsArgs = {
@@ -8,11 +9,10 @@ type BuildCustomerWelcomeSmsArgs = {
   companyName: string
 }
 
-export const buildCustomerWelcomeSms = ({
-  accountURL = 'https://bakedwithblessings.com/account',
-  companyName = 'Baked with Blessings',
-}: BuildCustomerWelcomeSmsArgs) =>
-  `Welcome to ${companyName}. Reply Y to get texts when we drop a flavor or post a market date. Reply N if not. Reply STOP anytime. Change this later at ${accountURL}`
+// Carriers want one confirmation text right after someone opts in. We never
+// text a number to ask for consent, so this only goes out after a yes.
+export const buildCustomerWelcomeSms = ({ accountURL, companyName }: BuildCustomerWelcomeSmsArgs) =>
+  `${companyName}: You're signed up for texts when we drop a flavor or post a market date. ${bakeryTextsDisclosure} Manage texts at ${accountURL}`
 
 type SendCustomerWelcomeSmsArgs = {
   payload: Payload

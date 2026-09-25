@@ -20,6 +20,14 @@ export const getTwilioMessagingConfig = (): TwilioMessagingConfig | null => {
   return { accountSID, authToken, fromNumber }
 }
 
+/**
+ * Whether customers are offered bakery texts. True once texting works, or
+ * earlier when BWB_SHOW_TEXT_SIGNUP=true so the carrier reviewer can see the
+ * opt-in before the number is approved.
+ */
+export const areBakeryTextsOffered = () =>
+  process.env.BWB_SHOW_TEXT_SIGNUP === 'true' || Boolean(getTwilioMessagingConfig())
+
 export const sendTwilioSms = async ({
   body,
   to,
@@ -100,6 +108,10 @@ export const isTwilioMessagingSignatureValid = ({
 }
 
 export const buildTwilioMessagingTwiml = (message = '') => {
+  if (!message) {
+    return '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
+  }
+
   const escaped = message
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

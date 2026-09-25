@@ -7,6 +7,7 @@ import { ALLOW_CUSTOMER_PHONE_IDENTITY_WRITE } from '@/collections/Customers/hoo
 import {
   buildBakeryUpdateEmail,
   buildBakeryUpdateSms,
+  formatMailingAddress,
   measureSms,
   validateBakeryUpdateDraft,
 } from '@/features/bakery-updates/content'
@@ -50,6 +51,7 @@ describe('bakery update content', () => {
     const { html, subject, text } = buildBakeryUpdateEmail({
       accountURL: 'https://example.test/account',
       companyName: 'Baked with Blessings',
+      mailingAddress: 'PO Box 1 & Co, Plymouth, MN 55441',
       message: 'New flavor <b>today</b>!\nSee https://example.test/menu.\n\nSecond paragraph',
       subject: '  Flavor drop  ',
       unsubscribeURL: 'https://example.test/api/customer-auth/email-unsubscribe?token=1.abc',
@@ -65,29 +67,60 @@ describe('bakery update content', () => {
     expect(text).toContain('Unsubscribe: https://example.test/api/customer-auth/email-unsubscribe')
     expect(text).toContain('Manage texts and emails: https://example.test/account')
     expect(text).toContain('Order receipts and login codes still arrive')
+    expect(text).toContain('Baked with Blessings, PO Box 1 & Co, Plymouth, MN 55441')
+    expect(html).toContain('Baked with Blessings, PO Box 1 &amp; Co, Plymouth, MN 55441')
     expect(text).not.toContain('\u2014')
+  })
+
+  it('puts a multi-line mailing address on one line, and treats blank as missing', () => {
+    expect(formatMailingAddress('  PO Box 1\r\n Plymouth, MN 55441 \n\n')).toBe(
+      'PO Box 1, Plymouth, MN 55441',
+    )
+    expect(formatMailingAddress(' \n ')).toBeNull()
+    expect(formatMailingAddress(null)).toBeNull()
   })
 
   it('refuses drafts the owner cannot send yet', () => {
     const draft = { message: 'Hi', sendEmail: true, sendText: false, subject: 'News' }
 
-    expect(validateBakeryUpdateDraft(draft, { textsReady: false })).toBeNull()
+    expect(validateBakeryUpdateDraft(draft, { emailsReady: true, textsReady: false })).toBeNull()
     expect(
-      validateBakeryUpdateDraft({ ...draft, sendEmail: false }, { textsReady: false }),
+      validateBakeryUpdateDraft(
+        { ...draft, sendEmail: false },
+        { emailsReady: true, textsReady: false },
+      ),
     ).toMatch(/Choose texts, emails/)
-    expect(validateBakeryUpdateDraft({ ...draft, sendText: true }, { textsReady: false })).toMatch(
-      /Texts are not set up/,
-    )
-    expect(validateBakeryUpdateDraft({ ...draft, message: '  ' }, { textsReady: false })).toMatch(
-      /Write a message/,
-    )
-    expect(validateBakeryUpdateDraft({ ...draft, subject: '' }, { textsReady: false })).toMatch(
-      /subject/,
+    expect(
+      validateBakeryUpdateDraft(
+        { ...draft, sendText: true },
+        { emailsReady: true, textsReady: false },
+      ),
+    ).toMatch(/Texts are not set up/)
+    expect(
+      validateBakeryUpdateDraft(
+        { ...draft, message: '  ' },
+        { emailsReady: true, textsReady: false },
+      ),
+    ).toMatch(/Write a message/)
+    expect(
+      validateBakeryUpdateDraft(
+        { ...draft, subject: '' },
+        { emailsReady: true, textsReady: false },
+      ),
+    ).toMatch(/subject/)
+    expect(
+      validateBakeryUpdateDraft(
+        { ...draft, sendEmail: false, sendText: true, subject: '' },
+        { emailsReady: true, textsReady: true },
+      ),
+    ).toBeNull()
+    expect(validateBakeryUpdateDraft(draft, { emailsReady: false, textsReady: false })).toMatch(
+      /mailing address in Store Settings/,
     )
     expect(
       validateBakeryUpdateDraft(
         { ...draft, sendEmail: false, sendText: true, subject: '' },
-        { textsReady: true },
+        { emailsReady: false, textsReady: true },
       ),
     ).toBeNull()
   })
@@ -113,6 +146,16 @@ describe('sending a bakery update', () => {
   const createdCustomerIDs: number[] = []
   const createdUpdateIDs: number[] = []
   const stamp = `${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  const testMailingAddress = 'PO Box 1\nPlymouth, MN 55441'
+  let savedMailingAddress: null | string | undefined
+
+  const setMailingAddress = (mailingAddress: null | string) =>
+    payload.updateGlobal({
+      data: { mailingAddress },
+      depth: 0,
+      overrideAccess: true,
+      slug: 'store-settings',
+    })
 
   const both = { email: `bakery-update-both-${stamp}@example.test`, phone: randomPhone() }
   const emailOnly = `bakery-update-email-${stamp}@example.test`
@@ -179,6 +222,11 @@ describe('sending a bakery update', () => {
 
     payload = await getPayload({ config: await config })
 
+    savedMailingAddress = (
+      await payload.findGlobal({ depth: 0, overrideAccess: true, slug: 'store-settings' })
+    ).mailingAddress
+    await setMailingAddress(testMailingAddress)
+
     const bothCustomer = await createCustomer(both)
     await setCustomerMessageConsent({
       channel: 'sms',
@@ -221,6 +269,8 @@ describe('sending a bakery update', () => {
     if (!payload) {
       return
     }
+
+    await setMailingAddress(savedMailingAddress ?? null)
 
     for (const id of createdUpdateIDs) {
       await payload.delete({ collection: 'bakery-updates', id, overrideAccess: true })
@@ -392,6 +442,52 @@ describe('sending a bakery update', () => {
     }
   })
 
+  it('holds emails until Store Settings has a mailing address, then finishes the send', async () => {
+    await setMailingAddress(null)
+
+    try {
+      await expect(
+        startBakeryUpdate({
+          draft: { message: 'Hi', sendEmail: true, sendText: false, subject: 'News' },
+          payload,
+          requestKey: `test-no-address-${stamp}`,
+        }),
+      ).rejects.toThrow(/mailing address in Store Settings/)
+
+      await expect(
+        sendBakeryUpdateTestEmail({
+          draft: { message: 'Hi', subject: 'News' },
+          payload,
+          to: 'owner@example.test',
+        }),
+      ).rejects.toThrow(/mailing address in Store Settings/)
+
+      await setMailingAddress(testMailingAddress)
+      const progress = await startBakeryUpdate({
+        draft: { message: 'Address test', sendEmail: true, sendText: false, subject: 'News' },
+        payload,
+        requestKey: `test-address-cleared-${stamp}`,
+      })
+      createdUpdateIDs.push(progress.id)
+
+      // The owner clears the address after pressing Send: nothing goes out,
+      // and the queue waits for "Finish sending".
+      await setMailingAddress(null)
+      const { senders, sent } = recordingSenders()
+      await expect(
+        continueBakeryUpdate({ payload, senders, updateID: progress.id }),
+      ).rejects.toThrow(/mailing address in Store Settings/)
+      expect(sent).toHaveLength(0)
+
+      await setMailingAddress(testMailingAddress)
+      const finished = await continueBakeryUpdate({ payload, senders, updateID: progress.id })
+      expect(finished.done).toBe(true)
+      expect(sent).toContain(`email:${emailOnly}`)
+    } finally {
+      await setMailingAddress(testMailingAddress)
+    }
+  })
+
   it('lets mail apps unsubscribe in one click from the email header', async () => {
     const customer = await createCustomer({ email: `bakery-update-oneclick-${stamp}@example.test` })
     await setCustomerMessageConsent({
@@ -440,5 +536,6 @@ describe('sending a bakery update', () => {
     expect(emails).toHaveLength(1)
     expect(emails[0]).toMatchObject({ subject: '[Test] Flavor drop', to: 'owner@example.test' })
     expect(emails[0]?.text).not.toContain('email-unsubscribe?token=')
+    expect(emails[0]?.text).toContain('Baked with Blessings, PO Box 1, Plymouth, MN 55441')
   })
 })

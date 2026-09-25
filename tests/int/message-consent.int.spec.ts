@@ -39,15 +39,17 @@ describe('parseInboundSmsBody', () => {
 })
 
 describe('buildCustomerWelcomeSms', () => {
-  it('asks for Y or N, points at the account page, and mentions STOP', () => {
+  it('confirms the opt-in with the carrier disclosures and the account page', () => {
     const body = buildCustomerWelcomeSms({
       accountURL: 'https://example.test/account',
       companyName: 'Baked with Blessings',
     })
 
-    expect(body).toContain('Reply Y')
-    expect(body).toContain('Reply N')
-    expect(body).toContain('STOP')
+    expect(body.startsWith('Baked with Blessings: ')).toBe(true)
+    expect(body).toContain('Msg frequency varies.')
+    expect(body).toContain('Msg & data rates may apply.')
+    expect(body).toContain('Reply HELP for help, STOP to cancel.')
+    expect(body).not.toContain('Reply Y')
     expect(body).toContain('https://example.test/account')
     expect(body).not.toContain('—')
   })

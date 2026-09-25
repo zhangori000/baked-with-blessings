@@ -14,6 +14,7 @@ import { startPhoneVerificationOnce } from '@/utilities/phoneVerificationStartGu
 import { isEmailIdentifier, maskPhoneNumber } from '@/utilities/phone'
 import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
 import { sendCustomerWelcomeSms } from '@/utilities/sms/sendCustomerWelcomeSms'
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 import { checkPhoneVerification } from '@/utilities/twilioVerify'
 
 type SignupBody = {
@@ -22,6 +23,7 @@ type SignupBody = {
   password?: string
   passwordConfirm?: string
   phone?: string
+  smsOptIn?: boolean
   verificationCode?: string
 }
 
@@ -227,11 +229,23 @@ export async function POST(request: Request) {
       }
     }
 
-    if (phone) {
-      await sendCustomerWelcomeSms({
-        payload,
-        phone,
-      })
+    if (phone && body.smsOptIn === true && areBakeryTextsOffered()) {
+      try {
+        await setCustomerMessageConsent({
+          channel: 'sms',
+          customerID: customer.id,
+          ok: true,
+          payload,
+          source: 'signup_sms',
+        })
+
+        await sendCustomerWelcomeSms({
+          payload,
+          phone,
+        })
+      } catch (consentError) {
+        payload.logger.error({ err: consentError }, 'Customer text consent record failed')
+      }
     }
 
     return Response.json({

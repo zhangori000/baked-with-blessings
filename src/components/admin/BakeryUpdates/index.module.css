@@ -101,6 +101,11 @@
   line-height: 1.4;
 }
 
+.optionHint a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .input,
 .textarea {
   width: 100%;
