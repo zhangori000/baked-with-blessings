@@ -6,10 +6,14 @@ export const pluralTokens = (count: number) => `${count} ${count === 1 ? 'token'
 export const pluralPeople = (count: number) => `${count} ${count === 1 ? 'person' : 'people'}`
 
 export function Standings({
+  headingId = 'vote-standings-title',
+  headingLevel: Heading = 'h2',
   myPicks,
   standings,
   title,
 }: {
+  headingId?: string
+  headingLevel?: 'h2' | 'h3'
   myPicks: Record<number, number>
   standings: PollStandings
   title: string
@@ -17,11 +21,11 @@ export function Standings({
   const topVotes = Math.max(1, ...standings.rows.map((row) => row.votes))
 
   return (
-    <section aria-labelledby="vote-standings-title" className="voteStandings">
+    <section aria-labelledby={headingId} className="voteStandings">
       <div className="voteStandingsHeader">
-        <h2 className="voteSectionTitle" id="vote-standings-title">
+        <Heading className="voteSectionTitle" id={headingId}>
           {title}
-        </h2>
+        </Heading>
         <p className="voteMuted">
           {pluralPeople(standings.voterCount)} voted · {pluralTokens(standings.totalVotes)} spent
         </p>

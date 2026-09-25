@@ -18,7 +18,7 @@ export class FlavorPollError extends Error {
   }
 }
 
-const relationID = (value: unknown): number | null => {
+export const relationID = (value: unknown): number | null => {
   if (typeof value === 'number') return value
   if (value && typeof value === 'object' && 'id' in value) {
     const id = (value as { id?: unknown }).id
@@ -104,11 +104,20 @@ export const findUpcomingPoll = (payload: Payload, now = new Date()) =>
     where: [{ opensAt: { greater_than: now.toISOString() } }],
   })
 
-export const findLatestClosedPoll = (payload: Payload, now = new Date()) =>
-  findFirstLivePoll(payload, {
+export const findClosedPolls = async (payload: Payload, now = new Date()) => {
+  const result = await payload.find({
+    collection: 'flavor-polls',
+    depth: 2,
+    overrideAccess: false,
+    pagination: false,
     sort: '-closesAt',
-    where: [{ closesAt: { less_than_equal: now.toISOString() } }],
+    where: {
+      and: [{ status: { equals: 'live' } }, { closesAt: { less_than_equal: now.toISOString() } }],
+    },
   })
+
+  return result.docs as FlavorPoll[]
+}
 
 export const findLivePollByID = (payload: Payload, pollID: number) =>
   findFirstLivePoll(payload, { sort: '-closesAt', where: [{ id: { equals: pollID } }] })
@@ -150,6 +159,13 @@ export const findBallot = async (
   const vote = await findVoteDoc(payload, poll.id, voterKey)
   if (!vote) return null
 
+  return toBallotForPoll(poll, vote)
+}
+
+export const toBallotForPoll = (
+  poll: Pick<PublicPoll, 'options'>,
+  vote: FlavorPollVote,
+): PollBallot | null => {
   const ballot = toBallot(vote)
   const allowedIDs = new Set(poll.options.map((option) => option.productId))
   const picks: Record<number, number> = {}
@@ -171,10 +187,14 @@ export const tallyPoll = async (payload: Payload, poll: PublicPoll) => {
     where: { poll: { equals: poll.id } },
   })
 
+  return tallyVotes(poll, result.docs as FlavorPollVote[])
+}
+
+export const tallyVotes = (poll: Pick<PublicPoll, 'options'>, votes: FlavorPollVote[]) => {
   const totals = new Map<number, number>()
   const flavorIdeas: string[] = []
 
-  for (const doc of result.docs as FlavorPollVote[]) {
+  for (const doc of votes) {
     for (const pick of doc.picks ?? []) {
       const productID = relationID(pick.product)
       const count = Number(pick.count)
@@ -197,7 +217,7 @@ export const tallyPoll = async (payload: Payload, poll: PublicPoll) => {
   const standings: PollStandings = {
     rows,
     totalVotes: rows.reduce((sum, row) => sum + row.votes, 0),
-    voterCount: result.docs.length,
+    voterCount: votes.length,
   }
 
   return { flavorIdeas, standings }

@@ -108,3 +108,11 @@ export const formatPollDateLabel = (value: Date | string) =>
     timeZoneName: 'short',
     weekday: 'long',
   }).format(new Date(value))
+
+export const formatPollDayLabel = (value: Date | string) =>
+  new Intl.DateTimeFormat('en-US', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: FLAVOR_POLL_SCHEDULE.timeZone,
+    year: 'numeric',
+  }).format(new Date(value))

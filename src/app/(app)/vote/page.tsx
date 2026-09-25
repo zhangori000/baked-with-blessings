@@ -4,14 +4,8 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
-import { loadClosedResults, loadNextVoteStatus } from '@/features/flavor-polls/landing'
-import {
-  findBallot,
-  findLatestClosedPoll,
-  findOpenPoll,
-  tallyPoll,
-  toPublicPoll,
-} from '@/features/flavor-polls/services'
+import { loadNextVoteStatus, loadVoteHistory } from '@/features/flavor-polls/landing'
+import { findBallot, findOpenPoll, tallyPoll, toPublicPoll } from '@/features/flavor-polls/services'
 import { FLAVOR_POLL_VOTER_COOKIE, readVoterKey } from '@/features/flavor-polls/voterCookie'
 import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
 import { getSitePages } from '@/utilities/getSitePages'
@@ -36,12 +30,9 @@ const loadVoteData = async () => {
   const now = new Date()
   const cookieStore = await cookies()
   const voterKey = readVoterKey(cookieStore.get(FLAVOR_POLL_VOTER_COOKIE)?.value)
-  const [openDoc, closedDoc] = await Promise.all([
-    findOpenPoll(payload, now),
-    findLatestClosedPoll(payload, now),
-  ])
+  const openDoc = await findOpenPoll(payload, now)
 
-  const [openVote, lastResults, next] = await Promise.all([
+  const [openVote, history, next] = await Promise.all([
     (async () => {
       if (!openDoc) return null
       const poll = toPublicPoll(openDoc)
@@ -50,11 +41,11 @@ const loadVoteData = async () => {
       const standings = canSeeStandings ? (await tallyPoll(payload, poll)).standings : null
       return { ballot, poll, standings }
     })(),
-    closedDoc ? loadClosedResults(payload, closedDoc, voterKey) : null,
+    loadVoteHistory(payload, { now, voterKey }),
     loadNextVoteStatus(payload, { hasOpenPoll: Boolean(openDoc), now }),
   ])
 
-  return { lastResults, next, openVote }
+  return { history, next, openVote }
 }
 
 export default async function VotePage() {
@@ -82,7 +73,7 @@ export default async function VotePage() {
           <div className="voteShell container">
             <VoteExperience
               featureRequestsEnabled={sitePages.featureRequestsEnabled}
-              lastResults={data.lastResults}
+              history={data.history}
               next={data.next}
               openVote={data.openVote}
             />

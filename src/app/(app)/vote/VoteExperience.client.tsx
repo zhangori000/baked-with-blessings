@@ -24,7 +24,7 @@ import type {
 import { featureRequestsHref, menuHref, oldFlavorsHref } from '@/utilities/routes'
 
 import { formatRemaining, useCountdown, useRefreshOnceReached } from './useVoteClock'
-import { ClosedResults, NextVoteStat, PastResults } from './VoteResults.client'
+import { ClosedResults, NextVoteStat, VoteHistory } from './VoteResults.client'
 import { pluralTokens, Standings } from './VoteStandings'
 
 type OpenVote = {
@@ -35,7 +35,7 @@ type OpenVote = {
 
 type VoteExperienceProps = {
   featureRequestsEnabled: boolean
-  lastResults: ClosedPollResults | null
+  history: ClosedPollResults[]
   next: NextVoteStatus
   openVote: OpenVote | null
 }
@@ -558,10 +558,12 @@ function ActiveVote({
 
 export function VoteExperience({
   featureRequestsEnabled,
-  lastResults,
+  history,
   next,
   openVote,
 }: VoteExperienceProps) {
+  const [lastResults, ...earlier] = history
+
   if (openVote) {
     return (
       <div className="voteLayout">
@@ -572,13 +574,28 @@ export function VoteExperience({
           key={openVote.poll.id}
           poll={openVote.poll}
         />
-        {lastResults ? <PastResults results={lastResults} /> : null}
+        <VoteHistory
+          history={history}
+          openLatest
+          subtitle="Open any week to see how every flavor did."
+          title="Past votes"
+        />
       </div>
     )
   }
 
   if (lastResults) {
-    return <ClosedResults key={lastResults.poll.id} next={next} results={lastResults} />
+    return (
+      <div className="voteLayout">
+        <ClosedResults key={lastResults.poll.id} next={next} results={lastResults} />
+        <VoteHistory
+          history={earlier}
+          openLatest={false}
+          subtitle="Open any week to see how every flavor did."
+          title="Earlier votes"
+        />
+      </div>
+    )
   }
 
   return <EmptyState next={next} />

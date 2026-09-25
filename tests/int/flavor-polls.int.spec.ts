@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { loadVoteHistory } from '@/features/flavor-polls/landing'
 import { getNextScheduledPollClose } from '@/features/flavor-polls/schedule'
 import { buildResultsShareMessage, getPodium, rankStandings } from '@/features/flavor-polls/results'
 import {
@@ -196,5 +197,51 @@ describe('results sharing', () => {
   it('has nothing to send when no one voted', () => {
     const empty = rankStandings([{ productId: 1, title: 'Brookie', votes: 0 }])
     expect(buildResultsShareMessage({ rows: empty, url: 'https://example.test' })).toBeNull()
+  })
+})
+
+describe('past vote history', () => {
+  const product = (id: number, title: string) => ({ id, slug: `flavor-${id}`, title })
+  const pastPoll = (id: number, closesAt: string) => ({
+    closesAt,
+    id,
+    options: [product(1, 'Biscoff'), product(2, 'Brookie')],
+    status: 'live',
+    title: `Vote ${id}`,
+    votesPerPerson: 3,
+  })
+
+  it('tallies every closed vote in one pass and remembers the visitor’s own picks', async () => {
+    const polls = [pastPoll(20, '2026-09-21T01:00:00Z'), pastPoll(19, '2026-09-14T01:00:00Z')]
+    const votes = [
+      { picks: [{ count: 3, product: 1 }], poll: 20, voterKey: 'me' },
+      { picks: [{ count: 2, product: 2 }], poll: 20, voterKey: 'them' },
+      { picks: [{ count: 1, product: 2 }], poll: 19, voterKey: 'them' },
+    ]
+    const find = vi
+      .fn()
+      .mockResolvedValueOnce({ docs: polls })
+      .mockResolvedValueOnce({ docs: votes })
+
+    const history = await loadVoteHistory({ find } as never, {
+      now: new Date('2026-09-24T12:00:00Z'),
+      voterKey: 'me',
+    })
+
+    expect(find).toHaveBeenCalledTimes(2)
+    expect(find.mock.calls[1]?.[0]).toMatchObject({ where: { poll: { in: [20, 19] } } })
+    expect(history.map((entry) => entry.poll.id)).toEqual([20, 19])
+    expect(history[0]?.standings).toMatchObject({ totalVotes: 5, voterCount: 2 })
+    expect(history[0]?.standings.rows[0]).toMatchObject({ rank: 1, title: 'Biscoff', votes: 3 })
+    expect(history[0]?.myPicks).toEqual({ 1: 3 })
+    expect(history[1]?.myPicks).toEqual({})
+    expect(history[1]?.standings.voterCount).toBe(1)
+  })
+
+  it('skips the ballot lookup when nothing has closed yet', async () => {
+    const find = vi.fn().mockResolvedValueOnce({ docs: [] })
+    const history = await loadVoteHistory({ find } as never, { now: new Date(), voterKey: null })
+    expect(history).toEqual([])
+    expect(find).toHaveBeenCalledOnce()
   })
 })

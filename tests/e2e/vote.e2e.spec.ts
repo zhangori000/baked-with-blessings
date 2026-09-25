@@ -208,36 +208,50 @@ test.describe('Flavor vote', () => {
     }
   })
 
-  test('keeps closed results at their own link and under the next ballot', async ({ page }) => {
+  test('keeps closed results at their own link and in the past votes list', async ({ page }) => {
     const winnerID = optionIDs[1] ?? optionIDs[0]
-    const winner = await payload.findByID({
-      collection: 'products',
-      depth: 0,
-      id: winnerID,
-      overrideAccess: true,
-    })
-    const closed = await payload.create({
-      collection: 'flavor-polls',
-      data: {
-        closesAt: new Date(Date.now() - 60_000).toISOString(),
-        options: optionIDs,
-        status: 'live',
-        title: 'Results link check',
-        votesPerPerson: 3,
-      },
-      overrideAccess: true,
-    })
-
-    try {
-      await payload.create({
-        collection: 'flavor-poll-votes',
+    const olderWinnerID = optionIDs[0]
+    const [winner, olderWinner] = await Promise.all(
+      [winnerID, olderWinnerID].map((id) =>
+        payload.findByID({ collection: 'products', depth: 0, id, overrideAccess: true }),
+      ),
+    )
+    const createClosed = (title: string, minutesAgo: number) =>
+      payload.create({
+        collection: 'flavor-polls',
         data: {
-          picks: [{ count: 3, product: winnerID }],
-          poll: closed.id,
-          voterKey: 'e2e-results',
+          closesAt: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
+          options: optionIDs,
+          status: 'live',
+          title,
+          votesPerPerson: 3,
         },
         overrideAccess: true,
       })
+    const closed = await createClosed('Results link check', 1)
+    const older = await createClosed('Older results check', 2)
+
+    try {
+      await Promise.all([
+        payload.create({
+          collection: 'flavor-poll-votes',
+          data: {
+            picks: [{ count: 3, product: winnerID }],
+            poll: closed.id,
+            voterKey: 'e2e-results',
+          },
+          overrideAccess: true,
+        }),
+        payload.create({
+          collection: 'flavor-poll-votes',
+          data: {
+            picks: [{ count: 3, product: olderWinnerID }],
+            poll: older.id,
+            voterKey: 'e2e-results-older',
+          },
+          overrideAccess: true,
+        }),
+      ])
 
       await page.goto(`${baseURL}/vote/results/${closed.id}`, { waitUntil: 'networkidle' })
       await expect(page.getByRole('heading', { name: `You picked ${winner.title}` })).toBeVisible()
@@ -248,18 +262,32 @@ test.describe('Flavor vote', () => {
       )
 
       await openVotePage(page)
-      const past = page.locator('.votePast')
-      await expect(past.getByRole('heading', { name: 'Results from the last vote' })).toBeVisible()
-      await expect(past.getByText(winner.title)).toBeVisible()
-      await expect(past.getByRole('link', { name: /See the full results/ })).toHaveAttribute(
+      const history = page.locator('.voteHistory')
+      await expect(history.getByRole('heading', { name: 'Past votes' })).toBeVisible()
+
+      const latest = history.locator(`details[data-poll-id="${closed.id}"]`)
+      const previous = history.locator(`details[data-poll-id="${older.id}"]`)
+      await expect(latest).toHaveAttribute('open', '')
+      await expect(latest.locator('summary')).toContainText(`${winner.title} won`)
+      await expect(latest.getByRole('link', { name: /See the results page/ })).toHaveAttribute(
         'href',
         `/vote/results/${closed.id}`,
       )
 
+      await expect(previous).not.toHaveAttribute('open', '')
+      await expect(previous.locator('summary')).toContainText(`${olderWinner.title} won`)
+      await previous.locator('summary').click()
+      await expect(previous).toHaveAttribute('open', '')
+      await expect(previous.getByRole('heading', { name: 'Final standings' })).toBeVisible()
+
       await page.goto(`${baseURL}/vote/results/${pollID}`, { waitUntil: 'networkidle' })
       await expect(page).toHaveURL(`${baseURL}/vote`)
     } finally {
-      await payload.delete({ collection: 'flavor-polls', id: closed.id, overrideAccess: true })
+      await Promise.all(
+        [closed.id, older.id].map((id) =>
+          payload.delete({ collection: 'flavor-polls', id, overrideAccess: true }),
+        ),
+      )
     }
   })
 })

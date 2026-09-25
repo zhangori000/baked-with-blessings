@@ -1,11 +1,12 @@
 'use client'
 
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 import { BakeryAction } from '@/design-system/bakery'
 import { getPodium, joinTitles } from '@/features/flavor-polls/results'
-import { formatPollDateLabel } from '@/features/flavor-polls/schedule'
+import { formatPollDateLabel, formatPollDayLabel } from '@/features/flavor-polls/schedule'
 import type { ClosedPollResults, NextVoteStatus } from '@/features/flavor-polls/types'
 import { flavorVoteHref, flavorVoteResultsHref, menuHref, oldFlavorsHref } from '@/utilities/routes'
 
@@ -113,34 +114,103 @@ export function ClosedResults({
   )
 }
 
-export function PastResults({ results }: { results: ClosedPollResults }) {
-  const { poll, standings } = results
-  if (standings.totalVotes === 0) return null
+const HISTORY_FIRST_PAGE = 8
+const HISTORY_PAGE_SIZE = 12
+
+function VoteHistoryItem({ isOpen, results }: { isOpen: boolean; results: ClosedPollResults }) {
+  const { myPicks, poll, standings } = results
+  const winners = getPodium(standings.rows)[0]?.titles ?? []
+  const hasVotes = winners.length > 0
+  const headingId = `vote-history-standings-${poll.id}`
 
   return (
-    <section aria-labelledby="vote-past-title" className="votePast">
-      <div className="votePastHeader">
-        <p className="voteEyebrow">Already decided</p>
-        <h2 className="voteSectionTitle" id="vote-past-title">
-          Results from the last vote
-        </h2>
-        <p className="voteMuted">
-          {poll.title} · closed {formatPollDateLabel(poll.closesAt)} ·{' '}
-          {pluralPeople(standings.voterCount)} voted
-        </p>
+    <details className="voteHistoryItem" data-poll-id={poll.id} open={isOpen}>
+      <summary className="voteHistorySummary">
+        <span className="voteHistorySummaryMain">
+          <span className="voteHistoryDate">{formatPollDayLabel(poll.closesAt)}</span>
+          <span className="voteHistoryWinner">
+            {hasVotes
+              ? `${joinTitles(winners)} ${winners.length > 1 ? 'tied for first' : 'won'}`
+              : 'No votes'}
+          </span>
+          <span className="voteHistoryMeta">
+            {poll.title}
+            {hasVotes ? ` · ${pluralPeople(standings.voterCount)} voted` : ''}
+          </span>
+        </span>
+        <ChevronDown aria-hidden="true" className="voteHistoryChevron" />
+      </summary>
+      <div className="voteHistoryPanel">
+        {hasVotes ? (
+          <Standings
+            headingId={headingId}
+            headingLevel="h3"
+            myPicks={myPicks}
+            standings={standings}
+            title="Final standings"
+          />
+        ) : (
+          <p className="voteMuted">Nobody voted in this one.</p>
+        )}
+        <div className="voteHistoryActions">
+          <BakeryAction
+            as={Link}
+            end={<ArrowRight aria-hidden="true" className="h-4 w-4" />}
+            href={flavorVoteResultsHref(poll.id)}
+            size="md"
+            variant="secondary"
+          >
+            See the results page
+          </BakeryAction>
+        </div>
       </div>
-      <Podium standings={standings} />
-      <div>
+    </details>
+  )
+}
+
+export function VoteHistory({
+  history,
+  openLatest,
+  subtitle,
+  title,
+}: {
+  history: ClosedPollResults[]
+  openLatest: boolean
+  subtitle: string
+  title: string
+}) {
+  const [visibleCount, setVisibleCount] = useState(HISTORY_FIRST_PAGE)
+  if (history.length === 0) return null
+
+  const visible = history.slice(0, visibleCount)
+  const hiddenCount = history.length - visible.length
+
+  return (
+    <section aria-labelledby="vote-history-title" className="voteHistory">
+      <div className="voteHistoryHeader">
+        <p className="voteEyebrow">Already decided</p>
+        <h2 className="voteSectionTitle" id="vote-history-title">
+          {title}
+        </h2>
+        <p className="voteMuted">{subtitle}</p>
+      </div>
+      <ol className="voteHistoryList">
+        {visible.map((results, index) => (
+          <li key={results.poll.id}>
+            <VoteHistoryItem isOpen={openLatest && index === 0} results={results} />
+          </li>
+        ))}
+      </ol>
+      {hiddenCount > 0 ? (
         <BakeryAction
-          as={Link}
-          end={<ArrowRight aria-hidden="true" className="h-4 w-4" />}
-          href={flavorVoteResultsHref(poll.id)}
+          className="voteHistoryMore"
+          onClick={() => setVisibleCount((count) => count + HISTORY_PAGE_SIZE)}
           size="md"
           variant="secondary"
         >
-          See the full results
+          Show older votes ({hiddenCount})
         </BakeryAction>
-      </div>
+      ) : null}
     </section>
   )
 }

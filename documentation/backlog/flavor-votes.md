@@ -6,7 +6,7 @@ Weekly flavor voting shipped at `/vote` (admin: Content → Flavor Votes). This 
 
 - The owner makes one Flavor Vote per week: picks cookie products, sets it to **Live**. The newest open Live vote is the one on `/vote`.
 - **Voting opens** (optional, admin sidebar) schedules the start. Empty means it opens as soon as it is Live.
-- `/vote` has four states. **Open:** the ballot, plus a "Results from the last vote" card below it. **Cooldown:** no open vote, so the latest results are the main content, with a "Next vote opens in…" countdown (or "Opening soon") and "We'll send an email when it's up". **Scheduled only:** a countdown. **Nothing:** coming soon.
+- `/vote` has four states. **Open:** the ballot, plus a "Past votes" list below it: one expandable row per closed vote (newest first, the latest one open), showing the winner and full standings, 8 at a time with "Show older votes". **Cooldown:** no open vote, so the latest results are the main content, with a "Next vote opens in…" countdown (or "Opening soon") and "We'll send an email when it's up", and an "Earlier votes" list below. **Scheduled only:** a countdown. **Nothing:** coming soon.
 - Every closed vote has a permanent results page at `/vote/results/<id>`. Open votes redirect to `/vote`, and hidden ones return 404. The admin **Results so far** panel shows this link and a ready-to-send message with the top 3 once voting closes. Ties share a place.
 - Everyone gets 3 cookie tokens (changeable per poll under **More options**, max 10). Tokens can be stacked on one flavor.
 - A voter is an anonymous, httpOnly cookie. The stored key is a SHA-256 of `PAYLOAD_SECRET` + the cookie, so the database never holds the raw token. Votes can be changed until the poll closes.
@@ -41,6 +41,6 @@ Weekly flavor voting shipped at `/vote` (admin: Content → Flavor Votes). This 
 
 - **Countdown pill on `/menu` and home** that links to `/vote` while a poll is open. Skipped in v1 to keep the PR focused.
 - **Abuse limits:** v1 relies on the voter cookie, so clearing cookies allows another ballot. If that becomes a problem, add a per-IP rate limit on `POST /api/flavor-polls/[id]/vote` (e.g. Vercel KV / Upstash sliding window) or require a signed-in customer.
-- **Past results:** a list of every closed vote (e.g. on `/old-flavors`) linking to each `/vote/results/<id>` page.
+- **Past votes at scale:** `/vote` loads every closed vote and its ballots in two queries. Fine for years of weekly votes; if it ever gets slow, load older rows on demand instead.
 - **Email when the next vote opens:** the cooldown copy promises an email. Once the mass-email feature lands, send one when a vote's **Voting opens** time passes (or when it goes Live), linking to `/vote`, and one when it closes, linking to `/vote/results/<id>` (reuse `buildResultsShareMessage`).
 - **Admin timezone display:** the Voting closes picker shows the owner's computer time zone. If the owner edits from a device outside Central time, consider Payload's `timezone` option on the date field (needs a migration column).
