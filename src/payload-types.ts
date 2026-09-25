@@ -79,6 +79,8 @@ export interface Config {
     customers: Customer;
     'email-verification-starts': EmailVerificationStart;
     'message-consent-events': MessageConsentEvent;
+    'bakery-updates': BakeryUpdate;
+    'bakery-update-deliveries': BakeryUpdateDelivery;
     'phone-verification-starts': PhoneVerificationStart;
     'discussion-nodes': DiscussionNode;
     'discussion-edges': DiscussionEdge;
@@ -129,6 +131,8 @@ export interface Config {
     customers: CustomersSelect<false> | CustomersSelect<true>;
     'email-verification-starts': EmailVerificationStartsSelect<false> | EmailVerificationStartsSelect<true>;
     'message-consent-events': MessageConsentEventsSelect<false> | MessageConsentEventsSelect<true>;
+    'bakery-updates': BakeryUpdatesSelect<false> | BakeryUpdatesSelect<true>;
+    'bakery-update-deliveries': BakeryUpdateDeliveriesSelect<false> | BakeryUpdateDeliveriesSelect<true>;
     'phone-verification-starts': PhoneVerificationStartsSelect<false> | PhoneVerificationStartsSelect<true>;
     'discussion-nodes': DiscussionNodesSelect<false> | DiscussionNodesSelect<true>;
     'discussion-edges': DiscussionEdgesSelect<false> | DiscussionEdgesSelect<true>;
@@ -1554,6 +1558,52 @@ export interface MessageConsentEvent {
   createdAt: string;
 }
 /**
+ * Updates sent to customers by text and email. Send new ones from Bulk tools.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-updates".
+ */
+export interface BakeryUpdate {
+  id: number;
+  subject: string;
+  message: string;
+  sendText?: boolean | null;
+  sendEmail?: boolean | null;
+  status: 'preparing' | 'sending' | 'sent';
+  /**
+   * Stops a double click or a retry from sending the same update twice.
+   */
+  requestKey: string;
+  sentBy?: (number | null) | Admin;
+  finishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Who each bakery update went to. Hidden from daily work.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-update-deliveries".
+ */
+export interface BakeryUpdateDelivery {
+  id: number;
+  bakeryUpdate: number | BakeryUpdate;
+  customer: number | Customer;
+  channel: 'sms' | 'email';
+  /**
+   * The phone number or email address this was sent to.
+   */
+  address: string;
+  status: 'queued' | 'sending' | 'sent' | 'failed' | 'skipped';
+  /**
+   * The Twilio or Resend id, for looking a message up in their logs.
+   */
+  providerMessageId?: string | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "phone-verification-starts".
  */
@@ -2212,6 +2262,14 @@ export interface PayloadLockedDocument {
         value: number | MessageConsentEvent;
       } | null)
     | ({
+        relationTo: 'bakery-updates';
+        value: number | BakeryUpdate;
+      } | null)
+    | ({
+        relationTo: 'bakery-update-deliveries';
+        value: number | BakeryUpdateDelivery;
+      } | null)
+    | ({
         relationTo: 'phone-verification-starts';
         value: number | PhoneVerificationStart;
       } | null)
@@ -2448,6 +2506,37 @@ export interface MessageConsentEventsSelect<T extends boolean = true> {
   ok?: T;
   source?: T;
   rawBody?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-updates_select".
+ */
+export interface BakeryUpdatesSelect<T extends boolean = true> {
+  subject?: T;
+  message?: T;
+  sendText?: T;
+  sendEmail?: T;
+  status?: T;
+  requestKey?: T;
+  sentBy?: T;
+  finishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bakery-update-deliveries_select".
+ */
+export interface BakeryUpdateDeliveriesSelect<T extends boolean = true> {
+  bakeryUpdate?: T;
+  customer?: T;
+  channel?: T;
+  address?: T;
+  status?: T;
+  providerMessageId?: T;
+  error?: T;
   updatedAt?: T;
   createdAt?: T;
 }

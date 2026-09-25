@@ -32,6 +32,7 @@ import * as migration_20260629_105210_add_about_nav_toggle from './20260629_1052
 import * as migration_20260920_120000_add_announcement_pin_and_date from './20260920_120000_add_announcement_pin_and_date';
 import * as migration_20260920_180000_add_announcement_archived from './20260920_180000_add_announcement_archived';
 import * as migration_20260920_180000_add_customer_message_consent from './20260920_180000_add_customer_message_consent';
+import * as migration_20260924_190000_add_bakery_updates from './20260924_190000_add_bakery_updates';
 
 export const migrations = [
   {
@@ -203,5 +204,10 @@ export const migrations = [
     up: migration_20260920_180000_add_customer_message_consent.up,
     down: migration_20260920_180000_add_customer_message_consent.down,
     name: '20260920_180000_add_customer_message_consent',
+  },
+  {
+    up: migration_20260924_190000_add_bakery_updates.up,
+    down: migration_20260924_190000_add_bakery_updates.down,
+    name: '20260924_190000_add_bakery_updates',
   },
 ];

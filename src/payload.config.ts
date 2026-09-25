@@ -27,6 +27,8 @@ import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { Posts } from '@/collections/Posts'
 import { Admins } from '@/collections/Admins'
+import { BakeryUpdateDeliveries } from '@/collections/BakeryUpdateDeliveries'
+import { BakeryUpdates } from '@/collections/BakeryUpdates'
 import { Customers } from '@/collections/Customers'
 import { EmailVerificationStarts } from '@/collections/EmailVerificationStarts'
 import { MessageConsentEvents } from '@/collections/MessageConsentEvents'
@@ -85,6 +87,10 @@ export default buildConfig({
       beforeLogin: ['@/components/BeforeLogin#BeforeLogin'],
       beforeNavLinks: ['@/components/AdminDashboard/AdminQuickNav#AdminQuickNav'],
       views: {
+        bakeryUpdates: {
+          Component: '@/components/admin/BakeryUpdates#BakeryUpdatesView',
+          path: '/bakery-updates',
+        },
         dashboard: {
           Component: '@/components/AdminDashboard#AdminDashboard',
         },
@@ -100,6 +106,8 @@ export default buildConfig({
     Customers,
     EmailVerificationStarts,
     MessageConsentEvents,
+    BakeryUpdates,
+    BakeryUpdateDeliveries,
     PhoneVerificationStarts,
     DiscussionNodes,
     DiscussionEdges,

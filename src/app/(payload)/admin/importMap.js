@@ -33,6 +33,7 @@ import { CopyProductDescriptionToSEO as CopyProductDescriptionToSEO_8d82c06baad6
 import { BeforeLogin as BeforeLogin_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { AdminQuickNav as AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f } from '@/components/AdminDashboard/AdminQuickNav'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
+import { BakeryUpdatesView as BakeryUpdatesView_f4e6f84072a5709277a6920146956417 } from '@/components/admin/BakeryUpdates'
 import { AdminDashboard as AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698 } from '@/components/AdminDashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -73,6 +74,7 @@ export const importMap = {
   "@/components/BeforeLogin#BeforeLogin": BeforeLogin_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/AdminDashboard/AdminQuickNav#AdminQuickNav": AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
+  "@/components/admin/BakeryUpdates#BakeryUpdatesView": BakeryUpdatesView_f4e6f84072a5709277a6920146956417,
   "@/components/AdminDashboard#AdminDashboard": AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
