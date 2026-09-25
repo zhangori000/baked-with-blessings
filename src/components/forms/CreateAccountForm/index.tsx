@@ -6,8 +6,10 @@ import { Message } from '@/components/Message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { BakeryCheckbox } from '@/design-system/bakery'
 import { useAuth } from '@/providers/Auth'
-import { customerLoginHref } from '@/utilities/routes'
+import { bakeryTextsDisclosure } from '@/utilities/messageConsent'
+import { customerLoginHref, privacyHref, termsHref } from '@/utilities/routes'
 import { ArrowRight, Mail, ShieldCheck, Smartphone, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -36,6 +38,7 @@ export const CreateAccountForm: React.FC = () => {
   const [maskedEmail, setMaskedEmail] = useState<null | string>(null)
   const [maskedPhone, setMaskedPhone] = useState<null | string>(null)
   const [verificationMode, setVerificationMode] = useState<null | 'email' | 'phone'>(null)
+  const [smsOptIn, setSmsOptIn] = useState(false)
 
   const {
     clearErrors,
@@ -51,6 +54,7 @@ export const CreateAccountForm: React.FC = () => {
   const emailValue = watch('email', '')
   const phoneValue = watch('phone', '')
   const verificationCode = watch('verificationCode', '')
+  const canChooseTexts = Boolean(phoneValue.trim())
   const isEmailVerification = verificationMode === 'email'
   const isPhoneVerification = verificationMode === 'phone'
   const verificationRecipient =
@@ -102,7 +106,7 @@ export const CreateAccountForm: React.FC = () => {
       }, 1000)
 
       try {
-        const result = await create(data)
+        const result = await create({ ...data, smsOptIn: smsOptIn && Boolean(trimmedPhone) })
         clearTimeout(timer)
 
         if (result.requiresPhoneVerification) {
@@ -129,7 +133,7 @@ export const CreateAccountForm: React.FC = () => {
         setSubmitError('There was an error with the credentials provided. Please try again.')
       }
     },
-    [create, router, searchParams, setFieldError],
+    [create, router, searchParams, setFieldError, smsOptIn],
   )
 
   const emailRegistration = register('email', {
@@ -263,6 +267,23 @@ export const CreateAccountForm: React.FC = () => {
               </span>
               {errors.phone && <FormError message={errors.phone.message} />}
             </FormItem>
+          </div>
+
+          <div className={styles.textsConsent}>
+            <BakeryCheckbox
+              checked={smsOptIn && canChooseTexts}
+              description={`Optional. You agree to get recurring marketing texts from Baked with Blessings at this number. Consent is not a condition of purchase. ${bakeryTextsDisclosure}`}
+              disabled={!canChooseTexts}
+              id="smsOptIn"
+              onChange={(event) => setSmsOptIn(event.target.checked)}
+            >
+              Text me when you drop a flavor or post a market date
+            </BakeryCheckbox>
+            <p className={styles.textsConsentLinks}>
+              {canChooseTexts ? null : 'Add a phone number above to choose texts. '}
+              See our <Link href={termsHref}>Terms</Link> and{' '}
+              <Link href={privacyHref}>Privacy Policy</Link>.
+            </p>
           </div>
         </div>
 

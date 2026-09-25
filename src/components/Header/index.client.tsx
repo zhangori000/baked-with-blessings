@@ -21,11 +21,14 @@ import {
   blogHref,
   communityHref,
   contactHref,
+  createAccountHref,
   discussionBoardHref,
   featureRequestsHref,
   menuHref,
+  privacyHref,
   reviewsHref,
   rotationsHref,
+  termsHref,
 } from '@/utilities/routes'
 import { isPayloadMediaFileURL, resolveMediaDisplayURL } from '@/utilities/resolveMediaDisplayURL'
 import {
@@ -845,6 +848,8 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
 
   useEffect(() => {
     if (!portalReady) return
+    // Carrier reviewers screenshot these pages; keep the opt-in and policy text uncovered.
+    if ([createAccountHref, privacyHref, termsHref].includes(pathname)) return
 
     try {
       if (window.localStorage.getItem(announcementsAutoOpenStorageKey)) return
@@ -856,7 +861,7 @@ export function HeaderClient({ announcements, brand, header, sitePages }: Props)
     setActivePanel('announcements')
     markAnnouncementsSeen()
     announce('Announcements opened.')
-  }, [announce, portalReady])
+  }, [announce, pathname, portalReady])
 
   useEffect(() => {
     if (activePanel !== 'announcements') {

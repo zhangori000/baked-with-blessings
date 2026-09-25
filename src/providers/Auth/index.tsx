@@ -37,6 +37,7 @@ type Create = (args: {
   password: string
   passwordConfirm: string
   phone?: string
+  smsOptIn?: boolean
   verificationCode?: string
 }) => Promise<{
   maskedEmail?: string

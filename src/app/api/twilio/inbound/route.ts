@@ -2,7 +2,13 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 
-import { inboundSmsReply, parseInboundSmsBody, smsConsentFromIntent } from '@/utilities/messageConsent'
+import {
+  inboundSmsReply,
+  intentFromTwilioOptOutType,
+  isTwilioHandledKeyword,
+  parseInboundSmsBody,
+  smsConsentFromIntent,
+} from '@/utilities/messageConsent'
 import { normalizePhoneNumber } from '@/utilities/phone'
 import { setCustomerMessageConsent } from '@/utilities/setCustomerMessageConsent'
 import {
@@ -11,7 +17,7 @@ import {
 } from '@/utilities/sms/twilioMessages'
 import { getServerSideURL } from '@/utilities/getURL'
 
-const twiml = (message: string, status = 200) =>
+const twiml = (message = '', status = 200) =>
   new Response(buildTwilioMessagingTwiml(message), {
     headers: {
       'Content-Type': 'text/xml',
@@ -48,7 +54,9 @@ export async function POST(request: Request) {
 
   const from = normalizePhoneNumber(params.From || '')
   const body = params.Body || ''
-  const intent = parseInboundSmsBody(body)
+  const optOutIntent = intentFromTwilioOptOutType(params.OptOutType)
+  const intent = optOutIntent ?? parseInboundSmsBody(body)
+  const twilioAlreadyReplied = optOutIntent !== null || isTwilioHandledKeyword(body)
 
   let foundCustomer = false
 
@@ -82,6 +90,10 @@ export async function POST(request: Request) {
         })
       }
     }
+  }
+
+  if (twilioAlreadyReplied) {
+    return twiml()
   }
 
   return twiml(inboundSmsReply({ foundCustomer, intent }))

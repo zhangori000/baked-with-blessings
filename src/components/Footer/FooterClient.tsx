@@ -4,7 +4,13 @@ import { CMSLink } from '@/components/Link'
 import { CartSceneShell } from '@/components/scenery/CartSceneShell'
 import { BakeryAction, BakeryCard, SceneSurface } from '@/design-system/bakery'
 import { cottageFoodDisclosure, locationTagline } from '@/utilities/businessInfo'
-import { aboutHref, contactHref, isContactLinkHint } from '@/utilities/routes'
+import {
+  aboutHref,
+  contactHref,
+  isContactLinkHint,
+  privacyHref,
+  termsHref,
+} from '@/utilities/routes'
 import { Instagram, Linkedin, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -270,6 +276,14 @@ export function FooterClient({ brand, copyrightName, currentYear, navItems }: Fo
                 reserved.
               </p>
               <p className="mt-1 text-[0.82rem] font-medium opacity-80">{cottageFoodDisclosure}</p>
+              <p className="mt-1 flex gap-3 text-[0.82rem] font-medium">
+                <Link className="underline underline-offset-2" href={privacyHref}>
+                  Privacy Policy
+                </Link>
+                <Link className="underline underline-offset-2" href={termsHref}>
+                  Terms
+                </Link>
+              </p>
             </BakeryCard>
           </BakeryCard>
         </div>

@@ -22,6 +22,7 @@ type SignupBody = {
   password?: string
   passwordConfirm?: string
   phone?: string
+  smsOptIn?: boolean
   verificationCode?: string
 }
 
@@ -227,11 +228,23 @@ export async function POST(request: Request) {
       }
     }
 
-    if (phone) {
-      await sendCustomerWelcomeSms({
-        payload,
-        phone,
-      })
+    if (phone && body.smsOptIn === true) {
+      try {
+        await setCustomerMessageConsent({
+          channel: 'sms',
+          customerID: customer.id,
+          ok: true,
+          payload,
+          source: 'signup_sms',
+        })
+
+        await sendCustomerWelcomeSms({
+          payload,
+          phone,
+        })
+      } catch (consentError) {
+        payload.logger.error({ err: consentError }, 'Customer text consent record failed')
+      }
     }
 
     return Response.json({

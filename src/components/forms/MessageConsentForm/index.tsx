@@ -6,6 +6,9 @@ import { FormError } from '@/components/forms/FormError'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
+import { bakeryTextsDisclosure } from '@/utilities/messageConsent'
+import { privacyHref, termsHref } from '@/utilities/routes'
+import Link from 'next/link'
 import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -89,7 +92,13 @@ export const MessageConsentForm: React.FC = () => {
         </div>
         {!customer?.phone ? (
           <p className="accountSettingsConsentHint">Add a verified phone to your account first.</p>
-        ) : null}
+        ) : (
+          <p className="accountSettingsConsentHint">
+            Recurring marketing texts from Baked with Blessings. Consent is not a condition of
+            purchase. {bakeryTextsDisclosure} See our <Link href={termsHref}>Terms</Link> and{' '}
+            <Link href={privacyHref}>Privacy Policy</Link>.
+          </p>
+        )}
 
         <div className="accountSettingsConsentRow">
           <Checkbox

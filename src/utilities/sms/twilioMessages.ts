@@ -100,6 +100,10 @@ export const isTwilioMessagingSignatureValid = ({
 }
 
 export const buildTwilioMessagingTwiml = (message = '') => {
+  if (!message) {
+    return '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
+  }
+
   const escaped = message
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
