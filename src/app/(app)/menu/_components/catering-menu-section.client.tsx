@@ -1140,38 +1140,90 @@ export function CateringMenuSection({
           outline-offset: 3px;
         }
 
-        /* Fixed dark container scheme (one look for every scenery). */
-        .cateringPanelDark.cateringPersuasionPanel {
-          background: linear-gradient(165deg, #45543b 0%, #36432d 100%);
-          border-color: rgba(244, 237, 226, 0.14);
+        .cateringPanelPaper.cateringPersuasionPanel {
+          --progress-garden-fill: #7d5512;
+          --progress-garden-track: rgba(125, 85, 18, 0.14);
+          background: linear-gradient(180deg, #fffdf9 0%, #fff8f2 58%, #f6eee2 100%);
+          border-color: rgba(91, 70, 37, 0.18);
+          box-shadow:
+            0 16px 36px rgba(23, 21, 16, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.72);
         }
 
-        .cateringPanelDark .cateringPersuasionHeading,
-        .cateringPanelDark .cateringPitch :is(p, li, h1, h2, h3, h4),
-        .cateringPanelDark .cateringPersuasionBody :is(p, li) {
-          color: #f1e9dc !important;
+        .cateringPanelPaper .cateringPersuasionHeading {
+          color: #171510 !important;
+        }
+
+        .cateringPanelPaper .cateringPitch :is(p, li, h1, h2, h3, h4),
+        .cateringPanelPaper .cateringPersuasionBody :is(p, li) {
+          color: rgba(23, 21, 16, 0.78) !important;
         }
 
         .cateringTraySelectionHint {
           color: rgba(23, 21, 16, 0.72);
         }
 
-        .cateringPanelDark .cateringTraySelectionHint {
-          color: rgba(244, 237, 226, 0.82);
+        .cateringPanelPaper .cateringTraySelectionHint {
+          color: rgba(23, 21, 16, 0.68);
         }
 
         .cateringTraySelectionHintPulse {
           animation: cateringTraySummaryPulse 260ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton {
-          background: #2c7548;
+        .cateringPanelPaper .cateringAddToCartButton.bakerySceneButton {
+          background: #2b2118;
+          border-color: transparent;
+          box-shadow: none;
           color: #fffaf0;
         }
 
-        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton:hover,
-        .cateringPanelDark .cateringAddToCartButton.bakerySceneButton:focus-visible {
-          background: #338353;
+        .cateringPanelPaper .cateringAddToCartButton.bakerySceneButton:hover,
+        .cateringPanelPaper .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          background: #171510;
+          color: #fffaf0;
+        }
+
+        .cateringPanelPaper .cateringAddToCartButton.bakerySceneButton:focus-visible {
+          outline: 3px solid rgba(125, 85, 18, 0.28);
+          outline-offset: 3px;
+        }
+
+        .cateringPanelPaper .cateringAddToCartButton.bakerySceneButton:disabled {
+          background: #e8ded2;
+          border-color: rgba(23, 21, 16, 0.1);
+          color: #62594f;
+          opacity: 1;
+        }
+
+        .cateringPanelPaper .cateringFlavorCard {
+          background: #fffdf9;
+          box-shadow:
+            0 0 0 1px rgba(91, 70, 37, 0.14),
+            0 4px 10px rgba(23, 21, 16, 0.05);
+        }
+
+        .cateringPanelPaper .cateringFlavorCardSelected {
+          border-color: rgba(125, 85, 18, 0.72);
+          box-shadow: 0 4px 12px rgba(125, 85, 18, 0.14);
+        }
+
+        .cateringPanelPaper .cateringFlavorCardActiveAdd {
+          border-color: rgba(125, 85, 18, 0.42);
+          box-shadow: 0 4px 12px rgba(125, 85, 18, 0.14);
+        }
+
+        .cateringPanelClearButton {
+          background: rgba(255, 253, 249, 0.72);
+          border: 1px solid rgba(43, 33, 24, 0.18);
+          color: #2b2118;
+        }
+
+        .cateringPanelClearButton:hover,
+        .cateringPanelClearButton:focus-visible {
+          background: #fffdf9;
+          border-color: rgba(43, 33, 24, 0.28);
+          color: #171510;
         }
 
         .cateringPersuasionMeadow {
