@@ -10,6 +10,7 @@ const sitePagesWithDraftAppsDisabled: SitePagesFlags = {
   communityEnabled: true,
   discussionBoardEnabled: false,
   featureRequestsEnabled: true,
+  flavorVoteEnabled: true,
   reviewsEnabled: true,
 }
 
@@ -20,6 +21,7 @@ const sitePagesWithAllAppsDisabled: SitePagesFlags = {
   communityEnabled: false,
   discussionBoardEnabled: false,
   featureRequestsEnabled: false,
+  flavorVoteEnabled: false,
   reviewsEnabled: false,
 }
 
@@ -30,6 +32,7 @@ describe('header navigation', () => {
 
     expect(appsItem?.panel.cards.map((card) => card.href)).toEqual([
       '/old-flavors',
+      '/vote',
       '/contact',
       '/community',
       '/reviews',
@@ -64,5 +67,15 @@ describe('header navigation', () => {
 
     expect(hrefs({ ...sitePagesWithAllAppsDisabled, aboutEnabled: true })).toContain('/about')
     expect(hrefs({ ...sitePagesWithAllAppsDisabled, aboutEnabled: false })).not.toContain('/about')
+  })
+
+  it('shows the Flavor Vote card only when its Site Pages toggle is on', () => {
+    const hrefs = (flags: SitePagesFlags) =>
+      buildHeaderNavigation([], flags)
+        .find((item) => item.kind === 'apps')
+        ?.panel.cards.map((card) => card.href)
+
+    expect(hrefs({ ...sitePagesWithAllAppsDisabled, flavorVoteEnabled: true })).toContain('/vote')
+    expect(hrefs(sitePagesWithAllAppsDisabled)).not.toContain('/vote')
   })
 })

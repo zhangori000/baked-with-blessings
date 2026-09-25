@@ -58,6 +58,19 @@ Jumping cookies use `pointer-events: none` on the rig shell so scenery stays tap
 
 Verify clicks in a real browser on the host Orien has open (`127.0.0.1` vs `localhost`). `allowedDevOrigins` must include both. A screenshot of SSR HTML is not verification.
 
+## Invariant: state changes never move the component
+
+When something inside a component changes (a count, a label, a toggle, a loading or error message), the component's outer box and everything around it stay put. Only the part that changed may repaint. A token counter that goes from "2 tokens" to "3 tokens" must not widen the card, move the photo, re-wrap the description, or nudge the buttons.
+
+How to hold it:
+
+- Reserve the space up front. Render every slot (filled and empty), give labels `white-space: nowrap` and `font-variant-numeric: tabular-nums`, give changing rows a fixed height.
+- Flexible grid tracks are `minmax(0, 1fr)`, never bare `1fr` or an implicit `auto` column. Give grid and flex children `min-width: 0`. Otherwise a child's min-content widens the track, and `overflow: hidden` hides the evidence.
+- Pin controls to the bottom of equal-height cards (`margin-top: auto` in a flex column) so rows of cards line up however long the titles are.
+- Swap `visibility` or `opacity` instead of mounting and unmounting inline content. Float new UI (toasts, tallies) above the layout instead of inserting it.
+
+Check it with `expectLayoutStable` in `tests/helpers/layoutStability.ts`: it measures the watched elements, runs the action, and fails on any shift over 0.5px. See `tests/e2e/vote.e2e.spec.ts`. Test at a width where the component is at its narrowest; the vote-card bug only showed at 1440px, where the cards are about 246px wide.
+
 ## What “done” means for UI
 
 You clicked the control.
@@ -67,6 +80,8 @@ The panel’s computed height is greater than 0 and opacity is greater than 0.
 The words you promised are in the DOM.
 
 You tried mobile width and desktop width.
+
+Clicking the control did not move anything around it (see the invariant above).
 
 You tried the other scenery tones if the chrome sits on the meadow.
 

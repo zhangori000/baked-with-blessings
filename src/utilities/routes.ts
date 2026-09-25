@@ -14,6 +14,8 @@ export const reviewsHref = '/reviews'
 export const blessingsNetworkHref = '/blessings-network'
 export const communityHref = '/community'
 export const featureRequestsHref = '/feature-requests'
+export const flavorVoteHref = '/vote'
+export const flavorVoteResultsHref = (pollID: number | string) => `/vote/results/${pollID}`
 export const customerLoginHref = `${rotationsHref}?account=login`
 
 export const buildCustomerLoginHref = ({

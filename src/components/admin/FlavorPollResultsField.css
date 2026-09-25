@@ -1,0 +1,125 @@
+.flavor-poll-results-field {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 8px;
+  margin-bottom: 28px;
+  max-width: 754px;
+  padding: 16px 18px;
+}
+
+.flavor-poll-results-field__header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.flavor-poll-results-field__label {
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.flavor-poll-results-field__label--ideas {
+  margin-top: 18px;
+}
+
+.flavor-poll-results-field__hint {
+  color: var(--theme-elevation-500);
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.flavor-poll-results-field__list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.flavor-poll-results-field__row {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(8rem, 14rem) 1fr 3rem;
+}
+
+.flavor-poll-results-field__name {
+  font-size: 13px;
+}
+
+.flavor-poll-results-field__track {
+  background: var(--theme-elevation-100);
+  border-radius: 999px;
+  display: block;
+  height: 8px;
+  overflow: hidden;
+}
+
+.flavor-poll-results-field__bar {
+  background: var(--theme-success-500);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  min-width: 4px;
+}
+
+.flavor-poll-results-field__votes {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.flavor-poll-results-field__ideas {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.flavor-poll-results-field__ideas li {
+  font-size: 13px;
+}
+
+.flavor-poll-results-field__share {
+  background: var(--theme-elevation-50);
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.flavor-poll-results-field__shareRow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.flavor-poll-results-field__shareRow .btn {
+  margin: 0;
+}
+
+.flavor-poll-results-field__shareInput,
+.flavor-poll-results-field__shareMessage {
+  background: var(--theme-input-bg);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 4px;
+  color: var(--theme-text);
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.flavor-poll-results-field__shareInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.flavor-poll-results-field__shareMessage {
+  line-height: 1.5;
+  resize: vertical;
+}

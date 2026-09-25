@@ -22,6 +22,8 @@ import { Categories } from '@/collections/Categories'
 import { CommunityNotes } from '@/collections/CommunityNotes'
 import { FeatureRequestComments } from '@/collections/FeatureRequestComments'
 import { FeatureRequests } from '@/collections/FeatureRequests'
+import { FlavorPolls } from '@/collections/FlavorPolls'
+import { FlavorPollVotes } from '@/collections/FlavorPollVotes'
 import { FlavorRotations } from '@/collections/FlavorRotations'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
@@ -126,6 +128,8 @@ export default buildConfig({
     Pages,
     Posts,
     FlavorRotations,
+    FlavorPolls,
+    FlavorPollVotes,
     Categories,
     CommunityNotes,
     FeatureRequests,

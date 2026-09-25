@@ -10,6 +10,7 @@ export type SitePagesFlags = {
   discussionBoardEnabled: boolean
   blessingsNetworkEnabled: boolean
   featureRequestsEnabled: boolean
+  flavorVoteEnabled: boolean
   reviewsEnabled: boolean
 }
 
@@ -20,6 +21,7 @@ const SITE_PAGES_DEFAULTS: SitePagesFlags = {
   communityEnabled: true,
   discussionBoardEnabled: false,
   featureRequestsEnabled: true,
+  flavorVoteEnabled: true,
   reviewsEnabled: true,
 }
 
@@ -50,6 +52,7 @@ export const getSitePages = async (): Promise<SitePagesFlags> => {
         doc.featureRequestsEnabled,
         SITE_PAGES_DEFAULTS.featureRequestsEnabled,
       ),
+      flavorVoteEnabled: coerce(doc.flavorVoteEnabled, SITE_PAGES_DEFAULTS.flavorVoteEnabled),
       reviewsEnabled: coerce(doc.reviewsEnabled, SITE_PAGES_DEFAULTS.reviewsEnabled),
     }
   } catch {

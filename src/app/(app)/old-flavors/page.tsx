@@ -14,7 +14,7 @@ import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
 import { cateringMenuHref, menuHref, oldFlavorsHref } from '@/utilities/routes'
 
 import { queryOldFlavorPosters } from '../cookiePosterQueries'
-import { OldFlavorsSceneryHero } from './OldFlavorsSceneryHero.client'
+import { SceneryPageHero } from '../menu/_components/scenery-page-hero.client'
 import '../menu/_components/catering-menu-hero.css'
 import './old-flavors.css'
 
@@ -34,7 +34,12 @@ export default async function OldFlavorsPage() {
   return (
     <div className="oldFlavorsTypography">
       <div className="cateringMenuExperience" style={{ fontFamily: 'var(--font-rounded-body)' }}>
-        <OldFlavorsSceneryHero initialSceneryTone={initialSceneryTone} />
+        <SceneryPageHero
+          eyebrow="Hall of Fame"
+          initialSceneryTone={initialSceneryTone}
+          summary="Every flavor that has rotated off the menu. Any of them might come back, and all of them can be ordered through Catering."
+          title="Old Flavors"
+        />
 
         <BakeryPageShell as="section" bleed className="oldFlavorsBand" spacing="none" width="full">
           <BakeryPageSurface
