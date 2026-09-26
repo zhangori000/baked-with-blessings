@@ -9,7 +9,7 @@ import { groundSpawnMotions, type SceneSprite, type SpawnParticles } from './spa
 
 import './scene-spawn.css'
 
-function SpriteParticles({ particles }: { particles: SpawnParticles }) {
+export function SpriteParticles({ particles }: { particles: SpawnParticles }) {
   return (
     <span className={cn('sceneSpriteParticles', `sceneSpriteParticles--${particles.effect}`)}>
       {Array.from({ length: particles.count }, (_, index) => (

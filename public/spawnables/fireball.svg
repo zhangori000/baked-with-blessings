@@ -1,0 +1,15 @@
+<svg width="112" height="42" viewBox="0 0 112 42" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="fireballGlow" cx="0.74" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#ffb74d" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#ff8a65" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="71" cy="21" rx="40" ry="18" fill="url(#fireballGlow)" />
+  <path d="M0 22C24 4 56 7 90 21C56 36 25 39 0 22Z" fill="#ff8a3d" />
+  <path d="M18 22C38 11 62 12 93 21C62 31 38 32 18 22Z" fill="#ffd966" />
+  <circle cx="91" cy="21" r="17" fill="#ff8a3d" />
+  <circle cx="94" cy="21" r="11" fill="#ffd966" />
+  <path d="M73 21C83 15 95 15 109 21C95 27 83 27 73 21Z" fill="#fff6c8" opacity="0.82" />
+</svg>

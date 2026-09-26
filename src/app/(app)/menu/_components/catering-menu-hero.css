@@ -578,10 +578,15 @@
   .cateringScene-moonlit .cateringHeroLineWildflower {
     width: 1.32rem;
   }
+
+  .cateringScene-moonlit .cateringHeroSpawnLayer--ground {
+    --spawn-water-bottom: calc(var(--catering-hero-meadow-height) * 0.42);
+  }
 }
 
 .cateringHeroSpawnLayer--ground {
   --spawn-ground-bottom: calc(var(--catering-hero-meadow-height) * 0.3);
+  --spawn-water-bottom: calc(var(--catering-hero-meadow-height) + 1rem);
   z-index: 2;
 }
 

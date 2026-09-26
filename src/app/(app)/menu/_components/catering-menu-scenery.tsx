@@ -24,6 +24,8 @@ import {
   buildSpawnedCloudDriftStyle,
   buildStaticCloudDriftStyle,
 } from '@/components/scenery/cloudDrift'
+import { EcosystemLayer } from '@/components/scenery/ecosystem/EcosystemLayer'
+import { useEcosystem } from '@/components/scenery/ecosystem/useEcosystem'
 import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
 import { SpawnTray } from '@/components/scenery/SpawnTray'
 import type { SceneSpawnable } from '@/components/scenery/spawnables'
@@ -1248,10 +1250,12 @@ export function MenuHero({
   const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
   const { clearSprites, spawnSprite, spriteCounts, sprites } =
     useSceneSprites(sceneryTone)
+  const ecosystem = useEcosystem(sceneryTone)
   const spawnCounts: Record<string, number> = {
     ...spriteCounts,
     accent: activeSpawnedFlowers.length,
     cloud: activeSpawnedClouds.length,
+    ...ecosystem.counts,
   }
 
   useEffect(() => {
@@ -1278,6 +1282,11 @@ export function MenuHero({
   }, [isSceneryPickerOpen])
 
   const handleSpawn = (item: SceneSpawnable) => {
+    if (item.kind === 'creature') {
+      ecosystem.spawn(item)
+      return
+    }
+
     if (item.kind === 'cloud') {
       setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'hero')])
       return
@@ -1298,6 +1307,7 @@ export function MenuHero({
     setSpawnedClouds((current) => current.filter((cloud) => cloud.sceneryTone !== sceneryTone))
     setSpawnedFlowers((current) => current.filter((flower) => flower.sceneryTone !== sceneryTone))
     clearSprites()
+    ecosystem.clear()
   }
 
   const handleSpawnTrayOpenChange = (open: boolean) => {
@@ -1431,6 +1441,16 @@ export function MenuHero({
         className="cateringHeroSpawnLayer cateringHeroSpawnLayer--sky"
         sprites={sprites}
         zone="sky"
+      />
+      <EcosystemLayer
+        className="cateringHeroSpawnLayer cateringHeroSpawnLayer--sky"
+        layer="back"
+        store={ecosystem.store}
+      />
+      <EcosystemLayer
+        className="cateringHeroSpawnLayer cateringHeroSpawnLayer--ground"
+        layer="front"
+        store={ecosystem.store}
       />
       <div className="cateringHeroContent container relative z-[3]">
         <div className="cateringHeroCopy space-y-4">

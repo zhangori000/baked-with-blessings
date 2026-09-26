@@ -1,0 +1,438 @@
+.ecoLayer {
+  --eco-scale: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ecoProbe {
+  height: 0;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
+  width: 0;
+}
+
+.ecoProbe--ground {
+  bottom: var(--spawn-ground-bottom, 6%);
+}
+
+.ecoProbe--water {
+  bottom: var(--spawn-water-bottom, var(--spawn-ground-bottom, 6%));
+}
+
+.ecoProbe--unit {
+  top: 0;
+  width: calc(1rem * var(--eco-scale));
+}
+
+.ecoThing {
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: calc(var(--eco-size, 2) * 1rem * var(--eco-scale));
+  will-change: transform;
+}
+
+.ecoAnchor {
+  display: block;
+  position: relative;
+  transform: translate(-50%, -100%);
+}
+
+.ecoThing--center .ecoAnchor {
+  transform: translate(-50%, -50%);
+}
+
+.ecoPop {
+  animation: ecoPop 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  display: block;
+  transform-origin: center bottom;
+}
+
+.ecoPose {
+  display: block;
+  position: relative;
+  transform-origin: center bottom;
+}
+
+.ecoThing--center .ecoPose,
+.ecoThing--center .ecoPop {
+  transform-origin: center;
+}
+
+.ecoArt {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.ecoArt--bob {
+  animation: ecoBob 3.2s ease-in-out infinite;
+}
+
+.ecoArt--buzz {
+  animation: ecoBuzz 0.16s linear infinite alternate;
+}
+
+.ecoArt--flap {
+  animation: ecoFlap 0.32s ease-in-out infinite alternate;
+}
+
+.ecoArt--flicker {
+  animation: ecoFlicker 0.42s ease-in-out infinite alternate;
+  transform-origin: center bottom;
+}
+
+.ecoArt--glow {
+  animation: ecoGlow 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 0.45rem rgba(255, 214, 120, 0.85));
+}
+
+.ecoArt--sway {
+  animation: ecoSway 3.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.ecoArt--trot {
+  animation: ecoTrot 0.42s ease-in-out infinite alternate;
+}
+
+.ecoArt--undulate {
+  animation: ecoUndulate 2.4s ease-in-out infinite;
+}
+
+.ecoArt--wave {
+  animation: ecoWave 1.6s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.ecoRain {
+  background: repeating-linear-gradient(
+    102deg,
+    transparent 0 0.55rem,
+    rgba(214, 232, 247, 0.7) 0.55rem 0.62rem
+  );
+  background-size: 100% 2.2rem;
+  height: var(--eco-rain, 0);
+  left: 0;
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  transition: opacity 600ms ease;
+  width: 62%;
+}
+
+.ecoThing[data-state='rain'] .ecoRain {
+  animation: ecoRain 0.45s linear infinite;
+  opacity: 1;
+}
+
+.ecoThing[data-state='rain'] .ecoArt {
+  filter: saturate(0.8) brightness(0.92);
+}
+
+.ecoBurn {
+  bottom: 0;
+  height: auto;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%) scale(0.4);
+  transform-origin: center bottom;
+  transition:
+    opacity 240ms ease,
+    transform 240ms ease;
+  width: 70%;
+}
+
+.ecoThing[data-fx='burning'] .ecoBurn {
+  animation: ecoFlicker 0.36s ease-in-out infinite alternate;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.ecoThing[data-fx='burning'] .ecoArt {
+  filter: sepia(0.5) saturate(1.6) brightness(0.8);
+}
+
+.ecoThing[data-fx='hurt'] .ecoArt {
+  animation: ecoHurt 0.45s ease-out;
+}
+
+.ecoThing[data-state='falling'] .ecoArt {
+  filter: grayscale(0.5) brightness(0.8);
+}
+
+.ecoThing[data-fx='guard'] .ecoArt,
+.ecoThing[data-fx='block'] .ecoArt {
+  animation: none;
+  transform: rotate(-7deg);
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-fx='block'] .ecoArt {
+  filter: drop-shadow(0 0 0.5rem rgba(255, 236, 170, 0.95));
+}
+
+.ecoThing[data-fx='aim'] .ecoArt {
+  transform: rotate(-5deg);
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-fx='perched'] .ecoArt {
+  animation: none;
+}
+
+.ecoThing[data-fx='dazed'] .ecoArt {
+  animation: ecoBuzz 0.12s linear infinite alternate;
+  filter: saturate(0.7);
+}
+
+.ecoThing[data-fx='wobble'] .ecoArt {
+  animation: ecoWobble 0.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-fx='popped'] .ecoArt {
+  animation: none;
+  transform: scale(0.82, 0.7);
+}
+
+.ecoThing[data-state='nap'] .ecoArt,
+.ecoThing[data-state='sit'] .ecoArt,
+.ecoThing[data-state='eat'] .ecoArt,
+.ecoThing[data-state='cocoon'] .ecoArt {
+  animation: ecoBreathe 2.6s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='firefly'] .ecoArt {
+  filter: drop-shadow(0 0 calc(var(--eco-glow, 0) * 0.7rem) rgba(255, 230, 140, 0.95));
+  opacity: calc(0.35 + var(--eco-glow, 0) * 0.65);
+}
+
+.ecoThing[data-dying] .ecoPose {
+  animation: ecoVanish 0.42s ease-in forwards;
+}
+
+.ecoPuff {
+  animation: ecoPuff 0.7s ease-out forwards;
+  height: auto;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 55%;
+  width: max(2.2rem, 110%);
+}
+
+@keyframes ecoPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ecoBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-0.45rem);
+  }
+}
+
+@keyframes ecoBuzz {
+  from {
+    transform: translate(0, 0) rotate(-3deg);
+  }
+
+  to {
+    transform: translate(0.08rem, -0.1rem) rotate(3deg);
+  }
+}
+
+@keyframes ecoFlap {
+  from {
+    transform: scaleY(1);
+  }
+
+  to {
+    transform: scaleY(0.84);
+  }
+}
+
+@keyframes ecoFlicker {
+  from {
+    transform: scale(1, 1) skewX(-3deg);
+  }
+
+  to {
+    transform: scale(0.94, 1.1) skewX(3deg);
+  }
+}
+
+@keyframes ecoGlow {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes ecoSway {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes ecoTrot {
+  from {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+
+  to {
+    transform: translateY(-0.14rem) rotate(1.5deg);
+  }
+}
+
+@keyframes ecoUndulate {
+  0%,
+  100% {
+    transform: translateY(0) skewY(3deg);
+  }
+
+  50% {
+    transform: translateY(-0.35rem) skewY(-3deg);
+  }
+}
+
+@keyframes ecoWave {
+  0%,
+  100% {
+    transform: skewY(-5deg) scaleX(1);
+  }
+
+  50% {
+    transform: skewY(4deg) scaleX(0.93);
+  }
+}
+
+@keyframes ecoBreathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+
+  50% {
+    transform: scale(1.02, 0.97);
+  }
+}
+
+@keyframes ecoWobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-9deg);
+  }
+
+  75% {
+    transform: rotate(9deg);
+  }
+}
+
+@keyframes ecoHurt {
+  0%,
+  60% {
+    filter: brightness(1.8) saturate(0.3);
+  }
+
+  100% {
+    filter: none;
+  }
+}
+
+@keyframes ecoRain {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: -0.4rem 2.2rem;
+  }
+}
+
+@keyframes ecoVanish {
+  to {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes ecoPuff {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+
+  30% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(1.25);
+  }
+}
+
+@media (max-width: 639px) {
+  .ecoLayer {
+    --eco-scale: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoPop,
+  .ecoArt,
+  .ecoBurn,
+  .ecoPuff,
+  .ecoThing[data-state] .ecoArt,
+  .ecoThing[data-fx] .ecoArt,
+  .ecoThing[data-state='rain'] .ecoRain {
+    animation: none;
+  }
+
+  .ecoThing[data-dying] .ecoPose {
+    animation: none;
+    opacity: 0;
+  }
+}

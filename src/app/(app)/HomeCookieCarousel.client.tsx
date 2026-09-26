@@ -40,6 +40,8 @@ import {
   buildSpawnedCloudDriftStyle,
   buildStaticCloudDriftStyle,
 } from '@/components/scenery/cloudDrift'
+import { EcosystemLayer } from '@/components/scenery/ecosystem/EcosystemLayer'
+import { useEcosystem } from '@/components/scenery/ecosystem/useEcosystem'
 import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
 import { SpawnTray } from '@/components/scenery/SpawnTray'
 import type { SceneSpawnable } from '@/components/scenery/spawnables'
@@ -738,6 +740,7 @@ export function HomeCookieCarousel({
   const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
   const { clearSprites, spawnSprite, spriteCounts, sprites } =
     useSceneSprites(sceneTone)
+  const ecosystem = useEcosystem(sceneTone)
   const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
@@ -952,8 +955,14 @@ export function HomeCookieCarousel({
     ...spriteCounts,
     accent: spawnedSceneFlowers.filter((flower) => flower.id.startsWith('spawned-')).length,
     cloud: spawnedSceneClouds.length,
+    ...ecosystem.counts,
   }
   const handleSpawn = (item: SceneSpawnable) => {
+    if (item.kind === 'creature') {
+      ecosystem.spawn(item)
+      return
+    }
+
     if (item.kind === 'cloud') {
       setSpawnedSceneClouds((current) => [...current, createShowcaseCloud(sceneTone)])
       return
@@ -970,6 +979,7 @@ export function HomeCookieCarousel({
     setSpawnedSceneClouds([])
     setSpawnedSceneFlowers(buildSeededShowcaseFlowers(sceneTone))
     clearSprites()
+    ecosystem.clear()
   }
   const staticScenePieces =
     sceneVariant === 'scenery'
@@ -1287,6 +1297,11 @@ export function HomeCookieCarousel({
                   sprites={sprites}
                   zone="sky"
                 />
+                <EcosystemLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--sky"
+                  layer="back"
+                  store={ecosystem.store}
+                />
 
                 {staticScenePieces.map((piece, index) => (
                   <Image
@@ -1483,6 +1498,11 @@ export function HomeCookieCarousel({
                   className="homeCookieSpawnLayer homeCookieSpawnLayer--ground"
                   sprites={sprites}
                   zone="ground"
+                />
+                <EcosystemLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--ground"
+                  layer="front"
+                  store={ecosystem.store}
                 />
               </>
             ) : (
@@ -1856,6 +1876,7 @@ export function HomeCookieCarousel({
 
         .homeCookieSpawnLayer--ground {
           --spawn-ground-bottom: calc(var(--home-meadow-height, 8rem) * 0.28);
+          --spawn-water-bottom: calc(var(--home-meadow-height, 8rem) + 2.5rem);
           z-index: 17;
         }
 
@@ -2956,6 +2977,10 @@ export function HomeCookieCarousel({
             --home-flower-rail-lift: 5.35rem;
             --home-meadow-bottom: -0.15rem;
             --home-meadow-height: 15.2rem;
+          }
+
+          .homeCookieScene-moonlit .homeCookieSpawnLayer--ground {
+            --spawn-water-bottom: calc(var(--home-meadow-height) * 0.68);
           }
 
           .homeCookieScene-moonlit .homeCookieFlowerRailBloom {
