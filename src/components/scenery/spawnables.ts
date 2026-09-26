@@ -37,6 +37,18 @@ export type SceneSpawnable = {
   species?: string
 }
 
+export type SpawnMilestone = {
+  at: number
+  noun: string
+  tally: string
+}
+
+export const asteroidStarCount = 25
+
+export const spawnMilestoneByScene: Partial<Record<SceneTone, SpawnMilestone>> = {
+  moonlit: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
+}
+
 export type SceneSprite = {
   asset: string
   id: string

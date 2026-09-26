@@ -6,6 +6,8 @@ import type { SceneTone } from '../menuHeroScenery'
 import { sceneSpawnablesByScene, type SceneSpawnable } from '../spawnables'
 import { EcosystemStore } from './store'
 
+const noTallies: Readonly<Record<string, number>> = {}
+
 export function useEcosystem(sceneTone: SceneTone) {
   const [store] = useState(() => new EcosystemStore(sceneTone))
   const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot)
@@ -65,10 +67,13 @@ export function useEcosystem(sceneTone: SceneTone) {
     return next
   }, [sceneTone, snapshot])
 
+  const tallies = snapshot.scene === sceneTone ? snapshot.tallies : noTallies
+
   return {
     clear: store.clear,
     counts,
     spawn,
     store,
+    tallies,
   }
 }

@@ -1492,6 +1492,7 @@ export function MenuHero({
                     </span>
                   )}
                   sceneTone={sceneryTone}
+                  tallies={ecosystem.tallies}
                 />
                 <CateringActionButton
                   buttonRef={chooserButtonRef}

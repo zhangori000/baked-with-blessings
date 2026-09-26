@@ -1362,6 +1362,7 @@ export function HomeCookieCarousel({
                       />
                     )}
                     sceneTone={sceneTone}
+                    tallies={ecosystem.tallies}
                   />
                 </div>
               </>

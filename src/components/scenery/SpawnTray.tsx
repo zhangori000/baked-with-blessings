@@ -22,7 +22,7 @@ import { createPortal } from 'react-dom'
 import { cn } from '@/utilities/cn'
 
 import type { SceneTone } from './menuHeroScenery'
-import { sceneSpawnablesByScene, type SceneSpawnable } from './spawnables'
+import { sceneSpawnablesByScene, spawnMilestoneByScene, type SceneSpawnable } from './spawnables'
 
 import './scene-spawn.css'
 
@@ -43,6 +43,7 @@ type SpawnTrayProps = {
   open: boolean
   renderTrigger: (props: SpawnTrayTriggerProps) => ReactNode
   sceneTone: SceneTone
+  tallies?: Readonly<Record<string, number>>
 }
 
 export function SpawnTrayTriggerLabel() {
@@ -158,6 +159,7 @@ export function SpawnTray({
   open,
   renderTrigger,
   sceneTone,
+  tallies,
 }: SpawnTrayProps) {
   const panelId = useId()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -176,6 +178,9 @@ export function SpawnTray({
   const items = sceneSpawnablesByScene[sceneTone] ?? sceneSpawnablesByScene.classic
   const total = items.reduce((sum, item) => sum + (counts[item.id] ?? 0), 0)
   const layout: TrayLayout = prefs.layout ?? (narrow ? 'bar' : 'float')
+  const milestone = spawnMilestoneByScene[sceneTone]
+  const milestoneProgress = milestone ? Math.min(milestone.at, tallies?.[milestone.tally] ?? 0) : 0
+  const milestoneNear = milestone ? milestoneProgress >= milestone.at - 5 : false
 
   const updatePrefs = useCallback((next: Partial<TrayPrefs>) => writePrefs(next), [])
 
@@ -619,6 +624,24 @@ export function SpawnTray({
               <span aria-live="polite" className="sr-only">
                 {announcement}
               </span>
+              {milestone ? (
+                <div className="spawnTrayMilestone" data-near={milestoneNear || undefined}>
+                  <span className="spawnTrayMilestoneText">
+                    {milestoneNear
+                      ? 'Something big is coming…'
+                      : `Something big happens at ${milestone.at} ${milestone.noun}`}
+                  </span>
+                  <span className="spawnTrayMilestoneCount">
+                    {milestoneProgress}/{milestone.at}
+                  </span>
+                  <span aria-hidden="true" className="spawnTrayMilestoneTrack">
+                    <span
+                      className="spawnTrayMilestoneFill"
+                      style={{ width: `${(milestoneProgress / milestone.at) * 100}%` }}
+                    />
+                  </span>
+                </div>
+              ) : null}
               <div className="spawnTrayFooter">
                 <span className="spawnTrayHint">
                   {total > 0

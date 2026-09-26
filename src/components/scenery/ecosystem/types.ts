@@ -139,9 +139,11 @@ export type EcoWorld = {
     maxDistance?: number,
   ): EcoEntity | null
   remove(entity: EcoEntity): void
+  resetTally(key: string): void
   setAsset(entity: EcoEntity, asset: string): void
   setState(entity: EcoEntity, state: string): void
   spawn(species: string, options?: EcoSpawnOptions): EcoEntity | null
+  tally(key: string, delta?: number): number
   widthOf(entity: EcoEntity): number
   within(x: number, y: number, radius: number, test: (entity: EcoEntity) => boolean): EcoEntity[]
 }
@@ -184,4 +186,5 @@ export type EcoSnapshot = {
   counts: Readonly<Record<string, number>>
   entities: readonly EcoEntityView[]
   scene: string
+  tallies: Readonly<Record<string, number>>
 }

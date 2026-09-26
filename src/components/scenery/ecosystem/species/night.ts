@@ -11,6 +11,7 @@ import {
   tiltToVelocity,
   wander,
 } from '../behaviors'
+import { asteroidStarCount } from '../../spawnables'
 import type { EcoEntity, EcoSpecies, EcoWorld } from '../types'
 
 registerViewBoxes({
@@ -23,8 +24,6 @@ registerViewBoxes({
   'shooting-star': [200, 40],
   swan: [140, 96],
 })
-
-let shootingStarSpawns = 0
 
 const isLantern = (world: EcoWorld) => (other: EcoEntity) => world.has(other, 'lantern')
 const isMoth = (other: EcoEntity) => other.species === 'moth'
@@ -185,12 +184,14 @@ const shootingStar: EcoSpecies = {
   asset: ecoAsset('shooting-star'),
   countAs: 'shooting-star',
   init(entity, world) {
-    const activeStars = world.count((other) => other.species === 'shooting-star')
-    shootingStarSpawns += 1
+    const launched = world.tally('shooting-star')
     entity.data.turnAt = between(0.36, 0.62)
     entity.data.life = between(1.15, 1.55)
-    entity.data.asteroid =
-      shootingStarSpawns > 1 && (activeStars >= 3 || Math.random() < 1 / 7) ? 1 : 0
+    entity.data.asteroid = launched >= asteroidStarCount ? 1 : 0
+
+    if (entity.data.asteroid) {
+      world.resetTally('shooting-star')
+    }
     entity.x = between(-world.width * 0.12, world.width * 0.42)
     entity.y = between(world.skyTop + world.unit, Math.min(world.height * 0.24, world.skyBottom))
     entity.vx = world.width * between(0.52, 0.68)
