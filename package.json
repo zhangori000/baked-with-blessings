@@ -28,6 +28,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "ii": "cross-env NODE_OPTIONS=--no-deprecation pnpm --ignore-workspace install",
     "import:cookie-media": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-cookie-media.ts",
+    "update:catering-names": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/update-catering-names.ts",
     "update:cookie-prices": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/update-cookie-prices.ts",
     "seed:mix-boxes": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-mix-boxes.ts",
     "seed:catering-packages": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed-catering-packages.ts",

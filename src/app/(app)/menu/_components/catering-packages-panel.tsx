@@ -36,6 +36,8 @@ const splitTitle = (title: string) => {
 const capacityOf = (product: Partial<Product>) =>
   typeof product.requiredSelectionCount === 'number' ? product.requiredSelectionCount : 0
 
+const groupRank = (key: string) => (key.includes('mini') ? 0 : 1)
+
 export const groupCateringPackages = (products: Partial<Product>[]): CateringPackageGroup[] => {
   const groups = new Map<
     string,
@@ -51,7 +53,7 @@ export const groupCateringPackages = (products: Partial<Product>[]): CateringPac
   }
 
   return Array.from(groups.entries())
-    .sort(([left], [right]) => left.localeCompare(right))
+    .sort(([left], [right]) => groupRank(left) - groupRank(right) || left.localeCompare(right))
     .map(([key, group]) => {
       const capacities = group.items.map((item) => capacityOf(item.product))
       const rows = [...group.items]
