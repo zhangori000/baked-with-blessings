@@ -145,6 +145,32 @@ const bunny: EcoSpecies = {
   tags: ['bunny', 'burnable'],
   tick(entity, world, dt) {
     const unit = world.unit
+
+    if (entity.state === 'carried') {
+      const carrier = world.byId(entity.data.carrier ?? null)
+
+      if (carrier?.state === 'carry') {
+        return
+      }
+
+      entity.fx = ''
+      entity.vy = 0
+      world.setState(entity, 'drop')
+    }
+
+    if (entity.state === 'drop') {
+      entity.vy += unit * 22 * dt
+      entity.y += entity.vy * dt
+      const floor = world.groundY + (entity.data.depth ?? 0)
+
+      if (entity.y >= floor) {
+        entity.y = floor
+        entity.vy = 0
+        world.setState(entity, 'flee')
+      }
+      return
+    }
+
     entity.scale = Math.min(1, entity.scale + dt * 0.02)
 
     const hawk = world.nearest(
@@ -260,6 +286,21 @@ const bunny: EcoSpecies = {
 
 const hawkSoar = ecoAsset('hawk')
 const hawkDive = ecoAsset('hawk-dive')
+const hawkCarry = ecoAsset('hawk-carry')
+
+function holdPrey(hawk: EcoEntity, prey: EcoEntity, world: EcoWorld) {
+  prey.facing = hawk.facing
+  prey.lift = 0
+  prey.x = hawk.x + hawk.facing * world.widthOf(hawk) * 0.08
+  prey.y = hawk.y + world.heightOf(hawk) * 0.4 + world.heightOf(prey) * 0.58
+}
+
+function releaseCarry(hawk: EcoEntity, world: EcoWorld) {
+  hawk.targetId = null
+  hawk.data.zBoost = 0
+  world.setAsset(hawk, hawkSoar)
+  world.setState(hawk, 'climb')
+}
 
 const hawk: EcoSpecies = {
   anchor: 'center',
@@ -279,11 +320,40 @@ const hawk: EcoSpecies = {
   tick(entity, world, dt) {
     const unit = world.unit
 
+    if (entity.state === 'carry') {
+      const prey = world.byId(entity.targetId)
+
+      if (!prey) {
+        releaseCarry(entity, world)
+        return
+      }
+
+      entity.vx += (entity.facing * unit * 3.2 - entity.vx) * Math.min(1, dt * 2)
+      entity.vy += (-unit * 3.6 - entity.vy) * Math.min(1, dt * 2)
+      integrate(entity, dt)
+      entity.tilt = -8 + Math.sin(entity.t * 9) * 3
+      keepInSky(entity, world, world.skyTop + unit * 2)
+
+      if (entity.x <= unit * 2 || entity.x >= world.width - unit * 2) {
+        entity.facing = entity.x <= unit * 2 ? 1 : -1
+      }
+
+      holdPrey(entity, prey, world)
+
+      if (entity.t > 2.6) {
+        prey.data.ghost = 1
+        world.kill(prey)
+        entity.data.hunger = 0
+        releaseCarry(entity, world)
+      }
+      return
+    }
+
     if (entity.state === 'dive' || entity.state === 'swoop') {
       world.setAsset(entity, entity.state === 'dive' ? hawkDive : hawkSoar)
       const prey = world.byId(entity.targetId)
 
-      if (!prey || entity.t > 6) {
+      if (!prey || prey.state === 'carried' || prey.state === 'drop' || entity.t > 6) {
         entity.targetId = null
         world.setState(entity, 'climb')
         return
@@ -302,8 +372,18 @@ const hawk: EcoSpecies = {
         if (world.has(prey, 'balloon')) {
           world.setState(prey, 'popped')
         } else if (!(prey.state === 'flee' && Math.random() < 0.3)) {
-          world.kill(prey)
-          entity.data.hunger = 0
+          entity.targetId = prey.id
+          entity.data.zBoost = 4000
+          entity.vy = -unit * 1.5
+          entity.facing = entity.x < world.width / 2 ? 1 : -1
+          prey.targetId = null
+          prey.data.carrier = entity.id
+          prey.fx = 'carried'
+          world.setState(prey, 'carried')
+          world.setAsset(entity, hawkCarry)
+          world.setState(entity, 'carry')
+          holdPrey(entity, prey, world)
+          return
         }
 
         world.setState(entity, 'climb')
@@ -358,7 +438,11 @@ const hawk: EcoSpecies = {
     }
 
     if ((entity.data.hunger ?? 0) > 1 && chance(0.8, dt)) {
-      const prey = world.nearest(entity, (other) => world.has(other, 'bunny'), unit * 45)
+      const prey = world.nearest(
+        entity,
+        (other) => world.has(other, 'bunny') && other.state !== 'carried' && other.state !== 'drop',
+        Math.max(unit * 45, world.height),
+      )
 
       if (prey) {
         entity.targetId = prey.id

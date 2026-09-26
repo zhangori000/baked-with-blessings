@@ -370,7 +370,7 @@ const bird: EcoSpecies = {
     keepInSky(entity, world, world.skyTop, perchY)
 
     if ((entity.data.hunger ?? 0) > 1 && chance(1.5, dt)) {
-      const prey = world.nearest(entity, isInsectPrey(world), unit * 40)
+      const prey = world.nearest(entity, isInsectPrey(world), Math.max(unit * 40, world.height))
 
       if (prey) {
         entity.targetId = prey.id

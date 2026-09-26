@@ -137,6 +137,7 @@ export type EcoEntityView = {
   asset: string
   dying: boolean
   fuel: boolean
+  ghost: boolean
   id: number
   idle: EcoIdle
   layer: EcoLayer

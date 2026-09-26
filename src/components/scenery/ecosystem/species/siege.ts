@@ -489,7 +489,7 @@ const archer: EcoSpecies = {
       const foe = world.nearest(
         entity,
         (other) => world.has(other, 'dragon') && other.state !== 'falling',
-        unit * 45,
+        Math.max(unit * 45, world.height),
       )
 
       if (foe) {

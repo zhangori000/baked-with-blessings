@@ -212,7 +212,10 @@ export class EcosystemStore {
     }
 
     const z = String(
-      Math.round(entity.anchor === 'bottom' ? entity.y : entity.y + engine.heightOf(entity) * 0.5),
+      Math.round(
+        (entity.anchor === 'bottom' ? entity.y : entity.y + engine.heightOf(entity) * 0.5) +
+          (entity.data.zBoost ?? 0),
+      ),
     )
 
     if (node.z !== z) {
@@ -259,6 +262,7 @@ export class EcosystemStore {
           asset: entity.asset,
           dying: entity.dying,
           fuel: definition?.tags.includes('fuel') ?? false,
+          ghost: Boolean(entity.data.ghost),
           id: entity.id,
           idle: entity.idle,
           layer: definition?.layer ?? 'front',
