@@ -16,7 +16,7 @@ Some sceneries have creatures instead of plain sprites. Each one runs a small st
 | Scenery | Cast and interactions |
 | --- | --- |
 | Classic (meadow) | Clouds rain and water flowers. Bees and butterflies drink from flowers and pollinate them, so new flowers sprout. Caterpillars eat flowers, spin a cocoon and hatch into butterflies. Bluebirds hunt bees, butterflies and caterpillars; some bees sting back. A well-fed bird lays an egg. The cat stalks birds that fly low, pounces, then naps. |
-| Dawn | Dandelions puff seeds that drift on the wind and sprout where they land. Bunnies eat flowers and breed. The hawk dives on bunnies, carries one off in its talons, and the bunny's little ghost floats away. It also pops balloons. A popped balloon falls, and its crash starts fires. Rain puts fires out. |
+| Dawn | Dandelions puff seeds that drift on the wind and sprout where they land. Bunnies eat flowers and breed. The hawk dives on bunnies, carries one high into the sky, and its ghost squiggles away. It also pops balloons. A popped balloon falls, and its crash starts fires. Rain puts fires out. |
 | Fairy castle (light fantasy) | Dragons (several breeds and colors) shoot fireballs at the people and buildings below. Knights raise shields, stomp out fires and strike dragons that fly low. Archers lead their shots at dragons. After three hits a dragon crashes. Cottages and pennants catch fire and burn down. Unicorns bolt from fireballs, and frog princes hop away from them. |
 | Moonlit (Tangled) | Peaceful. A rowboat drifts on the lake and releases lanterns that float away. Moths circle lanterns, and fireflies slowly sync their glow. Shooting stars still streak across the sky. |
 | Blossom, under the tree | Sprites only (see below). |

@@ -62,15 +62,22 @@ const EcoThing = memo(function EcoThing({
           </span>
         </span>
         {view.dying && view.ghost ? (
-          <Image
-            alt=""
+          <span
             className="ecoGhost"
-            draggable={false}
-            height={80}
-            src={ecoAsset('ghost')}
-            unoptimized
-            width={64}
-          />
+            style={{ ['--ghost-drift' as string]: view.id % 2 === 0 ? '1' : '-1' } as CSSProperties}
+          >
+            <span className="ecoGhostSway">
+              <Image
+                alt=""
+                className="ecoGhostArt"
+                draggable={false}
+                height={76}
+                src={ecoAsset('ghost')}
+                unoptimized
+                width={64}
+              />
+            </span>
+          </span>
         ) : view.dying ? (
           <Image
             alt=""

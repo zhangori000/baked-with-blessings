@@ -335,7 +335,7 @@ const hawk: EcoSpecies = {
       }
 
       entity.vx += (entity.facing * unit * 3.2 - entity.vx) * Math.min(1, dt * 2)
-      entity.vy += (-unit * 3.6 - entity.vy) * Math.min(1, dt * 2)
+      entity.vy += (-unit * 5.5 - entity.vy) * Math.min(1, dt * 2.4)
       integrate(entity, dt)
       entity.tilt = -8 + Math.sin(entity.t * 9) * 3
       keepInSky(entity, world, world.skyTop + unit * 2)
@@ -346,7 +346,9 @@ const hawk: EcoSpecies = {
 
       holdPrey(entity, prey, world)
 
-      if (entity.t > 2.6) {
+      const high = Math.max(world.skyTop + unit * 3, world.height * 0.26)
+
+      if ((entity.y <= high && entity.t > 1.2) || entity.t > 6) {
         prey.data.ghost = 1
         world.kill(prey)
         entity.data.hunger = 0

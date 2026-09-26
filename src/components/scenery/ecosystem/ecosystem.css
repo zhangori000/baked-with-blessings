@@ -233,14 +233,26 @@
 }
 
 .ecoGhost {
-  animation: ecoGhost 2s ease-out forwards;
-  height: auto;
+  animation: ecoGhostRise 3.2s cubic-bezier(0.3, 0, 0.6, 1) forwards;
   left: 50%;
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  top: 20%;
-  width: max(2.4rem, 90%);
+  top: 10%;
+  width: max(2.6rem, 100%);
+}
+
+.ecoGhostSway {
+  animation: ecoGhostSway 0.7s ease-in-out infinite alternate;
+  display: block;
+}
+
+.ecoGhostArt {
+  animation: ecoGhostSquish 0.31s ease-in-out infinite alternate;
+  display: block;
+  height: auto;
+  transform-origin: 50% 30%;
+  width: 100%;
 }
 
 .ecoPuff {
@@ -435,33 +447,44 @@
   }
 }
 
-@keyframes ecoGhost {
+@keyframes ecoGhostRise {
   0% {
     opacity: 0;
-    transform: translate(-50%, -30%) scale(0.6);
+    transform: translate(-50%, -20%) scale(0.5);
   }
 
-  18% {
-    opacity: 0.9;
-    transform: translate(-50%, -60%) scale(1);
+  12% {
+    opacity: 0.95;
+    transform: translate(-50%, -55%) scale(1);
   }
 
-  40% {
-    transform: translate(-30%, -110%) rotate(8deg);
-  }
-
-  62% {
-    opacity: 0.75;
-    transform: translate(-70%, -165%) rotate(-8deg);
-  }
-
-  82% {
-    transform: translate(-35%, -215%) rotate(6deg);
+  75% {
+    opacity: 0.85;
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, -260%) rotate(0deg) scale(0.9);
+    transform: translate(calc(-50% + var(--ghost-drift, 1) * 6rem), -420%) scale(0.6);
+  }
+}
+
+@keyframes ecoGhostSway {
+  from {
+    transform: translateX(-1.3rem) rotate(-18deg);
+  }
+
+  to {
+    transform: translateX(1.3rem) rotate(18deg);
+  }
+}
+
+@keyframes ecoGhostSquish {
+  from {
+    transform: scale(1.08, 0.92) skewX(-8deg);
+  }
+
+  to {
+    transform: scale(0.92, 1.1) skewX(8deg);
   }
 }
 
@@ -493,6 +516,8 @@
   .ecoBurn,
   .ecoPuff,
   .ecoGhost,
+  .ecoGhostSway,
+  .ecoGhostArt,
   .ecoThing[data-state] .ecoArt,
   .ecoThing[data-fx] .ecoArt,
   .ecoThing[data-state='rain'] .ecoRain {

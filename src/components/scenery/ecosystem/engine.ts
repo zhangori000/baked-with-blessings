@@ -10,7 +10,7 @@ import type {
 } from './types'
 
 const dyingSeconds = 0.7
-const ghostSeconds = 2
+const ghostSeconds = 3.2
 const naturalLimit = 170
 
 export class Ecosystem implements EcoWorld {
