@@ -112,6 +112,12 @@ export const flowerSpecies = (assets: readonly string[]): EcoSpecies => ({
     }
   },
   layer: 'front',
+  rest(entity, world) {
+    entity.scale = 1
+    entity.data.growth = 1
+    world.setAsset(entity, assets[entity.data.variant ?? 0] ?? assets[0]!)
+    world.setState(entity, 'bloom')
+  },
   size: [1.9, 2.6],
   state: 'grow',
   tags: ['plant', 'fuel'],

@@ -39,6 +39,12 @@ const dandelion: EcoSpecies = {
     entity.data.puffFor = between(4, 7)
   },
   layer: 'front',
+  rest(entity, world) {
+    entity.scale = 1
+    entity.data.growth = 1
+    world.setAsset(entity, bloomAsset)
+    world.setState(entity, 'bloom')
+  },
   size: [2.2, 2.9],
   state: 'grow',
   tags: ['plant', 'fuel'],

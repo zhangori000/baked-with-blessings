@@ -123,6 +123,7 @@ export type EcoSpecies = {
   init?: (entity: EcoEntity, world: EcoWorld) => void
   layer: EcoLayer
   particles?: SpawnParticles
+  rest?: (entity: EcoEntity, world: EcoWorld) => void
   size: readonly [number, number]
   state?: string
   style?: (entity: EcoEntity, world: EcoWorld) => Record<string, string>

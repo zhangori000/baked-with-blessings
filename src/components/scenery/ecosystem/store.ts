@@ -153,7 +153,12 @@ export class EcosystemStore {
       this.measure()
     }
 
-    engine.spawn(species, { countAs, user: true })
+    const entity = engine.spawn(species, { countAs, user: true })
+
+    if (entity && this.frozen) {
+      engine.species[species]?.rest?.(entity, engine)
+    }
+
     this.publish()
   }
 

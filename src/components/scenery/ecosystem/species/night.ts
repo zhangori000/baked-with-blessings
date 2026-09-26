@@ -64,6 +64,9 @@ const lantern: EcoSpecies = {
     }
   },
   layer: 'front',
+  rest(entity) {
+    entity.y = entity.data.hoverY ?? entity.y
+  },
   size: [2.2, 2.8],
   state: 'rise',
   tags: ['lantern'],

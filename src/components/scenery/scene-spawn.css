@@ -474,7 +474,7 @@
   .sceneSprite--drift,
   .sceneSprite--gallop,
   .sceneSprite--loop {
-    --sprite-x: 50%;
+    left: var(--sprite-rest-x, 50%);
   }
 
   .sceneSpriteParticles {

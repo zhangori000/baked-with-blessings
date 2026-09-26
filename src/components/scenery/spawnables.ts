@@ -270,6 +270,7 @@ const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {
       ['--sprite-idle-delay' as string]: `${(-Math.random() * 3).toFixed(2)}s`,
       ['--sprite-size' as string]: `${between(minSize, maxSize).toFixed(2)}rem`,
       ['--sprite-sway' as string]: `${between(1.2, 3.2).toFixed(2)}rem`,
+      ['--sprite-rest-x' as string]: `${between(8, 88).toFixed(2)}%`,
       ['--sprite-x' as string]: `${between(placement.x[0], placement.x[1]).toFixed(2)}%`,
       ['--sprite-y' as string]: `${between(placement.y[0], placement.y[1]).toFixed(2)}%`,
     } as CSSProperties,

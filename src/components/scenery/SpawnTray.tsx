@@ -143,13 +143,13 @@ export function SpawnTray({
   }, [align, open, sceneTone])
 
   useEffect(() => {
-    if (!open || !focusFirstTileRef.current) {
+    if (!open || !focusFirstTileRef.current || panelStyle.visibility === 'hidden') {
       return
     }
 
     focusFirstTileRef.current = false
     panelRef.current?.querySelector<HTMLButtonElement>('.spawnTrayTile')?.focus()
-  }, [open])
+  }, [open, panelStyle])
 
   useEffect(() => {
     if (!open) {
@@ -264,7 +264,10 @@ export function SpawnTray({
                 <button
                   className="spawnTrayClear"
                   disabled={total === 0}
-                  onClick={onClear}
+                  onClick={() => {
+                    panelRef.current?.querySelector<HTMLButtonElement>('.spawnTrayTile')?.focus()
+                    onClear()
+                  }}
                   type="button"
                 >
                   Clear all
