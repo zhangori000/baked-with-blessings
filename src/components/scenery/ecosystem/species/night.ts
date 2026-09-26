@@ -89,6 +89,16 @@ function waterLine(entity: EcoEntity, world: EcoWorld) {
   return world.waterY + (entity.data.lane ?? 0) * world.unit
 }
 
+function launchStar(entity: EcoEntity, world: EcoWorld) {
+  entity.x = between(-world.width * 0.12, world.width * 0.42)
+  entity.y = between(world.skyTop + world.unit, Math.min(world.height * 0.24, world.skyBottom))
+  entity.vx = world.width * between(0.52, 0.68)
+  entity.vy = world.height * between(0.1, 0.17)
+  entity.data.life = between(1.15, 1.55)
+  entity.data.opacity = 0
+  starTilt(entity)
+}
+
 function ensurePad(entity: EcoEntity, world: EcoWorld) {
   if (!world.nearest(entity, isPad, world.unit * 2.5)) {
     world.spawn('lily-pad', {
@@ -197,19 +207,14 @@ const shootingStar: EcoSpecies = {
   init(entity, world) {
     const launched = world.tally('shooting-star')
     entity.data.turnAt = between(0.36, 0.62)
-    entity.data.life = between(1.15, 1.55)
     entity.data.asteroid = launched >= asteroidStarCount ? 1 : 0
 
     if (entity.data.asteroid) {
       world.resetTally('shooting-star')
     }
-    entity.x = between(-world.width * 0.12, world.width * 0.42)
-    entity.y = between(world.skyTop + world.unit, Math.min(world.height * 0.24, world.skyBottom))
-    entity.vx = world.width * between(0.52, 0.68)
-    entity.vy = world.height * between(0.1, 0.17)
     entity.size = between(5.4, 7.2)
     entity.facing = 1
-    starTilt(entity)
+    launchStar(entity, world)
   },
   layer: 'front',
   rest(entity) {
@@ -260,6 +265,16 @@ const shootingStar: EcoSpecies = {
       return
     }
 
+    if (entity.state === 'wait') {
+      entity.data.opacity = 0
+
+      if (entity.t > (entity.data.waitFor ?? 5)) {
+        launchStar(entity, world)
+        world.setState(entity, 'shoot')
+      }
+      return
+    }
+
     integrate(entity, dt)
     starTilt(entity)
     const life = entity.data.life ?? 1.4
@@ -272,7 +287,9 @@ const shootingStar: EcoSpecies = {
       entity.x > world.width + world.widthOf(entity) ||
       entity.y > world.height * 0.48
     ) {
-      world.remove(entity)
+      entity.data.opacity = 0
+      entity.data.waitFor = between(4, 7.5)
+      world.setState(entity, 'wait')
     }
   },
 }
