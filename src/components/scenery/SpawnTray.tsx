@@ -109,7 +109,12 @@ export function SpawnTray({
       const rect = trigger.getBoundingClientRect()
       const width = panel.offsetWidth
       const height = panel.scrollHeight
-      const preferredLeft = align === 'end' ? rect.right - width : rect.left
+      const preferredLeft =
+        window.innerWidth < 640
+          ? (window.innerWidth - width) / 2
+          : align === 'end'
+            ? rect.right - width
+            : rect.left
       const left = Math.min(
         Math.max(viewportMargin, preferredLeft),
         window.innerWidth - width - viewportMargin,

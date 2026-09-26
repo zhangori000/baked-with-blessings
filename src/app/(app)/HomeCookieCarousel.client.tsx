@@ -2979,6 +2979,10 @@ export function HomeCookieCarousel({
             --home-meadow-height: 15.2rem;
           }
 
+          .homeCookieSpawnLayer--ground {
+            --spawn-ground-bottom: 7.25rem;
+          }
+
           .homeCookieScene-moonlit .homeCookieSpawnLayer--ground {
             --spawn-water-bottom: calc(var(--home-meadow-height) * 0.68);
           }
