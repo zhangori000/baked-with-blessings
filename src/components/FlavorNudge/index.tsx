@@ -176,7 +176,7 @@ function NudgeDialog({
         </button>
 
         {sent ? (
-          <>
+          <div className="flavorNudgeBody">
             <h2 className="flavorNudgeTitle" id="flavor-nudge-title">
               Nudge sent!
             </h2>
@@ -187,63 +187,67 @@ function NudgeDialog({
             <BakeryAction block onClick={onClose} size="md" variant="primary">
               Done
             </BakeryAction>
-          </>
+          </div>
         ) : (
           <>
-            <h2 className="flavorNudgeTitle" id="flavor-nudge-title">
-              Bring back a flavor
-            </h2>
-            <p className="flavorNudgeText">
-              Pick the ones you miss. The baker sees every nudge when she plans what to bake.
-            </p>
+            <div className="flavorNudgeBody">
+              <h2 className="flavorNudgeTitle" id="flavor-nudge-title">
+                Bring back a flavor
+              </h2>
+              <p className="flavorNudgeText">
+                Pick the ones you miss. The baker sees every nudge when she plans what to bake.
+              </p>
 
-            <ul className="flavorNudgeGrid">
-              {flavors.map((flavor) => {
-                const isNudged = nudged.has(flavor.productId)
-                const isSelected = isNudged || selected.has(flavor.productId)
-                return (
-                  <li key={flavor.productId}>
-                    <button
-                      aria-pressed={isSelected}
-                      className="flavorNudgeTile"
-                      data-nudged={isNudged || undefined}
-                      data-selected={isSelected || undefined}
-                      disabled={isNudged}
-                      onClick={() => toggle(flavor.productId)}
-                      type="button"
-                    >
-                      <span className="flavorNudgeThumb">
-                        <FlavorThumb flavor={flavor} />
-                        {isSelected ? (
-                          <span aria-hidden="true" className="flavorNudgeCheck">
-                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                          </span>
-                        ) : null}
-                      </span>
-                      <span className="flavorNudgeTileTitle">{flavor.title}</span>
-                      {isNudged ? <span className="flavorNudgeTileNote">Nudged</span> : null}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
+              <ul className="flavorNudgeGrid">
+                {flavors.map((flavor) => {
+                  const isNudged = nudged.has(flavor.productId)
+                  const isSelected = isNudged || selected.has(flavor.productId)
+                  return (
+                    <li key={flavor.productId}>
+                      <button
+                        aria-pressed={isSelected}
+                        className="flavorNudgeTile"
+                        data-nudged={isNudged || undefined}
+                        data-selected={isSelected || undefined}
+                        disabled={isNudged}
+                        onClick={() => toggle(flavor.productId)}
+                        type="button"
+                      >
+                        <span className="flavorNudgeThumb">
+                          <FlavorThumb flavor={flavor} />
+                          {isSelected ? (
+                            <span aria-hidden="true" className="flavorNudgeCheck">
+                              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="flavorNudgeTileText">
+                          <span className="flavorNudgeTileTitle">{flavor.title}</span>
+                          {isNudged ? <span className="flavorNudgeTileNote">Nudged</span> : null}
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
 
-            <div className="flavorNudgeField">
-              <label className="flavorNudgeLabel" htmlFor="flavor-nudge-email">
-                Email me when it is back <span className="flavorNudgeMuted">(optional)</span>
-              </label>
-              <input
-                autoComplete="email"
-                className="flavorNudgeInput"
-                id="flavor-nudge-email"
-                inputMode="email"
-                maxLength={254}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-                type="email"
-                value={email}
-              />
-              <p className="flavorNudgeMuted">We only use it to tell you a flavor is back.</p>
+              <div className="flavorNudgeField">
+                <label className="flavorNudgeLabel" htmlFor="flavor-nudge-email">
+                  Email me when it is back <span className="flavorNudgeMuted">(optional)</span>
+                </label>
+                <input
+                  autoComplete="email"
+                  className="flavorNudgeInput"
+                  id="flavor-nudge-email"
+                  inputMode="email"
+                  maxLength={254}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  type="email"
+                  value={email}
+                />
+                <p className="flavorNudgeMuted">We only use it to tell you a flavor is back.</p>
+              </div>
             </div>
 
             <div className="flavorNudgeFooter">
