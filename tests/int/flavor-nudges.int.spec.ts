@@ -32,5 +32,8 @@ describe('normalizeNudgeEmail', () => {
 
   it('rejects something that is not an email', () => {
     expect(() => normalizeNudgeEmail('not-an-email')).toThrow(FlavorNudgeError)
+    expect(() => normalizeNudgeEmail('fan@gmail.c')).toThrow(FlavorNudgeError)
+    expect(() => normalizeNudgeEmail('fan@gmail..com')).toThrow(FlavorNudgeError)
+    expect(() => normalizeNudgeEmail('fan.@gmail.com')).toThrow(FlavorNudgeError)
   })
 })
