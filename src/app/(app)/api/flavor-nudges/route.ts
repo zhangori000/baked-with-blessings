@@ -15,6 +15,7 @@ import {
   normalizeNudgeEmail,
   parseNudgeProductIDs,
 } from '@/features/flavor-nudges/validation'
+import { type CollectionAuthUser, isCustomerUser } from '@/access/utilities'
 import {
   FLAVOR_POLL_VOTER_COOKIE,
   createVoterToken,
@@ -26,6 +27,15 @@ import { sendOwnerFlavorNudgeNotification } from '@/utilities/email/sendOwnerFla
 export const dynamic = 'force-dynamic'
 
 const ONE_HOUR_MS = 60 * 60 * 1000
+
+const readAccountEmail = (user: CollectionAuthUser | null): string | null => {
+  if (!isCustomerUser(user)) return null
+  try {
+    return normalizeNudgeEmail(user?.email)
+  } catch {
+    return null
+  }
+}
 
 export const GET = async () => {
   try {
@@ -47,7 +57,11 @@ export const POST = async (request: Request) => {
     const flavors = await loadNudgeFlavors()
     const titleByID = new Map(flavors.map((flavor) => [flavor.productId, flavor.title]))
     const productIDs = parseNudgeProductIDs(raw.productIds, new Set(titleByID.keys()))
-    const email = normalizeNudgeEmail(raw.email)
+    const payload = await getPayload({ config })
+    const { user } = await payload.auth({ headers: request.headers })
+    const accountEmail = readAccountEmail(user)
+    const email =
+      accountEmail && raw.useAccountEmail === true ? accountEmail : normalizeNudgeEmail(raw.email)
 
     const cookieStore = await cookies()
     let token = cookieStore.get(FLAVOR_POLL_VOTER_COOKIE)?.value
@@ -58,7 +72,6 @@ export const POST = async (request: Request) => {
       cookieStore.set(FLAVOR_POLL_VOTER_COOKIE, token, voterCookieOptions)
     }
 
-    const payload = await getPayload({ config })
     const { created, nudged } = await submitNudges({
       email,
       payload,

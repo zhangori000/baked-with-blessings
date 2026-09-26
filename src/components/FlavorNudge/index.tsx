@@ -2,6 +2,8 @@
 
 import { Check, Heart, X } from 'lucide-react'
 import NextImage from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   createContext,
   type ReactNode,
@@ -16,8 +18,9 @@ import { createPortal } from 'react-dom'
 
 import { getOverlayRoot, useOverlayDismiss } from '@/components/ImageLightbox/useOverlayDismiss'
 import { Media } from '@/components/Media'
-import { BakeryAction } from '@/design-system/bakery'
+import { BakeryAction, BakeryCheckbox } from '@/design-system/bakery'
 import type { NudgeFlavor } from '@/features/flavor-nudges/types'
+import { useAuth } from '@/providers/Auth'
 
 import './flavor-nudge.css'
 
@@ -72,6 +75,84 @@ function FlavorThumb({ flavor }: { flavor: NudgeFlavor }) {
   )
 }
 
+function NudgeSignIn({ onCancel }: { onCancel: () => void }) {
+  const { login } = useAuth()
+  const pathname = usePathname()
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const redirect = `?redirect=${encodeURIComponent(pathname || '/old-flavors')}`
+
+  const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!identifier.trim() || !password || isSigningIn) return
+    setIsSigningIn(true)
+    setError(null)
+    try {
+      await login({ identifier: identifier.trim(), password })
+    } catch {
+      setError('That email, phone, or password did not match. Try again.')
+    } finally {
+      setIsSigningIn(false)
+    }
+  }
+
+  return (
+    <form className="flavorNudgeSignIn" onSubmit={handleSignIn}>
+      <p className="flavorNudgeLabel">Sign in</p>
+      <label className="flavorNudgeSrOnly" htmlFor="flavor-nudge-identifier">
+        Email or phone
+      </label>
+      <input
+        autoComplete="username"
+        className="flavorNudgeInput"
+        id="flavor-nudge-identifier"
+        onChange={(event) => setIdentifier(event.target.value)}
+        placeholder="Email or phone"
+        type="text"
+        value={identifier}
+      />
+      <label className="flavorNudgeSrOnly" htmlFor="flavor-nudge-password">
+        Password
+      </label>
+      <input
+        autoComplete="current-password"
+        className="flavorNudgeInput"
+        id="flavor-nudge-password"
+        onChange={(event) => setPassword(event.target.value)}
+        placeholder="Password"
+        type="password"
+        value={password}
+      />
+      {error ? (
+        <p className="flavorNudgeError" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <div className="flavorNudgeSignInActions">
+        <BakeryAction onClick={onCancel} size="sm" variant="ghost">
+          Cancel
+        </BakeryAction>
+        <BakeryAction
+          disabled={!identifier.trim() || !password}
+          loading={isSigningIn}
+          size="sm"
+          type="submit"
+          variant="secondary"
+        >
+          Sign in
+        </BakeryAction>
+      </div>
+      <p className="flavorNudgeMuted flavorNudgeSmall">
+        <Link href={`/forgot-password${redirect}`}>Forgot password?</Link>
+        {' · '}
+        <Link href={`/create-account${redirect}`}>Create an account</Link>
+      </p>
+    </form>
+  )
+}
+
 function NudgeDialog({
   flavors,
   initialSelected,
@@ -93,6 +174,10 @@ function NudgeDialog({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sent, setSent] = useState<{ email: string; titles: string[] } | null>(null)
+  const [emailMe, setEmailMe] = useState(true)
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const { user } = useAuth()
+  const accountEmail = user?.email?.trim() || null
 
   useOverlayDismiss({ focusRef: closeRef, isOpen, onClose })
 
@@ -126,7 +211,11 @@ function NudgeDialog({
 
     try {
       const response = await fetch('/api/flavor-nudges', {
-        body: JSON.stringify({ email, productIds: Array.from(selected) }),
+        body: JSON.stringify(
+          accountEmail
+            ? { productIds: Array.from(selected), useAccountEmail: emailMe }
+            : { email, productIds: Array.from(selected) },
+        ),
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
@@ -142,8 +231,8 @@ function NudgeDialog({
         return
       }
 
-      const trimmed = email.trim()
-      if (trimmed) rememberEmail(trimmed)
+      const trimmed = accountEmail ? (emailMe ? accountEmail : '') : email.trim()
+      if (trimmed && !accountEmail) rememberEmail(trimmed)
       onNudged(result.nudged ?? Array.from(selected))
       setSent({
         email: trimmed,
@@ -231,23 +320,47 @@ function NudgeDialog({
                 })}
               </ul>
 
-              <div className="flavorNudgeField">
-                <label className="flavorNudgeLabel" htmlFor="flavor-nudge-email">
-                  Email me when it is back <span className="flavorNudgeMuted">(optional)</span>
-                </label>
-                <input
-                  autoComplete="email"
-                  className="flavorNudgeInput"
-                  id="flavor-nudge-email"
-                  inputMode="email"
-                  maxLength={254}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
-                  type="email"
-                  value={email}
-                />
-                <p className="flavorNudgeMuted">We only use it to tell you a flavor is back.</p>
-              </div>
+              {accountEmail ? (
+                <BakeryCheckbox
+                  checked={emailMe}
+                  onChange={(event) => setEmailMe(event.target.checked)}
+                >
+                  Email me at {accountEmail} when it is back
+                </BakeryCheckbox>
+              ) : isSigningIn && !user ? (
+                <NudgeSignIn onCancel={() => setIsSigningIn(false)} />
+              ) : (
+                <div className="flavorNudgeField">
+                  <label className="flavorNudgeLabel" htmlFor="flavor-nudge-email">
+                    Email me when it is back <span className="flavorNudgeMuted">(optional)</span>
+                  </label>
+                  <input
+                    autoComplete="email"
+                    className="flavorNudgeInput"
+                    id="flavor-nudge-email"
+                    inputMode="email"
+                    maxLength={254}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="you@example.com"
+                    type="email"
+                    value={email}
+                  />
+                  <p className="flavorNudgeMuted">We only use it to tell you a flavor is back.</p>
+                  {user ? null : (
+                    <p className="flavorNudgeMuted">
+                      Have an account?{' '}
+                      <button
+                        className="flavorNudgeLink"
+                        onClick={() => setIsSigningIn(true)}
+                        type="button"
+                      >
+                        Sign in
+                      </button>{' '}
+                      and we will use your account email.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flavorNudgeFooter">

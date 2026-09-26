@@ -21,6 +21,7 @@
   max-height: calc(100dvh - 2rem);
   max-width: 36rem;
   overflow: hidden;
+  overflow: clip;
   position: relative;
   width: 100%;
 }
@@ -196,6 +197,59 @@
 .flavorNudgeInput:focus-visible {
   border-color: rgba(125, 85, 18, 0.6);
   outline: 3px solid rgba(125, 85, 18, 0.2);
+}
+
+.flavorNudgeLink {
+  background: none;
+  border: 0;
+  color: #7d5512;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.flavorNudgeSignIn {
+  background: #fff8f2;
+  border: 1px solid rgba(23, 21, 16, 0.1);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.9rem;
+}
+
+.flavorNudgeSignIn .flavorNudgeInput {
+  background: #fffdf9;
+}
+
+.flavorNudgeSignInActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.flavorNudgeSmall {
+  font-size: 0.82rem;
+}
+
+.flavorNudgeSmall a {
+  color: #7d5512;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.flavorNudgeSrOnly {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 .flavorNudgeFooter {
