@@ -2,8 +2,6 @@
 
 import { Check, Heart, X } from 'lucide-react'
 import NextImage from 'next/image'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import {
   createContext,
   type ReactNode,
@@ -16,6 +14,8 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 
+import { CustomerAuthPanel } from '@/components/CustomerAuth/CustomerAuthForm'
+import type { CustomerAuthMode } from '@/components/CustomerAuth/useCustomerAuthForm'
 import { getOverlayRoot, useOverlayDismiss } from '@/components/ImageLightbox/useOverlayDismiss'
 import { Media } from '@/components/Media'
 import { BakeryAction, BakeryCheckbox } from '@/design-system/bakery'
@@ -48,6 +48,11 @@ const rememberEmail = (value: string) => {
   }
 }
 
+const nudgeAuthIntro: Record<CustomerAuthMode, string> = {
+  create: 'We send a code to your email or phone. Your picks stay selected.',
+  login: 'Sign in and we will use your account email. Your picks stay selected.',
+}
+
 const pluralNudges = (count: number) => (count === 1 ? 'nudge' : `${count} nudges`)
 
 function FlavorThumb({ flavor }: { flavor: NudgeFlavor }) {
@@ -75,84 +80,6 @@ function FlavorThumb({ flavor }: { flavor: NudgeFlavor }) {
   )
 }
 
-function NudgeSignIn({ onCancel }: { onCancel: () => void }) {
-  const { login } = useAuth()
-  const pathname = usePathname()
-  const [identifier, setIdentifier] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isSigningIn, setIsSigningIn] = useState(false)
-  const redirect = `?redirect=${encodeURIComponent(pathname || '/old-flavors')}`
-
-  const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!identifier.trim() || !password || isSigningIn) return
-    setIsSigningIn(true)
-    setError(null)
-    try {
-      await login({ identifier: identifier.trim(), password })
-    } catch {
-      setError('That email, phone, or password did not match. Try again.')
-    } finally {
-      setIsSigningIn(false)
-    }
-  }
-
-  return (
-    <form className="flavorNudgeSignIn" onSubmit={handleSignIn}>
-      <p className="flavorNudgeLabel">Sign in</p>
-      <label className="flavorNudgeSrOnly" htmlFor="flavor-nudge-identifier">
-        Email or phone
-      </label>
-      <input
-        autoComplete="username"
-        className="flavorNudgeInput"
-        id="flavor-nudge-identifier"
-        onChange={(event) => setIdentifier(event.target.value)}
-        placeholder="Email or phone"
-        type="text"
-        value={identifier}
-      />
-      <label className="flavorNudgeSrOnly" htmlFor="flavor-nudge-password">
-        Password
-      </label>
-      <input
-        autoComplete="current-password"
-        className="flavorNudgeInput"
-        id="flavor-nudge-password"
-        onChange={(event) => setPassword(event.target.value)}
-        placeholder="Password"
-        type="password"
-        value={password}
-      />
-      {error ? (
-        <p className="flavorNudgeError" role="alert">
-          {error}
-        </p>
-      ) : null}
-      <div className="flavorNudgeSignInActions">
-        <BakeryAction onClick={onCancel} size="sm" variant="ghost">
-          Cancel
-        </BakeryAction>
-        <BakeryAction
-          disabled={!identifier.trim() || !password}
-          loading={isSigningIn}
-          size="sm"
-          type="submit"
-          variant="secondary"
-        >
-          Sign in
-        </BakeryAction>
-      </div>
-      <p className="flavorNudgeMuted flavorNudgeSmall">
-        <Link href={`/forgot-password${redirect}`}>Forgot password?</Link>
-        {' · '}
-        <Link href={`/create-account${redirect}`}>Create an account</Link>
-      </p>
-    </form>
-  )
-}
-
 function NudgeDialog({
   flavors,
   initialSelected,
@@ -160,6 +87,7 @@ function NudgeDialog({
   nudged,
   onClose,
   onNudged,
+  textsOffered,
 }: {
   flavors: NudgeFlavor[]
   initialSelected: number[]
@@ -167,6 +95,7 @@ function NudgeDialog({
   nudged: Set<number>
   onClose: () => void
   onNudged: (ids: number[]) => void
+  textsOffered: boolean
 }) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const [selected, setSelected] = useState<Set<number>>(() => new Set(initialSelected))
@@ -175,7 +104,7 @@ function NudgeDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sent, setSent] = useState<{ email: string; titles: string[] } | null>(null)
   const [emailMe, setEmailMe] = useState(true)
-  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [authMode, setAuthMode] = useState<CustomerAuthMode | null>(null)
   const { user } = useAuth()
   const accountEmail = user?.email?.trim() || null
 
@@ -327,8 +256,21 @@ function NudgeDialog({
                 >
                   Email me at {accountEmail} when it is back
                 </BakeryCheckbox>
-              ) : isSigningIn && !user ? (
-                <NudgeSignIn onCancel={() => setIsSigningIn(false)} />
+              ) : authMode && !user ? (
+                <div className="flavorNudgeAuth">
+                  <CustomerAuthPanel
+                    initialMode={authMode}
+                    intro={nudgeAuthIntro}
+                    textsOffered={textsOffered}
+                  />
+                  <button
+                    className="flavorNudgeLink flavorNudgeAuthBack"
+                    onClick={() => setAuthMode(null)}
+                    type="button"
+                  >
+                    Skip, just use an email
+                  </button>
+                </div>
               ) : (
                 <div className="flavorNudgeField">
                   <label className="flavorNudgeLabel" htmlFor="flavor-nudge-email">
@@ -351,10 +293,18 @@ function NudgeDialog({
                       Have an account?{' '}
                       <button
                         className="flavorNudgeLink"
-                        onClick={() => setIsSigningIn(true)}
+                        onClick={() => setAuthMode('login')}
                         type="button"
                       >
                         Sign in
+                      </button>{' '}
+                      or{' '}
+                      <button
+                        className="flavorNudgeLink"
+                        onClick={() => setAuthMode('create')}
+                        type="button"
+                      >
+                        create one
                       </button>{' '}
                       and we will use your account email.
                     </p>
@@ -392,9 +342,11 @@ function NudgeDialog({
 export function FlavorNudgeProvider({
   children,
   flavors,
+  textsOffered = false,
 }: {
   children: ReactNode
   flavors: NudgeFlavor[]
+  textsOffered?: boolean
 }) {
   const [nudged, setNudged] = useState<Set<number>>(() => new Set())
   const [dialog, setDialog] = useState<{ initialSelected: number[]; key: number } | null>(null)
@@ -432,6 +384,7 @@ export function FlavorNudgeProvider({
           nudged={nudged}
           onClose={close}
           onNudged={handleNudged}
+          textsOffered={textsOffered}
         />
       ) : null}
     </FlavorNudgeContext.Provider>

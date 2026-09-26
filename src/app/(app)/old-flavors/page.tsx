@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 import { FlavorNudgeProvider, NudgeCardButton } from '@/components/FlavorNudge'
 import { Media } from '@/components/Media'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
@@ -75,7 +76,10 @@ export default async function OldFlavorsPage() {
             </div>
 
             {posters.length > 0 ? (
-              <FlavorNudgeProvider flavors={toNudgeFlavors(posters)}>
+              <FlavorNudgeProvider
+                flavors={toNudgeFlavors(posters)}
+                textsOffered={areBakeryTextsOffered()}
+              >
                 <ul className="oldFlavorsGrid">
                   {posters.map((poster) => (
                     <li className="oldFlavorsCard" key={poster.slug}>

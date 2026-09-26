@@ -94,7 +94,7 @@ test.describe('Bring back an old flavor', () => {
     const dialog = page.getByRole('dialog', { name: 'Bring back a flavor' })
     await dialog.getByRole('button', { exact: true, name: 'Sign in' }).click()
     await dialog.getByLabel('Email or phone').fill(customerEmail)
-    await dialog.getByLabel('Password').fill(customerPassword)
+    await dialog.getByLabel('Password', { exact: true }).fill(customerPassword)
     await dialog.getByRole('button', { exact: true, name: 'Sign in' }).click()
 
     const emailMe = dialog.getByLabel(`Email me at ${customerEmail} when it is back`)

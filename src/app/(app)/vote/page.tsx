@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 import { FlavorNudgeProvider } from '@/components/FlavorNudge'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import { loadNudgeFlavors } from '@/features/flavor-nudges/service'
@@ -76,7 +77,7 @@ export default async function VotePage() {
 
         <section className="voteBand">
           <div className="voteShell container">
-            <FlavorNudgeProvider flavors={data.nudgeFlavors}>
+            <FlavorNudgeProvider flavors={data.nudgeFlavors} textsOffered={areBakeryTextsOffered()}>
               <VoteExperience
                 featureRequestsEnabled={sitePages.featureRequestsEnabled}
                 history={data.history}
