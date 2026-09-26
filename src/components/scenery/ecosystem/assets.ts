@@ -34,7 +34,6 @@ const viewBoxes: Record<string, readonly [number, number]> = {
   egg: [60, 54],
   fire: [58, 70],
   fireball: [112, 42],
-  ghost: [64, 76],
   firefly: [72, 72],
   'frog-prince': [82, 72],
   'hawk-carry': [138, 76],

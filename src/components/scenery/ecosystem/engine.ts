@@ -10,7 +10,6 @@ import type {
 } from './types'
 
 const dyingSeconds = 0.7
-const ghostSeconds = 3.2
 const naturalLimit = 170
 
 export class Ecosystem implements EcoWorld {
@@ -255,7 +254,7 @@ export class Ecosystem implements EcoWorld {
       entity.t += dt
 
       if (entity.dying) {
-        if (entity.t >= (entity.data.ghost ? ghostSeconds : dyingSeconds)) {
+        if (entity.t >= dyingSeconds) {
           this.remove(entity)
         }
         continue
