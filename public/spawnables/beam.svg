@@ -1,0 +1,35 @@
+<svg width="300" height="76" viewBox="0 0 300 76" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="beamHand" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="38%" stop-color="#b8f4ef" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#2384d8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="beamHit" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="42%" stop-color="#7ee8ff" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#1b7bd7" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="beamHalo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7ee8ff" stop-opacity="0.1" />
+      <stop offset="8%" stop-color="#56cdf2" stop-opacity="0.82" />
+      <stop offset="50%" stop-color="#b8f4ef" stop-opacity="0.92" />
+      <stop offset="100%" stop-color="#2384d8" stop-opacity="0.8" />
+    </linearGradient>
+    <linearGradient id="beamCore" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.75" />
+      <stop offset="18%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="74%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#b8f4ef" stop-opacity="0.85" />
+    </linearGradient>
+  </defs>
+  <ellipse cx="150" cy="38" rx="142" ry="28" fill="#2384d8" opacity="0.22" />
+  <path d="M22 36C63 11 102 17 149 22C201 28 249 15 292 8C279 31 251 45 203 46C146 47 88 61 22 36Z" fill="url(#beamHalo)" />
+  <path d="M17 40C68 26 107 31 154 33C207 35 247 29 294 22C251 42 210 47 153 45C99 43 60 52 17 40Z" fill="#7ee8ff" opacity="0.88" />
+  <path d="M22 38C69 31 107 34 155 36C210 38 253 34 296 29C254 43 210 46 154 43C105 40 65 45 22 38Z" fill="url(#beamCore)" />
+  <ellipse cx="26" cy="38" rx="29" ry="28" fill="url(#beamHand)" />
+  <ellipse cx="26" cy="38" rx="13" ry="13" fill="#ffffff" />
+  <ellipse cx="274" cy="38" rx="38" ry="35" fill="url(#beamHit)" />
+  <path d="M260 38L245 26L265 28L270 8L280 28L300 21L287 38L300 55L280 48L270 68L265 48L245 50Z" fill="#ffffff" opacity="0.92" />
+  <path d="M270 38L257 31L272 31L276 16L282 31L296 30L286 39L296 49L282 46L276 60L272 46L256 47Z" fill="#7ee8ff" opacity="0.72" />
+</svg>

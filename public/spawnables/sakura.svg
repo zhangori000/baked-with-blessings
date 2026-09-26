@@ -1,0 +1,33 @@
+<svg width="128" height="150" viewBox="0 0 128 150" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="64" cy="145" rx="44" ry="5" fill="#000000" opacity="0.1" />
+  <path d="M55 145C55 119 57 94 62 72C66 53 70 33 68 10C77 17 80 33 76 52C73 65 73 78 79 93C84 106 91 122 92 145Z" fill="#202033" />
+  <path d="M61 91C47 82 36 68 30 52C48 56 61 68 67 87Z" fill="#2a2345" />
+  <path d="M72 80C83 65 97 55 115 51C110 72 93 85 74 91Z" fill="#2a2345" />
+  <g fill="#efb4d2">
+    <ellipse cx="30" cy="51" rx="28" ry="20" />
+    <ellipse cx="51" cy="30" rx="34" ry="24" />
+    <ellipse cx="82" cy="28" rx="34" ry="24" />
+    <ellipse cx="101" cy="55" rx="27" ry="20" />
+    <ellipse cx="75" cy="65" rx="38" ry="24" />
+    <ellipse cx="42" cy="70" rx="32" ry="21" />
+  </g>
+  <g fill="#f7d3e6" opacity="0.95">
+    <ellipse cx="37" cy="44" rx="13" ry="9" />
+    <ellipse cx="55" cy="28" rx="14" ry="10" />
+    <ellipse cx="81" cy="24" rx="16" ry="10" />
+    <ellipse cx="99" cy="51" rx="12" ry="8" />
+    <ellipse cx="75" cy="61" rx="16" ry="10" />
+    <ellipse cx="46" cy="68" rx="14" ry="9" />
+  </g>
+  <g fill="#fff0f7" opacity="0.88">
+    <ellipse cx="50" cy="44" rx="6" ry="4" />
+    <ellipse cx="73" cy="34" rx="7" ry="4" />
+    <ellipse cx="92" cy="45" rx="6" ry="4" />
+    <ellipse cx="63" cy="66" rx="7" ry="4" />
+  </g>
+  <g fill="#f3b7d2">
+    <ellipse cx="17" cy="95" rx="3" ry="2" transform="rotate(28 17 95)" />
+    <ellipse cx="105" cy="97" rx="3" ry="2" transform="rotate(-25 105 97)" />
+    <ellipse cx="81" cy="119" rx="3" ry="2" transform="rotate(18 81 119)" />
+  </g>
+</svg>

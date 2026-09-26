@@ -4,6 +4,7 @@ import {
   type SceneTone,
 } from '../../menuHeroScenery'
 import type { EcoSpeciesMap } from '../types'
+import { blossomSpecies } from './blossom'
 import { dawnSpecies } from './dawn'
 import { meadowSpecies } from './meadow'
 import { nightSpecies } from './night'
@@ -11,6 +12,11 @@ import { cloudSpecies, fireSpecies, flowerSpecies } from './shared'
 import { siegeSpecies } from './siege'
 
 const buildBySceneTone: Partial<Record<SceneTone, () => EcoSpeciesMap>> = {
+  blossom: () => ({
+    ...blossomSpecies,
+    cloud: cloudSpecies(menuCloudSpawnDesignsByScene.blossom),
+    fire: fireSpecies,
+  }),
   classic: () => ({
     ...meadowSpecies,
     cloud: cloudSpecies(menuCloudSpawnDesignsByScene.classic),
