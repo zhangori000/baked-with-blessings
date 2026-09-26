@@ -13,6 +13,7 @@ import {
   rotationsHref,
   termsHref,
 } from '@/utilities/routes'
+import { isDatabaseConnectionError } from '@/utilities/databaseConnectionError'
 import { getServerSideURL } from '@/utilities/getURL'
 import { getPayload } from 'payload'
 
@@ -34,7 +35,30 @@ const staticPublicRouteSet = new Set(staticPublicRoutes)
 
 const toAbsoluteURL = (path: string) => new URL(path, getServerSideURL()).toString()
 
+const staticEntries = (): MetadataRoute.Sitemap =>
+  staticPublicRoutes.map((route) => ({
+    changeFrequency: 'weekly' as const,
+    priority: route === '/' ? 1 : 0.75,
+    url: toAbsoluteURL(route),
+  }))
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const entries = staticEntries()
+
+  try {
+    return [...entries, ...(await publishedContentEntries())]
+  } catch (error) {
+    if (!isDatabaseConnectionError(error)) throw error
+
+    console.error(
+      'Sitemap skipped published pages and posts because the database was unreachable. Static routes are still included.',
+      error,
+    )
+    return entries
+  }
+}
+
+const publishedContentEntries = async (): Promise<MetadataRoute.Sitemap> => {
   const payload = await getPayload({ config: configPromise })
 
   const [pages, posts] = await Promise.all([
@@ -72,12 +96,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ])
 
-  const staticEntries = staticPublicRoutes.map((route) => ({
-    changeFrequency: 'weekly' as const,
-    priority: route === '/' ? 1 : 0.75,
-    url: toAbsoluteURL(route),
-  }))
-
   const pageEntries = pages.docs
     .filter(
       (page) => page.slug && page.slug !== 'home' && !staticPublicRouteSet.has(`/${page.slug}`),
@@ -98,5 +116,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: toAbsoluteURL(`/blog/${post.slug}`),
     }))
 
-  return [...staticEntries, ...pageEntries, ...postEntries]
+  return [...pageEntries, ...postEntries]
 }

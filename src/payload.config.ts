@@ -59,8 +59,14 @@ import { Header } from '@/globals/Header'
 import { Announcements } from '@/globals/Announcements'
 import { SitePages } from '@/globals/SitePages'
 import { StoreSettings } from '@/globals/StoreSettings'
+import {
+  preferIPv4DuringProductionBuild,
+  productionBuildPoolOptions,
+} from '@/utilities/preferIPv4DuringProductionBuild'
 import { resolveDatabaseURL } from '@/utilities/resolveDatabaseURL'
 import { plugins } from './plugins'
+
+preferIPv4DuringProductionBuild()
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -148,6 +154,7 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
       connectionString: databaseURL,
+      ...productionBuildPoolOptions(),
     },
     push: false,
   }),
