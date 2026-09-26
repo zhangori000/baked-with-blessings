@@ -1,0 +1,11 @@
+<svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="unicornSparkleIris" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d8bfd8" />
+      <stop offset="48%" stop-color="#b8d9f0" />
+      <stop offset="100%" stop-color="#ffd966" />
+    </linearGradient>
+  </defs>
+  <path d="M14 1L18 10L27 14L18 18L14 27L10 18L1 14L10 10Z" fill="url(#unicornSparkleIris)" />
+  <path d="M14 1L18 18L14 27L10 18Z" fill="#fff6c8" opacity="0.42" />
+</svg>

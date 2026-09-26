@@ -5,11 +5,34 @@ import type { CSSProperties } from 'react'
 
 import { cn } from '@/utilities/cn'
 
-import type { SceneSprite, SpawnMotion } from './spawnables'
+import { groundSpawnMotions, type SceneSprite, type SpawnParticles } from './spawnables'
 
 import './scene-spawn.css'
 
-const groundMotions: ReadonlySet<SpawnMotion> = new Set(['hop', 'sprout'])
+function SpriteParticles({ particles }: { particles: SpawnParticles }) {
+  return (
+    <span className={cn('sceneSpriteParticles', `sceneSpriteParticles--${particles.effect}`)}>
+      {Array.from({ length: particles.count }, (_, index) => (
+        <Image
+          alt=""
+          className="sceneSpriteParticle"
+          draggable={false}
+          height={24}
+          key={index}
+          src={particles.asset}
+          style={
+            {
+              ['--particle-index' as string]: index,
+              ['--particle-count' as string]: particles.count,
+            } as CSSProperties
+          }
+          unoptimized
+          width={24}
+        />
+      ))}
+    </span>
+  )
+}
 
 type SceneSpawnLayerProps = {
   className?: string
@@ -19,7 +42,9 @@ type SceneSpawnLayerProps = {
 }
 
 export function SceneSpawnLayer({ className, sprites, style, zone }: SceneSpawnLayerProps) {
-  const visible = sprites.filter((entry) => groundMotions.has(entry.motion) === (zone === 'ground'))
+  const visible = sprites.filter(
+    (entry) => groundSpawnMotions.has(entry.motion) === (zone === 'ground'),
+  )
 
   if (visible.length === 0) {
     return null
@@ -48,6 +73,7 @@ export function SceneSpawnLayer({ className, sprites, style, zone }: SceneSpawnL
               unoptimized
               width={120}
             />
+            {entry.particles ? <SpriteParticles particles={entry.particles} /> : null}
           </span>
         </span>
       ))}
