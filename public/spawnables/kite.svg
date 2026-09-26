@@ -1,10 +1,10 @@
-<svg width="100%" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <g fill="none" stroke="#7c6559" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M59 12l34 35-34 36-32-36Z" fill="#ffcf5d"/>
-    <path d="M59 12v71M27 47h66"/>
-    <path d="M59 12l34 35-34 3Z" fill="#ef6f5e" stroke="none"/>
-    <path d="M59 50v33L27 47Z" fill="#7fc8e6" stroke="none"/>
-    <path d="M59 83q-5 12 8 15q10 3 5 12"/>
-    <path d="M64 95q-7-2-11 5q7 2 11-5ZM74 104q8-1 11 7q-8 1-11-7Z" fill="#ef6f5e"/>
-  </g>
+<svg width="80" height="116" viewBox="0 0 80 116" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="40,5 72,38 40,73 8,38" fill="#ffd966" />
+  <polygon points="40,5 72,38 40,38" fill="#ff8a65" />
+  <polygon points="40,38 72,38 40,73" fill="#ffeaa3" />
+  <polygon points="8,38 40,38 40,73" fill="#8bc4d4" />
+  <polygon points="8,38 40,5 40,38" fill="#ffd966" />
+  <path d="M40 73Q39 91 28 95Q16 100 27 108" fill="none" stroke="#7c6559" stroke-width="1.6" stroke-linecap="round" />
+  <path d="M31 96Q37 98 42 105Q35 107 29 102Z" fill="#e1643a" />
+  <path d="M26 108Q32 108 37 114Q29 117 23 112Z" fill="#c84848" />
 </svg>

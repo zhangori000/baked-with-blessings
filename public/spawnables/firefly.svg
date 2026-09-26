@@ -1,12 +1,17 @@
-<svg width="100%" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <g stroke="#6d5038" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="64" cy="60" r="40" fill="#ffe57a" opacity="0.16" stroke="none"/>
-    <circle cx="64" cy="60" r="24" fill="#ffe57a" opacity="0.25" stroke="none"/>
-    <ellipse cx="68" cy="60" rx="17" ry="11" fill="#f5c84f" stroke-width="2"/>
-    <circle cx="50" cy="60" r="8" fill="#59402b" stroke-width="2"/>
-    <path d="M57 51q16-18 34-4q-12 12-29 12Z" fill="#dff7ff" opacity="0.75" stroke-width="1.6"/>
-    <path d="M57 69q16 18 34 4q-12-12-29-12Z" fill="#dff7ff" opacity="0.75" stroke-width="1.6"/>
-    <circle cx="47" cy="58" r="1.4" fill="#201814" stroke="none"/>
-    <path d="M45 54q-7-6-12-1M45 66q-7 6-12 1" fill="none" stroke-width="1.8"/>
-  </g>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="fireflyWarmGlow" cx="0.55" cy="0.52" r="0.5">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.9" />
+      <stop offset="42%" stop-color="#ffd966" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="42" cy="38" r="31" fill="url(#fireflyWarmGlow)" />
+  <ellipse cx="38" cy="31" rx="15" ry="9" fill="#fffdf7" opacity="0.62" transform="rotate(-23 38 31)" />
+  <ellipse cx="46" cy="45" rx="15" ry="9" fill="#fffdf7" opacity="0.56" transform="rotate(23 46 45)" />
+  <ellipse cx="30" cy="38" rx="11" ry="9" fill="#5d4037" />
+  <ellipse cx="45" cy="38" rx="15" ry="10" fill="#ffd966" />
+  <path d="M48 30C55 33 59 38 58 44C54 42 49 41 42 41C43 36 45 33 48 30Z" fill="#fff6c8" opacity="0.72" />
+  <circle cx="23" cy="36" r="1.5" fill="#2a2a2a" />
+  <path d="M23 31Q17 24 11 27" fill="none" stroke="#5d4037" stroke-width="1.2" stroke-linecap="round" />
 </svg>

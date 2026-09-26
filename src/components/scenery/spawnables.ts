@@ -44,7 +44,7 @@ const sprite = (
   label: string,
   motion: SpawnMotion,
   size: readonly [number, number],
-  options: { asset?: string; burst?: number; cap?: number; idle?: SpawnIdle } = {},
+  options: { asset?: string; burst?: number; cap?: number; icon?: string; idle?: SpawnIdle } = {},
 ): SceneSpawnable => {
   const asset = options.asset ?? spawnableAsset(id)
 
@@ -52,7 +52,7 @@ const sprite = (
     asset,
     burst: options.burst,
     cap: options.cap ?? 8,
-    icon: asset,
+    icon: options.icon ?? asset,
     id,
     idle: options.idle ?? 'none',
     kind: 'sprite',
@@ -119,7 +119,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
   moonlit: [
     cloudItem(),
     accentItem('moonlit'),
-    sprite('shooting-star', 'Shooting star', 'shoot', [6, 8.5], { cap: 6 }),
+    sprite('shooting-star', 'Shooting star', 'shoot', [6, 8.5], {
+      cap: 6,
+      icon: spawnableAsset('shooting-star-icon'),
+    }),
     sprite('firefly', 'Firefly', 'flutter', [1.4, 1.9], { cap: 14, idle: 'glow' }),
     sprite('lantern', 'Lantern', 'rise', [2.6, 3.4], { cap: 8, idle: 'glow' }),
     sprite('moth', 'Moth', 'flutter', [2.2, 2.9], { idle: 'flap' }),

@@ -1,9 +1,19 @@
-<svg width="100%" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14 73c25-20 45-32 72-42" stroke="#fff2a8" stroke-width="8" opacity="0.45"/>
-    <path d="M23 84c23-20 43-34 61-45" stroke="#f7c768" stroke-width="4" opacity="0.75"/>
-    <path d="M85 20l6 15 16 2-12 10 3 16-14-8-14 8 4-16-13-10 16-2Z" fill="#ffe88a" stroke="#c28b34" stroke-width="2"/>
-    <circle cx="36" cy="75" r="2.5" fill="#fff6c8"/>
-    <circle cx="51" cy="61" r="2" fill="#fff6c8"/>
-  </g>
+<svg width="200" height="40" viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shootingStarTail" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0" />
+      <stop offset="72%" stop-color="#ffeaa3" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0.9" />
+    </linearGradient>
+    <radialGradient id="shootingStarGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fffdf7" stop-opacity="1" />
+      <stop offset="45%" stop-color="#ffd966" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <path d="M4 22C47 15 99 15 171 18C99 22 47 26 4 22Z" fill="url(#shootingStarTail)" />
+  <path d="M40 30C78 24 122 22 171 21C122 27 78 32 40 30Z" fill="url(#shootingStarTail)" opacity="0.45" />
+  <circle cx="178" cy="20" r="20" fill="url(#shootingStarGlow)" />
+  <path d="M178 7L182 16L192 20L182 24L178 33L174 24L164 20L174 16Z" fill="#fff6c8" />
+  <path d="M178 7L182 24L178 33L174 24Z" fill="#ffd966" opacity="0.64" />
 </svg>

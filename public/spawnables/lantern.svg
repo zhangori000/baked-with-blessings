@@ -1,12 +1,16 @@
-<svg width="100%" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <g stroke="#7c6559" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="60" cy="57" r="43" fill="#ffd66c" opacity="0.18" stroke="none"/>
-    <path d="M39 31q21-13 42 0v51q-21 13-42 0Z" fill="#ffe2a1"/>
-    <path d="M39 31q21 8 42 0M39 82q21-8 42 0" fill="none" opacity="0.75"/>
-    <path d="M51 29q-7 29 0 56M69 29q7 29 0 56" fill="none" opacity="0.45"/>
-    <path d="M54 77q6-16 13 0q-6 5-13 0Z" fill="#f28b45" stroke="#bd6b37"/>
-    <path d="M56 73q4-10 8 0" fill="#fff0a2" stroke="none"/>
-    <rect x="45" y="24" width="30" height="8" rx="4" fill="#c99957"/>
-    <rect x="47" y="83" width="26" height="7" rx="3" fill="#c99957"/>
-  </g>
+<svg width="72" height="92" viewBox="0 0 72 92" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="lanternSkyGlow" cx="0.5" cy="0.55" r="0.55">
+      <stop offset="0%" stop-color="#ffeaa3" stop-opacity="0.82" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="36" cy="48" r="35" fill="url(#lanternSkyGlow)" />
+  <path d="M19 15H53L59 71H13Z" fill="#ffeaa3" opacity="0.92" />
+  <path d="M24 17H48C52 32 53 53 49 69H23C19 52 20 33 24 17Z" fill="#fff6c8" />
+  <path d="M20 16H52L56 24H16Z" fill="#d4a652" />
+  <path d="M16 68H56L51 78H21Z" fill="#b8841f" />
+  <path d="M30 61Q36 48 42 61Q40 68 36 70Q32 68 30 61Z" fill="#ff8a65" opacity="0.82" />
+  <path d="M23 17Q19 42 23 68" fill="none" stroke="#d4a652" stroke-width="1.3" stroke-linecap="round" opacity="0.55" />
+  <path d="M49 17Q53 42 49 68" fill="none" stroke="#d4a652" stroke-width="1.3" stroke-linecap="round" opacity="0.55" />
 </svg>
