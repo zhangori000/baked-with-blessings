@@ -955,25 +955,12 @@ export function HomeCookieCarousel({
   }
   const handleSpawn = (item: SceneSpawnable) => {
     if (item.kind === 'cloud') {
-      setSpawnedSceneClouds((current) => [
-        ...current.slice(Math.max(0, current.length + 1 - item.cap)),
-        createShowcaseCloud(sceneTone),
-      ])
+      setSpawnedSceneClouds((current) => [...current, createShowcaseCloud(sceneTone)])
       return
     }
 
     if (item.kind === 'accent') {
-      setSpawnedSceneFlowers((current) => {
-        const spawned = current.filter((flower) => flower.id.startsWith('spawned-'))
-        const dropped = new Set(
-          spawned.slice(0, Math.max(0, spawned.length + 1 - item.cap)).map((flower) => flower.id),
-        )
-
-        return [
-          ...current.filter((flower) => !dropped.has(flower.id)),
-          createShowcaseFlowerForScene(sceneTone),
-        ]
-      })
+      setSpawnedSceneFlowers((current) => [...current, createShowcaseFlowerForScene(sceneTone)])
       return
     }
 

@@ -207,19 +207,17 @@ export function SpawnTray({
               <div className="spawnTrayGrid" data-wide={items.length > 6 || undefined}>
                 {items.map((item) => {
                   const count = counts[item.id] ?? 0
-                  const isFull = count >= item.cap
                   const pulseKey = pulse?.id === item.id ? pulse.n : 0
 
                   return (
                     <button
                       aria-label={`Spawn ${item.label.toLowerCase()}${count ? `, ${count} on the scene` : ''}`}
                       className="spawnTrayTile"
-                      data-full={isFull || undefined}
                       key={item.id}
                       onClick={() => {
                         onSpawn(item)
                         setAnnouncement(
-                          `${item.label} added, ${Math.min(item.cap, count + (item.burst ?? 1))} on the scene`,
+                          `${item.label} added, ${count + (item.burst ?? 1)} on the scene`,
                         )
                         setPulse((current) => ({ id: item.id, n: (current?.n ?? 0) + 1 }))
                       }}

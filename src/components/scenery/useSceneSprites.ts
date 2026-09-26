@@ -5,8 +5,6 @@ import { useCallback, useMemo, useState } from 'react'
 import type { SceneTone } from './menuHeroScenery'
 import { createSceneSprites, type SceneSpawnable, type SceneSprite } from './spawnables'
 
-const maxSpritesOnScene = 36
-
 type SpriteState = {
   sceneTone: SceneTone
   sprites: SceneSprite[]
@@ -25,12 +23,8 @@ export function useSceneSprites(sceneTone: SceneTone) {
 
       setState((current) => {
         const existing = current.sceneTone === sceneTone ? current.sprites : []
-        const sameItem = existing.filter((entry) => entry.itemId === item.id)
-        const overflow = Math.max(0, sameItem.length + next.length - item.cap)
-        const dropped = new Set(sameItem.slice(0, overflow).map((entry) => entry.id))
-        const kept = existing.filter((entry) => !dropped.has(entry.id))
 
-        return { sceneTone, sprites: [...kept, ...next].slice(-maxSpritesOnScene) }
+        return { sceneTone, sprites: [...existing, ...next] }
       })
     },
     [sceneTone],

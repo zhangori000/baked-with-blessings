@@ -1279,32 +1279,15 @@ export function MenuHero({
 
   const handleSpawn = (item: SceneSpawnable) => {
     if (item.kind === 'cloud') {
-      setSpawnedClouds((current) => {
-        const active = current.filter((cloud) => cloud.sceneryTone === sceneryTone)
-        const dropped = new Set(
-          active.slice(0, Math.max(0, active.length + 1 - item.cap)).map((cloud) => cloud.id),
-        )
-
-        return [
-          ...current.filter((cloud) => !dropped.has(cloud.id)),
-          createSpawnedCloud(sceneryTone, 'hero'),
-        ]
-      })
+      setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'hero')])
       return
     }
 
     if (item.kind === 'accent') {
-      setSpawnedFlowers((current) => {
-        const active = current.filter((flower) => flower.sceneryTone === sceneryTone)
-        const dropped = new Set(
-          active.slice(0, Math.max(0, active.length + 1 - item.cap)).map((flower) => flower.id),
-        )
-
-        return [
-          ...current.filter((flower) => !dropped.has(flower.id)),
-          createSpawnedFlower({ kind: 'hero', sceneryTone }),
-        ]
-      })
+      setSpawnedFlowers((current) => [
+        ...current,
+        createSpawnedFlower({ kind: 'hero', sceneryTone }),
+      ])
       return
     }
 
