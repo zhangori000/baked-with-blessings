@@ -20,6 +20,10 @@ import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import { withPayloadMediaCacheTag } from '@/utilities/resolveMediaDisplayURL'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
+import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
+import { SpawnTray } from '@/components/scenery/SpawnTray'
+import type { SceneSpawnable } from '@/components/scenery/spawnables'
+import { useSceneSprites } from '@/components/scenery/useSceneSprites'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { MenuPanelBackdrop, MenuSceneryTone } from './catering-menu-types'
@@ -587,24 +591,6 @@ const seededAccentCountByScenery: Record<MenuSceneryTone, number> = {
   classic: 9,
   blossom: 9,
   'fairy-castle': 0,
-}
-
-const spawnedAccentLabelByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'Spawn a flower',
-  'under-tree': 'Spawn a flower',
-  moonlit: 'Spawn a flower',
-  classic: 'Spawn a flower',
-  blossom: 'Spawn a sheep',
-  'fairy-castle': 'Spawn a house',
-}
-
-const spawnedCloudLabelByScenery: Record<MenuSceneryTone, string> = {
-  dawn: 'Spawn a cloud',
-  'under-tree': 'Spawn a cloud',
-  moonlit: 'Spawn a cloud',
-  classic: 'Spawn a cloud',
-  blossom: 'Spawn a cloud',
-  'fairy-castle': 'Spawn a cloud',
 }
 
 const noLandscapeFlowers: readonly LandscapeFlower[] = []
@@ -1255,6 +1241,14 @@ export function MenuHero({
   const chooserAnchorRef = useRef<HTMLDivElement | null>(null)
   const chooserButtonRef = useRef<HTMLButtonElement | null>(null)
   const [chooserAnchorX, setChooserAnchorX] = useState<number | null>(null)
+  const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
+  const { clearSprites, removeSprite, spawnSprite, spriteCounts, sprites } =
+    useSceneSprites(sceneryTone)
+  const spawnCounts: Record<string, number> = {
+    ...spriteCounts,
+    accent: activeSpawnedFlowers.length,
+    cloud: activeSpawnedClouds.length,
+  }
 
   useEffect(() => {
     if (!isSceneryPickerOpen) {
@@ -1279,12 +1273,52 @@ export function MenuHero({
     }
   }, [isSceneryPickerOpen])
 
-  const spawnCloud = () => {
-    setSpawnedClouds((current) => [...current, createSpawnedCloud(sceneryTone, 'hero')])
+  const handleSpawn = (item: SceneSpawnable) => {
+    if (item.kind === 'cloud') {
+      setSpawnedClouds((current) => {
+        const active = current.filter((cloud) => cloud.sceneryTone === sceneryTone)
+        const dropped = new Set(
+          active.slice(0, Math.max(0, active.length + 1 - item.cap)).map((cloud) => cloud.id),
+        )
+
+        return [
+          ...current.filter((cloud) => !dropped.has(cloud.id)),
+          createSpawnedCloud(sceneryTone, 'hero'),
+        ]
+      })
+      return
+    }
+
+    if (item.kind === 'accent') {
+      setSpawnedFlowers((current) => {
+        const active = current.filter((flower) => flower.sceneryTone === sceneryTone)
+        const dropped = new Set(
+          active.slice(0, Math.max(0, active.length + 1 - item.cap)).map((flower) => flower.id),
+        )
+
+        return [
+          ...current.filter((flower) => !dropped.has(flower.id)),
+          createSpawnedFlower({ kind: 'hero', sceneryTone }),
+        ]
+      })
+      return
+    }
+
+    spawnSprite(item)
   }
 
-  const spawnFlower = () => {
-    setSpawnedFlowers((current) => [...current, createSpawnedFlower({ kind: 'hero', sceneryTone })])
+  const handleClearSpawns = () => {
+    setSpawnedClouds((current) => current.filter((cloud) => cloud.sceneryTone !== sceneryTone))
+    setSpawnedFlowers((current) => current.filter((flower) => flower.sceneryTone !== sceneryTone))
+    clearSprites()
+  }
+
+  const handleSpawnTrayOpenChange = (open: boolean) => {
+    if (open && isSceneryPickerOpen) {
+      onToggleSceneryPicker()
+    }
+
+    setIsSpawnTrayOpen(open)
   }
 
   return (
@@ -1383,6 +1417,12 @@ export function MenuHero({
             />
           ))}
         </div>
+        <SceneSpawnLayer
+          className="cateringHeroSpawnLayer cateringHeroSpawnLayer--ground"
+          onExpire={removeSprite}
+          sprites={sprites}
+          zone="ground"
+        />
       </div>
       {sceneClouds.map((cloud) => (
         <DecorativeSceneImage
@@ -1401,6 +1441,12 @@ export function MenuHero({
           style={{ left: cloud.left, top: cloud.top, width: cloud.width }}
         />
       ))}
+      <SceneSpawnLayer
+        className="cateringHeroSpawnLayer cateringHeroSpawnLayer--sky"
+        onExpire={removeSprite}
+        sprites={sprites}
+        zone="sky"
+      />
       <div className="cateringHeroContent container relative z-[3]">
         <div className="cateringHeroCopy space-y-4">
           <div className="space-y-4">
@@ -1423,18 +1469,34 @@ export function MenuHero({
               visible={isSceneryPickerOpen}
             >
               <SceneActionRow className="cateringActionRow" gap="2">
-                <CateringActionButton onClick={spawnCloud}>
-                  {spawnedCloudLabelByScenery[sceneryTone]}
-                </CateringActionButton>
-                <CateringActionButton onClick={spawnFlower}>
-                  {spawnedAccentLabelByScenery[sceneryTone]}
-                </CateringActionButton>
+                <SpawnTray
+                  counts={spawnCounts}
+                  onClear={handleClearSpawns}
+                  onOpenChange={handleSpawnTrayOpenChange}
+                  onSpawn={handleSpawn}
+                  open={isSpawnTrayOpen}
+                  align="start"
+                  renderTrigger={({ ref, ...triggerProps }) => (
+                    <span className="cateringActionButtonWrap">
+                      <SceneButton
+                        {...triggerProps}
+                        className="cateringSpawnButton"
+                        ref={ref}
+                        variant="ghost"
+                      />
+                    </span>
+                  )}
+                  sceneTone={sceneryTone}
+                />
                 <CateringActionButton
                   buttonRef={chooserButtonRef}
                   className={cn(
                     (isSceneChanging || isSceneryPickerOpen) && 'cateringSpawnButtonCharging',
                   )}
-                  onClick={onToggleSceneryPicker}
+                  onClick={() => {
+                    setIsSpawnTrayOpen(false)
+                    onToggleSceneryPicker()
+                  }}
                 >
                   Change scenery
                 </CateringActionButton>

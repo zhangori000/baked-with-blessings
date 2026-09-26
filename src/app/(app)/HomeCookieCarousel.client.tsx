@@ -21,8 +21,6 @@ import {
   createSpawnedMenuSceneAccent,
   getNextMenuSceneTone,
   menuCloudSpawnDesignsByScene,
-  menuSceneAccentLabelByScene,
-  menuSceneCloudLabelByScene,
   menuHeroCloudsByScene,
   menuHeroCrittersByScene,
   menuHeroFlowerSeamByScene,
@@ -38,6 +36,10 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
+import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
+import { SpawnTray } from '@/components/scenery/SpawnTray'
+import type { SceneSpawnable } from '@/components/scenery/spawnables'
+import { useSceneSprites } from '@/components/scenery/useSceneSprites'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
 import { ScrollCueArea } from '@/components/ScrollCueArea'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
@@ -731,6 +733,9 @@ export function HomeCookieCarousel({
   const [sceneTone, setSceneTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
+  const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
+  const { clearSprites, removeSprite, spawnSprite, spriteCounts, sprites } =
+    useSceneSprites(sceneTone)
   const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
@@ -941,6 +946,42 @@ export function HomeCookieCarousel({
     ? posters[wrapIndex(activeIndex + 1, posters.length)]
     : null
   const staticSceneClouds = sceneVariant === 'scenery' ? buildStaticShowcaseClouds(sceneTone) : []
+  const spawnCounts: Record<string, number> = {
+    ...spriteCounts,
+    accent: spawnedSceneFlowers.filter((flower) => flower.id.startsWith('spawned-')).length,
+    cloud: spawnedSceneClouds.length,
+  }
+  const handleSpawn = (item: SceneSpawnable) => {
+    if (item.kind === 'cloud') {
+      setSpawnedSceneClouds((current) => [
+        ...current.slice(Math.max(0, current.length + 1 - item.cap)),
+        createShowcaseCloud(sceneTone),
+      ])
+      return
+    }
+
+    if (item.kind === 'accent') {
+      setSpawnedSceneFlowers((current) => {
+        const spawned = current.filter((flower) => flower.id.startsWith('spawned-'))
+        const dropped = new Set(
+          spawned.slice(0, Math.max(0, spawned.length + 1 - item.cap)).map((flower) => flower.id),
+        )
+
+        return [
+          ...current.filter((flower) => !dropped.has(flower.id)),
+          createShowcaseFlowerForScene(sceneTone),
+        ]
+      })
+      return
+    }
+
+    spawnSprite(item)
+  }
+  const handleClearSpawns = () => {
+    setSpawnedSceneClouds([])
+    setSpawnedSceneFlowers(buildSeededShowcaseFlowers(sceneTone))
+    clearSprites()
+  }
   const staticScenePieces =
     sceneVariant === 'scenery'
       ? (menuHeroPiecesByScene[sceneTone] ?? menuHeroPiecesByScene.classic)
@@ -1252,6 +1293,13 @@ export function HomeCookieCarousel({
                   />
                 ))}
 
+                <SceneSpawnLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--sky"
+                  onExpire={removeSprite}
+                  sprites={sprites}
+                  zone="sky"
+                />
+
                 {staticScenePieces.map((piece, index) => (
                   <Image
                     alt=""
@@ -1294,34 +1342,24 @@ export function HomeCookieCarousel({
                   >
                     Change scenery
                   </BakeryAction>
-                  <BakeryAction
-                    className="homeCookieSceneButton"
-                    onClick={() =>
-                      setSpawnedSceneClouds((current) => [
-                        ...current,
-                        createShowcaseCloud(sceneTone),
-                      ])
-                    }
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    {menuSceneCloudLabelByScene[sceneTone]}
-                  </BakeryAction>
-                  <BakeryAction
-                    className="homeCookieSceneButton"
-                    onClick={() =>
-                      setSpawnedSceneFlowers((current) => [
-                        ...current,
-                        createShowcaseFlowerForScene(sceneTone),
-                      ])
-                    }
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    {menuSceneAccentLabelByScene[sceneTone]}
-                  </BakeryAction>
+                  <SpawnTray
+                    counts={spawnCounts}
+                    onClear={handleClearSpawns}
+                    onOpenChange={setIsSpawnTrayOpen}
+                    onSpawn={handleSpawn}
+                    open={isSpawnTrayOpen}
+                    renderTrigger={({ ref, ...triggerProps }) => (
+                      <BakeryAction
+                        {...triggerProps}
+                        className="homeCookieSceneButton"
+                        ref={ref as Ref<HTMLElement>}
+                        size="sm"
+                        type="button"
+                        variant="secondary"
+                      />
+                    )}
+                    sceneTone={sceneTone}
+                  />
                 </div>
               </>
             ) : null}
@@ -1453,6 +1491,12 @@ export function HomeCookieCarousel({
                     />
                   ))}
                 </div>
+                <SceneSpawnLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--ground"
+                  onExpire={removeSprite}
+                  sprites={sprites}
+                  zone="ground"
+                />
               </>
             ) : (
               <div aria-hidden="true" className="homeCookieMeadowClip">
@@ -1811,6 +1855,21 @@ export function HomeCookieCarousel({
           border-color: rgba(25, 57, 95, 0.28);
           box-shadow: 0 14px 24px rgba(23, 58, 99, 0.12);
           transform: translateY(-1px);
+        }
+
+        .homeCookieSceneButton[aria-expanded='true'] {
+          border-color: rgba(74, 54, 23, 0.4);
+          box-shadow: inset 0 2px 0 rgba(74, 54, 23, 0.12);
+          transform: translateY(1px);
+        }
+
+        .homeCookieSpawnLayer--sky {
+          z-index: 9;
+        }
+
+        .homeCookieSpawnLayer--ground {
+          --spawn-ground-bottom: calc(var(--home-meadow-height, 8rem) * 0.28);
+          z-index: 17;
         }
 
         .homeCookiePaperStage {

@@ -579,3 +579,21 @@
     width: 1.32rem;
   }
 }
+
+.cateringHeroSpawnLayer--ground {
+  --spawn-ground-bottom: calc(var(--catering-hero-meadow-height) * 0.3);
+  z-index: 2;
+}
+
+.cateringHeroSpawnLayer--sky {
+  z-index: 2;
+}
+
+.cateringHeroContent .cateringActionRow {
+  flex: 1 1 auto;
+}
+
+.cateringSpawnButton[aria-expanded='true'] {
+  border-color: rgba(74, 54, 23, 0.4);
+  box-shadow: inset 0 2px 0 rgba(74, 54, 23, 0.12);
+}
