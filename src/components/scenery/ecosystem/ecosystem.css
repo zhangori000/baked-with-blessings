@@ -228,21 +228,6 @@
   transform-origin: 50% 20%;
 }
 
-.ecoThing[data-dying][data-ghost] .ecoPose {
-  animation: ecoGhostFade 0.5s ease-in forwards;
-}
-
-.ecoGhost {
-  animation: ecoGhost 2s ease-out forwards;
-  height: auto;
-  left: 50%;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  top: 20%;
-  width: max(2.4rem, 90%);
-}
-
 .ecoPuff {
   animation: ecoPuff 0.7s ease-out forwards;
   height: auto;
@@ -428,43 +413,6 @@
   }
 }
 
-@keyframes ecoGhostFade {
-  to {
-    filter: brightness(1.8) saturate(0);
-    opacity: 0;
-  }
-}
-
-@keyframes ecoGhost {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -30%) scale(0.6);
-  }
-
-  18% {
-    opacity: 0.9;
-    transform: translate(-50%, -60%) scale(1);
-  }
-
-  40% {
-    transform: translate(-30%, -110%) rotate(8deg);
-  }
-
-  62% {
-    opacity: 0.75;
-    transform: translate(-70%, -165%) rotate(-8deg);
-  }
-
-  82% {
-    transform: translate(-35%, -215%) rotate(6deg);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -260%) rotate(0deg) scale(0.9);
-  }
-}
-
 @keyframes ecoPuff {
   0% {
     opacity: 0;
@@ -492,7 +440,6 @@
   .ecoArt,
   .ecoBurn,
   .ecoPuff,
-  .ecoGhost,
   .ecoThing[data-state] .ecoArt,
   .ecoThing[data-fx] .ecoArt,
   .ecoThing[data-state='rain'] .ecoRain {

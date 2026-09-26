@@ -103,15 +103,20 @@ const seed: EcoSpecies = {
   tags: [],
   tick(entity, world, dt) {
     const unit = world.unit
-    const rising = entity.age < 1.6
+    const rising = entity.age < (entity.data.rise ?? 1.6)
+    const fall = unit * (entity.data.fall ?? 0.55)
 
     entity.vx += (world.wind - entity.vx) * Math.min(1, dt * 0.8)
-    entity.vy += ((rising ? -unit * 0.9 : unit * 0.55) - entity.vy) * Math.min(1, dt * 1.2)
+    entity.vy += ((rising ? -unit * 0.9 : fall) - entity.vy) * Math.min(1, dt * 1.2)
     entity.vy += Math.sin(world.time * 2.2 + entity.id) * unit * 0.8 * dt
     entity.tilt = Math.sin(world.time * 1.8 + entity.id) * 14
     integrate(entity, dt)
 
-    if (entity.x < -unit * 2 || entity.x > world.width + unit * 2 || entity.age > 24) {
+    if (
+      entity.x < -unit * 2 ||
+      entity.x > world.width + unit * 2 ||
+      entity.age > (entity.data.life ?? 24)
+    ) {
       world.remove(entity)
       return
     }
@@ -301,6 +306,27 @@ function holdPrey(hawk: EcoEntity, prey: EcoEntity, world: EcoWorld) {
   prey.y = hawk.y + world.heightOf(hawk) * 0.4 + world.heightOf(prey) * 0.58
 }
 
+function burstIntoSeeds(prey: EcoEntity, world: EcoWorld) {
+  const unit = world.unit
+  const seeds = 9
+  const centerY = prey.y - world.heightOf(prey) * 0.5
+
+  for (let index = 0; index < seeds; index += 1) {
+    const angle = (index / seeds) * Math.PI * 2 + between(-0.2, 0.2)
+    const speed = unit * between(2.6, 4)
+
+    world.spawn('seed', {
+      data: { fall: between(1.8, 2.6), life: 40, rise: 0, sure: index % 4 === 0 ? 1 : 0 },
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      x: prey.x + Math.cos(angle) * unit * 0.4,
+      y: centerY + Math.sin(angle) * unit * 0.4,
+    })
+  }
+
+  world.kill(prey)
+}
+
 function releaseCarry(hawk: EcoEntity, world: EcoWorld) {
   hawk.targetId = null
   hawk.data.zBoost = 0
@@ -335,7 +361,7 @@ const hawk: EcoSpecies = {
       }
 
       entity.vx += (entity.facing * unit * 3.2 - entity.vx) * Math.min(1, dt * 2)
-      entity.vy += (-unit * 3.6 - entity.vy) * Math.min(1, dt * 2)
+      entity.vy += (-unit * 5.5 - entity.vy) * Math.min(1, dt * 2.4)
       integrate(entity, dt)
       entity.tilt = -8 + Math.sin(entity.t * 9) * 3
       keepInSky(entity, world, world.skyTop + unit * 2)
@@ -346,9 +372,10 @@ const hawk: EcoSpecies = {
 
       holdPrey(entity, prey, world)
 
-      if (entity.t > 2.6) {
-        prey.data.ghost = 1
-        world.kill(prey)
+      const high = Math.max(world.skyTop + unit * 3, world.height * 0.26)
+
+      if ((entity.y <= high && entity.t > 1.2) || entity.t > 6) {
+        burstIntoSeeds(prey, world)
         entity.data.hunger = 0
         releaseCarry(entity, world)
       }

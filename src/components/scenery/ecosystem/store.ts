@@ -267,7 +267,6 @@ export class EcosystemStore {
           asset: entity.asset,
           dying: entity.dying,
           fuel: definition?.tags.includes('fuel') ?? false,
-          ghost: Boolean(entity.data.ghost),
           id: entity.id,
           idle: entity.idle,
           layer: definition?.layer ?? 'front',

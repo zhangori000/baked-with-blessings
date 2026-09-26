@@ -29,7 +29,6 @@ const EcoThing = memo(function EcoThing({
     <span
       className={cn('ecoThing', `ecoThing--${view.anchor}`)}
       data-dying={view.dying ? '' : undefined}
-      data-ghost={view.ghost ? '' : undefined}
       data-species={view.species}
       ref={attach}
       style={{ ['--eco-size' as string]: view.size.toFixed(2) } as CSSProperties}
@@ -61,17 +60,7 @@ const EcoThing = memo(function EcoThing({
             {view.particles ? <SpriteParticles particles={view.particles} /> : null}
           </span>
         </span>
-        {view.dying && view.ghost ? (
-          <Image
-            alt=""
-            className="ecoGhost"
-            draggable={false}
-            height={80}
-            src={ecoAsset('ghost')}
-            unoptimized
-            width={64}
-          />
-        ) : view.dying ? (
+        {view.dying ? (
           <Image
             alt=""
             className="ecoPuff"
