@@ -39,6 +39,7 @@ import {
 } from '@/components/scenery/menuHeroScenery'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { ScrollCueArea } from '@/components/ScrollCueArea'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
 import type { CookiePosterAsset } from '@/features/products/cookieDisplayData'
@@ -1532,7 +1533,7 @@ export function HomeCookieCarousel({
                     >
                       <X aria-hidden="true" size={14} />
                     </BakeryPressable>
-                    <div className="homeCookieCartPromptScroll">
+                    <ScrollCueArea className="homeCookieCartPromptScroll">
                       {activePosterIsCateringOnly ? (
                         <p className="cookieNameNote">
                           {activePoster.lockedLabel ?? 'Catering only'}.{' '}
@@ -1549,7 +1550,7 @@ export function HomeCookieCarousel({
                           sizeLabel={activePoster.addToCartSizeLabel}
                         />
                       )}
-                    </div>
+                    </ScrollCueArea>
                     {activePosterPromptPhase === 'open' ? (
                       <div className="homeCookieCartPromptActions">
                         {activePosterIsCateringOnly ? (
