@@ -971,7 +971,8 @@ const princess: EcoSpecies = {
       const cottage = world.byId(entity.targetId)
 
       if (!cottage || !world.has(cottage, 'building')) {
-        entity.scale = Math.min(1, entity.scale + dt * 4)
+        entity.scale = 1
+        entity.lift = 0
         entity.fx = ''
         entity.targetId = null
         world.setState(entity, 'stroll')

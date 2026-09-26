@@ -162,8 +162,14 @@ const bee: EcoSpecies = {
     if (entity.state === 'swarm') {
       const bear = world.byId(entity.targetId)
 
-      if (!bear || !world.has(bear, 'bear') || entity.t > 6) {
+      if (
+        !bear ||
+        !world.has(bear, 'bear') ||
+        !(bear.state === 'scoop' || bear.state === 'raid' || bear.state === 'flee') ||
+        entity.t > 6
+      ) {
         entity.targetId = null
+        entity.data.swarmCool = world.time + between(4, 7)
         world.setState(entity, (entity.data.nectarLoad ?? 0) > 0 ? 'home' : 'seek')
         return
       }
@@ -175,12 +181,12 @@ const bee: EcoSpecies = {
       faceTravel(entity)
       keepInSky(entity, world, world.skyTop, world.groundY - unit * 0.5)
 
-      if (gap < unit * 1.2) {
+      if (gap < unit * 1.2 && (bear.state === 'scoop' || bear.state === 'raid')) {
         bear.data.stings = (bear.data.stings ?? 0) + dt
         bear.data.threatX = entity.x
         bear.fx = 'stung'
 
-        if (bear.state !== 'flee' && (bear.data.stings ?? 0) > 0.55) {
+        if ((bear.data.stings ?? 0) > 0.55) {
           world.setState(bear, 'flee')
         }
       }
@@ -201,12 +207,10 @@ const bee: EcoSpecies = {
       return
     }
 
-    if (world.hasSpecies('bear')) {
+    if (world.hasSpecies('bear') && world.time > (entity.data.swarmCool ?? 0)) {
       const bear = world.nearest(
         entity,
-        (other) =>
-          world.has(other, 'bear') &&
-          (other.state === 'scoop' || other.state === 'raid' || other.state === 'flee'),
+        (other) => world.has(other, 'bear') && (other.state === 'scoop' || other.state === 'raid'),
         unit * 20,
       )
 

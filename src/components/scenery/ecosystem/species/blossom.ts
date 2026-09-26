@@ -1065,23 +1065,30 @@ const crane: EcoSpecies = {
       if (entity.t > (entity.data.perchFor ?? 9)) {
         entity.fx = ''
         entity.targetId = null
+        entity.vx = entity.facing * unit * 1.8
+        entity.data.perchCool = world.time + between(6, 10)
         world.setState(entity, 'fly')
       }
       return
     }
 
-    const gate = world.nearest(
-      entity,
-      (other) => world.has(other, 'torii') && other.state !== 'collapse',
-      unit * 18,
-    )
+    if (entity.state === 'approach') {
+      const gate = world.byId(entity.targetId)
 
-    if (gate && chance(0.4, dt)) {
+      if (!gate || gate.state === 'collapse' || entity.t > 14) {
+        entity.targetId = null
+        entity.vx = entity.facing * unit * 1.8
+        entity.vy = 0
+        entity.data.perchCool = world.time + between(6, 10)
+        world.setState(entity, 'fly')
+        return
+      }
+
       const gap = steer(
         entity,
         gate.x,
         gate.y - world.heightOf(gate) - unit * 0.4,
-        unit * 2.4,
+        unit * 3.4,
         dt,
         2,
       )
@@ -1090,12 +1097,30 @@ const crane: EcoSpecies = {
       tiltToVelocity(entity, 18)
 
       if (gap < unit * 1.1) {
-        entity.targetId = gate.id
+        entity.vx = 0
+        entity.vy = 0
         entity.data.perchFor = between(7, 12)
         entity.fx = 'perched'
         entity.tilt = 0
         world.setState(entity, 'perch')
       }
+      return
+    }
+
+    const gate =
+      world.time > (entity.data.perchCool ?? 0)
+        ? world.nearest(
+            entity,
+            (other) =>
+              world.has(other, 'torii') &&
+              other.state !== 'collapse' &&
+              Math.abs(other.x - entity.x) < unit * 18,
+          )
+        : null
+
+    if (gate && chance(0.4, dt)) {
+      entity.targetId = gate.id
+      world.setState(entity, 'approach')
       return
     }
 
@@ -1109,7 +1134,12 @@ const crane: EcoSpecies = {
       entity.x = -unit * 5
     }
 
-    entity.y = clamp(entity.y, world.skyTop + unit, world.groundY - unit * 5)
+    const low = world.groundY - unit * 5
+    entity.tilt *= 0.9
+    entity.y =
+      entity.y > low
+        ? entity.y - Math.min(entity.y - low, unit * 2 * dt)
+        : Math.max(entity.y, world.skyTop + unit)
   },
 }
 
