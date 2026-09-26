@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/providers/Auth'
-import { customerLoginHref } from '@/utilities/routes'
+import { createAccountHref, customerLoginHref } from '@/utilities/routes'
 import { useTheme } from '@/providers/Theme'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
@@ -149,7 +149,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
               </Button>
               <p className="mt-0">
                 <span className="mx-2">or</span>
-                <Link href="/create-account">create an account</Link>
+                <Link href={createAccountHref}>create an account</Link>
               </p>
             </div>
           </div>

@@ -1,40 +1,29 @@
 import type { Metadata } from 'next'
 
-import { BakeryPageShell } from '@/design-system/bakery'
-import { RenderParams } from '@/components/RenderParams'
-import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
-import React from 'react'
-import { headers as getHeaders } from 'next/headers'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-
-import { CreateAccountForm } from '@/components/forms/CreateAccountForm'
 import { redirect } from 'next/navigation'
-import { getAuthenticatedCustomer } from '@/utilities/getAuthenticatedCustomer'
-import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
 
-export default async function CreateAccount() {
-  const headers = await getHeaders()
-  const payload = await getPayload({ config: configPromise })
-  const user = await getAuthenticatedCustomer(payload, headers)
+import { buildCustomerLoginHref } from '@/utilities/routes'
 
-  if (user) {
-    redirect(`/account?warning=${encodeURIComponent('You are already logged in.')}`)
-  }
+type CreateAccountPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
 
-  return (
-    <BakeryPageShell as="main" spacing="lg" width="wide">
-      <RenderParams />
-      <CreateAccountForm textsOffered={areBakeryTextsOffered()} />
-    </BakeryPageShell>
+const firstParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value
+
+export default async function CreateAccount({ searchParams }: CreateAccountPageProps) {
+  const params = await searchParams
+
+  redirect(
+    buildCustomerLoginHref({
+      mode: 'create',
+      redirect: firstParam(params?.redirect),
+      warning: firstParam(params?.warning),
+    }),
   )
 }
 
 export const metadata: Metadata = {
-  description: 'Create an account or log in to your existing account.',
-  openGraph: mergeOpenGraph({
-    title: 'Account',
-    url: '/account',
-  }),
-  title: 'Account',
+  description: 'Create a Baked with Blessings account.',
+  title: 'Create account',
 }

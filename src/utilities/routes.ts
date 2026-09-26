@@ -6,7 +6,6 @@ export const oldFlavorsHref = '/old-flavors'
 export const aboutHref = '/about'
 export const contactHref = '/contact'
 export const privacyHref = '/privacy'
-export const createAccountHref = '/create-account'
 export const termsHref = '/terms'
 export const blogHref = '/blog'
 export const discussionBoardHref = '/discussion-board'
@@ -17,16 +16,19 @@ export const featureRequestsHref = '/feature-requests'
 export const flavorVoteHref = '/vote'
 export const flavorVoteResultsHref = (pollID: number | string) => `/vote/results/${pollID}`
 export const customerLoginHref = `${rotationsHref}?account=login`
+export const createAccountHref = `${rotationsHref}?account=create`
 
 export const buildCustomerLoginHref = ({
+  mode = 'login',
   redirect,
   warning,
 }: {
+  mode?: 'create' | 'login'
   redirect?: null | string
   warning?: null | string
 } = {}) => {
   const params = new URLSearchParams({
-    account: 'login',
+    account: mode,
   })
 
   if (redirect?.startsWith('/') && !redirect.startsWith('//')) {

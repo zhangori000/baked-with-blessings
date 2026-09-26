@@ -47,7 +47,11 @@ type Create = (args: {
   success?: boolean
 }>
 
-type Login = (args: { identifier: string; password: string }) => Promise<StorefrontCustomer>
+type Login = (args: {
+  identifier: string
+  password: string
+  quiet?: boolean
+}) => Promise<StorefrontCustomer>
 
 type Logout = () => Promise<void>
 
@@ -93,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (errors) throw new Error(errors[0].message)
         setUser(user)
         setStatus('loggedIn')
-        toast.success('Signed in. Welcome back.')
+        if (!args.quiet) toast.success('Signed in. Welcome back.')
         return user as StorefrontCustomer
       }
 
@@ -135,7 +139,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await login({
           identifier: args.phone?.trim() || args.email || '',
           password: args.password,
+          quiet: true,
         })
+        toast.success('Account created. Welcome!')
 
         return json
       } catch (error) {
