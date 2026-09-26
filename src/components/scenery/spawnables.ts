@@ -217,6 +217,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('unicorn', 'Unicorn'),
     creature('frog-prince', 'Frog prince'),
     creature('pennant', 'Pennant'),
+    creature('princess', 'Princess'),
+    creature('wizard', 'Wizard'),
+    creature('ballista', 'Ballista'),
+    creature('treasure', 'Treasure'),
   ],
 }
 
