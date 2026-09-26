@@ -36,13 +36,6 @@ export function useSceneSprites(sceneTone: SceneTone) {
     [sceneTone],
   )
 
-  const removeSprite = useCallback((id: string) => {
-    setState((current) => ({
-      ...current,
-      sprites: current.sprites.filter((entry) => entry.id !== id),
-    }))
-  }, [])
-
   const clearSprites = useCallback(() => setState({ sceneTone, sprites: [] }), [sceneTone])
 
   const spriteCounts = useMemo(() => {
@@ -55,5 +48,5 @@ export function useSceneSprites(sceneTone: SceneTone) {
     return counts
   }, [sprites])
 
-  return { clearSprites, removeSprite, spawnSprite, spriteCounts, sprites }
+  return { clearSprites, spawnSprite, spriteCounts, sprites }
 }

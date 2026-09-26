@@ -1246,7 +1246,7 @@ export function MenuHero({
   const chooserButtonRef = useRef<HTMLButtonElement | null>(null)
   const [chooserAnchorX, setChooserAnchorX] = useState<number | null>(null)
   const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
-  const { clearSprites, removeSprite, spawnSprite, spriteCounts, sprites } =
+  const { clearSprites, spawnSprite, spriteCounts, sprites } =
     useSceneSprites(sceneryTone)
   const spawnCounts: Record<string, number> = {
     ...spriteCounts,
@@ -1423,7 +1423,6 @@ export function MenuHero({
         </div>
         <SceneSpawnLayer
           className="cateringHeroSpawnLayer cateringHeroSpawnLayer--ground"
-          onExpire={removeSprite}
           sprites={sprites}
           zone="ground"
         />
@@ -1447,7 +1446,6 @@ export function MenuHero({
       ))}
       <SceneSpawnLayer
         className="cateringHeroSpawnLayer cateringHeroSpawnLayer--sky"
-        onExpire={removeSprite}
         sprites={sprites}
         zone="sky"
       />

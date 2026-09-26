@@ -736,7 +736,7 @@ export function HomeCookieCarousel({
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
   const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
-  const { clearSprites, removeSprite, spawnSprite, spriteCounts, sprites } =
+  const { clearSprites, spawnSprite, spriteCounts, sprites } =
     useSceneSprites(sceneTone)
   const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
@@ -1297,7 +1297,6 @@ export function HomeCookieCarousel({
 
                 <SceneSpawnLayer
                   className="homeCookieSpawnLayer homeCookieSpawnLayer--sky"
-                  onExpire={removeSprite}
                   sprites={sprites}
                   zone="sky"
                 />
@@ -1495,7 +1494,6 @@ export function HomeCookieCarousel({
                 </div>
                 <SceneSpawnLayer
                   className="homeCookieSpawnLayer homeCookieSpawnLayer--ground"
-                  onExpire={removeSprite}
                   sprites={sprites}
                   zone="ground"
                 />

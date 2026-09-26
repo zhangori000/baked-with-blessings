@@ -68,7 +68,9 @@
 }
 
 .sceneSprite--shoot {
-  animation: sceneSpriteShoot var(--sprite-duration) cubic-bezier(0.3, 0, 0.8, 0.6) forwards;
+  animation: sceneSpriteShoot var(--sprite-duration) linear var(--sprite-delay) infinite both;
+  opacity: 0;
+  transform-origin: right center;
 }
 
 .sceneSprite--shoot .sceneSpritePop {
@@ -76,7 +78,7 @@
 }
 
 .sceneSprite--fall {
-  animation: sceneSpriteFall var(--sprite-duration) linear var(--sprite-delay) both;
+  animation: sceneSpriteFall var(--sprite-duration) linear var(--sprite-delay) infinite both;
 }
 
 .sceneSprite--fall .sceneSpriteArt {
@@ -84,11 +86,11 @@
 }
 
 .sceneSprite--rise {
-  animation: sceneSpriteRise var(--sprite-duration) cubic-bezier(0.4, 0, 0.7, 1) both;
+  animation: sceneSpriteRise var(--sprite-duration) cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
 .sceneSprite--arc {
-  animation: sceneSpriteArc var(--sprite-duration) ease-in-out both;
+  opacity: 0.92;
 }
 
 .sceneSprite--arc .sceneSpritePop {
@@ -229,17 +231,23 @@
 
 @keyframes sceneSpriteShoot {
   0% {
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.45, 1);
     opacity: 0;
-    transform: translate3d(0, 0, 0);
+    transform: rotate(var(--sprite-angle, 22deg)) translateX(0) scaleX(0.35);
   }
 
-  15% {
+  3% {
     opacity: 1;
   }
 
+  12% {
+    opacity: 0.9;
+  }
+
+  18%,
   100% {
     opacity: 0;
-    transform: translate3d(38cqw, 24cqh, 0);
+    transform: rotate(var(--sprite-angle, 22deg)) translateX(58cqw) scaleX(1);
   }
 }
 
@@ -288,36 +296,20 @@
 @keyframes sceneSpriteRise {
   0% {
     opacity: 0;
+    transform: translate3d(0, 55cqh, 0);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  55% {
+    transform: translate3d(var(--sprite-sway), 16cqh, 0);
+  }
+
+  100% {
+    opacity: 1;
     transform: translate3d(0, 0, 0);
-  }
-
-  8% {
-    opacity: 1;
-  }
-
-  35% {
-    transform: translate3d(var(--sprite-sway), -30cqh, 0);
-  }
-
-  70% {
-    opacity: 1;
-    transform: translate3d(calc(var(--sprite-sway) * -0.5), -62cqh, 0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate3d(calc(var(--sprite-sway) * 0.4), -95cqh, 0);
-  }
-}
-
-@keyframes sceneSpriteArc {
-  0%,
-  88% {
-    opacity: 0.92;
-  }
-
-  100% {
-    opacity: 0;
   }
 }
 
@@ -409,9 +401,17 @@
 
   .sceneSprite--shoot,
   .sceneSprite--fall,
-  .sceneSprite--rise,
-  .sceneSprite--arc {
-    animation-name: sceneSpriteFadeOut;
+  .sceneSprite--rise {
+    animation: none;
+  }
+
+  .sceneSprite--shoot {
+    opacity: 0.9;
+    transform: rotate(var(--sprite-angle, 22deg));
+  }
+
+  .sceneSprite--fall {
+    translate: 0 calc(var(--sprite-sway) * 6);
   }
 
   .sceneSpritePop,
@@ -420,17 +420,6 @@
   .sceneSprite--sprout .sceneSpritePop,
   .sceneSprite--arc .sceneSpritePop {
     animation: none;
-  }
-}
-
-@keyframes sceneSpriteFadeOut {
-  0%,
-  80% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
   }
 }
 

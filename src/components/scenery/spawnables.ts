@@ -34,11 +34,8 @@ export type SceneSprite = {
   idle: SpawnIdle
   itemId: string
   motion: SpawnMotion
-  once: boolean
   style: CSSProperties
 }
-
-const onceMotions: ReadonlySet<SpawnMotion> = new Set(['arc', 'fall', 'rise', 'shoot'])
 
 const spawnableAsset = (id: string) => `/spawnables/${id}.svg`
 
@@ -122,7 +119,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
   moonlit: [
     cloudItem(),
     accentItem('moonlit'),
-    sprite('shooting-star', 'Shooting star', 'shoot', [3.4, 4.6], { cap: 6 }),
+    sprite('shooting-star', 'Shooting star', 'shoot', [6, 8.5], { cap: 6 }),
     sprite('firefly', 'Firefly', 'flutter', [1.4, 1.9], { cap: 14, idle: 'glow' }),
     sprite('lantern', 'Lantern', 'rise', [2.6, 3.4], { cap: 8, idle: 'glow' }),
     sprite('moth', 'Moth', 'flutter', [2.2, 2.9], { idle: 'flap' }),
@@ -171,8 +168,8 @@ const placementByMotion: Record<
   fall: { duration: [7, 10], x: [4, 94], y: [-8, -8] },
   flutter: { duration: [7, 11], x: [8, 88], y: [22, 62] },
   hop: { duration: [18, 24], x: [0, 0], y: [0, 0] },
-  rise: { duration: [22, 30], x: [10, 88], y: [62, 78] },
-  shoot: { duration: [1.3, 1.7], x: [4, 48], y: [4, 24] },
+  rise: { duration: [5, 7.5], x: [8, 90], y: [8, 40] },
+  shoot: { duration: [5.5, 9], x: [0, 45], y: [2, 22] },
   sprout: { duration: [3.6, 5], x: [6, 94], y: [0, 0] },
   twinkle: { duration: [2, 3.2], x: [6, 94], y: [6, 58] },
 }
@@ -197,9 +194,11 @@ const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {
     ? -duration * between(0.18, 0.62)
     : motion === 'fall'
       ? index * 0.45
-      : motion === 'flutter' || motion === 'twinkle'
-        ? -between(0, duration)
-        : 0
+      : motion === 'shoot'
+        ? 0.15
+        : motion === 'flutter' || motion === 'twinkle'
+          ? -between(0, duration)
+          : 0
 
   return {
     asset: item.asset ?? item.icon,
@@ -207,8 +206,8 @@ const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {
     idle: item.idle ?? 'none',
     itemId: item.id,
     motion,
-    once: onceMotions.has(motion),
     style: {
+      ['--sprite-angle' as string]: `${between(14, 30).toFixed(1)}deg`,
       ['--sprite-delay' as string]: `${delay.toFixed(2)}s`,
       ['--sprite-direction' as string]: flip === -1 ? 'reverse' : 'normal',
       ['--sprite-duration' as string]: `${duration.toFixed(2)}s`,

@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import type { AnimationEvent, CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 
 import { cn } from '@/utilities/cn'
 
@@ -13,19 +13,12 @@ const groundMotions: ReadonlySet<SpawnMotion> = new Set(['hop', 'sprout'])
 
 type SceneSpawnLayerProps = {
   className?: string
-  onExpire: (id: string) => void
   sprites: readonly SceneSprite[]
   style?: CSSProperties
   zone: 'ground' | 'sky'
 }
 
-export function SceneSpawnLayer({
-  className,
-  onExpire,
-  sprites,
-  style,
-  zone,
-}: SceneSpawnLayerProps) {
+export function SceneSpawnLayer({ className, sprites, style, zone }: SceneSpawnLayerProps) {
   const visible = sprites.filter((entry) => groundMotions.has(entry.motion) === (zone === 'ground'))
 
   if (visible.length === 0) {
@@ -43,11 +36,6 @@ export function SceneSpawnLayer({
           className={cn('sceneSprite', `sceneSprite--${entry.motion}`)}
           data-item={entry.itemId}
           key={entry.id}
-          onAnimationEnd={(event: AnimationEvent<HTMLSpanElement>) => {
-            if (entry.once && event.target === event.currentTarget) {
-              onExpire(entry.id)
-            }
-          }}
           style={entry.style}
         >
           <span className="sceneSpritePop">
