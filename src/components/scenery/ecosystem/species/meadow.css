@@ -1,0 +1,174 @@
+.ecoThing[data-species='beehive'] .ecoPose,
+.ecoThing[data-species='frog'] .ecoPose {
+  position: relative;
+}
+
+.ecoThing[data-species='beehive'] .ecoPose::after {
+  content: '';
+  position: absolute;
+  top: 58%;
+  left: 46%;
+  width: 14%;
+  height: 26%;
+  border-radius: 999px;
+  background: #d98b22;
+  opacity: calc(var(--hive-honey, 0) * 0.82);
+  transform: scaleY(var(--hive-honey, 0));
+  transform-origin: 50% 0;
+}
+
+.ecoThing[data-species='beehive'][data-state='full'] .ecoArt,
+.ecoThing[data-species='beehive'][data-state='birth'] .ecoArt {
+  animation: meadowHiveGlow 0.85s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='bear'][data-state='scoop'] .ecoArt {
+  animation: meadowBearScoop 0.65s ease-in-out infinite;
+}
+
+.ecoThing[data-species='bear'][data-fx='stung'] .ecoArt,
+.ecoThing[data-species='bear'][data-state='flee'] .ecoArt {
+  animation: meadowBearStung 0.2s steps(2, end) infinite;
+}
+
+.ecoThing[data-species='cat'][data-fx='puffed'] .ecoArt {
+  animation: meadowCatPuffed 0.24s ease-in-out infinite alternate;
+  filter: saturate(1.08);
+}
+
+.ecoThing[data-species='frog'][data-state='lash'] .ecoPose::after {
+  content: '';
+  position: absolute;
+  top: 38%;
+  left: 61%;
+  width: var(--frog-tongue, 42px);
+  height: 0.22rem;
+  border-radius: 999px;
+  background: #ef8aa0;
+  box-shadow: calc(var(--frog-tongue, 42px) - 0.15rem) 0 0 0.11rem #f3bfd0;
+  transform-origin: 0 50%;
+  animation: meadowFrogTongue 0.42s ease-out both;
+}
+
+.ecoThing[data-species='frog'][data-fx='croak'] .ecoArt {
+  animation: meadowFrogCroak 0.44s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='frog'][data-state='hop'] .ecoArt {
+  animation: meadowFrogHop 0.32s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='mouse'][data-state='scurry'] .ecoArt,
+.ecoThing[data-species='mouse'][data-state='flee'] .ecoArt,
+.ecoThing[data-species='mouse'][data-state='seek'] .ecoArt {
+  animation: meadowMouseScurry 0.18s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='mouse'][data-state='hide'] .ecoArt {
+  opacity: 0.38;
+  transform: scale(0.72) translateY(0.18rem);
+}
+
+.ecoThing[data-species='mouse'][data-state='nibble'] .ecoArt {
+  animation: meadowMouseNibble 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes meadowHiveGlow {
+  from {
+    filter: saturate(1);
+  }
+  to {
+    filter: saturate(1.18) brightness(1.05);
+  }
+}
+
+@keyframes meadowBearScoop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-0.22rem) rotate(4deg);
+  }
+}
+
+@keyframes meadowBearStung {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes meadowCatPuffed {
+  from {
+    transform: scale(1.03);
+  }
+  to {
+    transform: scale(1.12) translateY(-0.12rem);
+  }
+}
+
+@keyframes meadowFrogTongue {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.08);
+  }
+  38% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+}
+
+@keyframes meadowFrogCroak {
+  from {
+    filter: saturate(1);
+  }
+  to {
+    filter: saturate(1.22) brightness(1.04);
+  }
+}
+
+@keyframes meadowFrogHop {
+  from {
+    transform: scaleX(1.08) scaleY(0.94);
+  }
+  to {
+    transform: scaleX(0.96) scaleY(1.06);
+  }
+}
+
+@keyframes meadowMouseScurry {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+  to {
+    transform: translateY(-0.08rem) rotate(2deg);
+  }
+}
+
+@keyframes meadowMouseNibble {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(0.12rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='beehive'] .ecoArt,
+  .ecoThing[data-species='bear'] .ecoArt,
+  .ecoThing[data-species='cat'] .ecoArt,
+  .ecoThing[data-species='frog'] .ecoArt,
+  .ecoThing[data-species='frog'] .ecoPose::after,
+  .ecoThing[data-species='mouse'] .ecoArt {
+    animation: none;
+  }
+}

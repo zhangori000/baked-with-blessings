@@ -181,6 +181,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('caterpillar', 'Caterpillar'),
     creature('bird', 'Bluebird'),
     creature('cat', 'Cat'),
+    creature('beehive', 'Beehive'),
+    creature('frog', 'Frog'),
+    creature('mouse', 'Mouse'),
+    creature('bear', 'Bear'),
   ],
   blossom: [
     creatureCloud,
