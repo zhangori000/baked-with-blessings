@@ -436,16 +436,30 @@ const owl: EcoSpecies = {
 
       if (eatIfClose(entity, target, world, isBat(target) ? 1.9 : 1.55) || entity.t > 3.2) {
         entity.data.cool = between(2.5, 4.5)
+        entity.data.goalX = clamp(entity.x + entity.facing * unit * 8, 0, world.width)
+        entity.data.goalY = between(world.skyTop + unit, world.height * 0.34)
+        entity.data.goalAt = world.time + between(3, 5)
         world.setState(entity, 'glide')
       }
       return
     }
 
-    wander(entity, world, dt, unit * 2, world.skyTop + unit, world.height * 0.38, 1.2)
+    const ceiling = world.height * 0.42
+    const climbing = entity.y > ceiling
+
+    wander(
+      entity,
+      world,
+      dt,
+      unit * (climbing ? 4.5 : 2),
+      world.skyTop + unit,
+      world.height * 0.38,
+      climbing ? 2.4 : 1.2,
+    )
     integrate(entity, dt)
     faceTravel(entity)
-    tiltToVelocity(entity, 14)
-    keepInSky(entity, world, world.skyTop, world.height * 0.42)
+    tiltToVelocity(entity, climbing ? 30 : 14)
+    keepInSky(entity, world, world.skyTop, Math.max(ceiling, Math.min(entity.y, world.groundY)))
     entity.lift = Math.sin(world.time * 2 + entity.id) * unit * 0.1
     entity.data.cool = (entity.data.cool ?? 0) - dt
 
