@@ -80,12 +80,22 @@ function triggerImpact(entity: EcoEntity, world: EcoWorld) {
   world.remove(entity)
 }
 
+function takeLane(entity: EcoEntity) {
+  entity.data.lane ??= between(-1.8, 1)
+  entity.scale = 1 + entity.data.lane * 0.06
+}
+
+function waterLine(entity: EcoEntity, world: EcoWorld) {
+  return world.waterY + (entity.data.lane ?? 0) * world.unit
+}
+
 function ensurePad(entity: EcoEntity, world: EcoWorld) {
   if (!world.nearest(entity, isPad, world.unit * 2.5)) {
     world.spawn('lily-pad', {
       countAs: null,
+      data: { lane: entity.data.lane ?? 0 },
       x: clamp(entity.x + between(-0.4, 0.4) * world.unit, world.unit, world.width - world.unit),
-      y: world.waterY + world.unit * 0.15,
+      y: waterLine(entity, world) + world.unit * 0.15,
     })
   }
 }
@@ -95,7 +105,8 @@ const boat: EcoSpecies = {
   asset: ecoAsset('boat'),
   init(entity, world) {
     entity.data.next = between(1.5, 3)
-    entity.y = world.waterY
+    takeLane(entity)
+    entity.y = waterLine(entity, world)
   },
   layer: 'front',
   size: [5.6, 6.8],
@@ -105,7 +116,7 @@ const boat: EcoSpecies = {
     const unit = world.unit
     const margin = world.width * 0.1
 
-    entity.y = world.waterY
+    entity.y = waterLine(entity, world)
     entity.x += entity.facing * unit * 0.45 * dt
     entity.lift = (Math.sin(world.time * 1.4 + entity.id) + 1) * unit * 0.06
     entity.tilt = Math.sin(world.time * 1.1 + entity.id) * 2
@@ -548,7 +559,8 @@ const swan: EcoSpecies = {
   asset: ecoAsset('swan'),
   idle: 'bob',
   init(entity, world) {
-    entity.y = world.waterY
+    takeLane(entity)
+    entity.y = waterLine(entity, world)
     entity.data.nextDip = between(4, 9)
   },
   layer: 'front',
@@ -558,7 +570,7 @@ const swan: EcoSpecies = {
   tick(entity, world, dt) {
     const unit = world.unit
     const margin = unit * 2
-    entity.y = world.waterY + unit * 0.12
+    entity.y = waterLine(entity, world) + unit * 0.12
 
     if (entity.state === 'takeoff') {
       entity.lift = Math.min(unit * 5.5, entity.lift + unit * 5.2 * dt)
@@ -664,7 +676,8 @@ const lilyPad: EcoSpecies = {
   asset: ecoAsset('lily-pad'),
   countAs: null,
   init(entity, world) {
-    entity.y = world.waterY + world.unit * 0.22
+    takeLane(entity)
+    entity.y = waterLine(entity, world) + world.unit * 0.22
     entity.data.life = entity.user ? 80 : between(42, 72)
   },
   layer: 'front',
@@ -672,7 +685,7 @@ const lilyPad: EcoSpecies = {
   state: 'float',
   tags: ['plant'],
   tick(entity, world, dt) {
-    entity.y = world.waterY + world.unit * 0.22
+    entity.y = waterLine(entity, world) + world.unit * 0.22
     entity.lift = Math.sin(world.time * 1.1 + entity.id) * world.unit * 0.035
     entity.tilt = Math.sin(world.time * 0.8 + entity.id) * 2
     entity.data.life = (entity.data.life ?? 55) - dt
@@ -692,14 +705,15 @@ const lilyFrog: EcoSpecies = {
   asset: ecoAsset('lily-frog'),
   idle: 'bob',
   init(entity, world) {
-    entity.y = world.waterY
+    takeLane(entity)
+    entity.y = waterLine(entity, world)
     entity.data.nextHop = between(3.5, 7)
     entity.data.nextCroak = between(1.5, 4.5)
     ensurePad(entity, world)
   },
   layer: 'front',
   rest(entity, world) {
-    entity.y = world.waterY
+    entity.y = waterLine(entity, world)
     entity.lift = 0
   },
   size: [2.6, 3.4],
@@ -711,7 +725,7 @@ const lilyFrog: EcoSpecies = {
   tags: ['frog', 'predator'],
   tick(entity, world, dt) {
     const unit = world.unit
-    entity.y = world.waterY - unit * 0.1
+    entity.y = waterLine(entity, world) - unit * 0.1
 
     if (entity.state === 'hop') {
       const p = clamp(entity.t / (entity.data.hopFor ?? 0.9), 0, 1)

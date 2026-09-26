@@ -2985,7 +2985,7 @@ export function HomeCookieCarousel({
           }
 
           .homeCookieScene-moonlit .homeCookieSpawnLayer--ground {
-            --spawn-water-bottom: calc(var(--home-meadow-height) * 0.68);
+            --spawn-water-bottom: calc(var(--home-meadow-height) * 0.6);
           }
 
           .homeCookieScene-moonlit .homeCookieFlowerRailBloom {
