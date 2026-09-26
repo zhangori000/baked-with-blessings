@@ -151,6 +151,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('hawk', 'Hawk'),
     creature('balloon', 'Balloon'),
     butterflyCreature,
+    creature('carrot', 'Carrot'),
+    creature('fox', 'Fox'),
+    creature('hedgehog', 'Hedgehog'),
+    creature('scarecrow', 'Scarecrow'),
   ],
   'under-tree': [
     cloudItem(),

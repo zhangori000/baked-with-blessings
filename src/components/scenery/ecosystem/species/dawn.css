@@ -1,0 +1,231 @@
+.ecoThing[data-species='carrot'] .ecoArt {
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='carrot'][data-state='grow'] .ecoArt {
+  animation: dawnCarrotSprout 2.2s ease-in-out infinite;
+}
+
+.ecoThing[data-species='carrot'][data-state='ready'] .ecoArt {
+  animation: dawnCarrotReady 3.4s ease-in-out infinite;
+}
+
+.ecoThing[data-species='carrot'][data-state='pulled'] .ecoArt {
+  animation: dawnCarrotPulled 0.62s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.ecoThing[data-species='fox'] .ecoArt {
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='fox'][data-state='trot'] .ecoArt {
+  animation: dawnFoxTrot 0.46s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='fox'][data-state='stalk'] .ecoArt {
+  animation: dawnFoxStalk 0.72s ease-in-out infinite;
+}
+
+.ecoThing[data-species='fox'][data-state='pounce'] .ecoArt {
+  animation: dawnFoxPounce 0.7s ease-out both;
+}
+
+.ecoThing[data-species='fox'][data-state='avoid'] .ecoArt,
+.ecoThing[data-species='fox'][data-state='yelp'] .ecoArt {
+  animation: dawnFoxSkitter 0.18s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='fox'][data-state='eat'] .ecoArt {
+  animation: dawnFoxBreathe 1.4s ease-in-out infinite;
+}
+
+.ecoThing[data-species='fox'][data-fx='hurt'] .ecoArt {
+  filter: brightness(1.55) saturate(0.75);
+}
+
+.ecoThing[data-species='fox'][data-fx='spooked'] .ecoArt {
+  filter: saturate(0.92) brightness(1.08);
+}
+
+.ecoThing[data-species='hedgehog'] .ecoArt {
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='hedgehog'][data-state='waddle'] .ecoArt {
+  animation: dawnHedgehogWaddle 0.62s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='hedgehog'][data-state='eat'] .ecoArt,
+.ecoThing[data-species='hedgehog'][data-fx='snuffle'] .ecoArt {
+  animation: dawnHedgehogSnuffle 0.32s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='hedgehog'][data-state='curl'] .ecoArt {
+  animation: dawnHedgehogCurl 0.58s ease-out both;
+}
+
+.ecoThing[data-species='scarecrow'] .ecoArt {
+  animation: dawnScarecrowSway 3.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='scarecrow'][data-fx='burning'] .ecoArt {
+  animation: dawnScarecrowBurn 0.34s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {
+  filter: brightness(1.05) saturate(0.9);
+}
+
+@keyframes dawnCarrotSprout {
+  0%,
+  100% {
+    transform: rotate(-2deg) scale(0.98, 1.02);
+  }
+
+  50% {
+    transform: rotate(2deg) scale(1.03, 0.98);
+  }
+}
+
+@keyframes dawnCarrotReady {
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+
+  50% {
+    transform: rotate(1deg) translateY(-0.06rem);
+  }
+}
+
+@keyframes dawnCarrotPulled {
+  0% {
+    transform: translateY(0) scale(0.9, 1.1) rotate(-7deg);
+  }
+
+  60% {
+    transform: translateY(-0.42rem) scale(1.08, 0.94) rotate(5deg);
+  }
+
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes dawnFoxTrot {
+  from {
+    transform: translateY(0) rotate(-1deg);
+  }
+
+  to {
+    transform: translateY(-0.16rem) rotate(1.2deg);
+  }
+}
+
+@keyframes dawnFoxStalk {
+  0%,
+  100% {
+    transform: translateX(-0.06rem) translateY(0.03rem) scale(1.02, 0.98);
+  }
+
+  50% {
+    transform: translateX(0.08rem) translateY(-0.04rem) scale(0.99, 1.01);
+  }
+}
+
+@keyframes dawnFoxPounce {
+  0% {
+    transform: rotate(-5deg) scale(1.04, 0.96);
+  }
+
+  45% {
+    transform: rotate(7deg) scale(1.08, 0.92);
+  }
+
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes dawnFoxSkitter {
+  from {
+    transform: translateX(-0.08rem) rotate(-4deg);
+  }
+
+  to {
+    transform: translateX(0.08rem) rotate(4deg);
+  }
+}
+
+@keyframes dawnFoxBreathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+
+  50% {
+    transform: scale(1.03, 0.97);
+  }
+}
+
+@keyframes dawnHedgehogWaddle {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  to {
+    transform: translateY(-0.09rem) rotate(2deg);
+  }
+}
+
+@keyframes dawnHedgehogSnuffle {
+  from {
+    transform: translateX(-0.05rem) rotate(-2deg) scale(1.02, 0.98);
+  }
+
+  to {
+    transform: translateX(0.05rem) rotate(2deg) scale(0.98, 1.02);
+  }
+}
+
+@keyframes dawnHedgehogCurl {
+  0% {
+    transform: scale(1.1, 0.86) rotate(-9deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes dawnScarecrowSway {
+  0%,
+  100% {
+    transform: rotate(calc(var(--dawn-scarecrow-lean, 0deg) - 2.2deg));
+  }
+
+  50% {
+    transform: rotate(calc(var(--dawn-scarecrow-lean, 0deg) + 2.2deg));
+  }
+}
+
+@keyframes dawnScarecrowBurn {
+  from {
+    transform: rotate(-4deg) scale(0.98, 1.02);
+  }
+
+  to {
+    transform: rotate(4deg) scale(1.03, 0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='carrot'] .ecoArt,
+  .ecoThing[data-species='fox'] .ecoArt,
+  .ecoThing[data-species='hedgehog'] .ecoArt,
+  .ecoThing[data-species='scarecrow'] .ecoArt,
+  .ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {
+    animation: none;
+  }
+}

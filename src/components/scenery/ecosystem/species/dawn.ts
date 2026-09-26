@@ -1,4 +1,4 @@
-import { ecoAsset } from '../assets'
+import { ecoAsset, registerViewBoxes } from '../assets'
 import {
   between,
   chance,
@@ -16,11 +16,73 @@ import {
 } from '../behaviors'
 import type { EcoEntity, EcoSpecies, EcoWorld } from '../types'
 
+registerViewBoxes({
+  carrot: [70, 88],
+  'carrot-pulled': [72, 116],
+  'carrot-sprout': [62, 74],
+  fox: [132, 72],
+  'fox-crouch': [132, 60],
+  'fox-pounce': [142, 78],
+  hedgehog: [96, 58],
+  'hedgehog-ball': [76, 70],
+  scarecrow: [92, 150],
+})
+
 const bloomAsset = ecoAsset('dandelion-bloom')
 const puffAsset = ecoAsset('dandelion')
 const sproutAsset = ecoAsset('sprout')
+const carrotAsset = ecoAsset('carrot')
+const carrotSproutAsset = ecoAsset('carrot-sprout')
+const carrotPulledAsset = ecoAsset('carrot-pulled')
+const foxAsset = ecoAsset('fox')
+const foxCrouchAsset = ecoAsset('fox-crouch')
+const foxPounceAsset = ecoAsset('fox-pounce')
+const hedgehogAsset = ecoAsset('hedgehog')
+const hedgehogBallAsset = ecoAsset('hedgehog-ball')
+const scarecrowAsset = ecoAsset('scarecrow')
 
 const isPlant = (world: EcoWorld) => (other: EcoEntity) => world.has(other, 'plant')
+
+const isActiveScarecrow = (world: EcoWorld) => (other: EcoEntity) =>
+  world.has(other, 'scarecrow') && (other.data.burn ?? 0) <= 0
+
+const scarecrowRadius = (world: EcoWorld) => Math.max(world.unit * 8.5, 74)
+
+const scarecrowNear = (
+  world: EcoWorld,
+  point: { x: number; y: number },
+  radius = scarecrowRadius(world),
+) => world.nearest(point, isActiveScarecrow(world), radius)
+
+const scarecrowAirGuard = (world: EcoWorld, point: { x: number; y: number }) => {
+  let best: EcoEntity | null = null
+  let bestDistance = Math.max(world.unit * 9.5, 82)
+
+  if (point.y < world.groundY - world.unit * 18) {
+    return null
+  }
+
+  for (const other of world.entities) {
+    if (other.dying || other.removed || !isActiveScarecrow(world)(other)) {
+      continue
+    }
+
+    const distance = Math.abs(other.x - point.x)
+
+    if (distance < bestDistance) {
+      best = other
+      bestDistance = distance
+    }
+  }
+
+  return best
+}
+
+const bunnySafeFromHawk = (world: EcoWorld, bunny: EcoEntity) =>
+  Boolean(scarecrowNear(world, bunny, scarecrowRadius(world)))
+
+const isReadyCarrot = (world: EcoWorld) => (other: EcoEntity) =>
+  world.has(other, 'carrot') && other.state !== 'grow' && (other.data.burn ?? 0) <= 0
 
 const dandelion: EcoSpecies = {
   anchor: 'bottom',
@@ -125,6 +187,19 @@ const seed: EcoSpecies = {
       return
     }
 
+    const snuffler = world.nearest(
+      { x: entity.x, y: world.groundY },
+      (other) => world.has(other, 'hedgehog') && other.state !== 'curl',
+      unit * 7,
+    )
+
+    if (snuffler) {
+      snuffler.fx = 'snuffle'
+      world.setState(snuffler, 'eat')
+      world.remove(entity)
+      return
+    }
+
     const crowded = world.nearest({ x: entity.x, y: world.groundY }, isPlant(world), unit * 1.6)
     const plants = world.count(isPlant(world))
     const inside = entity.x > unit && entity.x < world.width - unit
@@ -137,8 +212,69 @@ const seed: EcoSpecies = {
   },
 }
 
+const carrot: EcoSpecies = {
+  anchor: 'bottom',
+  asset: carrotSproutAsset,
+  burnTime: 1.6,
+  countAs: 'carrot',
+  idle: 'sway',
+  init(entity, world) {
+    if (entity.state === 'grow') {
+      entity.scale = 0.48
+      entity.data.growth = 0
+      world.setAsset(entity, carrotSproutAsset)
+    } else {
+      world.setAsset(entity, carrotAsset)
+    }
+  },
+  layer: 'front',
+  rest(entity, world) {
+    entity.scale = 1
+    entity.data.growth = 1
+    world.setAsset(entity, carrotAsset)
+    world.setState(entity, 'ready')
+  },
+  size: [1.8, 2.3],
+  state: 'grow',
+  tags: ['plant', 'carrot', 'fuel'],
+  tick(entity, world, dt) {
+    entity.data.water = Math.max(0, (entity.data.water ?? 0) - dt)
+    const watered = (entity.data.water ?? 0) > 0
+
+    if (entity.state === 'grow') {
+      const rate = (entity.user ? 1 / 3 : 1 / 10) * (watered ? 2.8 : 1)
+      const growth = Math.min(1, (entity.data.growth ?? 0) + dt * rate)
+
+      entity.data.growth = growth
+      entity.scale = 0.48 + growth * 0.52
+      world.setAsset(entity, growth < 0.55 ? carrotSproutAsset : carrotAsset)
+
+      if (growth >= 1) {
+        world.setState(entity, 'ready')
+      }
+      return
+    }
+
+    if (entity.state === 'pulled') {
+      world.setAsset(entity, carrotPulledAsset)
+      entity.lift = Math.max(0, Math.sin(Math.min(1, entity.t / 0.7) * Math.PI) * world.unit * 0.65)
+      entity.tilt = Math.sin(entity.t * 9) * 5
+
+      if (entity.t > 4 && !world.byId(entity.data.puller ?? null)) {
+        world.kill(entity)
+      }
+      return
+    }
+
+    entity.lift = 0
+    entity.tilt = Math.sin(world.time * 1.6 + entity.id) * (watered ? 1.6 : 0.7)
+  },
+}
+
 const isBunnyFood = (world: EcoWorld) => (other: EcoEntity) =>
-  world.has(other, 'plant') && other.state !== 'grow' && (other.data.burn ?? 0) <= 0
+  (isReadyCarrot(world)(other) ||
+    (world.has(other, 'plant') && !world.has(other, 'carrot') && other.state !== 'grow')) &&
+  (other.data.burn ?? 0) <= 0
 
 const bunny: EcoSpecies = {
   anchor: 'bottom',
@@ -153,7 +289,7 @@ const bunny: EcoSpecies = {
   layer: 'front',
   size: [2.4, 3],
   state: 'graze',
-  tags: ['bunny', 'burnable'],
+  tags: ['bunny', 'prey', 'burnable'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -189,19 +325,39 @@ const bunny: EcoSpecies = {
       (other) => world.has(other, 'hawk') && other.state === 'dive',
       unit * 14,
     )
+    const fox = world.nearest(
+      entity,
+      (other) => world.has(other, 'fox') && ['stalk', 'pounce', 'chase'].includes(other.state),
+      unit * 16,
+    )
     const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 4.5)
-    const threat = hawk ?? fire
+    const threat = fox ?? hawk ?? fire
 
     if (threat) {
       entity.facing = threat.x > entity.x ? -1 : 1
+      entity.targetId = null
       world.setState(entity, 'flee')
     }
 
     if (entity.state === 'flee') {
-      walk(entity, world, dt, unit * 3.8)
-      hop(entity, dt, unit * 1.1, 9)
+      const fromFox = Boolean(fox)
+      walk(entity, world, dt, unit * (fromFox ? 5.1 : 3.8))
+      hop(entity, dt, unit * (fromFox ? 1.35 : 1.1), fromFox ? 11 : 9)
 
-      if (entity.t > 2 && !threat) {
+      if (fromFox) {
+        if ((entity.data.zigAt ?? 0) < world.time) {
+          entity.data.zig = Math.random() < 0.5 ? -1 : 1
+          entity.data.zigAt = world.time + between(0.22, 0.52)
+        }
+
+        entity.x = clamp(
+          entity.x + (entity.data.zig ?? 1) * unit * 1.8 * dt,
+          unit,
+          world.width - unit,
+        )
+      }
+
+      if (entity.t > (fromFox ? 2.7 : 2) && !threat) {
         world.setState(entity, 'graze')
       }
       return
@@ -216,11 +372,19 @@ const bunny: EcoSpecies = {
         return
       }
 
-      if (entity.t > 2) {
+      const eatingCarrot = world.has(plant, 'carrot')
+
+      if (eatingCarrot && plant.state !== 'pulled') {
+        plant.data.puller = entity.id
+        world.setAsset(plant, carrotPulledAsset)
+        world.setState(plant, 'pulled')
+      }
+
+      if (entity.t > (eatingCarrot ? 1.35 : 2)) {
         world.kill(plant)
         entity.targetId = null
-        entity.data.hunger = 0
-        entity.data.meals = (entity.data.meals ?? 0) + 1
+        entity.data.hunger = eatingCarrot ? -0.35 : 0
+        entity.data.meals = (entity.data.meals ?? 0) + (eatingCarrot ? 2 : 1)
 
         const partner = world.nearest(
           entity,
@@ -256,9 +420,17 @@ const bunny: EcoSpecies = {
         return
       }
 
-      hop(entity, dt, unit * 0.8, 7)
+      const carrotTarget = world.has(plant, 'carrot')
 
-      if (walkToward(entity, world, plant.x, unit * 1.7, dt) < unit * 0.6) {
+      hop(entity, dt, unit * (carrotTarget ? 0.95 : 0.8), carrotTarget ? 8 : 7)
+
+      if (walkToward(entity, world, plant.x, unit * (carrotTarget ? 2.45 : 1.7), dt) < unit * 0.6) {
+        if (carrotTarget) {
+          plant.data.puller = entity.id
+          world.setAsset(plant, carrotPulledAsset)
+          world.setState(plant, 'pulled')
+        }
+
         world.setState(entity, 'eat')
       }
       return
@@ -285,7 +457,12 @@ const bunny: EcoSpecies = {
     }
 
     if ((entity.data.hunger ?? 0) > 1) {
-      const plant = world.nearest(entity, isBunnyFood(world), unit * 26)
+      const carrotTarget = world.nearest(
+        entity,
+        isReadyCarrot(world),
+        Math.max(unit * 40, world.height * 0.55),
+      )
+      const plant = carrotTarget ?? world.nearest(entity, isBunnyFood(world), unit * 26)
 
       if (plant) {
         entity.targetId = plant.id
@@ -348,9 +525,10 @@ const hawk: EcoSpecies = {
   layer: 'front',
   size: [3.6, 4.4],
   state: 'soar',
-  tags: ['hawk'],
+  tags: ['hawk', 'predator'],
   tick(entity, world, dt) {
     const unit = world.unit
+    const guard = scarecrowAirGuard(world, entity)
 
     if (entity.state === 'carry') {
       const prey = world.byId(entity.targetId)
@@ -386,7 +564,14 @@ const hawk: EcoSpecies = {
       world.setAsset(entity, entity.state === 'dive' ? hawkDive : hawkSoar)
       const prey = world.byId(entity.targetId)
 
-      if (!prey || prey.state === 'carried' || prey.state === 'drop' || entity.t > 6) {
+      if (
+        guard ||
+        !prey ||
+        prey.state === 'carried' ||
+        prey.state === 'drop' ||
+        (world.has(prey, 'bunny') && bunnySafeFromHawk(world, prey)) ||
+        entity.t > 6
+      ) {
         entity.targetId = null
         world.setState(entity, 'climb')
         return
@@ -453,6 +638,22 @@ const hawk: EcoSpecies = {
     const goalY = (entity.data.centerY ?? entity.y) + Math.sin(angle) * radius * 0.3
 
     steer(entity, goalX, goalY, unit * 4, dt, 3)
+
+    if (guard) {
+      const away = entity.x >= guard.x ? 1 : -1
+      steer(
+        entity,
+        clamp(entity.x + away * unit * 8, unit * 2, world.width - unit * 2),
+        clamp(entity.y - unit * 2.4, world.skyTop + unit, world.skyBottom),
+        unit * 6.5,
+        dt,
+        5,
+      )
+      entity.fx = 'veer'
+    } else if (entity.fx === 'veer') {
+      entity.fx = ''
+    }
+
     integrate(entity, dt)
     faceTravel(entity)
     entity.tilt = (entity.vy * 0.15) / unit
@@ -473,7 +674,11 @@ const hawk: EcoSpecies = {
     if ((entity.data.hunger ?? 0) > 1 && chance(0.8, dt)) {
       const prey = world.nearest(
         entity,
-        (other) => world.has(other, 'bunny') && other.state !== 'carried' && other.state !== 'drop',
+        (other) =>
+          world.has(other, 'bunny') &&
+          other.state !== 'carried' &&
+          other.state !== 'drop' &&
+          !bunnySafeFromHawk(world, other),
         Math.max(unit * 45, world.height),
       )
 
@@ -482,6 +687,353 @@ const hawk: EcoSpecies = {
         world.setState(entity, 'dive')
       }
     }
+  },
+}
+
+const foxTargetStates = ['graze', 'seek', 'sit', 'eat', 'flee']
+
+const fox: EcoSpecies = {
+  anchor: 'bottom',
+  asset: foxAsset,
+  idle: 'trot',
+  init(entity) {
+    entity.data.hunger = between(0.35, 0.85)
+    entity.data.patience = between(0.8, 1.6)
+  },
+  layer: 'front',
+  size: [3.2, 3.9],
+  state: 'trot',
+  tags: ['fox', 'predator', 'burnable'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 6)
+
+    if (fire && !['avoid', 'yelp', 'pounce', 'eat'].includes(entity.state)) {
+      entity.targetId = null
+      entity.data.avoidX = fire.x
+      world.setAsset(entity, foxAsset)
+      world.setState(entity, 'avoid')
+    }
+
+    if (entity.state === 'avoid') {
+      const fromX = entity.data.avoidX ?? fire?.x ?? entity.x
+
+      entity.fx = 'spooked'
+      entity.facing = fromX > entity.x ? -1 : 1
+      walk(entity, world, dt, unit * 4.2)
+      entity.x = clamp(entity.x, unit, world.width - unit)
+
+      if (entity.t > 1.4 && !fire) {
+        entity.fx = ''
+        world.setState(entity, 'trot')
+      }
+      return
+    }
+
+    if (entity.state === 'yelp') {
+      world.setAsset(entity, foxAsset)
+      entity.fx = 'hurt'
+      entity.facing = (entity.data.hurtX ?? entity.x) > entity.x ? -1 : 1
+      walk(entity, world, dt, unit * 4.8)
+      entity.lift = Math.abs(Math.sin(entity.t * 12)) * unit * 0.55
+
+      if (entity.t > 1.35) {
+        entity.fx = ''
+        entity.lift = 0
+        entity.data.hunger = Math.max(0.2, (entity.data.hunger ?? 0) - 0.35)
+        world.setState(entity, 'trot')
+      }
+      return
+    }
+
+    if (entity.state === 'eat') {
+      world.setAsset(entity, foxAsset)
+      settle(entity, dt)
+
+      if (entity.t > 1.5) {
+        entity.data.hunger = 0
+        entity.data.meals = (entity.data.meals ?? 0) + 1
+        world.setState(entity, 'trot')
+      }
+      return
+    }
+
+    if (entity.state === 'pounce') {
+      world.setAsset(entity, foxPounceAsset)
+      const progress = Math.min(1, entity.t / 0.7)
+      const startX = entity.data.startX ?? entity.x
+      const endX = entity.data.endX ?? entity.x
+
+      entity.x = clamp(startX + (endX - startX) * progress, unit, world.width - unit)
+      entity.y = world.groundY + (entity.data.depth ?? 0)
+      entity.lift = Math.sin(Math.PI * progress) * (entity.data.jump ?? unit * 2.2)
+
+      if (progress > 0.32 && !(entity.data.resolved ?? 0)) {
+        const hedgehogTarget = world.nearest(
+          entity,
+          (other) => world.has(other, 'hedgehog') && other.state === 'curl',
+          unit * 2,
+        )
+
+        if (hedgehogTarget) {
+          entity.data.resolved = 1
+          entity.data.hurtX = hedgehogTarget.x
+          entity.lift = 0
+          world.setState(entity, 'yelp')
+          return
+        }
+
+        const bunnyTarget = world.nearest(
+          entity,
+          (other) => world.has(other, 'bunny') && foxTargetStates.includes(other.state),
+          unit * 1.65,
+        )
+
+        if (bunnyTarget) {
+          entity.data.resolved = 1
+
+          if (bunnyTarget.state === 'flee' && Math.random() < 0.52) {
+            entity.fx = 'miss'
+          } else {
+            world.kill(bunnyTarget)
+            entity.fx = ''
+            entity.data.caught = 1
+          }
+        }
+      }
+
+      if (progress >= 1) {
+        entity.lift = 0
+        world.setAsset(entity, foxAsset)
+        world.setState(entity, entity.data.caught ? 'eat' : 'trot')
+        entity.fx = ''
+      }
+      return
+    }
+
+    if (entity.state === 'chase') {
+      world.setAsset(entity, foxAsset)
+      const target = world.byId(entity.targetId)
+
+      if (!target || !world.has(target, 'hedgehog') || entity.t > 5) {
+        entity.targetId = null
+        world.setState(entity, 'trot')
+        return
+      }
+
+      if (target.state === 'curl' && Math.abs(target.x - entity.x) < unit * 3) {
+        entity.data.hurtX = target.x
+        entity.targetId = null
+        world.setState(entity, 'yelp')
+        return
+      }
+
+      const gap = walkToward(entity, world, target.x, unit * 3.2, dt)
+
+      if (gap < unit * 1.5) {
+        world.setState(target, 'curl')
+        world.setAsset(target, hedgehogBallAsset)
+        entity.data.hurtX = target.x
+        entity.targetId = null
+        world.setState(entity, 'yelp')
+      }
+      return
+    }
+
+    if (entity.state === 'stalk') {
+      world.setAsset(entity, foxCrouchAsset)
+      const prey = world.byId(entity.targetId)
+
+      if (
+        !prey ||
+        !world.has(prey, 'bunny') ||
+        !foxTargetStates.includes(prey.state) ||
+        entity.t > 8
+      ) {
+        entity.targetId = null
+        world.setAsset(entity, foxAsset)
+        world.setState(entity, 'trot')
+        return
+      }
+
+      const gap = walkToward(entity, world, prey.x, unit * 0.95, dt)
+
+      if (gap < unit * 4.4 || entity.t > (entity.data.patience ?? 1.2) + 1.6) {
+        entity.data.startX = entity.x
+        entity.data.endX = clamp(prey.x + prey.vx * 0.25, unit, world.width - unit)
+        entity.data.jump = unit * between(1.7, 2.9)
+        entity.data.caught = 0
+        entity.data.resolved = 0
+        world.setAsset(entity, foxPounceAsset)
+        world.setState(entity, 'pounce')
+      }
+      return
+    }
+
+    world.setAsset(entity, foxAsset)
+    entity.data.hunger = (entity.data.hunger ?? 0) + dt / 8
+    walk(entity, world, dt, unit * 1.35)
+
+    if (chance(0.08, dt)) {
+      entity.facing = entity.facing === 1 ? -1 : 1
+    }
+
+    if ((entity.data.hunger ?? 0) > 0.62 && chance(1.25, dt)) {
+      const bunnyTarget = world.nearest(
+        entity,
+        (other) => world.has(other, 'bunny') && foxTargetStates.includes(other.state),
+        Math.max(unit * 42, world.height * 0.7),
+      )
+
+      if (bunnyTarget) {
+        entity.targetId = bunnyTarget.id
+        entity.data.patience = between(0.75, 1.5)
+        world.setState(entity, 'stalk')
+        return
+      }
+    }
+
+    if (chance(0.72, dt)) {
+      const hedgehogTarget = world.nearest(
+        entity,
+        (other) => world.has(other, 'hedgehog') && other.state !== 'curl',
+        Math.max(unit * 28, world.width * 0.75),
+      )
+
+      if (hedgehogTarget) {
+        entity.targetId = hedgehogTarget.id
+        world.setState(entity, 'chase')
+      }
+    }
+  },
+}
+
+const hedgehog: EcoSpecies = {
+  anchor: 'bottom',
+  asset: hedgehogAsset,
+  idle: 'trot',
+  init(entity) {
+    entity.data.sniffAt = between(1.5, 3.5)
+  },
+  layer: 'front',
+  size: [2.2, 2.8],
+  state: 'waddle',
+  tags: ['hedgehog', 'prey', 'burnable'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    const threat = world.nearest(
+      entity,
+      (other) =>
+        (world.has(other, 'fox') && ['stalk', 'pounce', 'chase'].includes(other.state)) ||
+        (world.has(other, 'hawk') && ['dive', 'swoop'].includes(other.state)),
+      unit * 7,
+    )
+    const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 4)
+
+    if (threat && entity.state !== 'curl') {
+      entity.targetId = null
+      entity.vx = 0
+      entity.vy = 0
+      entity.lift = 0
+      world.setAsset(entity, hedgehogBallAsset)
+      world.setState(entity, 'curl')
+    }
+
+    if (entity.state === 'curl') {
+      world.setAsset(entity, hedgehogBallAsset)
+      entity.lift = 0
+      entity.tilt = Math.sin(entity.t * 4) * 3
+
+      if (!threat && entity.t > 1.3) {
+        entity.tilt = 0
+        world.setAsset(entity, hedgehogAsset)
+        world.setState(entity, 'waddle')
+      }
+      return
+    }
+
+    world.setAsset(entity, hedgehogAsset)
+
+    if (fire) {
+      entity.facing = fire.x > entity.x ? -1 : 1
+      walk(entity, world, dt, unit * 1.8)
+      return
+    }
+
+    if (entity.state === 'eat') {
+      settle(entity, dt)
+      entity.fx = 'snuffle'
+
+      if (entity.t > 0.8) {
+        entity.fx = ''
+        world.setState(entity, 'waddle')
+      }
+      return
+    }
+
+    let seedTarget = world.byId(entity.targetId)
+
+    if (
+      seedTarget &&
+      !(seedTarget.species === 'seed' && seedTarget.y > world.groundY - unit * 3.5)
+    ) {
+      seedTarget = null
+      entity.targetId = null
+    }
+
+    if (!seedTarget && entity.t > 0.4) {
+      seedTarget = world.nearest(
+        entity,
+        (other) => other.species === 'seed' && other.y > world.groundY - unit * 4.5,
+        unit * 14,
+      )
+      entity.targetId = seedTarget?.id ?? null
+    }
+
+    if (seedTarget) {
+      if (walkToward(entity, world, seedTarget.x, unit * 1.15, dt) < unit * 0.85) {
+        world.remove(seedTarget)
+        entity.data.meals = (entity.data.meals ?? 0) + 1
+        entity.targetId = null
+        world.setState(entity, 'eat')
+      }
+      return
+    }
+
+    walk(entity, world, dt, unit * 0.62)
+
+    if (chance(0.16, dt)) {
+      entity.facing = entity.facing === 1 ? -1 : 1
+    }
+
+    if (entity.t > (entity.data.sniffAt ?? 2.5)) {
+      entity.fx = 'snuffle'
+      entity.data.sniffAt = between(2, 5)
+      entity.t = 0
+    } else if (entity.fx === 'snuffle' && entity.t > 0.5) {
+      entity.fx = ''
+    }
+  },
+}
+
+const scarecrow: EcoSpecies = {
+  anchor: 'bottom',
+  asset: scarecrowAsset,
+  burnTime: 3.2,
+  idle: 'sway',
+  init(entity) {
+    entity.facing = 1
+    entity.data.sway = between(0.6, 1.4)
+  },
+  layer: 'front',
+  size: [3.2, 4],
+  state: 'guard',
+  style: (entity, world) => ({
+    '--dawn-scarecrow-lean': `${(Math.sin(world.time * 0.9 + entity.id) * (entity.data.sway ?? 1.0)).toFixed(2)}deg`,
+  }),
+  tags: ['scarecrow', 'fuel'],
+  tick(entity) {
+    entity.tilt = Math.sin(entity.age * 0.7 + entity.id) * 1.8
   },
 }
 
@@ -537,4 +1089,14 @@ const balloon: EcoSpecies = {
   },
 }
 
-export const dawnSpecies = { balloon, bunny, dandelion, hawk, seed }
+export const dawnSpecies = {
+  balloon,
+  bunny,
+  carrot,
+  dandelion,
+  fox,
+  hawk,
+  hedgehog,
+  scarecrow,
+  seed,
+}
