@@ -29,7 +29,12 @@ const buildBySceneTone: Partial<Record<SceneTone, () => EcoSpeciesMap>> = {
     cloud: cloudSpecies(menuCloudSpawnDesignsByScene['fairy-castle']),
     fire: fireSpecies,
   }),
-  moonlit: () => ({ ...nightSpecies }),
+  moonlit: () => ({
+    ...nightSpecies,
+    cloud: cloudSpecies(menuCloudSpawnDesignsByScene.moonlit),
+    fire: fireSpecies,
+    flower: flowerSpecies(menuSpawnedAccentSourcesByScene.moonlit),
+  }),
 }
 
 export const hasEcosystem = (sceneTone: SceneTone) => sceneTone in buildBySceneTone

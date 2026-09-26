@@ -161,15 +161,17 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     dandelion,
   ],
   moonlit: [
-    cloudItem(),
-    accentItem('moonlit'),
-    sprite('shooting-star', 'Shooting star', 'shoot', [6, 8.5], {
-      icon: spawnableAsset('shooting-star-icon'),
-    }),
+    creatureCloud,
+    creatureFlower('moonlit'),
+    creature('shooting-star', 'Shooting star', spawnableAsset('shooting-star-icon')),
     creature('boat', 'Boat'),
     creature('lantern', 'Lantern'),
     creature('moth', 'Moth'),
     creature('firefly', 'Firefly'),
+    creature('owl', 'Owl'),
+    creature('bat', 'Bat'),
+    creature('swan', 'Swan'),
+    creature('lily-frog', 'Frog'),
   ],
   classic: [
     creatureCloud,

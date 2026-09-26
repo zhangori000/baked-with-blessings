@@ -1,0 +1,25 @@
+<svg width="170" height="96" viewBox="0 0 170 96" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="asteroidFlame" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffd966" stop-opacity="0" />
+      <stop offset="58%" stop-color="#ffb74d" stop-opacity="0.68" />
+      <stop offset="100%" stop-color="#ff7043" stop-opacity="0.95" />
+    </linearGradient>
+    <radialGradient id="asteroidGlow" cx="0.72" cy="0.48" r="0.48">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.9" />
+      <stop offset="56%" stop-color="#ffb74d" stop-opacity="0.38" />
+      <stop offset="100%" stop-color="#ff7043" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <path d="M4 46C34 18 76 24 121 40C77 42 35 56 4 74Z" fill="url(#asteroidFlame)" opacity="0.8" />
+  <path d="M22 26C53 18 84 29 123 47C78 44 50 45 22 58Z" fill="#ffd966" opacity="0.45" />
+  <path d="M30 68C62 50 91 50 125 55C83 65 55 76 30 88Z" fill="#ff8a65" opacity="0.55" />
+  <ellipse cx="123" cy="51" rx="46" ry="39" fill="url(#asteroidGlow)" />
+  <path d="M106 16C125 7 150 15 161 35C171 54 157 79 135 87C114 94 90 85 79 67C67 46 82 25 106 16Z" fill="#6b4a42" />
+  <path d="M101 22C117 15 139 18 151 34C134 30 114 30 94 39C94 32 96 27 101 22Z" fill="#8b6a5c" />
+  <path d="M79 55C93 67 115 73 142 72C130 87 103 87 88 73C82 68 79 62 79 55Z" fill="#4a3540" opacity="0.72" />
+  <ellipse cx="128" cy="38" rx="12" ry="8" fill="#3a2a36" opacity="0.45" />
+  <ellipse cx="105" cy="58" rx="10" ry="7" fill="#3a2a36" opacity="0.4" />
+  <ellipse cx="141" cy="62" rx="7" ry="5" fill="#3a2a36" opacity="0.36" />
+  <path d="M96 29C104 20 120 15 136 20C121 21 108 26 96 38Z" fill="#b88455" opacity="0.5" />
+</svg>
