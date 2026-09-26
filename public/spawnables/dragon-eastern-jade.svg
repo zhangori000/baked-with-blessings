@@ -1,0 +1,21 @@
+<svg width="192" height="68" viewBox="0 0 192 68" xmlns="http://www.w3.org/2000/svg">
+  <path d="M6 46C24 18 54 16 79 35C98 49 116 54 133 42C145 33 154 23 174 29C160 33 154 42 139 54C118 70 91 60 70 42C48 24 25 24 6 46Z" fill="#7cb342" />
+  <path d="M17 49C37 34 54 32 72 45C94 61 116 63 138 47C148 39 158 33 172 31C158 37 151 47 139 56C117 71 90 61 70 44C52 30 34 33 17 49Z" fill="#558b2f" opacity="0.6" />
+  <path d="M31 36C45 31 60 35 75 47C92 60 112 64 130 54C110 55 94 50 78 38C62 26 45 25 31 36Z" fill="#fff6c8" opacity="0.9" />
+  <path d="M35 37C39 38 42 39 45 41M50 34C54 36 57 38 60 40M66 37C70 40 73 42 77 45M83 47C87 49 91 51 96 52M102 55C106 56 110 57 114 57" fill="none" stroke="#d4a652" stroke-width="1.1" stroke-linecap="round" opacity="0.75" />
+  <path d="M150 30C156 16 174 13 187 23C194 34 186 47 171 49C158 50 149 42 150 30Z" fill="#7cb342" />
+  <path d="M159 27L154 13L167 22Z" fill="#fff6c8" />
+  <path d="M173 24L184 12L181 30Z" fill="#fff6c8" />
+  <path d="M152 28C142 24 136 17 135 8C148 10 156 17 160 29Z" fill="#d4a652" />
+  <path d="M153 39C146 46 139 49 130 49C136 39 144 34 154 33Z" fill="#d4a652" />
+  <path d="M158 20C151 16 147 11 146 5C154 7 160 12 163 21Z" fill="#fff6c8" />
+  <path d="M161 42C154 49 145 53 137 54C143 46 152 40 162 37Z" fill="#fff6c8" />
+  <circle cx="177" cy="29" r="1.8" fill="#2a2a2a" />
+  <path d="M182 36Q188 38 192 34" fill="none" stroke="#7c6559" stroke-width="1.2" stroke-linecap="round" />
+  <path d="M170 42Q182 45 190 55" fill="none" stroke="#d4a652" stroke-width="1.5" stroke-linecap="round" />
+  <path d="M164 39Q151 47 146 60" fill="none" stroke="#d4a652" stroke-width="1.5" stroke-linecap="round" />
+  <path d="M57 46Q51 54 46 63" fill="none" stroke="#558b2f" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M92 55Q88 62 81 66" fill="none" stroke="#558b2f" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M121 55Q126 62 134 65" fill="none" stroke="#558b2f" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M12 44L0 57L4 36Z" fill="#ffd966" />
+</svg>

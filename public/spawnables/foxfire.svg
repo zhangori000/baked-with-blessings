@@ -1,0 +1,13 @@
+<svg width="36" height="44" viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="foxfireGlow" cx="0.52" cy="0.58" r="0.56">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="48%" stop-color="#b8f4ef" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#8bc4d4" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="18" cy="24" rx="17" ry="19" fill="url(#foxfireGlow)" />
+  <path d="M18 2C29 14 31 26 19 40C7 31 8 17 18 2Z" fill="#b8f4ef" />
+  <path d="M20 10C27 19 26 28 19 37C14 28 15 19 20 10Z" fill="#ffffff" opacity="0.86" />
+  <path d="M13 24C10 29 12 34 18 40C7 32 6 23 13 14C14 18 15 21 13 24Z" fill="#8bc4d4" opacity="0.48" />
+</svg>

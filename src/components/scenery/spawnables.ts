@@ -18,7 +18,16 @@ export type SpawnMotion =
   | 'twinkle'
   | 'zip'
 
-export type SpawnIdle = 'bob' | 'buzz' | 'flap' | 'glow' | 'leap' | 'none' | 'sway' | 'wave'
+export type SpawnIdle =
+  | 'bob'
+  | 'buzz'
+  | 'flap'
+  | 'glow'
+  | 'leap'
+  | 'none'
+  | 'sway'
+  | 'undulate'
+  | 'wave'
 
 export type SpawnParticleEffect = 'flame' | 'seeds' | 'sparkles'
 
@@ -26,6 +35,13 @@ export type SpawnParticles = {
   asset: string
   count: number
   effect: SpawnParticleEffect
+}
+
+export type SpawnVariant = {
+  asset: string
+  idle?: SpawnIdle
+  particles?: SpawnParticles
+  size?: readonly [number, number]
 }
 
 export type SceneSpawnable = {
@@ -39,6 +55,7 @@ export type SceneSpawnable = {
   motion?: SpawnMotion
   particles?: SpawnParticles
   size?: readonly [number, number]
+  variants?: readonly SpawnVariant[]
 }
 
 export type SceneSprite = {
@@ -73,9 +90,10 @@ const sprite = (
     icon?: string
     idle?: SpawnIdle
     particles?: SpawnParticles
+    variants?: readonly SpawnVariant[]
   } = {},
 ): SceneSpawnable => {
-  const asset = options.asset ?? spawnableAsset(id)
+  const asset = options.asset ?? options.variants?.[0]?.asset ?? spawnableAsset(id)
 
   return {
     asset,
@@ -88,6 +106,7 @@ const sprite = (
     motion,
     particles: options.particles,
     size,
+    variants: options.variants,
   }
 }
 
@@ -126,6 +145,25 @@ const sparkleTrail: SpawnParticles = {
   count: 5,
   effect: 'sparkles',
 }
+
+const flamePuffs: SpawnParticles = {
+  asset: spawnableAsset('flame-puff'),
+  count: 3,
+  effect: 'flame',
+}
+
+const easternDragon = (color: string): SpawnVariant => ({
+  asset: spawnableAsset(`dragon-eastern-${color}`),
+  idle: 'undulate',
+  size: [7, 9],
+})
+
+const westernDragon = (color: string): SpawnVariant => ({
+  asset: spawnableAsset(`dragon-western-${color}`),
+  idle: 'flap',
+  particles: flamePuffs,
+  size: [5, 6.4],
+})
 
 const butterfly = sprite('butterfly', 'Butterfly', 'flutter', [2.2, 3], { idle: 'flap' })
 const birds = sprite('birds', 'Birds', 'drift', [3.2, 4.2], { idle: 'bob' })
@@ -168,23 +206,33 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     sprite('bee', 'Bee', 'zip', [1.5, 2], { idle: 'buzz' }),
     butterfly,
     sprite('bird', 'Bluebird', 'drift', [2, 2.6], { idle: 'bob' }),
-    sprite('rainbow', 'Rainbow', 'arc', [13, 18]),
+    sprite('rainbow', 'Rainbow', 'arc', [10, 18]),
   ],
   blossom: [
     cloudItem(),
     accentItem('blossom'),
     sprite('petals', 'Petals', 'breeze', [1.6, 2.4], { burst: 5 }),
-    sprite('bunny', 'Bunny', 'hop', [3.4, 4.2], { asset: '/catering/decor/bunny-hop.svg' }),
-    sprite('paper-lantern', 'Lantern', 'rise', [2.4, 3.2], { idle: 'sway' }),
-    sprite('butterfly-pink', 'Butterfly', 'flutter', [2.2, 3], { idle: 'flap' }),
+    sprite('torii', 'Torii gate', 'sprout', [5.2, 6.6]),
+    sprite('kitsune', 'Kitsune', 'gallop', [3.4, 4.2], {
+      particles: { asset: spawnableAsset('foxfire'), count: 5, effect: 'sparkles' },
+    }),
+    sprite('crane', 'Crane', 'drift', [3.8, 5], { idle: 'flap' }),
+    sprite('koinobori', 'Koinobori', 'sprout', [4, 5], { idle: 'wave' }),
+    sprite('chochin', 'Lantern', 'rise', [2.2, 3], { idle: 'glow' }),
   ],
   'fairy-castle': [
     cloudItem(),
     accentItem('fairy-castle'),
     sprite('unicorn', 'Unicorn', 'gallop', [4.4, 5.4], { particles: sparkleTrail }),
-    sprite('dragon', 'Dragon', 'drift', [4.6, 5.8], {
-      idle: 'flap',
-      particles: { asset: spawnableAsset('flame-puff'), count: 3, effect: 'flame' },
+    sprite('dragon', 'Dragon', 'drift', [5, 6.4], {
+      icon: spawnableAsset('dragon-eastern-red'),
+      variants: [
+        easternDragon('red'),
+        easternDragon('jade'),
+        westernDragon('ember'),
+        westernDragon('frost'),
+        westernDragon('emerald'),
+      ],
     }),
     sprite('knight', 'Knight', 'march', [2.8, 3.4]),
     sprite('pennant', 'Pennant', 'sprout', [3, 3.8], { idle: 'wave' }),
@@ -205,7 +253,7 @@ const placementByMotion: Record<
     y: readonly [number, number]
   }
 > = {
-  arc: { duration: [1, 1], x: [8, 58], y: [6, 22] },
+  arc: { duration: [1, 1], x: [-6, 80], y: [0, 36] },
   breeze: { duration: [9, 13], x: [-6, 70], y: [-12, 18] },
   drift: { duration: [30, 48], x: [0, 0], y: [8, 38] },
   flutter: { duration: [7, 11], x: [8, 88], y: [22, 62] },
@@ -225,15 +273,22 @@ const driftDurationById: Record<string, readonly [number, number]> = {
   balloon: [46, 62],
   bird: [16, 22],
   birds: [18, 26],
+  crane: [24, 32],
   dragon: [16, 22],
 }
 
+const pickVariant = (item: SceneSpawnable): SpawnVariant | undefined =>
+  item.variants?.length
+    ? item.variants[Math.floor(Math.random() * item.variants.length)]
+    : undefined
+
 const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {
+  const variant = pickVariant(item)
   const motion = item.motion ?? 'twinkle'
   const placement = placementByMotion[motion]
   const [minDuration, maxDuration] = driftDurationById[item.id] ?? placement.duration
   const duration = between(minDuration, maxDuration)
-  const [minSize, maxSize] = item.size ?? [2, 3]
+  const [minSize, maxSize] = variant?.size ?? item.size ?? [2, 3]
   const isTravel = travelMotions.has(motion)
   const flip = isTravel && Math.random() < 0.35 ? -1 : 1
   const delay = isTravel
@@ -247,12 +302,12 @@ const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {
           : 0
 
   return {
-    asset: item.asset ?? item.icon,
+    asset: variant?.asset ?? item.asset ?? item.icon,
     id: `sprite-${item.id}-${++sceneSpriteSequence}`,
-    idle: item.idle ?? 'none',
+    idle: variant?.idle ?? item.idle ?? 'none',
     itemId: item.id,
     motion,
-    particles: item.particles,
+    particles: variant?.particles ?? item.particles,
     style: {
       ['--sprite-angle' as string]: `${between(14, 30).toFixed(1)}deg`,
       ['--sprite-delay' as string]: `${delay.toFixed(2)}s`,
