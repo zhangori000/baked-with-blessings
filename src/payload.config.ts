@@ -23,6 +23,8 @@ import { CommunityNotes } from '@/collections/CommunityNotes'
 import { FeatureRequestComments } from '@/collections/FeatureRequestComments'
 import { FeatureRequests } from '@/collections/FeatureRequests'
 import { FlavorPolls } from '@/collections/FlavorPolls'
+import { FlavorNudges } from '@/collections/FlavorNudges'
+import { BRING_BACK_ADMIN_VIEW_PATH } from '@/features/flavor-nudges/constants'
 import { FlavorPollVotes } from '@/collections/FlavorPollVotes'
 import { FlavorRotations } from '@/collections/FlavorRotations'
 import { Media } from '@/collections/Media'
@@ -99,6 +101,11 @@ export default buildConfig({
           exact: true,
           path: '/bakery-updates',
         },
+        bringBack: {
+          Component: '@/components/admin/BringBackRequests#BringBackRequestsView',
+          exact: true,
+          path: BRING_BACK_ADMIN_VIEW_PATH,
+        },
         dashboard: {
           Component: '@/components/AdminDashboard#AdminDashboard',
         },
@@ -130,6 +137,7 @@ export default buildConfig({
     FlavorRotations,
     FlavorPolls,
     FlavorPollVotes,
+    FlavorNudges,
     Categories,
     CommunityNotes,
     FeatureRequests,

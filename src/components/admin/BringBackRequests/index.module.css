@@ -1,0 +1,99 @@
+.gutter {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.page {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 48rem;
+}
+
+.header {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.title {
+  margin: 0;
+  color: var(--theme-elevation-1000);
+  font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+  line-height: 1.1;
+}
+
+.subtitle,
+.empty {
+  margin: 0;
+  color: var(--theme-elevation-700);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.total {
+  margin: 0;
+  color: var(--theme-elevation-800);
+  font-weight: 600;
+}
+
+.list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  gap: 0.35rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.75rem;
+  background: var(--theme-elevation-0);
+  padding: 1rem 1.15rem;
+}
+
+.rowMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.flavor {
+  color: var(--theme-elevation-1000);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.count {
+  color: var(--theme-elevation-1000);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.meta {
+  margin: 0;
+  color: var(--theme-elevation-650);
+  font-size: 0.9rem;
+}
+
+.emails {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.emails summary {
+  cursor: pointer;
+  color: var(--theme-elevation-800);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.emailList {
+  margin: 0.4rem 0;
+  color: var(--theme-elevation-800);
+  font-size: 0.9rem;
+  word-break: break-word;
+}

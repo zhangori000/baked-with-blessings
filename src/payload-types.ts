@@ -95,6 +95,7 @@ export interface Config {
     'flavor-rotations': FlavorRotation;
     'flavor-polls': FlavorPoll;
     'flavor-poll-votes': FlavorPollVote;
+    'flavor-nudges': FlavorNudge;
     categories: Category;
     'community-notes': CommunityNote;
     'feature-requests': FeatureRequest;
@@ -149,6 +150,7 @@ export interface Config {
     'flavor-rotations': FlavorRotationsSelect<false> | FlavorRotationsSelect<true>;
     'flavor-polls': FlavorPollsSelect<false> | FlavorPollsSelect<true>;
     'flavor-poll-votes': FlavorPollVotesSelect<false> | FlavorPollVotesSelect<true>;
+    'flavor-nudges': FlavorNudgesSelect<false> | FlavorNudgesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'community-notes': CommunityNotesSelect<false> | CommunityNotesSelect<true>;
     'feature-requests': FeatureRequestsSelect<false> | FeatureRequestsSelect<true>;
@@ -2145,6 +2147,18 @@ export interface FlavorPollVote {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-nudges".
+ */
+export interface FlavorNudge {
+  id: number;
+  product: number | Product;
+  voterKey: string;
+  email?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Customer-written post-it notes shown on the Community Post-it Wall. Toggle "isHidden" to take a note off the public wall without deleting it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2407,6 +2421,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'flavor-poll-votes';
         value: number | FlavorPollVote;
+      } | null)
+    | ({
+        relationTo: 'flavor-nudges';
+        value: number | FlavorNudge;
       } | null)
     | ({
         relationTo: 'categories';
@@ -3092,6 +3110,17 @@ export interface FlavorPollVotesSelect<T extends boolean = true> {
         id?: T;
       };
   flavorIdea?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "flavor-nudges_select".
+ */
+export interface FlavorNudgesSelect<T extends boolean = true> {
+  product?: T;
+  voterKey?: T;
+  email?: T;
   updatedAt?: T;
   createdAt?: T;
 }

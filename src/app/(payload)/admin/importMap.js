@@ -36,6 +36,7 @@ import { AdminQuickNav as AdminQuickNav_87254cc8b3c9be2371f930a437d35b8f } from 
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { BakeryUpdateDetailView as BakeryUpdateDetailView_f4e6f84072a5709277a6920146956417 } from '@/components/admin/BakeryUpdates'
 import { BakeryUpdatesView as BakeryUpdatesView_f4e6f84072a5709277a6920146956417 } from '@/components/admin/BakeryUpdates'
+import { BringBackRequestsView as BringBackRequestsView_9a4ec801a3b44e0db8895c740f635d68 } from '@/components/admin/BringBackRequests'
 import { AdminDashboard as AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698 } from '@/components/AdminDashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -79,6 +80,7 @@ export const importMap = {
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@/components/admin/BakeryUpdates#BakeryUpdateDetailView": BakeryUpdateDetailView_f4e6f84072a5709277a6920146956417,
   "@/components/admin/BakeryUpdates#BakeryUpdatesView": BakeryUpdatesView_f4e6f84072a5709277a6920146956417,
+  "@/components/admin/BringBackRequests#BringBackRequestsView": BringBackRequestsView_9a4ec801a3b44e0db8895c740f635d68,
   "@/components/AdminDashboard#AdminDashboard": AdminDashboard_d2e5e8cdcf265e3c61c4d683161d9698,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

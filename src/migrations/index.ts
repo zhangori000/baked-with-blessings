@@ -38,6 +38,7 @@ import * as migration_20260925_013001_relax_vote_pick_product from './20260925_0
 import * as migration_20260925_034500_add_store_settings_mailing_address from './20260925_034500_add_store_settings_mailing_address';
 import * as migration_20260925_044709_add_flavor_poll_opens_at from './20260925_044709_add_flavor_poll_opens_at';
 import * as migration_20260925_060000_add_bakery_update_templates from './20260925_060000_add_bakery_update_templates';
+import * as migration_20260926_055420_flavor_nudges from './20260926_055420_flavor_nudges';
 
 export const migrations = [
   {
@@ -239,5 +240,10 @@ export const migrations = [
     up: migration_20260925_060000_add_bakery_update_templates.up,
     down: migration_20260925_060000_add_bakery_update_templates.down,
     name: '20260925_060000_add_bakery_update_templates',
+  },
+  {
+    up: migration_20260926_055420_flavor_nudges.up,
+    down: migration_20260926_055420_flavor_nudges.down,
+    name: '20260926_055420_flavor_nudges',
   },
 ];

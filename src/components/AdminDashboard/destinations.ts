@@ -1,3 +1,5 @@
+import { BRING_BACK_ADMIN_HREF } from '@/features/flavor-nudges/constants'
+
 export type AdminDestination = {
   description: string
   href: `/admin/${string}`
@@ -41,6 +43,12 @@ export const dailyDestinations: AdminDestination[] = [
     label: 'Reviews to moderate',
     description: 'Read customer reviews and decide what should be visible on the site.',
     href: '/admin/collections/reviews',
+  },
+  {
+    key: 'bring-back',
+    label: 'Bring-back requests',
+    description: 'See which old flavors customers want back, most wanted first.',
+    href: BRING_BACK_ADMIN_HREF,
   },
 ]
 

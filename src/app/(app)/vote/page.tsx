@@ -3,7 +3,9 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
+import { FlavorNudgeProvider } from '@/components/FlavorNudge'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
+import { loadNudgeFlavors } from '@/features/flavor-nudges/service'
 import { loadNextVoteStatus, loadVoteHistory } from '@/features/flavor-polls/landing'
 import { findBallot, findOpenPoll, tallyPoll, toPublicPoll } from '@/features/flavor-polls/services'
 import { FLAVOR_POLL_VOTER_COOKIE, readVoterKey } from '@/features/flavor-polls/voterCookie'
@@ -32,7 +34,7 @@ const loadVoteData = async () => {
   const voterKey = readVoterKey(cookieStore.get(FLAVOR_POLL_VOTER_COOKIE)?.value)
   const openDoc = await findOpenPoll(payload, now)
 
-  const [openVote, history, next] = await Promise.all([
+  const [openVote, history, next, oldFlavors] = await Promise.all([
     (async () => {
       if (!openDoc) return null
       const poll = toPublicPoll(openDoc)
@@ -43,9 +45,12 @@ const loadVoteData = async () => {
     })(),
     loadVoteHistory(payload, { now, voterKey }),
     loadNextVoteStatus(payload, { hasOpenPoll: Boolean(openDoc), now }),
+    loadNudgeFlavors(),
   ])
+  const onBallot = new Set(openVote?.poll.options.map((option) => option.productId) ?? [])
+  const nudgeFlavors = oldFlavors.filter((flavor) => !onBallot.has(flavor.productId))
 
-  return { history, next, openVote }
+  return { history, next, nudgeFlavors, openVote }
 }
 
 export default async function VotePage() {
@@ -71,12 +76,14 @@ export default async function VotePage() {
 
         <section className="voteBand">
           <div className="voteShell container">
-            <VoteExperience
-              featureRequestsEnabled={sitePages.featureRequestsEnabled}
-              history={data.history}
-              next={data.next}
-              openVote={data.openVote}
-            />
+            <FlavorNudgeProvider flavors={data.nudgeFlavors}>
+              <VoteExperience
+                featureRequestsEnabled={sitePages.featureRequestsEnabled}
+                history={data.history}
+                next={data.next}
+                openVote={data.openVote}
+              />
+            </FlavorNudgeProvider>
           </div>
         </section>
       </div>
