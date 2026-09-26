@@ -35,20 +35,6 @@
   left: 0;
 }
 
-.sceneSprite--hop {
-  animation: sceneSpriteDrift var(--sprite-duration) linear var(--sprite-delay) infinite;
-  animation-direction: var(--sprite-direction, normal);
-  bottom: var(--spawn-ground-bottom, 6%);
-  left: 0;
-  top: auto;
-}
-
-.sceneSprite--hop .sceneSpritePop {
-  animation:
-    sceneSpritePop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
-    sceneSpriteHop 1.05s cubic-bezier(0.33, 0, 0.67, 1) 520ms infinite;
-}
-
 .sceneSprite--flutter {
   animation: sceneSpriteWander var(--sprite-duration) ease-in-out var(--sprite-delay) infinite;
 }
@@ -81,14 +67,6 @@
   animation: sceneSpriteRise var(--sprite-duration) cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
-.sceneSprite--arc {
-  opacity: 0.92;
-}
-
-.sceneSprite--arc .sceneSpritePop {
-  animation: sceneSpriteWipe 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .sceneSpriteArt--bob {
   animation: sceneSpriteBob 3.2s ease-in-out infinite;
 }
@@ -100,10 +78,6 @@
 
 .sceneSpriteArt--flap {
   animation: sceneSpriteFlap 0.32s ease-in-out infinite alternate;
-}
-
-.sceneSpriteArt--buzz {
-  animation: sceneSpriteBuzz 0.16s linear infinite alternate;
 }
 
 .sceneSpriteArt--glow {
@@ -138,25 +112,6 @@
 
   to {
     transform: translate3d(calc(100cqw + 10%), 0, 0);
-  }
-}
-
-@keyframes sceneSpriteHop {
-  0%,
-  100% {
-    transform: translateY(0) scale(1.06, 0.94);
-  }
-
-  12% {
-    transform: translateY(0) scale(1, 1);
-  }
-
-  45% {
-    transform: translateY(-1.4rem) scale(0.96, 1.05);
-  }
-
-  80% {
-    transform: translateY(0) scale(1, 1);
   }
 }
 
@@ -263,16 +218,6 @@
   }
 }
 
-@keyframes sceneSpriteWipe {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
 @keyframes sceneSpriteBob {
   0%,
   100% {
@@ -305,16 +250,6 @@
   }
 }
 
-@keyframes sceneSpriteBuzz {
-  from {
-    transform: translate(0, 0) rotate(-3deg);
-  }
-
-  to {
-    transform: translate(0.08rem, -0.1rem) rotate(3deg);
-  }
-}
-
 @keyframes sceneSpriteGlow {
   0%,
   100% {
@@ -326,8 +261,7 @@
   }
 }
 
-.sceneSprite--gallop,
-.sceneSprite--march {
+.sceneSprite--gallop {
   animation: sceneSpriteDrift var(--sprite-duration) linear var(--sprite-delay) infinite;
   animation-direction: var(--sprite-direction, normal);
   bottom: var(--spawn-ground-bottom, 6%);
@@ -339,12 +273,6 @@
   animation:
     sceneSpritePop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
     sceneSpriteGallop 0.62s cubic-bezier(0.45, 0, 0.55, 1) 520ms infinite;
-}
-
-.sceneSprite--march .sceneSpritePop {
-  animation:
-    sceneSpritePop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
-    sceneSpriteMarch 0.56s ease-in-out 520ms infinite;
 }
 
 .sceneSprite--loop {
@@ -364,36 +292,6 @@
 
 .sceneSprite--breeze .sceneSpriteArt {
   animation: sceneSpriteTumble 2.6s linear var(--sprite-idle-delay, 0s) infinite;
-}
-
-.sceneSprite--kite {
-  animation: sceneSpriteFigureEight var(--sprite-duration) ease-in-out var(--sprite-delay) infinite;
-}
-
-.sceneSprite--kite .sceneSpritePop::after {
-  background: linear-gradient(rgba(108, 86, 62, 0.55), rgba(108, 86, 62, 0));
-  content: '';
-  height: 70cqh;
-  left: 50%;
-  position: absolute;
-  top: 82%;
-  transform: rotate(10deg);
-  transform-origin: top center;
-  width: 1px;
-}
-
-.sceneSprite--zip {
-  animation: sceneSpriteZip var(--sprite-duration) cubic-bezier(0.7, 0, 0.3, 1) var(--sprite-delay)
-    infinite;
-}
-
-.sceneSpriteArt--leap {
-  animation: sceneSpriteLeap 3.4s ease-out infinite;
-  transform-origin: center bottom;
-}
-
-.sceneSpriteArt--undulate {
-  animation: sceneSpriteUndulate 2.4s ease-in-out infinite;
 }
 
 .sceneSpriteArt--wave {
@@ -430,13 +328,6 @@
   width: 22%;
 }
 
-.sceneSpriteParticles--flame .sceneSpriteParticle {
-  animation: sceneSpriteFlame 5s ease-out calc(var(--particle-index) * 0.18s + 1.5s) infinite;
-  left: 88%;
-  top: 30%;
-  width: 22%;
-}
-
 @keyframes sceneSpriteGallop {
   0%,
   100% {
@@ -449,22 +340,6 @@
 
   60% {
     transform: translateY(-0.4rem) rotate(calc(var(--sprite-flip, 1) * 5deg));
-  }
-}
-
-@keyframes sceneSpriteMarch {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-3deg);
-  }
-
-  25%,
-  75% {
-    transform: translateY(-0.28rem) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(0) rotate(3deg);
   }
 }
 
@@ -527,98 +402,6 @@
   }
 }
 
-@keyframes sceneSpriteFigureEight {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-
-  12.5% {
-    transform: translate3d(calc(var(--sprite-sway) * 1.4), -1.2rem, 0) rotate(12deg);
-  }
-
-  25% {
-    transform: translate3d(calc(var(--sprite-sway) * 2.2), 0, 0) rotate(4deg);
-  }
-
-  37.5% {
-    transform: translate3d(calc(var(--sprite-sway) * 1.4), 1.2rem, 0) rotate(-10deg);
-  }
-
-  50% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-
-  62.5% {
-    transform: translate3d(calc(var(--sprite-sway) * -1.4), -1.2rem, 0) rotate(-12deg);
-  }
-
-  75% {
-    transform: translate3d(calc(var(--sprite-sway) * -2.2), 0, 0) rotate(-4deg);
-  }
-
-  87.5% {
-    transform: translate3d(calc(var(--sprite-sway) * -1.4), 1.2rem, 0) rotate(10deg);
-  }
-}
-
-@keyframes sceneSpriteZip {
-  0%,
-  14% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  22%,
-  36% {
-    transform: translate3d(calc(var(--sprite-sway) * 2), -1.4rem, 0);
-  }
-
-  44%,
-  58% {
-    transform: translate3d(calc(var(--sprite-sway) * 0.6), 1.2rem, 0);
-  }
-
-  66%,
-  80% {
-    transform: translate3d(calc(var(--sprite-sway) * -1.6), -0.6rem, 0);
-  }
-
-  88% {
-    transform: translate3d(calc(var(--sprite-sway) * -0.4), 0.8rem, 0);
-  }
-}
-
-@keyframes sceneSpriteLeap {
-  0%,
-  62%,
-  100% {
-    transform: translateY(0) scale(1, 1);
-  }
-
-  68% {
-    transform: translateY(0) scale(1.12, 0.86);
-  }
-
-  78% {
-    transform: translateY(-1.1rem) scale(0.94, 1.08);
-  }
-
-  88% {
-    transform: translateY(0) scale(1.08, 0.92);
-  }
-}
-
-@keyframes sceneSpriteUndulate {
-  0%,
-  100% {
-    transform: scaleX(var(--sprite-flip, 1)) translateY(0) skewY(3deg);
-  }
-
-  50% {
-    transform: scaleX(var(--sprite-flip, 1)) translateY(-0.35rem) skewY(-3deg);
-  }
-}
-
 @keyframes sceneSpriteWave {
   0%,
   100% {
@@ -673,42 +456,15 @@
   }
 }
 
-@keyframes sceneSpriteFlame {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.3);
-  }
-
-  3% {
-    opacity: 1;
-  }
-
-  14% {
-    opacity: 0;
-    transform: translate3d(calc(1.4rem + var(--particle-index) * 0.3rem), -0.2rem, 0) scale(1.1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate3d(calc(1.4rem + var(--particle-index) * 0.3rem), -0.2rem, 0) scale(1.1);
-  }
-}
-
 @media (max-width: 639px) {
   .sceneSprite {
     --sprite-scale: 0.72;
-  }
-
-  .sceneSprite--arc {
-    --sprite-scale: 0.6;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sceneSprite--drift,
-  .sceneSprite--hop,
   .sceneSprite--gallop,
-  .sceneSprite--march,
   .sceneSprite--loop,
   .sceneSprite--flutter {
     animation: none;
@@ -716,9 +472,7 @@
   }
 
   .sceneSprite--drift,
-  .sceneSprite--hop,
   .sceneSprite--gallop,
-  .sceneSprite--march,
   .sceneSprite--loop {
     --sprite-x: 50%;
   }
@@ -729,9 +483,7 @@
 
   .sceneSprite--shoot,
   .sceneSprite--breeze,
-  .sceneSprite--rise,
-  .sceneSprite--kite,
-  .sceneSprite--zip {
+  .sceneSprite--rise {
     animation: none;
   }
 
@@ -746,13 +498,10 @@
 
   .sceneSpritePop,
   .sceneSpriteArt,
-  .sceneSprite--hop .sceneSpritePop,
   .sceneSprite--gallop .sceneSpritePop,
-  .sceneSprite--march .sceneSpritePop,
   .sceneSprite--loop .sceneSpritePop,
   .sceneSprite--breeze .sceneSpriteArt,
-  .sceneSprite--sprout .sceneSpritePop,
-  .sceneSprite--arc .sceneSpritePop {
+  .sceneSprite--sprout .sceneSpritePop {
     animation: none;
   }
 }
