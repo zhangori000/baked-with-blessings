@@ -37,6 +37,18 @@ export type SceneSpawnable = {
   species?: string
 }
 
+export type SpawnMilestone = {
+  at: number
+  noun: string
+  tally: string
+}
+
+export const asteroidStarCount = 25
+
+export const spawnMilestoneByScene: Partial<Record<SceneTone, SpawnMilestone>> = {
+  moonlit: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
+}
+
 export type SceneSprite = {
   asset: string
   id: string
@@ -151,6 +163,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('hawk', 'Hawk'),
     creature('balloon', 'Balloon'),
     butterflyCreature,
+    creature('carrot', 'Carrot'),
+    creature('fox', 'Fox'),
+    creature('hedgehog', 'Hedgehog'),
+    creature('scarecrow', 'Scarecrow'),
   ],
   'under-tree': [
     cloudItem(),
@@ -161,15 +177,17 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     dandelion,
   ],
   moonlit: [
-    cloudItem(),
-    accentItem('moonlit'),
-    sprite('shooting-star', 'Shooting star', 'shoot', [6, 8.5], {
-      icon: spawnableAsset('shooting-star-icon'),
-    }),
+    creatureCloud,
+    creatureFlower('moonlit'),
+    creature('shooting-star', 'Shooting star', spawnableAsset('shooting-star-icon')),
     creature('boat', 'Boat'),
     creature('lantern', 'Lantern'),
     creature('moth', 'Moth'),
     creature('firefly', 'Firefly'),
+    creature('owl', 'Owl'),
+    creature('bat', 'Bat'),
+    creature('swan', 'Swan'),
+    creature('lily-frog', 'Frog'),
   ],
   classic: [
     creatureCloud,
@@ -179,18 +197,24 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('caterpillar', 'Caterpillar'),
     creature('bird', 'Bluebird'),
     creature('cat', 'Cat'),
+    creature('beehive', 'Beehive'),
+    creature('frog', 'Frog'),
+    creature('mouse', 'Mouse'),
+    creature('bear', 'Bear'),
   ],
   blossom: [
-    cloudItem(),
-    accentItem('blossom'),
-    sprite('petals', 'Petals', 'breeze', [1.6, 2.4], { burst: 5 }),
-    sprite('torii', 'Torii gate', 'sprout', [5.2, 6.6]),
-    sprite('kitsune', 'Kitsune', 'gallop', [3.4, 4.2], {
-      particles: { asset: spawnableAsset('foxfire'), count: 5, effect: 'sparkles' },
-    }),
-    sprite('crane', 'Crane', 'drift', [3.8, 5], { idle: 'flap' }),
-    sprite('koinobori', 'Koinobori', 'sprout', [4, 5], { idle: 'wave' }),
-    sprite('chochin', 'Lantern', 'rise', [2.2, 3], { idle: 'glow' }),
+    creatureCloud,
+    creature('sakura', 'Sakura'),
+    creature('sheep', 'Sheep', spawnableAsset('sheep')),
+    creature('torii', 'Torii gate'),
+    creature('monk', 'Monk'),
+    creature('samurai', 'Samurai'),
+    creature('oni', 'Oni'),
+    creature('ninja', 'Ninja'),
+    creature('kitsune', 'Kitsune'),
+    creature('tanuki', 'Tanuki'),
+    creature('crane', 'Crane'),
+    creature('chochin', 'Lantern'),
   ],
   'fairy-castle': [
     creatureCloud,
@@ -205,6 +229,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('unicorn', 'Unicorn'),
     creature('frog-prince', 'Frog prince'),
     creature('pennant', 'Pennant'),
+    creature('princess', 'Princess'),
+    creature('wizard', 'Wizard'),
+    creature('ballista', 'Ballista'),
+    creature('treasure', 'Treasure'),
   ],
 }
 

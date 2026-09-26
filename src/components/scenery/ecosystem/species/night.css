@@ -1,0 +1,356 @@
+.ecoThing[data-species='shooting-star'] {
+  opacity: var(--night-star-opacity, 1);
+}
+
+.ecoThing[data-species='shooting-star'] .ecoPop,
+.ecoThing[data-species='impact'] .ecoPop {
+  animation: none;
+}
+
+.ecoThing[data-species='shooting-star'] .ecoArt {
+  filter: drop-shadow(0 0 0.42rem rgba(255, 230, 150, 0.92));
+}
+
+.ecoThing[data-species='shooting-star'][data-state='asteroid'] .ecoArt {
+  animation: nightAsteroidBurn 0.18s ease-in-out infinite alternate;
+  filter: drop-shadow(-0.8rem 0.15rem 0.42rem rgba(255, 112, 67, 0.8))
+    drop-shadow(0 0 0.8rem rgba(255, 217, 102, 0.72));
+}
+
+.ecoThing[data-species='impact'] {
+  mix-blend-mode: screen;
+}
+
+.ecoThing[data-species='impact'] .ecoAnchor::before,
+.ecoThing[data-species='impact'] .ecoAnchor::after {
+  border-radius: 999rem;
+  content: '';
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ecoThing[data-species='impact'] .ecoAnchor::before {
+  animation: nightImpactFlash 4.8s ease-out both;
+  background: radial-gradient(
+    circle,
+    rgba(255, 253, 247, 1) 0 10%,
+    rgba(255, 246, 200, 0.94) 10% 25%,
+    rgba(255, 217, 102, 0.58) 25% 42%,
+    rgba(255, 138, 101, 0.18) 42% 58%,
+    rgba(255, 217, 102, 0) 72%
+  );
+  height: var(--impact-flash-size, 150vw);
+  width: var(--impact-flash-size, 150vw);
+  z-index: -2;
+}
+
+.ecoThing[data-species='impact'] .ecoAnchor::after {
+  animation: nightImpactRing 2.8s ease-out both;
+  border: max(0.22rem, 5px) solid rgba(255, 246, 200, 0.95);
+  box-shadow:
+    0 0 2rem rgba(255, 217, 102, 0.85),
+    inset 0 0 1.5rem rgba(255, 255, 255, 0.6);
+  height: var(--impact-ring-size, 100vw);
+  width: var(--impact-ring-size, 100vw);
+  z-index: -1;
+}
+
+.ecoThing[data-species='impact'] .ecoPose {
+  animation: nightImpactShake 0.42s linear 2;
+}
+
+.ecoThing[data-species='impact'] .ecoArt {
+  animation: nightCraterSettle 4.8s ease-out both;
+  filter: drop-shadow(0 0 1.1rem rgba(255, 217, 102, 0.55));
+}
+
+.ecoThing[data-species='owl'][data-state='hoot'] .ecoArt {
+  animation: nightOwlHoot 0.34s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.35rem rgba(212, 168, 255, 0.45));
+}
+
+.ecoThing[data-species='owl'][data-state='swoop'] .ecoArt {
+  animation: none;
+  filter: drop-shadow(0 0 0.22rem rgba(255, 253, 247, 0.38));
+  transform: scale(1.12, 0.82) rotate(-4deg);
+  transform-origin: center;
+}
+
+.ecoThing[data-species='bat'] .ecoArt {
+  animation: nightBatFlutter 0.18s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+.ecoThing[data-species='bat'][data-state='flee'] .ecoArt {
+  animation-duration: 0.1s;
+  filter: drop-shadow(0 0 0.3rem rgba(212, 168, 255, 0.35));
+}
+
+.ecoThing[data-species='bat'][data-state='hunt'] .ecoArt {
+  filter: drop-shadow(0 0 0.25rem rgba(255, 246, 200, 0.28));
+}
+
+.ecoThing[data-species='swan'] .ecoArt {
+  filter: drop-shadow(0 0.12rem 0.15rem rgba(10, 21, 64, 0.22));
+}
+
+.ecoThing[data-species='swan'][data-state='dip'] .ecoArt {
+  animation: nightSwanDip 1.5s ease-in-out both;
+  transform-origin: 62% 82%;
+}
+
+.ecoThing[data-species='swan'][data-state='takeoff'] .ecoArt,
+.ecoThing[data-species='swan'][data-state='circle'] .ecoArt,
+.ecoThing[data-species='swan'][data-state='land'] .ecoArt {
+  animation: nightSwanFlap 0.26s ease-in-out infinite alternate;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='lily-pad'] .ecoArt {
+  filter: drop-shadow(0 0.14rem 0.12rem rgba(10, 21, 64, 0.22));
+}
+
+.ecoThing[data-species='lily-frog'] .ecoPose::after {
+  background: linear-gradient(90deg, #f0a8c8, #ffd1dc);
+  border-radius: 999px;
+  content: '';
+  height: 0.18rem;
+  left: 58%;
+  opacity: 0;
+  position: absolute;
+  top: 42%;
+  transform: rotate(var(--frog-tongue-angle, 0deg));
+  transform-origin: left center;
+  width: var(--frog-tongue, 0rem);
+}
+
+.ecoThing[data-species='lily-frog'][data-state='snap'] .ecoPose::after {
+  animation: nightFrogTongue 0.42s ease-out both;
+}
+
+.ecoThing[data-species='lily-frog'][data-fx='croak'] .ecoArt {
+  animation: nightFrogCroak 0.36s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.28rem rgba(106, 212, 160, 0.44));
+}
+
+.ecoThing[data-species='lily-frog'][data-state='hop'] .ecoArt {
+  animation: nightFrogHop 0.32s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='firefly'][data-fx='chorus'] .ecoArt {
+  filter: drop-shadow(0 0 calc(var(--eco-glow, 0) * 1rem) rgba(255, 246, 200, 1))
+    drop-shadow(0 0 0.35rem rgba(106, 212, 160, 0.42));
+}
+
+@keyframes nightAsteroidBurn {
+  from {
+    transform: scale(1) rotate(-1deg);
+  }
+
+  to {
+    transform: scale(1.06) rotate(2deg);
+  }
+}
+
+@keyframes nightImpactFlash {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.08);
+  }
+
+  8% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  18% {
+    opacity: 0.92;
+  }
+
+  42% {
+    opacity: 0.18;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.22);
+  }
+}
+
+@keyframes nightImpactRing {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.04);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes nightImpactShake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  18% {
+    transform: translate(
+      calc(var(--impact-shake, 8px) * -1),
+      calc(var(--impact-shake, 8px) * 0.25)
+    );
+  }
+
+  36% {
+    transform: translate(var(--impact-shake, 8px), calc(var(--impact-shake, 8px) * -0.18));
+  }
+
+  54% {
+    transform: translate(
+      calc(var(--impact-shake, 8px) * -0.62),
+      calc(var(--impact-shake, 8px) * -0.2)
+    );
+  }
+
+  72% {
+    transform: translate(
+      calc(var(--impact-shake, 8px) * 0.5),
+      calc(var(--impact-shake, 8px) * 0.18)
+    );
+  }
+}
+
+@keyframes nightCraterSettle {
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+
+  12% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  72% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-0.4rem);
+  }
+}
+
+@keyframes nightOwlHoot {
+  from {
+    transform: translateY(0) scale(1, 1);
+  }
+
+  to {
+    transform: translateY(-0.22rem) scale(1.04, 0.96);
+  }
+}
+
+@keyframes nightBatFlutter {
+  from {
+    transform: rotate(-6deg) scale(1, 1);
+  }
+
+  to {
+    transform: rotate(6deg) scale(0.82, 0.96);
+  }
+}
+
+@keyframes nightSwanDip {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  45%,
+  72% {
+    transform: rotate(11deg) translateY(0.24rem);
+  }
+}
+
+@keyframes nightSwanFlap {
+  from {
+    transform: scale(1, 1) rotate(-2deg);
+  }
+
+  to {
+    transform: scale(1.04, 0.88) rotate(3deg);
+  }
+}
+
+@keyframes nightFrogTongue {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--frog-tongue-angle, 0deg)) scaleX(0);
+  }
+
+  28%,
+  62% {
+    opacity: 1;
+    transform: rotate(var(--frog-tongue-angle, 0deg)) scaleX(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(var(--frog-tongue-angle, 0deg)) scaleX(0.08);
+  }
+}
+
+@keyframes nightFrogCroak {
+  from {
+    transform: scale(1, 1);
+  }
+
+  to {
+    transform: scale(1.08, 0.94);
+  }
+}
+
+@keyframes nightFrogHop {
+  from {
+    transform: rotate(-2deg) scale(1, 1);
+  }
+
+  to {
+    transform: rotate(2deg) scale(1.04, 0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='shooting-star'] .ecoArt,
+  .ecoThing[data-species='shooting-star'][data-state='asteroid'] .ecoArt,
+  .ecoThing[data-species='impact'] .ecoAnchor::before,
+  .ecoThing[data-species='impact'] .ecoAnchor::after,
+  .ecoThing[data-species='impact'] .ecoPose,
+  .ecoThing[data-species='impact'] .ecoArt,
+  .ecoThing[data-species='owl'][data-state='hoot'] .ecoArt,
+  .ecoThing[data-species='bat'] .ecoArt,
+  .ecoThing[data-species='swan'][data-state='dip'] .ecoArt,
+  .ecoThing[data-species='swan'][data-state='takeoff'] .ecoArt,
+  .ecoThing[data-species='swan'][data-state='circle'] .ecoArt,
+  .ecoThing[data-species='swan'][data-state='land'] .ecoArt,
+  .ecoThing[data-species='lily-frog'][data-state='snap'] .ecoPose::after,
+  .ecoThing[data-species='lily-frog'][data-fx='croak'] .ecoArt,
+  .ecoThing[data-species='lily-frog'][data-state='hop'] .ecoArt {
+    animation: none;
+  }
+
+  .ecoThing[data-species='impact'] .ecoAnchor::before,
+  .ecoThing[data-species='impact'] .ecoAnchor::after,
+  .ecoThing[data-species='lily-frog'] .ecoPose::after {
+    opacity: 0;
+  }
+}

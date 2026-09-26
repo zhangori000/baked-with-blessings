@@ -1,0 +1,17 @@
+<svg width="260" height="180" viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="impactGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fffdf7" stop-opacity="0.9" />
+      <stop offset="48%" stop-color="#ffd966" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="130" cy="100" rx="112" ry="66" fill="url(#impactGlow)" />
+  <ellipse cx="130" cy="128" rx="78" ry="28" fill="#fff6c8" opacity="0.36" />
+  <path d="M48 130C78 112 181 111 214 130C194 157 76 158 48 130Z" fill="#2a2038" opacity="0.72" />
+  <path d="M65 128C96 116 164 116 197 129C164 142 96 142 65 128Z" fill="#4a3540" opacity="0.82" />
+  <path d="M83 124C108 118 152 118 179 125C151 132 107 132 83 124Z" fill="#1a2030" opacity="0.78" />
+  <ellipse cx="86" cy="106" rx="22" ry="9" fill="#ffd966" opacity="0.35" />
+  <ellipse cx="172" cy="109" rx="26" ry="10" fill="#ffd966" opacity="0.28" />
+  <path d="M36 115C70 101 186 100 225 116C183 111 76 111 36 115Z" fill="#ffeaa3" opacity="0.42" />
+</svg>

@@ -14,7 +14,7 @@ type NodeCache = {
   z: string
 }
 
-const emptySnapshot: EcoSnapshot = { counts: {}, entities: [], scene: '' }
+const emptySnapshot: EcoSnapshot = { counts: {}, entities: [], scene: '', tallies: {} }
 
 export class EcosystemStore {
   private frozen = false
@@ -254,7 +254,7 @@ export class EcosystemStore {
     const engine = this.engine
 
     if (!engine) {
-      return { counts: {}, entities: [], scene: this.scene }
+      return { counts: {}, entities: [], scene: this.scene, tallies: {} }
     }
 
     return {
@@ -277,6 +277,7 @@ export class EcosystemStore {
         }
       }),
       scene: this.scene,
+      tallies: engine.tallies,
     }
   }
 

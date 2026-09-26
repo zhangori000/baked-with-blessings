@@ -579,8 +579,13 @@
     width: 1.32rem;
   }
 
+  .cateringScene-moonlit .cateringHeroMeadow {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
   .cateringScene-moonlit .cateringHeroSpawnLayer--ground {
-    --spawn-water-bottom: calc(var(--catering-hero-meadow-height) * 0.42);
+    --spawn-water-bottom: calc(var(--catering-hero-meadow-height) * 0.6);
   }
 }
 

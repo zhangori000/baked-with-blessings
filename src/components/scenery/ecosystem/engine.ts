@@ -21,6 +21,7 @@ export class Ecosystem implements EcoWorld {
   waterY = 0
   width = 0
   dirty = true
+  tallies: Record<string, number> = {}
   private sequence = 0
   private readonly windDirection = Math.random() < 0.5 ? -1 : 1
 
@@ -271,6 +272,19 @@ export class Ecosystem implements EcoWorld {
     if (this.entities.some((entity) => entity.removed)) {
       this.entities = this.entities.filter((entity) => !entity.removed)
     }
+  }
+
+  tally(key: string, delta = 1) {
+    const next = Math.max(0, (this.tallies[key] ?? 0) + delta)
+
+    this.tallies = { ...this.tallies, [key]: next }
+    this.dirty = true
+
+    return next
+  }
+
+  resetTally(key: string) {
+    this.tally(key, -(this.tallies[key] ?? 0))
   }
 
   counts() {

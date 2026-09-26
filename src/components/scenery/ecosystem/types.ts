@@ -17,28 +17,61 @@ export type EcoIdle =
   | 'wave'
 
 export type EcoTag =
+  | 'asteroid'
   | 'balloon'
+  | 'bat'
+  | 'beam'
+  | 'bear'
   | 'bee'
+  | 'beehive'
   | 'bird'
+  | 'boulder'
   | 'building'
   | 'bunny'
   | 'burnable'
   | 'butterfly'
-  | 'caterpillar'
+  | 'carrot'
   | 'cat'
+  | 'caterpillar'
   | 'cloud'
   | 'dragon'
   | 'fire'
   | 'fireball'
   | 'firefly'
+  | 'fox'
+  | 'frog'
   | 'fuel'
   | 'hawk'
+  | 'hedgehog'
   | 'insect'
   | 'knight'
   | 'lantern'
+  | 'monk'
+  | 'mouse'
+  | 'ninja'
+  | 'oni'
+  | 'owl'
   | 'plant'
+  | 'predator'
+  | 'prey'
+  | 'prince'
+  | 'princess'
+  | 'projectile'
+  | 'sakura'
+  | 'samurai'
+  | 'scarecrow'
+  | 'sheep'
+  | 'shuriken'
+  | 'spirit'
+  | 'star'
+  | 'swan'
+  | 'tanuki'
   | 'target'
+  | 'torii'
+  | 'treasure'
   | 'unicorn'
+  | 'villager'
+  | 'wizard'
 
 export type EcoEntity = {
   age: number
@@ -106,9 +139,11 @@ export type EcoWorld = {
     maxDistance?: number,
   ): EcoEntity | null
   remove(entity: EcoEntity): void
+  resetTally(key: string): void
   setAsset(entity: EcoEntity, asset: string): void
   setState(entity: EcoEntity, state: string): void
   spawn(species: string, options?: EcoSpawnOptions): EcoEntity | null
+  tally(key: string, delta?: number): number
   widthOf(entity: EcoEntity): number
   within(x: number, y: number, radius: number, test: (entity: EcoEntity) => boolean): EcoEntity[]
 }
@@ -151,4 +186,5 @@ export type EcoSnapshot = {
   counts: Readonly<Record<string, number>>
   entities: readonly EcoEntityView[]
   scene: string
+  tallies: Readonly<Record<string, number>>
 }

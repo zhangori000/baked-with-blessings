@@ -54,4 +54,10 @@ for (const [name, [width, height]] of Object.entries(viewBoxes)) {
 
 export const ecoAsset = (name: string) => `/spawnables/${name}.svg`
 
+export function registerViewBoxes(entries: Record<string, readonly [number, number]>) {
+  for (const [name, [width, height]] of Object.entries(entries)) {
+    aspectByAsset[ecoAsset(name)] = height / width
+  }
+}
+
 export const aspectOf = (asset: string) => aspectByAsset[asset] ?? 1

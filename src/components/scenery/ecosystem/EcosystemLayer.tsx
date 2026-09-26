@@ -12,6 +12,11 @@ import type { EcoEntityView, EcoLayer } from './types'
 
 import '../scene-spawn.css'
 import './ecosystem.css'
+import './species/blossom.css'
+import './species/dawn.css'
+import './species/meadow.css'
+import './species/night.css'
+import './species/siege.css'
 
 const EcoThing = memo(function EcoThing({
   store,

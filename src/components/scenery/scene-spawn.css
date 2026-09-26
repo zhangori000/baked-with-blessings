@@ -538,12 +538,98 @@
   z-index: 90;
 }
 
+.spawnTray[data-dragging] {
+  box-shadow:
+    0 30px 48px rgba(11, 12, 9, 0.22),
+    0 6px 16px rgba(92, 67, 31, 0.12);
+  user-select: none;
+}
+
 .spawnTrayHeader {
   align-items: center;
+  cursor: grab;
   display: flex;
-  justify-content: space-between;
+  gap: 0.35rem;
   margin-bottom: 0.6rem;
-  padding-left: 0.3rem;
+  touch-action: none;
+}
+
+.spawnTray[data-dragging] .spawnTrayHeader {
+  cursor: grabbing;
+}
+
+.spawnTrayGrip {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(74, 54, 23, 0.5);
+  cursor: inherit;
+  display: inline-flex;
+  flex: none;
+  height: 1.9rem;
+  justify-content: center;
+  touch-action: none;
+  width: 1.6rem;
+}
+
+.spawnTrayGrip:hover,
+.spawnTrayGrip:focus-visible {
+  background: rgba(92, 67, 31, 0.08);
+  color: rgba(74, 54, 23, 0.85);
+}
+
+.spawnTrayTools {
+  align-items: center;
+  display: flex;
+  flex: none;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+
+.spawnTrayLayouts {
+  background: rgba(92, 67, 31, 0.07);
+  border-radius: 999px;
+  display: inline-flex;
+  padding: 0.12rem;
+}
+
+.spawnTrayTool {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(74, 54, 23, 0.62);
+  cursor: pointer;
+  display: inline-flex;
+  height: 1.65rem;
+  justify-content: center;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+  width: 1.75rem;
+}
+
+.spawnTrayTools > .spawnTrayTool {
+  background: rgba(92, 67, 31, 0.07);
+  height: 1.9rem;
+  width: 1.9rem;
+}
+
+.spawnTrayTool:hover,
+.spawnTrayTool:focus-visible {
+  color: rgba(74, 54, 23, 0.95);
+}
+
+.spawnTrayTool[aria-pressed='true'] {
+  background: #fffdf7;
+  box-shadow: 0 1px 2px rgba(92, 67, 31, 0.18);
+  color: rgba(74, 54, 23, 0.95);
+}
+
+.spawnTrayTools > .spawnTrayTool[aria-pressed='true'] {
+  background: rgba(92, 67, 31, 0.8);
+  color: #fffdf7;
 }
 
 .spawnTrayTitle {
@@ -552,6 +638,10 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spawnTrayClose {
@@ -581,6 +671,98 @@
 
 .spawnTrayGrid[data-wide] {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.spawnTray[data-layout='bar'] {
+  width: min(34rem, calc(100vw - 1rem));
+}
+
+.spawnTray[data-layout='bar'] .spawnTrayGrid {
+  display: flex;
+  margin: 0 -0.8rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 0.15rem 0.8rem 0.35rem;
+  scroll-padding-inline: 0.8rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.spawnTray[data-layout='bar'] .spawnTrayGrid::-webkit-scrollbar {
+  display: none;
+}
+
+.spawnTray[data-layout='bar'] .spawnTrayGrid[data-edge-end] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.6rem), transparent);
+}
+
+.spawnTray[data-layout='bar'] .spawnTrayGrid[data-edge-start] {
+  mask-image: linear-gradient(to right, transparent, #000 2.6rem);
+}
+
+.spawnTray[data-layout='bar'] .spawnTrayGrid[data-edge-start][data-edge-end] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 2.6rem,
+    #000 calc(100% - 2.6rem),
+    transparent
+  );
+}
+
+.spawnTray[data-layout='bar'] .spawnTrayTile {
+  flex: none;
+  min-height: 4.6rem;
+  scroll-snap-align: start;
+  width: 4.7rem;
+}
+
+.spawnTray[data-layout='side'] {
+  display: flex;
+  flex-direction: column;
+  width: 13.5rem;
+}
+
+.spawnTray[data-layout='side'] .spawnTrayHeader {
+  flex-wrap: wrap;
+}
+
+.spawnTray[data-layout='side'] .spawnTrayGrid {
+  align-content: start;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 -0.35rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.1rem 0.35rem 0.3rem;
+}
+
+.spawnTray[data-see-through] {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(255, 252, 242, 0.34);
+  border-color: rgba(255, 252, 242, 0.5);
+  box-shadow: 0 10px 24px rgba(11, 12, 9, 0.1);
+}
+
+.spawnTray[data-see-through] .spawnTrayTile {
+  background: rgba(255, 253, 247, 0.5);
+  border-color: rgba(255, 253, 247, 0.55);
+  box-shadow: none;
+}
+
+.spawnTray[data-see-through] .spawnTrayTitle,
+.spawnTray[data-see-through] .spawnTrayTileLabel,
+.spawnTray[data-see-through] .spawnTrayHint,
+.spawnTray[data-see-through] .spawnTrayClear {
+  text-shadow:
+    0 0 0.35rem rgba(255, 252, 242, 0.95),
+    0 0 0.12rem rgba(255, 252, 242, 0.95);
+}
+
+.spawnTray[data-see-through] .spawnTrayHint {
+  color: rgba(74, 54, 23, 0.85);
 }
 
 .spawnTrayTile {
@@ -655,6 +837,67 @@
   top: 0.35rem;
 }
 
+.spawnTrayMilestone {
+  align-items: baseline;
+  column-gap: 0.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 0.6rem;
+  padding: 0 0.3rem;
+  row-gap: 0.3rem;
+}
+
+.spawnTrayMilestoneText {
+  font-family: var(--font-rounded-body);
+  font-size: 0.76rem;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spawnTrayMilestoneCount {
+  font-family: var(--font-rounded-display);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.spawnTrayMilestoneTrack {
+  background: rgba(92, 67, 31, 0.1);
+  border-radius: 999px;
+  grid-column: 1 / -1;
+  height: 0.3rem;
+  overflow: hidden;
+}
+
+.spawnTrayMilestoneFill {
+  background: rgba(92, 67, 31, 0.55);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  transition: width 240ms ease-out;
+}
+
+.spawnTrayMilestone[data-near] .spawnTrayMilestoneText {
+  font-weight: 700;
+}
+
+.spawnTrayMilestone[data-near] .spawnTrayMilestoneFill {
+  animation: spawnTrayMilestonePulse 900ms ease-in-out infinite alternate;
+  background: rgba(92, 67, 31, 0.85);
+}
+
+@keyframes spawnTrayMilestonePulse {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .spawnTrayFooter {
   align-items: center;
   display: flex;
@@ -720,8 +963,48 @@
   }
 }
 
+@media (max-width: 639px) {
+  .spawnTray[data-layout='side'] {
+    padding: 0.6rem 0.5rem 0.55rem;
+    width: 7.4rem;
+  }
+
+  .spawnTray[data-layout='side'] .spawnTrayTitle {
+    display: none;
+  }
+
+  .spawnTray[data-layout='side'] .spawnTrayHeader {
+    justify-content: center;
+    row-gap: 0.3rem;
+  }
+
+  .spawnTray[data-layout='side'] .spawnTrayTools {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .spawnTray[data-layout='side'] .spawnTrayTile {
+    min-height: 4.3rem;
+  }
+
+  .spawnTray[data-layout='side'] .spawnTrayGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spawnTray[data-layout='side'] .spawnTrayFooter {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-left: 0;
+    text-align: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spawnTray,
+  .spawnTrayMilestone[data-near] .spawnTrayMilestoneFill,
   .spawnTrayTileIcon--pop {
     animation: none;
   }

@@ -234,6 +234,10 @@ export const meadowByScenery: Record<MenuSceneryTone, string> = {
   'fairy-castle': '/sceneries/transparent-meadow.svg',
 }
 
+const mobileMeadowByScenery: Partial<Record<MenuSceneryTone, string>> = {
+  moonlit: '/sceneries/moonlit-purple-meadow-mobile.svg',
+}
+
 const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
   dawn: 'linear-gradient(180deg, rgba(223, 239, 255, 0.92) 0%, rgba(216, 233, 246, 0.94) 100%)',
   'under-tree':
@@ -1244,6 +1248,7 @@ export function MenuHero({
   const heroSkySrc = skyByScenery[sceneryTone] ?? skyByScenery.dawn
   const heroMobileSkySrc = mobileSkyByScenery[sceneryTone]
   const meadowSrc = meadowByScenery[sceneryTone] ?? meadowByScenery.dawn
+  const mobileMeadowSrc = mobileMeadowByScenery[sceneryTone]
   const chooserAnchorRef = useRef<HTMLDivElement | null>(null)
   const chooserButtonRef = useRef<HTMLButtonElement | null>(null)
   const [chooserAnchorX, setChooserAnchorX] = useState<number | null>(null)
@@ -1347,6 +1352,7 @@ export function MenuHero({
         <DecorativeSceneImage
           className="cateringSceneMeadow cateringHeroMeadow"
           fit="cover"
+          mobileSrc={mobileMeadowSrc}
           sizes="100vw"
           src={meadowSrc}
         />
@@ -1492,6 +1498,7 @@ export function MenuHero({
                     </span>
                   )}
                   sceneTone={sceneryTone}
+                  tallies={ecosystem.tallies}
                 />
                 <CateringActionButton
                   buttonRef={chooserButtonRef}
