@@ -15,11 +15,12 @@ Some sceneries have creatures instead of plain sprites. Each one runs a small st
 
 | Scenery | Cast and interactions |
 | --- | --- |
-| Classic (meadow) | Clouds rain and water flowers. Bees and butterflies drink from flowers and pollinate them, so new flowers sprout. Caterpillars eat flowers, spin a cocoon and hatch into butterflies. Bluebirds hunt bees, butterflies and caterpillars; some bees sting back. A well-fed bird lays an egg. The cat stalks birds that fly low, pounces, then naps. |
-| Dawn | Dandelions puff seeds that drift on the wind and sprout where they land. Bunnies eat flowers and breed. The hawk dives on bunnies, carries one high into the sky, where it bursts into dandelion seeds that drift down and sprout into new dandelions. It also pops balloons. A popped balloon falls, and its crash starts fires. Rain puts fires out. |
-| Fairy castle (light fantasy) | Dragons (several breeds and colors) shoot fireballs at the people and buildings below. Knights raise shields, stomp out fires and strike dragons that fly low. Archers lead their shots at dragons. After three hits a dragon crashes. Cottages and pennants catch fire and burn down. Unicorns bolt from fireballs, and frog princes hop away from them. |
-| Moonlit (Tangled) | Peaceful. A rowboat drifts on the lake and releases lanterns that float away. Moths circle lanterns, and fireflies slowly sync their glow. Shooting stars still streak across the sky. |
-| Blossom, under the tree | Sprites only (see below). |
+| Classic (meadow) | Clouds rain and water flowers. Bees and butterflies drink from flowers and pollinate them, so new flowers sprout. Bees carry nectar home to a beehive, which fills with honey and hatches new bees. The bear raids full hives until the bees swarm and sting it away; the cat flees the bear. Caterpillars eat flowers, spin a cocoon and hatch into butterflies. Bluebirds hunt bees, butterflies and caterpillars; some bees sting back. A well-fed bird lays an egg. Frogs tongue-snap insects that fly low and hop more in the rain. Mice nibble flowers, hide from the cat and breed slowly. The cat stalks mice first, then birds that fly low, pounces, then naps. |
+| Dawn | Dandelions puff seeds that drift on the wind and sprout where they land. Bunnies eat flowers, pull up carrots (their favorite) and breed. The fox stalks and pounces on bunnies, which sometimes zigzag away. Hedgehogs snuffle up fallen seeds and curl into a spiky ball when the fox or hawk comes close; a fox that pounces on one gets pricked. The hawk dives on bunnies, carries one high into the sky, where it bursts into dandelion seeds that drift down and sprout into new dandelions. Bunnies near a scarecrow are safe from the hawk. The hawk also pops balloons. A popped balloon falls, and its crash starts fires (scarecrows burn). Rain puts fires out. |
+| Fairy castle (light fantasy) | Dragons (several breeds and colors) shoot fireballs at the people and buildings below, and land to sleep on treasure, where knights and princes can strike them for double damage. Knights raise shields, stomp out fires and strike dragons that fly low. Archers lead their shots at dragons, and the ballista fires heavy bolts. After three hits a dragon crashes. The wizard picks a spell for the moment: a shield bubble over a threatened cottage, chain lightning, a frost nova that freezes a dragon mid-air, a blink away from fireballs, or rain that douses fires. The princess kisses frog princes, who turn into princes and fight like knights. Cottages, pennants and the ballista catch fire and burn down. Unicorns bolt from fireballs, and frog princes hop away from them. |
+| Moonlit (Tangled) | Mostly peaceful. A rowboat drifts on the lake and releases lanterns that float away; a swan follows the boat. Moths circle lanterns, and fireflies slowly sync their glow (faster when frogs croak). The owl swoops on moths and bats; bats eat moths and fireflies and flee the owl. Frogs sit on lily pads and snap up low fliers. Shooting stars streak across the sky, and sometimes one turns into an asteroid that wipes out the whole scene. |
+| Blossom (Japanese) | The monk meditates, charges ki and fires an energy beam that destroys torii gates and oni. A broken gate lets an oni escape; the kitsune restores ruins so the gate grows back. Oni smash gates, sheep and tanuki, and fear lanterns and foxfire. Samurai hunt oni and revealed ninjas and block shuriken. Ninjas stay hidden, throw shuriken and vanish in smoke; lanterns reveal them. The tanuki turns into a teapot when danger is near. Sakura trees grow, bloom faster in the rain and shed petals; sheep and tanuki rest under them. Cranes perch on gates. |
+| Under the tree | Sprites only (see below). |
 
 Code lives in `src/components/scenery/ecosystem/`:
 
@@ -28,8 +29,13 @@ Code lives in `src/components/scenery/ecosystem/`:
 - `behaviors.ts`: shared movement helpers (steer, walk, hop, wander, ballistic aim).
 - `store.ts`, `useEcosystem.ts` and `EcosystemLayer.tsx`: connect the engine to React. React re-renders only when things are added or removed; motion is written straight to the DOM each frame.
 - `ecosystem.css`: idle loops, effects (burning, hurt, guard) and the reduced-motion fallback, which keeps creatures still.
+- `species/<scene>.css`: poses and effects for one scenery's cast, scoped by `data-species`. Each species file registers the sizes of its own art with `registerViewBoxes`.
 
 Tags decide who interacts with whom: `fuel` catches fire and burns down, `burnable` dies on touching fire, and `target` can be picked and hit by dragons. Tray tiles use `kind: 'creature'` with a `species` id, and the counts come from the engine.
+
+## The tray
+
+The tray can be dragged by its header (or moved with the arrow keys on the grip; Home puts it back). Visitors can pick a layout: a grid, one scrollable row (the default on phones), or a side panel that docks to either edge. A see-through toggle lets them watch the scene behind it. The layout, the side and see-through are saved in the browser (`baked-with-blessings-spawn-tray`); the dragged position lasts until the page reloads.
 
 ## Signature animations
 
@@ -37,8 +43,8 @@ Each scenery should have at least one bespoke moment that feels native to it. In
 
 | Scenery | Signature |
 | --- | --- |
-| Moonlit | Shooting stars that streak diagonally across the sky (`shoot`) |
-| Blossom (Japanese) | Petals tumbling on a breeze (`breeze`), a kitsune fox trailing foxfire, waving koinobori carp streamers, torii gates |
+| Moonlit | Shooting stars that streak diagonally across the sky, and the occasional asteroid that ends everything |
+| Blossom (Japanese) | The monk's energy beam breaking a torii gate |
 | Under the tree | Paper planes doing loop-the-loops (`loop`); this scenery is not in the picker right now |
 
 ## Onboarding a new scenery
@@ -46,5 +52,5 @@ Each scenery should have at least one bespoke moment that feels native to it. In
 1. Add the tone to `SceneTone` and fill in `sceneSpawnablesByScene` with a Cloud tile, the accent tile and 4–6 sprites.
 2. Pick at least one signature. Reuse a motion when it fits; otherwise add a new `SpawnMotion` (or `SpawnIdle` / `SpawnParticleEffect`), give it a placement in `placementByMotion`, and write its keyframes in `scene-spawn.css`. Add it to the reduced-motion block so it sits still for visitors who ask for less motion.
 3. Draw the art in the house style: flat fills, no outlines, soft tonal shading, colors pulled from the scenery's own SVGs, creatures facing right. Add a separate `icon` when the scene art does not read on the cream tray tile (for example the shooting star). Use `variants` when one tile should spawn a random pick from several designs (for example the dragons).
-4. For a living cast: add a `species/<scene>.ts` file, register it in `species/index.ts`, and use `creature()` tiles in the catalog. Give each creature a clear job (eats, hunts, grows, flees, burns) so it has something to react to. Put ground creatures on the front layer and anchor them to `groundY`. If something floats on water, set `--spawn-water-bottom` on the host's ground spawn layer.
+4. For a living cast: add a `species/<scene>.ts` file (and a `species/<scene>.css` imported from `EcosystemLayer.tsx`), register it in `species/index.ts`, and use `creature()` tiles in the catalog. Give each creature a clear job (eats, hunts, grows, flees, burns) so it has something to react to. Put ground creatures on the front layer and anchor them to `groundY`. If something floats on water, set `--spawn-water-bottom` on the host's ground spawn layer.
 5. Check it in the browser on desktop and phone widths.
