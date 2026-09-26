@@ -93,6 +93,11 @@ export const getOwnerFeatureRequestNotificationRecipients = (): string[] => {
   return withAlwaysOwnerAlertRecipients(configured)
 }
 
+export const getOwnerFlavorNudgeNotificationRecipients = (): string[] =>
+  withAlwaysOwnerAlertRecipients(
+    getFirstConfiguredEmailRecipients(process.env.ORDER_NOTIFICATION_TO),
+  )
+
 /**
  * Recipients of a new-review alert. The review-specific list wins when set,
  * then falls back to the contact and order lists. The bakery + owner-monitor

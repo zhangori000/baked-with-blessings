@@ -13,6 +13,15 @@ Weekly flavor voting shipped at `/vote` (admin: Content → Flavor Votes). This 
 - Standings appear after someone votes (toggle: **Show standings after voting**), and always after the poll closes.
 - The optional "What flavor would you want?" box stores one raw string (80 chars max) per voter. The owner sees the list in the poll's **Results so far** panel.
 
+## Bring-back requests (nudges)
+
+- Every card on `/old-flavors` has a **Bring it back** button. `/vote` shows a "Miss an old flavor?" box under the ballot (and in the cooldown and empty states). Both open the same picker. Nudges are separate from vote tokens, and the picker leaves out flavors already on the open ballot.
+- One nudge per person per flavor, using the same anonymous voter cookie as votes (unique on product + voter key). The email is optional; entering one again updates it.
+- Signed-in customers skip the email box: a checked "Email me at {account email}" box replaces it, and the server reads the address from the session, not the request. Signed-out visitors can sign in or create an account inside the dialog without losing their picks. The dialog reuses the header's account form (`src/components/CustomerAuth`), and `/create-account` now just redirects to that form in the header.
+- Each new nudge emails the owner right away (same inboxes as other owner alerts), with the running count and a link to **Admin → Bring-back requests** (`/admin/bring-back`, also on the dashboard). That page lists flavors with the most-wanted first, plus the emails to copy.
+- If more than 30 nudges arrive in an hour, owner emails pause and the nudges are still saved. This limits inbox floods; there is no per-IP limit yet.
+- Not built yet: the "it's back" email to people who left an address. Once the bakery-update email flow can target a list, send it when a nudged flavor returns to the lineup.
+
 ## Changing the close time
 
 - Default: Sunday 8:00 PM `America/Chicago`, in `src/features/flavor-polls/schedule.ts` (`FLAVOR_POLL_SCHEDULE`). Changing that constant changes the default for new polls (needs a deploy). It is DST-safe.

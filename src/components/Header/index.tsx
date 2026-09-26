@@ -3,6 +3,8 @@ import { getCachedGlobal } from '@/utilities/getGlobals'
 import { getSitePages } from '@/utilities/getSitePages'
 import { getPayload } from 'payload'
 
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
+
 import './index.css'
 import { HeaderClient, type HeaderAnnouncementsData } from './index.client'
 
@@ -126,6 +128,7 @@ export async function Header() {
       brand={buildHeaderBrand(brandDocument as BrandGlobalDocument | null)}
       header={header}
       sitePages={sitePages}
+      textsOffered={areBakeryTextsOffered()}
     />
   )
 }

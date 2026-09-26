@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { NudgeCallout } from '@/components/FlavorNudge'
 import { ImageLightbox, type ImageLightboxItem } from '@/components/ImageLightbox'
 import { getOverlayRoot, useOverlayDismiss } from '@/components/ImageLightbox/useOverlayDismiss'
 import { Media } from '@/components/Media'
@@ -235,6 +236,7 @@ function EmptyState({ next }: { next: NextVoteStatus }) {
           Browse old flavors
         </BakeryAction>
       </div>
+      <NudgeCallout />
     </div>
   )
 }
@@ -468,6 +470,8 @@ function ActiveVote({
             </div>
           ) : null}
 
+          <NudgeCallout note="It does not use your tokens." />
+
           <div className="voteSubmitBar" ref={submitBarRef}>
             <div className="voteSubmitCopy">
               <strong>
@@ -523,6 +527,8 @@ function ActiveVote({
           Totals stay secret until voting closes {closeLabel}. Check back then for the results.
         </p>
       ) : null}
+
+      {!isEditing ? <NudgeCallout note="It does not use your tokens." /> : null}
 
       {showFloatingTally ? (
         <div className="voteFloatingTally">
@@ -585,6 +591,7 @@ export function VoteExperience({
     return (
       <div className="voteLayout">
         <ClosedResults key={lastResults.poll.id} next={next} results={lastResults} />
+        <NudgeCallout />
         <VoteHistory
           history={earlier}
           openLatest={false}

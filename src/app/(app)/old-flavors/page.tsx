@@ -2,6 +2,8 @@ import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { areBakeryTextsOffered } from '@/utilities/sms/twilioMessages'
+import { FlavorNudgeProvider, NudgeCardButton } from '@/components/FlavorNudge'
 import { Media } from '@/components/Media'
 import { getMenuSceneToneFromCookies } from '@/components/scenery/getMenuSceneToneFromCookies'
 import {
@@ -10,6 +12,7 @@ import {
   BakeryPageSurface,
   BakerySectionHeader,
 } from '@/design-system/bakery'
+import { toNudgeFlavors } from '@/features/flavor-nudges/service'
 import { buildStaticMetadata } from '@/utilities/buildStaticMetadata'
 import { cateringMenuHref, menuHref, oldFlavorsHref } from '@/utilities/routes'
 
@@ -52,7 +55,7 @@ export default async function OldFlavorsPage() {
             <div className="oldFlavorsIntro">
               <BakerySectionHeader
                 className="oldFlavorsHeader"
-                description="Flavors rotate every week. These are the ones resting for now. Miss one? Order it in a Catering package, or keep checking back to see what returns."
+                description="Flavors rotate every week. These are the ones resting for now. Miss one? Tap Bring it back so the baker knows, or order it in a Catering package."
                 eyebrow={`${posters.length} ${posters.length === 1 ? 'flavor' : 'flavors'}`}
                 title="The flavor hall of fame"
               />
@@ -73,33 +76,43 @@ export default async function OldFlavorsPage() {
             </div>
 
             {posters.length > 0 ? (
-              <ul className="oldFlavorsGrid">
-                {posters.map((poster) => (
-                  <li className="oldFlavorsCard" key={poster.slug}>
-                    <div className="oldFlavorsCookie">
-                      {poster.image ? (
-                        <Media
-                          fill
-                          htmlElement={null}
-                          imgClassName="oldFlavorsCookieImage"
-                          resource={poster.image}
-                          size="(max-width: 640px) 45vw, 240px"
-                        />
-                      ) : (
-                        <Image
-                          alt={`${poster.title} cookie`}
-                          className="oldFlavorsCookieImage"
-                          fill
-                          sizes="240px"
-                          src={poster.bodyFallbackSrc}
-                          unoptimized
-                        />
-                      )}
-                    </div>
-                    <h2 className="oldFlavorsCardTitle cateringMenuRoundHeading">{poster.title}</h2>
-                  </li>
-                ))}
-              </ul>
+              <FlavorNudgeProvider
+                flavors={toNudgeFlavors(posters)}
+                textsOffered={areBakeryTextsOffered()}
+              >
+                <ul className="oldFlavorsGrid">
+                  {posters.map((poster) => (
+                    <li className="oldFlavorsCard" key={poster.slug}>
+                      <div className="oldFlavorsCookie">
+                        {poster.image ? (
+                          <Media
+                            fill
+                            htmlElement={null}
+                            imgClassName="oldFlavorsCookieImage"
+                            resource={poster.image}
+                            size="(max-width: 640px) 45vw, 240px"
+                          />
+                        ) : (
+                          <Image
+                            alt={`${poster.title} cookie`}
+                            className="oldFlavorsCookieImage"
+                            fill
+                            sizes="240px"
+                            src={poster.bodyFallbackSrc}
+                            unoptimized
+                          />
+                        )}
+                      </div>
+                      <h2 className="oldFlavorsCardTitle cateringMenuRoundHeading">
+                        {poster.title}
+                      </h2>
+                      {typeof poster.productId === 'number' ? (
+                        <NudgeCardButton productId={poster.productId} title={poster.title} />
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </FlavorNudgeProvider>
             ) : (
               <p className="oldFlavorsEmpty">
                 Every flavor we have made is on the menu right now. Check back after the next
