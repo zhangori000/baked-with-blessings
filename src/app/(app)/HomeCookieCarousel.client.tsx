@@ -36,6 +36,10 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
+import {
+  buildSpawnedCloudDriftStyle,
+  buildStaticCloudDriftStyle,
+} from '@/components/scenery/cloudDrift'
 import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
 import { SpawnTray } from '@/components/scenery/SpawnTray'
 import type { SceneSpawnable } from '@/components/scenery/spawnables'
@@ -238,10 +242,10 @@ const buildStaticShowcaseClouds = (sceneTone: SceneTone): ShowcaseSceneCloud[] =
   const clouds = menuHeroCloudsByScene[sceneTone] ?? menuHeroCloudsByScene.classic
 
   return clouds.map((cloud, index) => ({
-    className: cloud.className,
+    className: `${cloud.className} sceneCloudDrift`,
     id: `static-cloud-${sceneTone}-${index}`,
     src: cloud.src,
-    style: (cloud.style ?? {}) as CSSProperties,
+    style: buildStaticCloudDriftStyle(cloud.className, index, cloud.style as CSSProperties),
   }))
 }
 
@@ -253,18 +257,16 @@ const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
   const { left, top } = buildCloudSpawnPosition()
 
   return {
-    className: '',
+    className: 'sceneCloudDrift sceneCloudDrift--spawned',
     id: `spawned-cloud-${++spawnedShowcaseCloudID}`,
     src: cloud?.src ?? '/clouds/three-ball-cloud-wide.svg',
-    style: {
-      animationDelay: `-${(Math.random() * 7).toFixed(2)}s`,
-      left,
+    style: buildSpawnedCloudDriftStyle(left, {
       top,
       width: `${(
         (cloud?.minWidth ?? 10.6) +
         Math.random() * ((cloud?.maxWidth ?? 14.8) - (cloud?.minWidth ?? 10.6))
       ).toFixed(2)}rem`,
-    } as CSSProperties,
+    }),
   }
 }
 

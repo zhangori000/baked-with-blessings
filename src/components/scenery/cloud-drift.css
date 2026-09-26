@@ -1,0 +1,34 @@
+.sceneCloudDrift--spawned {
+  left: var(--cloud-left, 50%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sceneCloudDrift.sceneCloudDrift {
+    animation:
+      sceneCloudCross var(--cloud-drift-duration, 110s) linear var(--cloud-drift-delay, 0s) infinite,
+      sceneCloudBob 9s ease-in-out var(--cloud-drift-delay, 0s) infinite;
+    left: 0;
+    right: auto;
+  }
+}
+
+@keyframes sceneCloudCross {
+  from {
+    transform: translate3d(-105%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(100vw, 0, 0);
+  }
+}
+
+@keyframes sceneCloudBob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -0.3rem;
+  }
+}

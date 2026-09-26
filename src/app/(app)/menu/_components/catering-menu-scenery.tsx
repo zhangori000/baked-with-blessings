@@ -20,6 +20,10 @@ import type { Media as MediaType, Product } from '@/payload-types'
 import { cn } from '@/utilities/cn'
 import { withPayloadMediaCacheTag } from '@/utilities/resolveMediaDisplayURL'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
+import {
+  buildSpawnedCloudDriftStyle,
+  buildStaticCloudDriftStyle,
+} from '@/components/scenery/cloudDrift'
 import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
 import { SpawnTray } from '@/components/scenery/SpawnTray'
 import type { SceneSpawnable } from '@/components/scenery/spawnables'
@@ -1424,21 +1428,21 @@ export function MenuHero({
           zone="ground"
         />
       </div>
-      {sceneClouds.map((cloud) => (
+      {sceneClouds.map((cloud, index) => (
         <DecorativeSceneImage
-          className={cn('cateringHeroCloud', cloud.className)}
+          className={cn('cateringHeroCloud sceneCloudDrift', cloud.className)}
           key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
           sizes="30vw"
           src={cloud.src}
-          style={cloud.style}
+          style={buildStaticCloudDriftStyle(cloud.className, index, cloud.style)}
         />
       ))}
       {activeSpawnedClouds.map((cloud) => (
         <DecorativeSceneImage
-          className="cateringHeroCloud"
+          className="cateringHeroCloud sceneCloudDrift sceneCloudDrift--spawned"
           key={cloud.id}
           src={cloud.src}
-          style={{ left: cloud.left, top: cloud.top, width: cloud.width }}
+          style={buildSpawnedCloudDriftStyle(cloud.left, { top: cloud.top, width: cloud.width })}
         />
       ))}
       <SceneSpawnLayer
