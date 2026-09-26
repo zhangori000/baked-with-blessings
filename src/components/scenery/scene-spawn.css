@@ -1,0 +1,728 @@
+.sceneSpawnLayer {
+  container-type: size;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
+.sceneSprite {
+  --sprite-scale: 1;
+  left: var(--sprite-x, 50%);
+  pointer-events: none;
+  position: absolute;
+  top: var(--sprite-y, 30%);
+  width: calc(var(--sprite-size, 2.5rem) * var(--sprite-scale));
+}
+
+.sceneSpritePop {
+  animation: sceneSpritePop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  display: block;
+  transform-origin: center bottom;
+}
+
+.sceneSpriteArt {
+  animation-delay: var(--sprite-idle-delay, 0s);
+  display: block;
+  height: auto;
+  transform: scaleX(var(--sprite-flip, 1));
+  width: 100%;
+}
+
+.sceneSprite--drift {
+  animation: sceneSpriteDrift var(--sprite-duration) linear var(--sprite-delay) infinite;
+  animation-direction: var(--sprite-direction, normal);
+  left: 0;
+}
+
+.sceneSprite--flutter {
+  animation: sceneSpriteWander var(--sprite-duration) ease-in-out var(--sprite-delay) infinite;
+}
+
+.sceneSprite--twinkle .sceneSpriteArt {
+  animation: sceneSpriteTwinkle var(--sprite-duration) ease-in-out var(--sprite-delay) infinite;
+}
+
+.sceneSprite--sprout {
+  bottom: calc(var(--spawn-ground-bottom, 6%) + var(--sprite-y, 0%));
+  top: auto;
+  transform: translateX(-50%);
+}
+
+.sceneSprite--sprout .sceneSpritePop {
+  animation: sceneSpriteSprout 640ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.sceneSprite--shoot {
+  animation: sceneSpriteShoot var(--sprite-duration) linear var(--sprite-delay) infinite both;
+  opacity: 0;
+  transform-origin: right center;
+}
+
+.sceneSprite--shoot .sceneSpritePop {
+  animation: none;
+}
+
+.sceneSprite--rise {
+  animation: sceneSpriteRise var(--sprite-duration) cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+.sceneSpriteArt--bob {
+  animation: sceneSpriteBob 3.2s ease-in-out infinite;
+}
+
+.sceneSpriteArt--sway {
+  animation: sceneSpriteSway 3.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.sceneSpriteArt--flap {
+  animation: sceneSpriteFlap 0.32s ease-in-out infinite alternate;
+}
+
+.sceneSpriteArt--glow {
+  animation: sceneSpriteGlow 2.4s ease-in-out infinite;
+}
+
+.sceneSprite--rise .sceneSpriteArt--glow,
+.sceneSprite--flutter .sceneSpriteArt--glow {
+  filter: drop-shadow(0 0 0.45rem rgba(255, 214, 120, 0.85));
+}
+
+@keyframes sceneSpritePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sceneSpriteDrift {
+  from {
+    transform: translate3d(-110%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(100cqw + 10%), 0, 0);
+  }
+}
+
+@keyframes sceneSpriteWander {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  20% {
+    transform: translate3d(calc(var(--sprite-sway) * 1.4), calc(var(--sprite-sway) * -0.8), 0)
+      rotate(6deg);
+  }
+
+  45% {
+    transform: translate3d(calc(var(--sprite-sway) * 2.4), calc(var(--sprite-sway) * 0.4), 0)
+      rotate(-4deg);
+  }
+
+  70% {
+    transform: translate3d(calc(var(--sprite-sway) * 0.8), calc(var(--sprite-sway) * 1.1), 0)
+      rotate(5deg);
+  }
+
+  85% {
+    transform: translate3d(calc(var(--sprite-sway) * -0.9), calc(var(--sprite-sway) * 0.2), 0)
+      rotate(-6deg);
+  }
+}
+
+@keyframes sceneSpriteTwinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.6) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08) rotate(20deg);
+  }
+}
+
+@keyframes sceneSpriteSprout {
+  0% {
+    opacity: 0;
+    transform: scale(0.1, 0);
+  }
+
+  55% {
+    opacity: 1;
+    transform: scale(0.88, 1.18);
+  }
+
+  78% {
+    transform: scale(1.08, 0.92);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sceneSpriteShoot {
+  0% {
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.45, 1);
+    opacity: 0;
+    transform: rotate(var(--sprite-angle, 22deg)) translateX(0) scaleX(0.35);
+  }
+
+  3% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: 0.9;
+  }
+
+  18%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--sprite-angle, 22deg)) translateX(58cqw) scaleX(1);
+  }
+}
+
+@keyframes sceneSpriteRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 55cqh, 0);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  55% {
+    transform: translate3d(var(--sprite-sway), 16cqh, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes sceneSpriteBob {
+  0%,
+  100% {
+    transform: translateY(0) scaleX(var(--sprite-flip, 1));
+  }
+
+  50% {
+    transform: translateY(-0.45rem) scaleX(var(--sprite-flip, 1));
+  }
+}
+
+@keyframes sceneSpriteSway {
+  0%,
+  100% {
+    transform: rotate(-4deg) scaleX(var(--sprite-flip, 1));
+  }
+
+  50% {
+    transform: rotate(4deg) scaleX(var(--sprite-flip, 1));
+  }
+}
+
+@keyframes sceneSpriteFlap {
+  from {
+    transform: scaleX(var(--sprite-flip, 1)) scaleY(1);
+  }
+
+  to {
+    transform: scaleX(calc(var(--sprite-flip, 1) * 0.78)) scaleY(0.92);
+  }
+}
+
+@keyframes sceneSpriteGlow {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.sceneSprite--gallop {
+  animation: sceneSpriteDrift var(--sprite-duration) linear var(--sprite-delay) infinite;
+  animation-direction: var(--sprite-direction, normal);
+  bottom: var(--spawn-ground-bottom, 6%);
+  left: 0;
+  top: auto;
+}
+
+.sceneSprite--gallop .sceneSpritePop {
+  animation:
+    sceneSpritePop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    sceneSpriteGallop 0.62s cubic-bezier(0.45, 0, 0.55, 1) 520ms infinite;
+}
+
+.sceneSprite--loop {
+  animation: sceneSpriteDrift var(--sprite-duration) linear var(--sprite-delay) infinite;
+  animation-direction: var(--sprite-direction, normal);
+  left: 0;
+}
+
+.sceneSprite--loop .sceneSpritePop {
+  animation: sceneSpriteLoop 7s ease-in-out var(--sprite-idle-delay, 0s) infinite;
+  transform-origin: 50% -2.6rem;
+}
+
+.sceneSprite--breeze {
+  animation: sceneSpriteBreeze var(--sprite-duration) linear var(--sprite-delay) infinite both;
+}
+
+.sceneSprite--breeze .sceneSpriteArt {
+  animation: sceneSpriteTumble 2.6s linear var(--sprite-idle-delay, 0s) infinite;
+}
+
+.sceneSpriteArt--wave {
+  animation: sceneSpriteWave 1.6s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.sceneSpriteParticles {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: scaleX(var(--sprite-flip, 1));
+}
+
+.sceneSpriteParticle {
+  height: auto;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+}
+
+.sceneSpriteParticles--seeds .sceneSpriteParticle {
+  animation: sceneSpriteSeed 6s ease-out calc(var(--particle-index) * 1s + 1.2s) infinite;
+  left: 48%;
+  top: 6%;
+  width: 36%;
+}
+
+.sceneSpriteParticles--sparkles .sceneSpriteParticle {
+  animation: sceneSpriteSparkle 1.5s ease-out calc(var(--particle-index) * 0.3s) infinite;
+  left: 6%;
+  top: 34%;
+  width: 22%;
+}
+
+@keyframes sceneSpriteGallop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  30% {
+    transform: translateY(-1.1rem) rotate(calc(var(--sprite-flip, 1) * -7deg));
+  }
+
+  60% {
+    transform: translateY(-0.4rem) rotate(calc(var(--sprite-flip, 1) * 5deg));
+  }
+}
+
+@keyframes sceneSpriteLoop {
+  0%,
+  38% {
+    transform: rotate(0deg);
+  }
+
+  62%,
+  100% {
+    transform: rotate(calc(var(--sprite-flip, 1) * -360deg));
+  }
+}
+
+@keyframes sceneSpriteBreeze {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+
+  6% {
+    opacity: 1;
+  }
+
+  30% {
+    transform: translate3d(22cqw, 22cqh, 0);
+  }
+
+  42% {
+    transform: translate3d(calc(26cqw + var(--sprite-sway)), 20cqh, 0);
+  }
+
+  50% {
+    transform: translate3d(24cqw, 30cqh, 0);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate3d(calc(40cqw - var(--sprite-sway)), 70cqh, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(52cqw, 96cqh, 0);
+  }
+}
+
+@keyframes sceneSpriteTumble {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+
+  50% {
+    transform: rotateX(160deg) rotateY(60deg) rotateZ(90deg);
+  }
+
+  100% {
+    transform: rotateX(360deg) rotateY(0deg) rotateZ(180deg);
+  }
+}
+
+@keyframes sceneSpriteWave {
+  0%,
+  100% {
+    transform: skewY(-5deg) scaleX(1);
+  }
+
+  50% {
+    transform: skewY(4deg) scaleX(0.93);
+  }
+}
+
+@keyframes sceneSpriteSeed {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  40% {
+    transform: translate3d(calc(1.6rem + var(--particle-index) * 0.5rem), -2.4rem, 0) rotate(18deg);
+  }
+
+  75% {
+    opacity: 0.85;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(4.5rem + var(--particle-index) * 1.2rem), -7rem, 0) rotate(-12deg);
+  }
+}
+
+@keyframes sceneSpriteSparkle {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translate3d(-0.6rem, calc((var(--particle-index) - 2) * 0.35rem), 0) scale(1)
+      rotate(45deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(-3.2rem, calc((var(--particle-index) - 2) * 0.6rem + 0.8rem), 0)
+      scale(0.3) rotate(120deg);
+  }
+}
+
+@media (max-width: 639px) {
+  .sceneSprite {
+    --sprite-scale: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sceneSprite--drift,
+  .sceneSprite--gallop,
+  .sceneSprite--loop,
+  .sceneSprite--flutter {
+    animation: none;
+    left: var(--sprite-x, 50%);
+  }
+
+  .sceneSprite--drift,
+  .sceneSprite--gallop,
+  .sceneSprite--loop {
+    left: var(--sprite-rest-x, 50%);
+  }
+
+  .sceneSpriteParticles {
+    display: none;
+  }
+
+  .sceneSprite--shoot,
+  .sceneSprite--breeze,
+  .sceneSprite--rise {
+    animation: none;
+  }
+
+  .sceneSprite--shoot {
+    opacity: 0.9;
+    transform: rotate(var(--sprite-angle, 22deg));
+  }
+
+  .sceneSprite--breeze {
+    translate: 0 calc(var(--sprite-sway) * 6);
+  }
+
+  .sceneSpritePop,
+  .sceneSpriteArt,
+  .sceneSprite--gallop .sceneSpritePop,
+  .sceneSprite--loop .sceneSpritePop,
+  .sceneSprite--breeze .sceneSpriteArt,
+  .sceneSprite--sprout .sceneSpritePop {
+    animation: none;
+  }
+}
+
+.spawnTrayTriggerLabel {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.spawnTrayTriggerIcon {
+  flex: none;
+  height: 1.1rem;
+  width: 1.1rem;
+}
+
+.spawnTray {
+  animation: spawnTrayIn 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  background: rgba(255, 252, 242, 0.97);
+  border: 1px solid rgba(92, 67, 31, 0.14);
+  border-radius: 1.35rem;
+  box-shadow:
+    0 22px 36px rgba(11, 12, 9, 0.16),
+    0 4px 12px rgba(92, 67, 31, 0.08);
+  color: rgba(74, 54, 23, 0.92);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.8rem 0.8rem 0.7rem;
+  pointer-events: auto;
+  position: fixed;
+  width: min(21rem, calc(100vw - 1rem));
+  z-index: 90;
+}
+
+.spawnTrayHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  padding-left: 0.3rem;
+}
+
+.spawnTrayTitle {
+  font-family: var(--font-rounded-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.spawnTrayClose {
+  align-items: center;
+  background: rgba(92, 67, 31, 0.07);
+  border: 0;
+  border-radius: 999px;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  height: 1.9rem;
+  justify-content: center;
+  transition: background 160ms ease;
+  width: 1.9rem;
+}
+
+.spawnTrayClose:hover,
+.spawnTrayClose:focus-visible {
+  background: rgba(92, 67, 31, 0.14);
+}
+
+.spawnTrayGrid {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.spawnTrayGrid[data-wide] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.spawnTrayTile {
+  align-items: center;
+  background: #fffdf7;
+  border: 1px solid rgba(92, 67, 31, 0.12);
+  border-radius: 0.95rem;
+  box-shadow: 0 2px 0 rgba(92, 67, 31, 0.1);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-height: 5.1rem;
+  padding: 0.55rem 0.3rem 0.45rem;
+  position: relative;
+  transition:
+    transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 140ms ease,
+    border-color 140ms ease;
+}
+
+.spawnTrayTile:hover,
+.spawnTrayTile:focus-visible {
+  border-color: rgba(92, 67, 31, 0.26);
+  transform: translateY(-1px);
+}
+
+.spawnTrayTile:active {
+  box-shadow: 0 0 0 rgba(92, 67, 31, 0.1);
+  transform: translateY(1px) scale(0.97);
+}
+
+.spawnTrayTileIcon {
+  align-items: center;
+  display: flex;
+  height: 2.6rem;
+  justify-content: center;
+  width: 2.6rem;
+}
+
+.spawnTrayTileIcon img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.spawnTrayTileIcon--pop {
+  animation: spawnTrayIconPop 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.spawnTrayTileLabel {
+  font-family: var(--font-rounded-display);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.spawnTrayTileCount {
+  background: rgba(92, 67, 31, 0.1);
+  border-radius: 999px;
+  font-family: var(--font-rounded-display);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  min-width: 1.25rem;
+  padding: 0.12rem 0.36rem;
+  position: absolute;
+  right: 0.35rem;
+  text-align: center;
+  top: 0.35rem;
+}
+
+.spawnTrayFooter {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  padding-left: 0.3rem;
+}
+
+.spawnTrayHint {
+  color: rgba(74, 54, 23, 0.66);
+  font-family: var(--font-rounded-body);
+  font-size: 0.76rem;
+}
+
+.spawnTrayClear {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: inherit;
+  cursor: pointer;
+  font-family: var(--font-rounded-display);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.35rem 0.6rem;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.spawnTrayClear:disabled {
+  cursor: default;
+  opacity: 0.4;
+  text-decoration: none;
+}
+
+.spawnTrayClear:not(:disabled):hover,
+.spawnTrayClear:focus-visible {
+  background: rgba(92, 67, 31, 0.08);
+}
+
+@keyframes spawnTrayIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spawnTrayIconPop {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.28) rotate(-6deg);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spawnTray,
+  .spawnTrayTileIcon--pop {
+    animation: none;
+  }
+}

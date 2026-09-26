@@ -322,24 +322,6 @@ export const menuHeroFlowerSeamByScene: Record<SceneTone, string> = {
   'fairy-castle': '0.5rem',
 }
 
-export const menuSceneAccentLabelByScene: Record<SceneTone, string> = {
-  dawn: 'Spawn flower',
-  'under-tree': 'Spawn flower',
-  moonlit: 'Spawn flower',
-  classic: 'Spawn flower',
-  blossom: 'Spawn sheep',
-  'fairy-castle': 'Spawn house',
-}
-
-export const menuSceneCloudLabelByScene: Record<SceneTone, string> = {
-  dawn: 'Spawn cloud',
-  'under-tree': 'Spawn cloud',
-  moonlit: 'Spawn cloud',
-  classic: 'Spawn cloud',
-  blossom: 'Spawn cloud',
-  'fairy-castle': 'Spawn cloud',
-}
-
 export const menuSceneSeededAccentCountByScene: Record<SceneTone, number> = {
   dawn: 9,
   'under-tree': 9,
@@ -498,13 +480,11 @@ export const menuHeroScenarioByScene = Object.fromEntries(
       buttonAura: menuSceneButtonAuraByScene[sceneTone],
       clouds: menuHeroCloudsByScene[sceneTone],
       critters: menuHeroCrittersByScene[sceneTone],
-      cloudButtonLabel: menuSceneCloudLabelByScene[sceneTone],
       flowerRail: menuHeroFlowersByScene[sceneTone],
       flowerSeam: menuHeroFlowerSeamByScene[sceneTone],
       meadowSrc: menuHeroMeadowByScene[sceneTone],
       pieces: menuHeroPiecesByScene[sceneTone],
       skySrc: menuHeroSkyByScene[sceneTone],
-      spawnAccentLabel: menuSceneAccentLabelByScene[sceneTone],
       spawnableClouds: menuCloudSpawnDesignsByScene[sceneTone],
       spawnableAccents: menuSpawnedAccentSourcesByScene[sceneTone],
     },
@@ -514,14 +494,12 @@ export const menuHeroScenarioByScene = Object.fromEntries(
   {
     buttonAura: string
     clouds: readonly SceneCloudConfig[]
-    cloudButtonLabel: string
     critters: readonly SceneCritterConfig[]
     flowerRail: readonly SceneFlowerConfig[]
     flowerSeam: string
     meadowSrc: string
     pieces: readonly ScenePieceConfig[]
     skySrc: string
-    spawnAccentLabel: string
     spawnableClouds: readonly SceneCloudSpawnConfig[]
     spawnableAccents: readonly string[]
   }

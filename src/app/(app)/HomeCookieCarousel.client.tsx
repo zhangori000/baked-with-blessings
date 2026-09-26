@@ -21,8 +21,6 @@ import {
   createSpawnedMenuSceneAccent,
   getNextMenuSceneTone,
   menuCloudSpawnDesignsByScene,
-  menuSceneAccentLabelByScene,
-  menuSceneCloudLabelByScene,
   menuHeroCloudsByScene,
   menuHeroCrittersByScene,
   menuHeroFlowerSeamByScene,
@@ -38,7 +36,18 @@ import {
   type SceneTone,
 } from '@/components/scenery/menuHeroScenery'
 import { buildCloudSpawnPosition } from '@/components/scenery/cloudSpawnPlacement'
+import {
+  buildSpawnedCloudDriftStyle,
+  buildStaticCloudDriftStyle,
+} from '@/components/scenery/cloudDrift'
+import { EcosystemLayer } from '@/components/scenery/ecosystem/EcosystemLayer'
+import { useEcosystem } from '@/components/scenery/ecosystem/useEcosystem'
+import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
+import { SpawnTray } from '@/components/scenery/SpawnTray'
+import type { SceneSpawnable } from '@/components/scenery/spawnables'
+import { useSceneSprites } from '@/components/scenery/useSceneSprites'
 import { usePersistentMenuSceneTone } from '@/components/scenery/usePersistentMenuSceneTone'
+import { ScrollCueArea } from '@/components/ScrollCueArea'
 import { BakeryAction, BakeryCard, BakeryPressable } from '@/design-system/bakery'
 import { menuHref } from '@/utilities/routes'
 import type { CookiePosterAsset } from '@/features/products/cookieDisplayData'
@@ -235,10 +244,10 @@ const buildStaticShowcaseClouds = (sceneTone: SceneTone): ShowcaseSceneCloud[] =
   const clouds = menuHeroCloudsByScene[sceneTone] ?? menuHeroCloudsByScene.classic
 
   return clouds.map((cloud, index) => ({
-    className: cloud.className,
+    className: `${cloud.className} sceneCloudDrift`,
     id: `static-cloud-${sceneTone}-${index}`,
     src: cloud.src,
-    style: (cloud.style ?? {}) as CSSProperties,
+    style: buildStaticCloudDriftStyle(cloud.className, index, cloud.style as CSSProperties),
   }))
 }
 
@@ -250,18 +259,16 @@ const createShowcaseCloud = (sceneTone: SceneTone): ShowcaseSceneCloud => {
   const { left, top } = buildCloudSpawnPosition()
 
   return {
-    className: '',
+    className: 'sceneCloudDrift sceneCloudDrift--spawned',
     id: `spawned-cloud-${++spawnedShowcaseCloudID}`,
     src: cloud?.src ?? '/clouds/three-ball-cloud-wide.svg',
-    style: {
-      animationDelay: `-${(Math.random() * 7).toFixed(2)}s`,
-      left,
+    style: buildSpawnedCloudDriftStyle(left, {
       top,
       width: `${(
         (cloud?.minWidth ?? 10.6) +
         Math.random() * ((cloud?.maxWidth ?? 14.8) - (cloud?.minWidth ?? 10.6))
       ).toFixed(2)}rem`,
-    } as CSSProperties,
+    }),
   }
 }
 
@@ -730,6 +737,10 @@ export function HomeCookieCarousel({
   const [sceneTone, setSceneTone] = usePersistentMenuSceneTone(initialSceneryTone)
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
+  const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
+  const { clearSprites, spawnSprite, spriteCounts, sprites } =
+    useSceneSprites(sceneTone)
+  const ecosystem = useEcosystem(sceneTone)
   const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
   const [nameButtonWidth, setNameButtonWidth] = useState<number | null>(null)
@@ -940,6 +951,36 @@ export function HomeCookieCarousel({
     ? posters[wrapIndex(activeIndex + 1, posters.length)]
     : null
   const staticSceneClouds = sceneVariant === 'scenery' ? buildStaticShowcaseClouds(sceneTone) : []
+  const spawnCounts: Record<string, number> = {
+    ...spriteCounts,
+    accent: spawnedSceneFlowers.filter((flower) => flower.id.startsWith('spawned-')).length,
+    cloud: spawnedSceneClouds.length,
+    ...ecosystem.counts,
+  }
+  const handleSpawn = (item: SceneSpawnable) => {
+    if (item.kind === 'creature') {
+      ecosystem.spawn(item)
+      return
+    }
+
+    if (item.kind === 'cloud') {
+      setSpawnedSceneClouds((current) => [...current, createShowcaseCloud(sceneTone)])
+      return
+    }
+
+    if (item.kind === 'accent') {
+      setSpawnedSceneFlowers((current) => [...current, createShowcaseFlowerForScene(sceneTone)])
+      return
+    }
+
+    spawnSprite(item)
+  }
+  const handleClearSpawns = () => {
+    setSpawnedSceneClouds([])
+    setSpawnedSceneFlowers(buildSeededShowcaseFlowers(sceneTone))
+    clearSprites()
+    ecosystem.clear()
+  }
   const staticScenePieces =
     sceneVariant === 'scenery'
       ? (menuHeroPiecesByScene[sceneTone] ?? menuHeroPiecesByScene.classic)
@@ -1251,6 +1292,17 @@ export function HomeCookieCarousel({
                   />
                 ))}
 
+                <SceneSpawnLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--sky"
+                  sprites={sprites}
+                  zone="sky"
+                />
+                <EcosystemLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--sky"
+                  layer="back"
+                  store={ecosystem.store}
+                />
+
                 {staticScenePieces.map((piece, index) => (
                   <Image
                     alt=""
@@ -1293,34 +1345,24 @@ export function HomeCookieCarousel({
                   >
                     Change scenery
                   </BakeryAction>
-                  <BakeryAction
-                    className="homeCookieSceneButton"
-                    onClick={() =>
-                      setSpawnedSceneClouds((current) => [
-                        ...current,
-                        createShowcaseCloud(sceneTone),
-                      ])
-                    }
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    {menuSceneCloudLabelByScene[sceneTone]}
-                  </BakeryAction>
-                  <BakeryAction
-                    className="homeCookieSceneButton"
-                    onClick={() =>
-                      setSpawnedSceneFlowers((current) => [
-                        ...current,
-                        createShowcaseFlowerForScene(sceneTone),
-                      ])
-                    }
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    {menuSceneAccentLabelByScene[sceneTone]}
-                  </BakeryAction>
+                  <SpawnTray
+                    counts={spawnCounts}
+                    onClear={handleClearSpawns}
+                    onOpenChange={setIsSpawnTrayOpen}
+                    onSpawn={handleSpawn}
+                    open={isSpawnTrayOpen}
+                    renderTrigger={({ ref, ...triggerProps }) => (
+                      <BakeryAction
+                        {...triggerProps}
+                        className="homeCookieSceneButton"
+                        ref={ref as Ref<HTMLElement>}
+                        size="sm"
+                        type="button"
+                        variant="secondary"
+                      />
+                    )}
+                    sceneTone={sceneTone}
+                  />
                 </div>
               </>
             ) : null}
@@ -1452,6 +1494,16 @@ export function HomeCookieCarousel({
                     />
                   ))}
                 </div>
+                <SceneSpawnLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--ground"
+                  sprites={sprites}
+                  zone="ground"
+                />
+                <EcosystemLayer
+                  className="homeCookieSpawnLayer homeCookieSpawnLayer--ground"
+                  layer="front"
+                  store={ecosystem.store}
+                />
               </>
             ) : (
               <div aria-hidden="true" className="homeCookieMeadowClip">
@@ -1532,7 +1584,7 @@ export function HomeCookieCarousel({
                     >
                       <X aria-hidden="true" size={14} />
                     </BakeryPressable>
-                    <div className="homeCookieCartPromptScroll">
+                    <ScrollCueArea className="homeCookieCartPromptScroll">
                       {activePosterIsCateringOnly ? (
                         <p className="cookieNameNote">
                           {activePoster.lockedLabel ?? 'Catering only'}.{' '}
@@ -1549,7 +1601,7 @@ export function HomeCookieCarousel({
                           sizeLabel={activePoster.addToCartSizeLabel}
                         />
                       )}
-                    </div>
+                    </ScrollCueArea>
                     {activePosterPromptPhase === 'open' ? (
                       <div className="homeCookieCartPromptActions">
                         {activePosterIsCateringOnly ? (
@@ -1810,6 +1862,22 @@ export function HomeCookieCarousel({
           border-color: rgba(25, 57, 95, 0.28);
           box-shadow: 0 14px 24px rgba(23, 58, 99, 0.12);
           transform: translateY(-1px);
+        }
+
+        .homeCookieSceneButton[aria-expanded='true'] {
+          border-color: rgba(74, 54, 23, 0.4);
+          box-shadow: inset 0 2px 0 rgba(74, 54, 23, 0.12);
+          transform: translateY(1px);
+        }
+
+        .homeCookieSpawnLayer--sky {
+          z-index: 9;
+        }
+
+        .homeCookieSpawnLayer--ground {
+          --spawn-ground-bottom: calc(var(--home-meadow-height, 8rem) * 0.28);
+          --spawn-water-bottom: calc(var(--home-meadow-height, 8rem) + 2.5rem);
+          z-index: 17;
         }
 
         .homeCookiePaperStage {
@@ -2909,6 +2977,14 @@ export function HomeCookieCarousel({
             --home-flower-rail-lift: 5.35rem;
             --home-meadow-bottom: -0.15rem;
             --home-meadow-height: 15.2rem;
+          }
+
+          .homeCookieSpawnLayer--ground {
+            --spawn-ground-bottom: 7.25rem;
+          }
+
+          .homeCookieScene-moonlit .homeCookieSpawnLayer--ground {
+            --spawn-water-bottom: calc(var(--home-meadow-height) * 0.68);
           }
 
           .homeCookieScene-moonlit .homeCookieFlowerRailBloom {

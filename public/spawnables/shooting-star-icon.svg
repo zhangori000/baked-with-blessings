@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shootingStarIconTail" x1="7" y1="54" x2="49" y2="19" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f9a825" stop-opacity="0" />
+      <stop offset="55%" stop-color="#f9a825" stop-opacity="0.58" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0.95" />
+    </linearGradient>
+    <radialGradient id="shootingStarIconGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fffdf7" stop-opacity="1" />
+      <stop offset="45%" stop-color="#ffd966" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <path d="M6 55C19 44 31 34 50 20C34 38 21 50 6 55Z" fill="url(#shootingStarIconTail)" />
+  <path d="M14 58C26 49 37 40 51 24C39 42 27 53 14 58Z" fill="url(#shootingStarIconTail)" opacity="0.52" />
+  <circle cx="50" cy="18" r="14" fill="url(#shootingStarIconGlow)" />
+  <path d="M50 5L54 14L63 18L54 22L50 35L46 22L37 18L46 14Z" fill="#ffd966" />
+  <path d="M50 5L54 22L50 35L46 22Z" fill="#f9a825" opacity="0.5" />
+  <path d="M50 10L52 16L58 18L52 20L50 27L48 20L42 18L48 16Z" fill="#fff6c8" opacity="0.9" />
+</svg>

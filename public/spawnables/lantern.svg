@@ -1,0 +1,16 @@
+<svg width="72" height="92" viewBox="0 0 72 92" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="lanternSkyGlow" cx="0.5" cy="0.55" r="0.55">
+      <stop offset="0%" stop-color="#ffeaa3" stop-opacity="0.82" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="36" cy="48" r="35" fill="url(#lanternSkyGlow)" />
+  <path d="M19 15H53L59 71H13Z" fill="#ffeaa3" opacity="0.92" />
+  <path d="M24 17H48C52 32 53 53 49 69H23C19 52 20 33 24 17Z" fill="#fff6c8" />
+  <path d="M20 16H52L56 24H16Z" fill="#d4a652" />
+  <path d="M16 68H56L51 78H21Z" fill="#b8841f" />
+  <path d="M30 61Q36 48 42 61Q40 68 36 70Q32 68 30 61Z" fill="#ff8a65" opacity="0.82" />
+  <path d="M23 17Q19 42 23 68" fill="none" stroke="#d4a652" stroke-width="1.3" stroke-linecap="round" opacity="0.55" />
+  <path d="M49 17Q53 42 49 68" fill="none" stroke="#d4a652" stroke-width="1.3" stroke-linecap="round" opacity="0.55" />
+</svg>

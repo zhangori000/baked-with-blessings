@@ -1,0 +1,19 @@
+<svg width="66" height="86" viewBox="0 0 66 86" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="chochinWarmGlow" cx="0.5" cy="0.52" r="0.58">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.84" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="33" cy="43" r="32" fill="url(#chochinWarmGlow)" />
+  <path d="M15 15H51C58 26 60 55 51 70H15C6 55 8 26 15 15Z" fill="#e53935" />
+  <path d="M24 16H42C48 29 49 55 42 69H24C17 55 18 29 24 16Z" fill="#fff6c8" />
+  <path d="M30 16H36C40 31 40 54 36 69H30C26 54 26 31 30 16Z" fill="#ffeaa3" opacity="0.72" />
+  <rect x="17" y="8" width="32" height="9" rx="3" fill="#202033" />
+  <rect x="16" y="69" width="34" height="9" rx="3" fill="#202033" />
+  <path d="M12 28H54" stroke="#c62828" stroke-width="1.4" stroke-linecap="round" opacity="0.62" />
+  <path d="M10 42H56" stroke="#c62828" stroke-width="1.4" stroke-linecap="round" opacity="0.62" />
+  <path d="M12 57H54" stroke="#c62828" stroke-width="1.4" stroke-linecap="round" opacity="0.62" />
+  <line x1="33" y1="0" x2="33" y2="8" stroke="#202033" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="33" y1="78" x2="33" y2="86" stroke="#202033" stroke-width="1.5" stroke-linecap="round" />
+</svg>

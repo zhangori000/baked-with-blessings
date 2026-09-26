@@ -1,0 +1,56 @@
+.scrollCueArea {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.scrollCueAreaScroll:focus-visible {
+  border-radius: 0.5rem;
+  outline: 2px solid rgba(74, 54, 23, 0.4);
+  outline-offset: 2px;
+}
+
+.scrollCueAreaScroll[data-cue] {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.9rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.9rem), transparent);
+}
+
+.scrollCueAreaChip {
+  align-items: center;
+  animation: scrollCueAreaNudge 1.8s ease-in-out 600ms infinite;
+  background: rgba(74, 54, 23, 0.88);
+  border: 0;
+  border-radius: 999px;
+  bottom: 0;
+  box-shadow: 0 4px 12px rgba(66, 42, 17, 0.16);
+  color: #fffaf2;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-rounded-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  gap: 0.2rem;
+  height: 1.35rem;
+  left: 50%;
+  padding: 0 0.55rem 0 0.6rem;
+  position: absolute;
+  translate: -50% 0;
+}
+
+@keyframes scrollCueAreaNudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(0.14rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollCueAreaChip {
+    animation: none;
+  }
+}

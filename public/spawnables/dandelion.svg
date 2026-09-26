@@ -1,0 +1,30 @@
+<svg width="74" height="118" viewBox="0 0 74 118" xmlns="http://www.w3.org/2000/svg">
+  <line x1="37" y1="38" x2="33" y2="112" stroke="#689f38" stroke-width="3" stroke-linecap="round" />
+  <path d="M33 84Q17 76 5 88Q18 98 33 91Z" fill="#8bc34a" />
+  <path d="M34 98Q52 86 69 94Q55 108 34 104Z" fill="#8bc34a" />
+  <g stroke="#e8d8a8" stroke-width="1.4" stroke-linecap="round">
+    <line x1="37" y1="38" x2="37" y2="5" />
+    <line x1="37" y1="38" x2="53" y2="10" />
+    <line x1="37" y1="38" x2="65" y2="24" />
+    <line x1="37" y1="38" x2="70" y2="42" />
+    <line x1="37" y1="38" x2="59" y2="62" />
+    <line x1="37" y1="38" x2="37" y2="72" />
+    <line x1="37" y1="38" x2="17" y2="64" />
+    <line x1="37" y1="38" x2="4" y2="43" />
+    <line x1="37" y1="38" x2="8" y2="22" />
+    <line x1="37" y1="38" x2="21" y2="9" />
+  </g>
+  <g fill="#fffdf7">
+    <circle cx="37" cy="5" r="3" />
+    <circle cx="53" cy="10" r="2.8" />
+    <circle cx="65" cy="24" r="2.8" />
+    <circle cx="70" cy="42" r="2.8" />
+    <circle cx="59" cy="62" r="2.8" />
+    <circle cx="37" cy="72" r="2.8" />
+    <circle cx="17" cy="64" r="2.8" />
+    <circle cx="4" cy="43" r="2.8" />
+    <circle cx="8" cy="22" r="2.8" />
+    <circle cx="21" cy="9" r="2.8" />
+    <circle cx="37" cy="38" r="5" fill="#d4a652" />
+  </g>
+</svg>

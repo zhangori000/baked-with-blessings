@@ -1,0 +1,17 @@
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="fireflyWarmGlow" cx="0.55" cy="0.52" r="0.5">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.9" />
+      <stop offset="42%" stop-color="#ffd966" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="42" cy="38" r="31" fill="url(#fireflyWarmGlow)" />
+  <ellipse cx="38" cy="31" rx="15" ry="9" fill="#fffdf7" opacity="0.62" transform="rotate(-23 38 31)" />
+  <ellipse cx="46" cy="45" rx="15" ry="9" fill="#fffdf7" opacity="0.56" transform="rotate(23 46 45)" />
+  <ellipse cx="30" cy="38" rx="11" ry="9" fill="#5d4037" />
+  <ellipse cx="45" cy="38" rx="15" ry="10" fill="#ffd966" />
+  <path d="M48 30C55 33 59 38 58 44C54 42 49 41 42 41C43 36 45 33 48 30Z" fill="#fff6c8" opacity="0.72" />
+  <circle cx="23" cy="36" r="1.5" fill="#2a2a2a" />
+  <path d="M23 31Q17 24 11 27" fill="none" stroke="#5d4037" stroke-width="1.2" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,28 @@
+<svg width="158" height="92" viewBox="0 0 158 92" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="boatLanternGlow" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="126" cy="31" rx="22" ry="22" fill="url(#boatLanternGlow)" />
+  <line x1="121" y1="70" x2="121" y2="18" stroke="#6b4423" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M114 20H128L132 37H110Z" fill="#ffd966" />
+  <path d="M118 22H126L128 35H116Z" fill="#fff6c8" opacity="0.8" />
+  <rect x="112" y="16" width="18" height="5" rx="1.5" fill="#5d4037" />
+  <rect x="110" y="36" width="22" height="5" rx="1.5" fill="#5d4037" />
+  <path d="M10 53C42 71 113 71 148 52C143 75 119 92 78 92C37 92 17 75 10 53Z" fill="#8b4a22" />
+  <path d="M22 63C54 77 109 77 138 61C126 78 103 87 77 87C50 87 31 78 22 63Z" fill="#6b4423" opacity="0.72" />
+  <path d="M13 53C51 61 108 60 146 52C108 69 50 70 13 53Z" fill="#d4a652" />
+  <circle cx="62" cy="36" r="10" fill="#f0d4b0" />
+  <path d="M50 44C58 36 70 36 78 45C78 58 69 67 56 67C49 61 46 51 50 44Z" fill="#8bc4d4" />
+  <path d="M49 40C34 46 24 59 18 80C39 74 54 61 64 42Z" fill="#ffd966" />
+  <path d="M18 77C31 74 43 66 53 55C42 72 30 83 18 86Z" fill="#d4a652" opacity="0.75" />
+  <circle cx="91" cy="36" r="9" fill="#f0d4b0" />
+  <path d="M79 45C88 36 102 38 110 48C109 61 98 69 85 65C78 59 76 51 79 45Z" fill="#9ccc65" />
+  <path d="M84 35C88 27 99 27 105 35C101 40 91 41 84 35Z" fill="#8b7355" />
+  <path d="M99 51L151 79" stroke="#8b7355" stroke-width="3" stroke-linecap="round" />
+  <ellipse cx="148" cy="80" rx="9" ry="3" fill="#8b7355" transform="rotate(25 148 80)" />
+  <path d="M105 46L141 27" stroke="#8b7355" stroke-width="2.6" stroke-linecap="round" />
+  <ellipse cx="142" cy="26" rx="8" ry="2.8" fill="#8b7355" transform="rotate(-27 142 26)" />
+</svg>

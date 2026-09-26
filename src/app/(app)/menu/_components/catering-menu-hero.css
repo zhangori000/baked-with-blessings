@@ -578,4 +578,27 @@
   .cateringScene-moonlit .cateringHeroLineWildflower {
     width: 1.32rem;
   }
+
+  .cateringScene-moonlit .cateringHeroSpawnLayer--ground {
+    --spawn-water-bottom: calc(var(--catering-hero-meadow-height) * 0.42);
+  }
+}
+
+.cateringHeroSpawnLayer--ground {
+  --spawn-ground-bottom: calc(var(--catering-hero-meadow-height) * 0.3);
+  --spawn-water-bottom: calc(var(--catering-hero-meadow-height) + 1rem);
+  z-index: 2;
+}
+
+.cateringHeroSpawnLayer--sky {
+  z-index: 2;
+}
+
+.cateringHeroContent .cateringActionRow {
+  flex: 1 1 auto;
+}
+
+.cateringSpawnButton[aria-expanded='true'] {
+  border-color: rgba(74, 54, 23, 0.4);
+  box-shadow: inset 0 2px 0 rgba(74, 54, 23, 0.12);
 }

@@ -1,0 +1,8 @@
+<svg width="78" height="48" viewBox="0 0 78 48" xmlns="http://www.w3.org/2000/svg">
+  <path d="M3 25L75 4L53 44L40 31L24 40Z" fill="#fffaf4" />
+  <path d="M40 31L75 4L24 40Z" fill="#e0cda9" />
+  <path d="M3 25L75 4L31 28Z" fill="#fffdf7" />
+  <path d="M40 31L53 44L48 28Z" fill="#d4b98f" />
+  <path d="M31 28L24 40L40 31Z" fill="#c8b8a8" opacity="0.85" />
+  <path d="M3 25L31 28L24 40Z" fill="#ead9c2" />
+</svg>
