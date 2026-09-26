@@ -21,22 +21,19 @@ describe('resolveCateringStep', () => {
 })
 
 describe('groupCateringPackages', () => {
-  it('groups by title prefix and sorts rows by size', () => {
+  it('groups by title prefix, puts minis first, and sorts rows by size', () => {
     const groups = groupCateringPackages([
-      { requiredSelectionCount: 100, title: 'Mini Cookie Catering — XL' },
-      { requiredSelectionCount: 36, title: 'Large Cookie Catering — Large' },
-      { requiredSelectionCount: 18, title: 'Large Cookie Catering — Small' },
-      { requiredSelectionCount: 30, title: 'Mini Cookie Catering — Small' },
+      { requiredSelectionCount: 100, title: 'Mini Cookies — 100 Minis' },
+      { requiredSelectionCount: 36, title: 'Full-Size Cookies — 36 Cookies' },
+      { requiredSelectionCount: 18, title: 'Full-Size Cookies — 18 Cookies' },
+      { requiredSelectionCount: 30, title: 'Mini Cookies — 30 Minis' },
     ])
 
-    expect(groups.map((group) => group.heading)).toEqual([
-      'Large Cookie Catering',
-      'Mini Cookie Catering',
+    expect(groups.map((group) => group.heading)).toEqual(['Mini Cookies', 'Full-Size Cookies'])
+    expect(groups[0]?.rows.map((row) => [row.rowTitle, row.step])).toEqual([
+      ['30 Minis', 10],
+      ['100 Minis', 10],
     ])
-    expect(groups[0]?.rows.map((row) => row.rowTitle)).toEqual(['Small', 'Large'])
-    expect(groups[1]?.rows.map((row) => [row.rowTitle, row.step])).toEqual([
-      ['Small', 10],
-      ['XL', 10],
-    ])
+    expect(groups[1]?.rows.map((row) => row.rowTitle)).toEqual(['18 Cookies', '36 Cookies'])
   })
 })

@@ -6,52 +6,13 @@ import {
   BUNDLES_CATEGORY_SLUG,
   CATERING_PACKAGES_CATEGORY_SLUG,
 } from '../src/features/products/cateringPackages'
-
-type PackageSpec = {
-  capacity: number
-  galleryFromSlug: string
-  portionLabel: string
-  priceCents: number
-  size: string
-  slug: string
-  summary: string
-  title: string
-  unit: 'large' | 'mini'
-}
+import {
+  CATERING_PACKAGE_SPECS as PACKAGE_SPECS,
+  type CateringPackageSpec as PackageSpec,
+} from './lib/catering-package-specs'
 
 const PACKAGE_CATEGORY = { slug: CATERING_PACKAGES_CATEGORY_SLUG, title: 'Catering' }
 const BUNDLES_CATEGORY = { slug: BUNDLES_CATEGORY_SLUG, title: 'Bundles' }
-
-const buildSpec = (
-  unit: 'large' | 'mini',
-  size: 'Small' | 'Large' | 'XL',
-  capacity: number,
-  priceCents: number,
-): PackageSpec => {
-  const group = unit === 'large' ? 'Large Cookie Catering' : 'Mini Cookie Catering'
-  const noun = unit === 'large' ? 'large cookies' : 'mini cookies'
-
-  return {
-    capacity,
-    galleryFromSlug: unit === 'large' ? 'cookie-tray' : 'mini-cookie-tray',
-    portionLabel: `${capacity} ${noun}`,
-    priceCents,
-    size,
-    slug: `${unit}-cookie-catering-${size.toLowerCase()}`,
-    summary: `${capacity} ${noun} in any mix of flavors — this week’s lineup or past favorites from the Hall of Fame.`,
-    title: `${group} — ${size}`,
-    unit,
-  }
-}
-
-const PACKAGE_SPECS: PackageSpec[] = [
-  buildSpec('large', 'Small', 18, 7500),
-  buildSpec('large', 'Large', 36, 15000),
-  buildSpec('large', 'XL', 60, 24000),
-  buildSpec('mini', 'Small', 30, 4500),
-  buildSpec('mini', 'Large', 60, 8500),
-  buildSpec('mini', 'XL', 100, 14000),
-]
 
 const text = (value: string) => ({
   detail: 0,
@@ -201,7 +162,7 @@ const run = async () => {
         flavorSelection: 'mixAndMatch' as const,
         menuBehavior: 'batchBuilder' as const,
         menuExpandedPitch: buildPitch(pitchFor(spec)),
-        menuPortionLabel: spec.portionLabel,
+        menuPortionLabel: null,
         meta: { description: spec.summary },
         priceInUSD: spec.priceCents,
         priceInUSDEnabled: true,

@@ -579,6 +579,12 @@ function CateringMenuRow({
                 className="cateringMenuRoundHeading mt-2 text-[1.42rem] tracking-[-0.02em] text-[#171510] md:text-[1.56rem]"
               />
             ) : null}
+            {anyFlavor && typeof product.priceInUSD === 'number' && requiredSelectionCount > 0 ? (
+              <p className="cateringPricePerCookie mt-1 text-[0.86rem] text-[rgba(23,21,16,0.6)]">
+                <Price as="span" amount={Math.round(product.priceInUSD / requiredSelectionCount)} />{' '}
+                each
+              </p>
+            ) : null}
           </div>
         </div>
       </AccordionTrigger>

@@ -182,7 +182,7 @@ describe('mix-and-match flavor availability', () => {
     categories: [CATERING_PACKAGES_CATEGORY_ID],
     id: 21,
     requiredSelectionCount: 18,
-    title: 'Large Cookie Catering — Small',
+    title: 'Full-Size Cookies — 18 Cookies',
   }
 
   it('rejects past flavors in build-your-own boxes', async () => {
