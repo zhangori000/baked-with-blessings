@@ -27,57 +27,60 @@ registerViewBoxes({
   'baby-stegosaurus': [108, 70],
   'baby-triceratops': [108, 72],
   'dino-ash': [320, 190],
-  'dino-asteroid': [190, 134],
+  'dino-asteroid': [170, 96],
   'dino-bite-burst': [96, 70],
   'dino-dust': [132, 58],
   'dino-egg-crack': [88, 66],
   'dino-eruption': [260, 260],
   'dino-feather-puff': [106, 72],
-  'dino-shooting-star': [220, 54],
+  'dino-shooting-star': [220, 44],
   'dino-shooting-star-icon': [88, 52],
   'dino-nest': [88, 66],
   'dino-scrap': [70, 42],
   'dino-tail-streak': [150, 56],
   'cooled-lava': [280, 70],
   impact: [260, 180],
-  compy: [90, 54],
   'lava-flank-left': [220, 270],
   'lava-flank-right': [220, 270],
   'lava-flow': [280, 78],
   'lava-ground-sheet': [360, 86],
   'lava-bomb': [60, 60],
   meganeura: [122, 78],
-  pterodactyl: [172, 104],
-  'pterodactyl-dive': [150, 120],
-  raptor: [132, 84],
-  'raptor-leap': [136, 90],
+  pterodactyl: [200, 110],
+  'pterodactyl-dive': [200, 110],
   stegosaurus: [168, 104],
   'stegosaurus-swing': [178, 104],
-  trex: [232, 170],
-  'trex-chomp': [232, 170],
-  'trex-moss': [232, 170],
-  'trex-roar': [232, 170],
-  'trex-russet': [232, 170],
   triceratops: [168, 98],
   'triceratops-charge': [172, 92],
   volcano: [122, 108],
   'volcano-erupt': [126, 132],
-  brachiosaurus: [190, 200],
-  'brachiosaurus-browse': [190, 230],
+  brachiosaurus: [260, 210],
+  'brachiosaurus-browse': [260, 210],
+  'dino-meat-bit': [40, 30],
+  ...Object.fromEntries(
+    ['trex', 'trex-moss', 'trex-russet'].flatMap((name) =>
+      ['', '-chomp', '-clamp', '-feed', '-tear'].map((pose) => [
+        `${name}${pose}`,
+        [232, 170] as const,
+      ]),
+    ),
+  ),
 })
 
 const fernAssets = ['/flowers/prehistoric-fern.svg', '/flowers/prehistoric-horsetail.svg'] as const
-const trexAssets = [ecoAsset('trex'), ecoAsset('trex-russet'), ecoAsset('trex-moss')] as const
-const trexRoarAsset = ecoAsset('trex-roar')
-const trexChompAsset = ecoAsset('trex-chomp')
+const trexVariants = ['trex', 'trex-russet', 'trex-moss'] as const
+const trexAssets = trexVariants.map((name) => ecoAsset(name))
+const trexPose = (entity: EcoEntity, pose?: 'chomp' | 'clamp' | 'feed' | 'tear') => {
+  const name = trexVariants[entity.data.variant ?? 0] ?? trexVariants[0]
+
+  return ecoAsset(pose ? `${name}-${pose}` : name)
+}
 const triceratopsAsset = ecoAsset('triceratops')
 const triceratopsChargeAsset = ecoAsset('triceratops-charge')
 const brachiosaurusAsset = ecoAsset('brachiosaurus')
 const brachiosaurusBrowseAsset = ecoAsset('brachiosaurus-browse')
 const stegosaurusAsset = ecoAsset('stegosaurus')
 const stegosaurusSwingAsset = ecoAsset('stegosaurus-swing')
-const raptorAsset = ecoAsset('raptor')
-const raptorLeapAsset = ecoAsset('raptor-leap')
 const pterodactylAsset = ecoAsset('pterodactyl')
 const pterodactylDiveAsset = ecoAsset('pterodactyl-dive')
 const nestAsset = ecoAsset('dino-nest')
@@ -114,7 +117,6 @@ const isHerbivore = (other: EcoEntity) => herbivoreSpecies.includes(other.specie
 const isBabyHerbivore = (other: EcoEntity) => isHerbivore(other) && (other.data.baby ?? 0) > 0
 const isAdultHerbivore = (other: EcoEntity) => isHerbivore(other) && (other.data.baby ?? 0) <= 0
 const isEgg = (other: EcoEntity) => other.species === 'dino-nest'
-const isRaptor = (other: EcoEntity) => other.species === 'raptor'
 const isTrex = (other: EcoEntity) => other.species === 'trex'
 
 function spawnEffect(
@@ -244,7 +246,8 @@ function damage(
 
   if (entity.species === 'trex') {
     entity.targetId = null
-    world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
+    entity.data.carcassId = 0
+    world.setAsset(entity, trexPose(entity))
     world.setState(entity, 'limp')
     world.tally('trex-downed')
     return
@@ -360,7 +363,15 @@ function graze(entity: EcoEntity, world: EcoWorld, dt: number, speed: number) {
   }
 
   if (entity.state === 'flee') {
+    if (entity.data.avoidX !== undefined) {
+      entity.facing = entity.x >= entity.data.avoidX ? 1 : -1
+      walk(entity, world, dt, unit * speed * 1.3)
+      hop(entity, dt, unit * 0.3, 7)
+    }
+
     if (entity.t > 1.8 && !fire) {
+      delete entity.data.avoidX
+      settle(entity, dt)
       world.setState(entity, 'graze')
     }
 
@@ -409,7 +420,7 @@ function handleBaby(entity: EcoEntity, world: EcoWorld, dt: number, adultAsset: 
   const unit = world.unit
   const threat = world.nearest(
     entity,
-    (other) => isTrex(other) || isRaptor(other) || world.has(other, 'fire'),
+    (other) => isTrex(other) || world.has(other, 'fire'),
     unit * 12,
   )
   const shelter = world.nearest(
@@ -444,31 +455,6 @@ function handleBaby(entity: EcoEntity, world: EcoWorld, dt: number, adultAsset: 
 
   graze(entity, world, dt, 1.25)
   return true
-}
-
-function packCount(entity: EcoEntity, world: EcoWorld, radius = 12) {
-  return world.count(
-    (other) => other.species === 'raptor' && Math.abs(other.x - entity.x) < world.unit * radius,
-  )
-}
-
-function groundPredatorTarget(entity: EcoEntity, world: EcoWorld, pack = 1) {
-  const unit = world.unit
-
-  return (
-    world.nearest(entity, isEgg, unit * 22) ??
-    world.nearest(entity, (other) => other.species === 'compy', unit * 20) ??
-    world.nearest(entity, isBabyHerbivore, unit * 24) ??
-    (pack >= 3
-      ? world.nearest(
-          entity,
-          (other) =>
-            (other.species === 'triceratops' || other.species === 'stegosaurus') &&
-            (other.data.baby ?? 0) <= 0,
-          unit * 24,
-        )
-      : null)
-  )
 }
 
 const fern: EcoSpecies = {
@@ -551,7 +537,7 @@ const araucariaTree: EcoSpecies = {
     entity.scale = 1
     entity.state = 'ripe'
   },
-  size: [7.2, 9.2],
+  size: [9.6, 11.2],
   state: 'ripe',
   style: (entity) => ({
     '--prehistoric-tree-foliage': `${clamp(entity.data.foliage ?? 1, 0.25, 1)}`,
@@ -600,21 +586,116 @@ const araucariaTree: EcoSpecies = {
   },
 }
 
+function trexMouth(entity: EcoEntity, world: EcoWorld, low = false) {
+  return {
+    x: entity.x + entity.facing * world.widthOf(entity) * (low ? 0.4 : 0.46),
+    y: entity.y - entity.lift - world.heightOf(entity) * (low ? 0.36 : 0.62),
+  }
+}
+
+function trexReset(entity: EcoEntity, world: EcoWorld, state = 'prowl') {
+  entity.targetId = null
+  entity.data.snapped = 0
+  entity.data.carcassId = 0
+  world.setAsset(entity, trexPose(entity))
+  world.setState(entity, state)
+}
+
+function makeCarcass(prey: EcoEntity, world: EcoWorld, holder: EcoEntity) {
+  const groundLift =
+    prey.anchor === 'bottom'
+      ? prey.lift
+      : Math.max(0, world.groundY - prey.y - world.heightOf(prey) * 0.5)
+  const carcass = world.spawn('dino-carcass', {
+    countAs: null,
+    data: { holder: holder.id, meat: 1 },
+    facing: prey.facing,
+    size: prey.size,
+    state: 'held',
+    x: prey.x,
+  })
+
+  if (!carcass) {
+    return null
+  }
+
+  world.setAsset(carcass, prey.asset)
+  carcass.scale = prey.scale
+  carcass.lift = groundLift
+  world.remove(prey)
+  world.tally('trex-kill')
+
+  return carcass
+}
+
+function trexBite(entity: EcoEntity, prey: EcoEntity, world: EcoWorld) {
+  const mouth = trexMouth(entity, world)
+  const preyY = prey.anchor === 'bottom' ? prey.y - world.heightOf(prey) * 0.55 : prey.y
+
+  spawnEffect(world, 'dino-bite-burst', (mouth.x + prey.x) / 2, (mouth.y + preyY) / 2, 2.8)
+  world.tally('trex-bite')
+
+  if (prey.species === 'dino-nest') {
+    spawnEffect(world, 'dino-dust', prey.x, prey.y, 1.8)
+    world.kill(prey)
+    world.tally('eggs-stolen')
+    entity.data.hunger = Math.max(0, (entity.data.hunger ?? 0) - 0.7)
+    return null
+  }
+
+  if (prey.species === 'pterodactyl' || prey.species === 'meganeura') {
+    spawnEffect(world, 'dino-feather-puff', prey.x, prey.y, 2.2)
+  }
+
+  const lethal =
+    isBabyHerbivore(prey) || prey.species === 'pterodactyl' || prey.species === 'meganeura'
+
+  if (!lethal) {
+    damage(prey, world, prey.species === 'brachiosaurus' ? 4 : 2.2, entity.x, entity)
+  }
+
+  if (lethal || prey.dying || prey.hp <= 0) {
+    return makeCarcass(prey, world, entity)
+  }
+
+  prey.data.avoidX = entity.x
+  prey.data.shake = 0.5
+  prey.vx += entity.facing * world.unit * 2.4
+  world.setState(prey, prey.species === 'pterodactyl' ? 'takeoff' : 'flee')
+
+  return null
+}
+
+function trexPrey(entity: EcoEntity, world: EcoWorld) {
+  const unit = world.unit
+  const starving = (entity.data.hunger ?? 0) > 1.8
+
+  return (
+    world.nearest(entity, isBabyHerbivore, unit * 44) ??
+    world.nearest(entity, isEgg, unit * 30) ??
+    world.nearest(
+      entity,
+      (other) => isAdultHerbivore(other) && world.matchup(entity, other) === 'strong',
+      unit * 64,
+    ) ??
+    (starving ? world.nearest(entity, isAdultHerbivore, unit * 44) : null)
+  )
+}
+
 const trex: EcoSpecies = {
   anchor: 'bottom',
   asset: () => pick(trexAssets),
-  hp: 6,
+  hp: 9,
   init(entity) {
     entity.data.variant = Math.max(0, trexAssets.indexOf(entity.asset))
-    entity.data.hunger = between(0.35, 0.9)
-    entity.data.roarAt = between(3, 7)
+    entity.data.hunger = between(0.6, 1.1)
   },
   layer: 'front',
   size: [9.2, 10.4],
   state: 'prowl',
-  strongVs: ['brachiosaurus', 'raptor', 'compy', 'pterodactyl', 'dino-nest'],
+  strongVs: ['brachiosaurus', 'pterodactyl', 'dino-nest'],
   tags: ['predator', 'burnable'],
-  weakTo: ['triceratops', 'stegosaurus'],
+  weakTo: ['triceratops', 'stegosaurus', 'meganeura'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -634,9 +715,7 @@ const trex: EcoSpecies = {
     const fire = nearestFire(entity, world, 5.4)
 
     if (fire && entity.state !== 'flee') {
-      entity.targetId = null
-      world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
-      world.setState(entity, 'flee')
+      trexReset(entity, world, 'flee')
     }
 
     if (entity.state === 'flee') {
@@ -653,39 +732,101 @@ const trex: EcoSpecies = {
       return
     }
 
-    if (entity.state === 'roar') {
+    if (entity.state === 'shake') {
       settle(entity, dt)
-      world.setAsset(entity, trexRoarAsset)
+      world.setAsset(entity, trexPose(entity, 'clamp'))
+      const carcass = world.byId(entity.data.carcassId ?? null)
 
-      if (entity.t < 0.22 && (entity.data.roared ?? 0) <= 0) {
-        entity.data.roared = 1
-        world.tally('trex-roar')
-
-        for (const other of world.within(
-          entity.x,
-          entity.y,
-          unit * 18,
-          (entry) => entry !== entity,
-        )) {
-          if (other.species === 'compy' || other.species === 'raptor') {
-            other.data.scatter = 2.8
-            other.data.avoidX = entity.x
-            other.targetId = null
-            world.setState(other, other.species === 'compy' ? 'scatter' : 'flee')
-          } else if (other.species === 'pterodactyl') {
-            other.data.scatter = 3.2
-            other.data.avoidX = entity.x
-            other.targetId = null
-            world.setState(other, 'takeoff')
-          }
-        }
+      if (!carcass) {
+        trexReset(entity, world)
+        return
       }
 
       if (entity.t > 1.25) {
-        entity.data.roared = 0
-        entity.data.roarAt = world.time + between(12, 20)
-        world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
-        world.setState(entity, 'prowl')
+        world.setState(carcass, 'drop')
+        entity.targetId = carcass.id
+        world.setState(entity, 'feed')
+      }
+
+      return
+    }
+
+    if (entity.state === 'feed') {
+      const carcass = world.byId(entity.targetId)
+
+      if (!carcass || carcass.state === 'held' || entity.t > 9) {
+        entity.data.hunger = 0
+        entity.data.meals = (entity.data.meals ?? 0) + 1
+        trexReset(entity, world)
+        return
+      }
+
+      const side = entity.x <= carcass.x ? -1 : 1
+      const goal = clamp(carcass.x + side * world.widthOf(entity) * 0.36, unit, world.width - unit)
+
+      if (Math.abs(goal - entity.x) > unit * 0.4 && carcass.state !== 'down') {
+        walkToward(entity, world, goal, unit * 2, dt)
+        face(entity, carcass.x)
+        return
+      }
+
+      face(entity, carcass.x)
+      settle(entity, dt)
+      const phase = Math.floor(entity.t / 0.7)
+      const tearing = phase % 2 === 1
+      world.setAsset(entity, trexPose(entity, tearing ? 'tear' : 'feed'))
+
+      if (tearing && (entity.data.tore ?? -1) !== phase) {
+        entity.data.tore = phase
+        const mouth = trexMouth(entity, world)
+        carcass.data.meat = (carcass.data.meat ?? 1) - 0.2 * clamp(7 / carcass.size, 0.5, 2)
+        carcass.data.shake = 0.3
+        world.tally('trex-feed')
+
+        for (let index = 0; index < 2; index += 1) {
+          world.spawn('dino-meat-bit', {
+            countAs: null,
+            vx: -entity.facing * unit * between(0.6, 2.6),
+            vy: -unit * between(5, 8.5),
+            x: mouth.x,
+            y: mouth.y,
+          })
+        }
+      }
+
+      return
+    }
+
+    if (entity.state === 'swat') {
+      settle(entity, dt)
+      const bug = world.byId(entity.targetId)
+      world.setAsset(entity, trexPose(entity, entity.t % 0.5 < 0.26 ? 'chomp' : 'clamp'))
+
+      if (bug) {
+        face(entity, bug.x)
+      }
+
+      if (entity.t > 0.55 && (entity.data.snapped ?? 0) <= 0) {
+        entity.data.snapped = 1
+        const mouth = trexMouth(entity, world)
+
+        if (
+          bug &&
+          Math.hypot(bug.x - mouth.x, bug.y - mouth.y) < unit * 2.2 &&
+          Math.random() < 0.35
+        ) {
+          spawnEffect(world, 'dino-bite-burst', bug.x, bug.y, 1.6)
+          world.kill(bug)
+          world.tally('trex-swat')
+        } else if (bug) {
+          bug.data.scatter = 1.4
+          bug.data.avoidX = mouth.x
+          world.tally('dragonfly-pester')
+        }
+      }
+
+      if (entity.t > 1.4) {
+        trexReset(entity, world)
       }
 
       return
@@ -693,77 +834,94 @@ const trex: EcoSpecies = {
 
     if (entity.state === 'chomp') {
       settle(entity, dt)
-      world.setAsset(entity, trexChompAsset)
+      const prey = world.byId(entity.targetId)
 
-      if (entity.t > 0.18 && (entity.data.snapped ?? 0) <= 0) {
-        entity.data.snapped = 1
-        const prey = world.byId(entity.targetId)
+      if (entity.t < 0.3) {
+        world.setAsset(entity, trexPose(entity, 'chomp'))
 
         if (prey) {
-          spawnEffect(
-            world,
-            'dino-bite-burst',
-            prey.x,
-            prey.anchor === 'bottom' ? prey.y - world.heightOf(prey) * 0.48 : prey.y,
-            2.6,
-          )
-          spawnEffect(world, 'dino-dust', prey.x, prey.y, 2)
+          face(entity, prey.x)
+        }
+
+        return
+      }
+
+      world.setAsset(entity, trexPose(entity, 'clamp'))
+
+      if ((entity.data.snapped ?? 0) <= 0) {
+        entity.data.snapped = 1
+        const mouth = trexMouth(entity, world)
+        const reach = world.widthOf(entity) * 0.22 + (prey ? world.widthOf(prey) * 0.5 : 0)
+
+        if (prey && Math.abs(prey.x - mouth.x) < reach) {
+          const carcass = trexBite(entity, prey, world)
+
+          if (carcass) {
+            entity.data.carcassId = carcass.id
+            entity.data.hunger = Math.max(0, (entity.data.hunger ?? 0) - 0.4)
+            world.setState(entity, 'shake')
+            return
+          }
+        } else {
+          spawnEffect(world, 'dino-dust', mouth.x, entity.y, 1.6)
         }
       }
 
-      if (entity.t > 0.62) {
-        const prey = world.byId(entity.targetId)
-
-        if (prey && Math.abs(prey.x - entity.x) < unit * 2.6) {
-          const edge = world.edge(entity, prey)
-
-          if (edge >= 1.4 && prey.species !== 'brachiosaurus') {
-            world.kill(prey)
-          } else {
-            damage(prey, world, prey.species === 'brachiosaurus' ? 4 : 2.2, entity.x, entity)
-          }
-
-          if (prey.dying || prey.hp <= 0 || edge >= 1.4) {
-            world.spawn('dino-scrap', { countAs: null, x: prey.x })
-          } else {
-            prey.data.avoidX = entity.x
-            world.setState(prey, prey.species === 'pterodactyl' ? 'takeoff' : 'flee')
-          }
-
-          world.tally('trex-kill')
-          entity.data.hunger = 0
-        }
-
-        entity.data.snapped = 0
-        entity.targetId = null
-        world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
-        world.setState(entity, 'prowl')
+      if (entity.t > 0.78) {
+        trexReset(entity, world)
       }
 
+      return
+    }
+
+    const pest = world.nearest(
+      trexMouth(entity, world),
+      (other) => other.species === 'meganeura',
+      unit * 3.6,
+    )
+
+    if (pest && (entity.data.swatAt ?? 0) < world.time) {
+      entity.data.swatAt = world.time + between(2.4, 4.2)
+      entity.data.snapped = 0
+      entity.targetId = pest.id
+      world.setState(entity, 'swat')
+      return
+    }
+
+    const flier = world.nearest(
+      trexMouth(entity, world),
+      (other) => other.species === 'pterodactyl' && other.state === 'dive',
+      unit * 3.4,
+    )
+
+    if (flier) {
+      entity.targetId = flier.id
+      world.setState(entity, 'chomp')
       return
     }
 
     if (entity.state === 'charge' || entity.state === 'stalk') {
       const prey = world.byId(entity.targetId)
 
-      if (!prey || entity.t > 8 || world.matchup(entity, prey) === 'weak') {
-        entity.targetId = null
-        world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
-        world.setState(entity, 'prowl')
+      if (!prey || entity.t > 9) {
+        trexReset(entity, world)
         return
       }
 
-      face(entity, prey.x)
+      const side = entity.x <= prey.x ? -1 : 1
+      const goal = prey.x + side * (world.widthOf(entity) * 0.4 + world.widthOf(prey) * 0.18)
       const gap = walkToward(
         entity,
         world,
-        prey.x,
-        unit * (entity.state === 'charge' ? 4.5 : 2.3),
+        clamp(goal, unit, world.width - unit),
+        unit * (entity.state === 'charge' ? 4.6 : 2.2),
         dt,
       )
+      face(entity, prey.x)
       hop(entity, dt, unit * 0.28, entity.state === 'charge' ? 6 : 3)
 
-      if (gap < unit * 2.2) {
+      if (gap < unit * 0.9 || Math.abs(prey.x - trexMouth(entity, world).x) < unit * 0.8) {
+        entity.data.snapped = 0
         world.setState(entity, 'chomp')
       } else if (entity.state === 'stalk' && entity.t > 1.4) {
         world.setState(entity, 'charge')
@@ -773,40 +931,9 @@ const trex: EcoSpecies = {
     }
 
     entity.data.hunger = (entity.data.hunger ?? 0) + dt / 8
-    const nearbyPrey = world.nearest(
-      entity,
-      (other) =>
-        isBabyHerbivore(other) ||
-        other.species === 'compy' ||
-        other.species === 'raptor' ||
-        (isAdultHerbivore(other) && other.species !== 'brachiosaurus'),
-      unit * 18,
-    )
-
-    if ((entity.data.roarAt ?? 0) < world.time && nearbyPrey && chance(0.7, dt)) {
-      entity.targetId = null
-      world.setState(entity, 'roar')
-      return
-    }
 
     if ((entity.data.hunger ?? 0) > 1 && chance(0.7, dt)) {
-      const prey =
-        world.nearest(entity, isBabyHerbivore, unit * 34) ??
-        world.nearest(
-          entity,
-          (other) => other.species === 'compy' || other.species === 'raptor',
-          unit * 26,
-        ) ??
-        world.nearest(
-          entity,
-          (other) => isAdultHerbivore(other) && world.matchup(entity, other) !== 'weak',
-          unit * 30,
-        ) ??
-        world.nearest(
-          entity,
-          (other) => other.species === 'brachiosaurus' && world.matchup(entity, other) === 'strong',
-          unit * 18,
-        )
+      const prey = trexPrey(entity, world)
 
       if (prey) {
         entity.targetId = prey.id
@@ -815,6 +942,7 @@ const trex: EcoSpecies = {
       }
     }
 
+    world.setAsset(entity, trexPose(entity))
     walk(entity, world, dt, unit * 1.05)
     settle(entity, dt)
 
@@ -843,7 +971,7 @@ const triceratops: EcoSpecies = {
   state: 'graze',
   strongVs: ['trex'],
   tags: ['prey', 'burnable'],
-  weakTo: ['raptor', 'compy'],
+  weakTo: ['brachiosaurus'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -881,12 +1009,7 @@ const triceratops: EcoSpecies = {
       return
     }
 
-    const threat = world.nearest(
-      entity,
-      (other) =>
-        other.species === 'trex' || (other.species === 'raptor' && packCount(other, world) >= 2),
-      unit * 13,
-    )
+    const threat = world.nearest(entity, (other) => other.species === 'trex', unit * 13)
 
     if (threat && (entity.data.chargeAt ?? 0) < world.time) {
       entity.data.chargeAt = world.time + between(4.5, 7)
@@ -900,16 +1023,26 @@ const triceratops: EcoSpecies = {
   },
 }
 
+const isGrazerRival = (other: EcoEntity) =>
+  (other.species === 'triceratops' || other.species === 'stegosaurus') &&
+  (other.data.baby ?? 0) <= 0
+
+function brachioBrowseX(entity: EcoEntity, tree: EcoEntity, world: EcoWorld) {
+  const side = entity.x <= tree.x ? -1 : 1
+
+  return clamp(
+    tree.x + side * (world.widthOf(entity) * 0.44 + world.widthOf(tree) * 0.16),
+    world.unit,
+    world.width - world.unit,
+  )
+}
+
 const brachiosaurus: EcoSpecies = {
   anchor: 'bottom',
   asset: brachiosaurusAsset,
   hp: 10,
   init(entity, world) {
-    if (world.width > 0 && world.width < 500) {
-      entity.size = Math.min(entity.size, 15.2)
-    }
-
-    entity.data.hunger = between(0.1, 0.6)
+    entity.data.hunger = between(0.6, 1.1)
 
     if ((entity.data.baby ?? 0) > 0) {
       entity.scale = 0.5
@@ -919,9 +1052,9 @@ const brachiosaurus: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [15.2, 17.2],
+  size: [12, 13.2],
   state: 'browse',
-  strongVs: ['raptor', 'compy', 'meganeura'],
+  strongVs: ['triceratops', 'stegosaurus'],
   tags: ['prey'],
   weakTo: ['trex'],
   tick(entity, world, dt) {
@@ -936,16 +1069,37 @@ const brachiosaurus: EcoSpecies = {
 
     if (fire) {
       entity.targetId = null
+      entity.data.zBoost = 0
       world.setAsset(entity, brachiosaurusAsset)
       world.setState(entity, 'flee')
       groundFlee(entity, world, fire, dt)
       return
     }
 
-    if (entity.state === 'flee') {
-      walk(entity, world, dt, unit * 1.3)
+    const hunter = world.nearest(
+      entity,
+      (other) =>
+        isTrex(other) &&
+        other.targetId === entity.id &&
+        (other.state === 'stalk' || other.state === 'charge'),
+      unit * 16,
+    )
 
-      if (entity.t > 2.5) {
+    if (hunter && entity.state !== 'flee' && entity.state !== 'stomp') {
+      entity.targetId = null
+      entity.data.zBoost = 0
+      entity.data.avoidX = hunter.x
+      world.setAsset(entity, brachiosaurusAsset)
+      world.setState(entity, 'flee')
+    }
+
+    if (entity.state === 'flee') {
+      entity.facing = entity.x >= (entity.data.avoidX ?? entity.x) ? 1 : -1
+      walk(entity, world, dt, unit * 1.5)
+      entity.tilt = Math.sin(entity.t * 4) * 1.5
+
+      if (entity.t > 2.8) {
+        delete entity.data.avoidX
         world.setState(entity, 'browse')
       }
 
@@ -958,16 +1112,19 @@ const brachiosaurus: EcoSpecies = {
       if (entity.t > 0.35 && (entity.data.stomped ?? 0) <= 0) {
         entity.data.stomped = 1
         world.tally('brachio-stomp')
+        spawnEffect(world, 'dino-dust', entity.x + entity.facing * unit * 2, entity.y, 3.4)
 
         for (const other of world.within(
           entity.x,
           entity.y,
-          unit * 7.5,
+          unit * 8,
           (entry) => entry !== entity,
         )) {
-          if (other.species === 'compy' || other.species === 'raptor') {
+          if (isGrazerRival(other)) {
             damage(other, world, 1.4, entity.x, entity)
+            other.vx += (other.x >= entity.x ? 1 : -1) * unit * 4
             other.data.avoidX = entity.x
+            other.targetId = null
             world.setState(other, 'flee')
           } else if (other.species === 'meganeura') {
             other.vy -= unit * 4
@@ -978,20 +1135,22 @@ const brachiosaurus: EcoSpecies = {
 
       if (entity.t > 0.9) {
         entity.data.stomped = 0
-        world.setState(entity, 'browse')
+        world.setState(entity, entity.targetId ? 'tree-eat' : 'browse')
       }
 
       return
     }
 
-    const small = world.nearest(
+    const rival = world.nearest(
       entity,
-      (other) => other.species === 'raptor' || other.species === 'compy',
-      unit * 5.5,
+      isGrazerRival,
+      unit * (entity.state === 'tree-eat' ? 7 : 4.5),
     )
 
-    if (small && (entity.data.stompAt ?? 0) < world.time) {
+    if (rival && (entity.data.stompAt ?? 0) < world.time) {
       entity.data.stompAt = world.time + between(5, 8)
+      face(entity, rival.x)
+      world.setAsset(entity, brachiosaurusAsset)
       world.setState(entity, 'stomp')
       return
     }
@@ -1001,30 +1160,38 @@ const brachiosaurus: EcoSpecies = {
     if (entity.state === 'tree-eat') {
       const tree = world.byId(entity.targetId)
       settle(entity, dt)
-      world.setAsset(entity, brachiosaurusBrowseAsset)
 
       if (!tree || !isTree(tree)) {
         entity.targetId = null
+        entity.data.zBoost = 0
         world.setAsset(entity, brachiosaurusAsset)
         world.setState(entity, 'browse')
         return
       }
 
+      world.setAsset(entity, brachiosaurusBrowseAsset)
+      entity.data.zBoost = Math.max(0, tree.y - entity.y) + 1
       face(entity, tree.x)
 
       if (entity.t > 1.2 && (entity.data.browsed ?? 0) <= 0) {
         entity.data.browsed = 1
         eatTreeFoliage(tree, world)
-        spawnEffect(world, 'dino-dust', tree.x, tree.y - world.heightOf(tree) * 0.72, 1.8, {
-          life: 0.8,
-        })
+        spawnEffect(
+          world,
+          'dino-dust',
+          tree.x - entity.facing * world.widthOf(tree) * 0.16,
+          entity.y - world.heightOf(entity) * 0.72,
+          1.6,
+          { life: 0.8 },
+        )
         entity.data.hunger = 0
         entity.data.meals = (entity.data.meals ?? 0) + 1
         world.tally('brachio-tree-browse')
       }
 
-      if (entity.t > 3.4) {
+      if (entity.t > 4.2) {
         entity.data.browsed = 0
+        entity.data.zBoost = 0
         entity.targetId = null
         world.setAsset(entity, brachiosaurusAsset)
         world.setState(entity, 'browse')
@@ -1042,10 +1209,10 @@ const brachiosaurus: EcoSpecies = {
         return
       }
 
-      const side = entity.x <= tree.x ? -1 : 1
-      const goal = clamp(tree.x + side * unit * 1.4, unit, world.width - unit)
-
-      if (walkToward(entity, world, goal, unit * 0.82, dt) < unit * 0.8) {
+      if (
+        walkToward(entity, world, brachioBrowseX(entity, tree, world), unit * 0.9, dt) <
+        unit * 0.4
+      ) {
         world.setState(entity, 'tree-eat')
       }
 
@@ -1053,7 +1220,7 @@ const brachiosaurus: EcoSpecies = {
     }
 
     if ((entity.data.hunger ?? 0) > 1.05) {
-      const tree = world.nearest(entity, isTree, unit * 28)
+      const tree = world.nearest(entity, isTree, unit * 40)
 
       if (tree) {
         entity.targetId = tree.id
@@ -1101,9 +1268,9 @@ const stegosaurus: EcoSpecies = {
   layer: 'front',
   size: [7.1, 7.9],
   state: 'graze',
-  strongVs: ['trex', 'raptor'],
+  strongVs: ['trex'],
   tags: ['prey', 'burnable'],
-  weakTo: ['compy'],
+  weakTo: ['brachiosaurus'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -1147,7 +1314,7 @@ const stegosaurus: EcoSpecies = {
     const behind = world.nearest(
       entity,
       (other) =>
-        (other.species === 'trex' || other.species === 'raptor') &&
+        other.species === 'trex' &&
         Math.sign(other.x - entity.x || entity.facing) !== entity.facing,
       unit * 4.2,
     )
@@ -1164,132 +1331,6 @@ const stegosaurus: EcoSpecies = {
   },
 }
 
-const raptor: EcoSpecies = {
-  anchor: 'bottom',
-  asset: raptorAsset,
-  hp: 2,
-  init(entity) {
-    entity.data.hunger = between(0.35, 0.9)
-  },
-  layer: 'front',
-  size: [3.2, 3.8],
-  state: 'prowl',
-  strongVs: ['triceratops', 'pterodactyl', 'compy', 'dino-nest'],
-  tags: ['predator', 'burnable'],
-  weakTo: ['trex', 'stegosaurus', 'brachiosaurus'],
-  tick(entity, world, dt) {
-    const unit = world.unit
-    clearTimedFx(entity, dt)
-    const fire = nearestFire(entity, world, 5)
-    const rex = world.nearest(entity, isTrex, unit * 13)
-
-    if ((entity.data.scatter ?? 0) > 0 || fire || (rex && rex.state === 'roar')) {
-      entity.targetId = null
-      world.setAsset(entity, raptorAsset)
-      world.setState(entity, 'flee')
-    }
-
-    if (entity.state === 'flee') {
-      groundFlee(
-        entity,
-        world,
-        fire ?? rex ?? { x: entity.data.avoidX ?? entity.x - entity.facing, y: entity.y },
-        dt,
-      )
-
-      if (entity.t > 2.5 && !fire && (entity.data.scatter ?? 0) <= 0) {
-        world.setState(entity, 'prowl')
-      }
-
-      return
-    }
-
-    if (entity.state === 'leap') {
-      world.setAsset(entity, raptorLeapAsset)
-      const target = world.byId(entity.targetId)
-
-      if (!target || entity.t > 2.2) {
-        entity.targetId = null
-        world.setAsset(entity, raptorAsset)
-        world.setState(entity, 'prowl')
-        return
-      }
-
-      face(entity, target.x)
-      const gap = walkToward(entity, world, target.x, unit * 5.3, dt)
-      hop(entity, dt, unit * 1.1, 8)
-
-      if (gap < unit * 1.25) {
-        spawnEffect(world, 'dino-feather-puff', entity.x, entity.y - unit * 1.2, 2)
-
-        if (target.species === 'dino-nest') {
-          world.kill(target)
-          world.tally('eggs-stolen')
-        } else if (
-          (isBabyHerbivore(target) || target.species === 'compy') &&
-          world.matchup(entity, target) !== 'weak'
-        ) {
-          world.kill(target)
-          world.tally('raptor-kill')
-          entity.data.hunger = 0
-        } else {
-          damage(target, world, packCount(entity, world) >= 2 ? 1.5 : 1, entity.x, entity)
-          world.tally('raptor-pack-hit')
-          entity.data.hunger = 0.2
-        }
-
-        entity.targetId = null
-        world.setAsset(entity, raptorAsset)
-        world.setState(entity, 'prowl')
-      }
-
-      return
-    }
-
-    if (entity.state === 'flank') {
-      const target = world.byId(entity.targetId)
-
-      if (!target || entity.t > 5) {
-        entity.targetId = null
-        world.setState(entity, 'prowl')
-        return
-      }
-
-      const offset = (entity.id % 2 === 0 ? -1 : 1) * unit * 2.2
-      face(entity, target.x + offset)
-
-      if (walkToward(entity, world, target.x + offset, unit * 3.2, dt) < unit * 2.3) {
-        world.setState(entity, 'leap')
-      }
-
-      return
-    }
-
-    entity.data.hunger = (entity.data.hunger ?? 0) + dt / 7
-    const pack = packCount(entity, world)
-
-    if ((entity.data.hunger ?? 0) > 0.95 && chance(0.65, dt)) {
-      const target = groundPredatorTarget(entity, world, pack)
-
-      if (target) {
-        entity.targetId = target.id
-        world.setState(
-          entity,
-          pack >= 2 || world.matchup(entity, target) === 'strong' ? 'flank' : 'leap',
-        )
-        return
-      }
-    }
-
-    walk(entity, world, dt, unit * 1.8)
-    hop(entity, dt, unit * 0.35, 4)
-
-    if (chance(0.12, dt)) {
-      entity.facing = entity.facing === 1 ? -1 : 1
-    }
-  },
-}
-
 const pterodactyl: EcoSpecies = {
   anchor: 'center',
   asset: pterodactylAsset,
@@ -1301,9 +1342,9 @@ const pterodactyl: EcoSpecies = {
   layer: 'front',
   size: [3.9, 5.1],
   state: 'soar',
-  strongVs: ['meganeura', 'compy', 'dino-nest'],
+  strongVs: ['meganeura', 'dino-nest'],
   tags: ['predator', 'burnable'],
-  weakTo: ['raptor'],
+  weakTo: ['trex'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -1370,7 +1411,7 @@ const pterodactyl: EcoSpecies = {
           world.setState(entity, 'takeoff')
         } else {
           world.kill(target)
-          world.tally(target.species === 'meganeura' ? 'ptero-dragonfly' : 'ptero-compy')
+          world.tally('ptero-dragonfly')
         }
 
         entity.targetId = null
@@ -1412,7 +1453,6 @@ const pterodactyl: EcoSpecies = {
     if ((entity.data.hunger ?? 0) > 0.85 && chance(0.75, dt)) {
       const target =
         world.nearest(entity, (other) => other.species === 'meganeura', unit * 28) ??
-        world.nearest(entity, (other) => other.species === 'compy', unit * 22) ??
         world.nearest(entity, isEgg, unit * 22)
 
       if (target) {
@@ -1434,121 +1474,6 @@ const pterodactyl: EcoSpecies = {
   },
 }
 
-const compy: EcoSpecies = {
-  anchor: 'bottom',
-  asset: ecoAsset('compy'),
-  init(entity) {
-    entity.data.hunger = between(0.25, 0.85)
-  },
-  layer: 'front',
-  size: [1.6, 2],
-  state: 'skitter',
-  strongVs: ['dino-nest', 'dino-scrap', 'stegosaurus'],
-  tags: ['prey', 'burnable'],
-  weakTo: ['pterodactyl', 'raptor', 'trex', 'meganeura'],
-  tick(entity, world, dt) {
-    const unit = world.unit
-    clearTimedFx(entity, dt)
-    const threat = world.nearest(
-      entity,
-      (other) =>
-        other.species === 'trex' ||
-        other.species === 'raptor' ||
-        other.species === 'triceratops' ||
-        other.species === 'stegosaurus' ||
-        other.species === 'brachiosaurus' ||
-        world.has(other, 'fire'),
-      unit * 8,
-    )
-
-    if (threat || (entity.data.scatter ?? 0) > 0) {
-      entity.targetId = null
-      world.setState(entity, 'scatter')
-    }
-
-    if (entity.state === 'scatter') {
-      groundFlee(
-        entity,
-        world,
-        threat ?? { x: entity.data.avoidX ?? entity.x - entity.facing, y: entity.y },
-        dt,
-      )
-
-      if (entity.t > 1.8 && !threat && (entity.data.scatter ?? 0) <= 0) {
-        world.setState(entity, 'skitter')
-      }
-
-      return
-    }
-
-    if (entity.state === 'eat') {
-      settle(entity, dt)
-      const food = world.byId(entity.targetId)
-
-      if (!food) {
-        entity.targetId = null
-        world.setState(entity, 'skitter')
-        return
-      }
-
-      if (entity.t > 0.9) {
-        if (food.species === 'meganeura' && world.matchup(entity, food) === 'weak') {
-          damage(food, world, 0.5, entity.x, entity)
-        } else {
-          world.kill(food)
-        }
-
-        spawnEffect(world, 'dino-bite-burst', food.x, food.y, 1.3)
-        world.tally(food.species === 'dino-nest' ? 'eggs-stolen' : 'compy-meal')
-        entity.data.hunger = 0
-        entity.targetId = null
-        world.setState(entity, 'skitter')
-      }
-
-      return
-    }
-
-    if (entity.state === 'seek') {
-      const food = world.byId(entity.targetId)
-
-      if (!food) {
-        entity.targetId = null
-        world.setState(entity, 'skitter')
-        return
-      }
-
-      if (walkToward(entity, world, food.x, unit * 3.6, dt) < unit * 0.8) {
-        world.setState(entity, 'eat')
-      }
-
-      hop(entity, dt, unit * 0.4, 10)
-      return
-    }
-
-    entity.data.hunger = (entity.data.hunger ?? 0) + dt / 5
-
-    if ((entity.data.hunger ?? 0) > 0.75 && chance(0.9, dt)) {
-      const food =
-        world.nearest(entity, (other) => other.species === 'dino-scrap', unit * 20) ??
-        world.nearest(entity, (other) => other.species === 'meganeura', unit * 13) ??
-        world.nearest(entity, isEgg, unit * 12)
-
-      if (food) {
-        entity.targetId = food.id
-        world.setState(entity, 'seek')
-        return
-      }
-    }
-
-    walk(entity, world, dt, unit * 2.1)
-    hop(entity, dt, unit * 0.32, 7)
-
-    if (chance(0.18, dt)) {
-      entity.facing = entity.facing === 1 ? -1 : 1
-    }
-  },
-}
-
 const meganeura: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('meganeura'),
@@ -1560,16 +1485,15 @@ const meganeura: EcoSpecies = {
   layer: 'front',
   size: [1.35, 1.55],
   state: 'zip',
-  strongVs: ['compy'],
+  strongVs: ['trex'],
   tags: ['insect', 'prey', 'burnable'],
-  weakTo: ['pterodactyl', 'raptor'],
+  weakTo: ['pterodactyl'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
     const threat = world.nearest(
       entity,
-      (other) =>
-        other.species === 'raptor' || other.species === 'pterodactyl' || world.has(other, 'fire'),
+      (other) => other.species === 'pterodactyl' || world.has(other, 'fire'),
       unit * 7,
     )
 
@@ -1589,20 +1513,19 @@ const meganeura: EcoSpecies = {
       )
     } else {
       entity.data.hunger = (entity.data.hunger ?? 0) + dt / 8
-      const smallPrey = world.nearest(entity, (other) => other.species === 'compy', unit * 10)
+      const rex = world.nearest(entity, isTrex, unit * 16)
       let hunting = false
 
-      if ((entity.data.hunger ?? 0) > 0.9 && smallPrey && chance(0.65, dt)) {
+      if (rex && (entity.data.hunger ?? 0) > 0.9 && chance(0.5, dt)) {
         hunting = true
-        steer(entity, smallPrey.x, smallPrey.y - unit * 1.2, unit * 6.2, dt, 7)
+        const head = trexMouth(rex, world)
+        entity.data.goalX = head.x + between(-1.4, 1.4) * unit
+        entity.data.goalY = head.y + between(-1.2, 0.6) * unit
+        entity.data.goalAt = world.time + between(1.4, 2.4)
 
-        if (Math.hypot(smallPrey.x - entity.x, smallPrey.y - entity.y) < unit * 1.4) {
-          damage(smallPrey, world, 0.9, entity.x, entity)
-          smallPrey.data.scatter = 1.4
-          smallPrey.data.avoidX = entity.x
-          world.setState(smallPrey, 'scatter')
+        if (Math.hypot(head.x - entity.x, head.y - entity.y) < unit * 1.6) {
           entity.data.hunger = 0
-          world.tally('dragonfly-hunt')
+          world.tally('dragonfly-pester')
         }
       }
 
@@ -1614,17 +1537,15 @@ const meganeura: EcoSpecies = {
         entity.data.goalAt = world.time + between(1.8, 3.2)
       }
 
-      if (!hunting) {
-        wander(
-          entity,
-          world,
-          dt,
-          unit * 4.4,
-          world.groundY - unit * 10,
-          world.groundY - unit * 2,
-          5,
-        )
-      }
+      wander(
+        entity,
+        world,
+        dt,
+        unit * (hunting ? 5.4 : 4.4),
+        world.groundY - unit * 10,
+        world.groundY - unit * 2,
+        5,
+      )
     }
 
     integrate(entity, dt)
@@ -1662,8 +1583,7 @@ const dinoNest: EcoSpecies = {
   tick(entity, world, _dt) {
     const predator = world.nearest(
       entity,
-      (other) =>
-        other.species === 'raptor' || other.species === 'compy' || other.species === 'pterodactyl',
+      (other) => other.species === 'trex' || other.species === 'pterodactyl',
       world.unit * 5,
     )
 
@@ -1710,6 +1630,87 @@ const dinoScrap: EcoSpecies = {
     entity.data.life = (entity.data.life ?? 12) - dt
 
     if ((entity.data.life ?? 0) <= 0) {
+      world.remove(entity)
+    }
+  },
+}
+
+const dinoCarcass: EcoSpecies = {
+  anchor: 'bottom',
+  asset: ecoAsset('dino-scrap'),
+  countAs: null,
+  init(entity) {
+    entity.data.meat = entity.data.meat ?? 1
+    entity.data.life = between(22, 30)
+  },
+  layer: 'front',
+  size: [3, 4],
+  state: 'down',
+  style: (entity) => ({
+    '--dino-carcass-meat': `${clamp(entity.data.meat ?? 1, 0, 1)}`,
+  }),
+  tags: [],
+  tick(entity, world, dt) {
+    clearTimedFx(entity, dt)
+
+    if (entity.state === 'held') {
+      const holder = world.byId(entity.data.holder ?? null)
+
+      if (!holder || holder.state !== 'shake') {
+        world.setState(entity, 'drop')
+        return
+      }
+
+      const mouth = trexMouth(holder, world)
+      const height = world.heightOf(entity)
+      const small = height < world.heightOf(holder) * 0.5
+      entity.facing = holder.facing === 1 ? -1 : 1
+      entity.x = mouth.x + holder.facing * (small ? 0 : world.widthOf(entity) * 0.3)
+      entity.y = world.groundY + (entity.data.depth ?? 0)
+      entity.lift = small ? Math.max(0, world.groundY - mouth.y - height * 0.55) : 0
+      entity.tilt = Math.sin(holder.t * 26) * (small ? 24 : 5)
+      return
+    }
+
+    if (entity.state === 'drop') {
+      entity.lift = Math.max(0, entity.lift - dt * world.unit * 26)
+      entity.tilt *= 0.85
+
+      if (entity.lift <= 0) {
+        entity.tilt = 0
+        spawnEffect(world, 'dino-dust', entity.x, entity.y, 2)
+        world.setState(entity, 'down')
+      }
+
+      return
+    }
+
+    entity.data.life = (entity.data.life ?? 24) - dt
+
+    if ((entity.data.meat ?? 1) <= 0 || (entity.data.life ?? 0) <= 0) {
+      world.spawn('dino-scrap', { countAs: null, x: entity.x })
+      world.remove(entity)
+    }
+  },
+}
+
+const dinoMeatBit: EcoSpecies = {
+  anchor: 'center',
+  asset: ecoAsset('dino-meat-bit'),
+  countAs: null,
+  init(entity) {
+    entity.data.spin = between(-540, 540)
+  },
+  layer: 'front',
+  size: [0.75, 1.05],
+  state: 'fly',
+  tags: [],
+  tick(entity, world, dt) {
+    entity.vy += world.unit * 26 * dt
+    integrate(entity, dt)
+    entity.tilt += (entity.data.spin ?? 0) * dt
+
+    if (entity.y >= world.groundY - world.unit * 0.2 || entity.t > 2) {
       world.remove(entity)
     }
   },
@@ -2287,7 +2288,7 @@ const dinoShootingStar: EcoSpecies = {
       world.resetTally('shooting-star')
     }
 
-    entity.size = between(5.4, 7.2)
+    entity.size = between(7, 9.4)
     entity.facing = 1
     launchDinoStar(entity, world)
   },
@@ -2295,7 +2296,7 @@ const dinoShootingStar: EcoSpecies = {
   rest(entity) {
     entity.data.opacity = 0.9
   },
-  size: [5.4, 7.2],
+  size: [7, 9.4],
   state: 'shoot',
   style: (entity) => ({
     '--dino-star-opacity': `${entity.data.opacity ?? 1}`,
@@ -2456,15 +2457,16 @@ export const prehistoricSpecies: EcoSpeciesMap = {
   'araucaria-tree': araucariaTree,
   'cooled-lava': lavaFlow,
   'dino-bite-burst': dinoBiteBurst,
+  'dino-carcass': dinoCarcass,
   'dino-impact': dinoImpact,
   'dino-ash': dinoAsh,
   'dino-dust': dinoDust,
   'dino-feather-puff': dinoFeatherPuff,
+  'dino-meat-bit': dinoMeatBit,
   'dino-nest': dinoNest,
   'dino-scrap': dinoScrap,
   'dino-tail-streak': dinoTailStreak,
   brachiosaurus,
-  compy,
   eruption,
   fern,
   'lava-flank-left': lavaFlankLeft,
@@ -2474,7 +2476,6 @@ export const prehistoricSpecies: EcoSpeciesMap = {
   'lava-ground-sheet': lavaGroundSheet,
   meganeura,
   pterodactyl,
-  raptor,
   'shooting-star': dinoShootingStar,
   stegosaurus,
   trex,

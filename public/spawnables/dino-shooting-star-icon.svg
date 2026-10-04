@@ -1,7 +1,22 @@
 <svg width="88" height="52" viewBox="0 0 88 52" xmlns="http://www.w3.org/2000/svg">
-  <path d="M2 34C22 15 49 10 70 23L67 32C45 23 23 27 5 43Z" fill="#ffd36b" opacity="0.72" />
-  <path d="M58 19C68 9 82 12 88 24C86 38 69 44 58 34C52 29 52 23 58 19Z" fill="#7a4e45" />
-  <circle cx="72" cy="23" r="3" fill="#94604f" />
-  <circle cx="80" cy="31" r="2.3" fill="#5f3a34" />
-  <path d="M59 24C51 24 45 19 41 12C52 12 60 16 65 24Z" fill="#ffb547" />
+  <defs>
+    <linearGradient id="dinoStarIconTail" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffcf7a" stop-opacity="0" />
+      <stop offset="60%" stop-color="#ffb04d" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#ffe08a" stop-opacity="1" />
+    </linearGradient>
+    <radialGradient id="dinoStarIconGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fffbe8" stop-opacity="1" />
+      <stop offset="45%" stop-color="#ffc25a" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#ff8a3d" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <path d="M2 48C24 36 46 26 66 18L68 23C48 31 26 41 2 48Z" fill="url(#dinoStarIconTail)" />
+  <path d="M14 47C32 39 50 31 66 24" fill="none" stroke="#ff7a3d" stroke-width="1.6" stroke-linecap="round" opacity="0.5" />
+  <circle cx="34" cy="34" r="1.4" fill="#ff8a3d" opacity="0.8" />
+  <circle cx="48" cy="25" r="1.1" fill="#ffcf7a" opacity="0.7" />
+  <circle cx="70" cy="19" r="16" fill="url(#dinoStarIconGlow)" />
+  <circle cx="70" cy="19" r="4.5" fill="#ffe08a" />
+  <path d="M70 7L73.5 15.5L82 19L73.5 22.5L70 31L66.5 22.5L58 19L66.5 15.5Z" fill="#fffbe8" />
+  <path d="M70 7L73.5 22.5L70 31L66.5 22.5Z" fill="#ffb04d" opacity="0.55" />
 </svg>
