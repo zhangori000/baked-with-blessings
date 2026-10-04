@@ -1,15 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 96">
-  <path d="M18 56C64 14 142 12 188 50C142 86 64 86 18 56Z" fill="#3d7c99" />
-  <path d="M151 50L204 22L190 52L206 80Z" fill="#2f6784" />
-  <path d="M52 66C84 82 139 78 176 54C140 88 76 91 29 61Z" fill="#d6eef2" />
-  <path d="M88 76C94 94 120 94 126 76" fill="#2f6784" />
-  <circle cx="58" cy="48" r="3.5" fill="#102f42" />
-  <path
-    d="M72 34C104 20 142 28 162 44"
-    fill="none"
-    stroke="#7fb5c8"
-    stroke-linecap="round"
-    stroke-width="6"
-    opacity="0.7"
-  />
+  <g transform="translate(210 0) scale(-1 1)">
+    <path d="M18 56C64 14 142 12 188 50C142 86 64 86 18 56Z" fill="#3d7c99" />
+    <path d="M151 50L204 22L190 52L206 80Z" fill="#2f6784" />
+    <path d="M52 66C84 82 139 78 176 54C140 88 76 91 29 61Z" fill="#d6eef2" />
+    <path d="M88 76C94 94 120 94 126 76" fill="#2f6784" />
+    <circle cx="58" cy="48" r="3.5" fill="#102f42" />
+    <path
+      d="M72 34C104 20 142 28 162 44"
+      fill="none"
+      stroke="#7fb5c8"
+      stroke-linecap="round"
+      stroke-width="6"
+      opacity="0.7"
+    />
+  </g>
 </svg>

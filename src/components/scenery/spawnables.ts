@@ -244,6 +244,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('crab', 'Crab', spawnableAsset('sea-crab')),
     creature('pufferfish', 'Pufferfish', spawnableAsset('sea-puffer')),
     creature('shark', 'Shark', spawnableAsset('sea-shark')),
+    creature('swordfish', 'Swordfish', spawnableAsset('sea-swordfish')),
     creature('octopus', 'Octopus', spawnableAsset('sea-octopus')),
     creature('whale', 'Whale', spawnableAsset('sea-whale')),
     creature('orca', 'Orca', spawnableAsset('sea-orca')),

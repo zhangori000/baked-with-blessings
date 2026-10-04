@@ -1,10 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 80">
-  <g fill="#8be2d9" opacity="0.66">
-    <path d="M18 35C34 20 58 22 72 37C58 51 34 52 18 35Z" />
-    <path d="M72 37L90 24V50Z" />
-    <path d="M104 48C120 33 144 35 158 50C144 64 120 65 104 48Z" />
-    <path d="M158 50L176 37V63Z" />
-    <path d="M74 22C88 10 108 12 120 24C108 36 88 37 74 22Z" />
-    <path d="M120 24L136 13V35Z" />
+  <g transform="translate(220 0) scale(-1 1)">
+    <g fill="#8be2d9" opacity="0.66">
+      <path d="M18 35C34 20 58 22 72 37C58 51 34 52 18 35Z" />
+      <path d="M72 37L90 24V50Z" />
+      <path d="M104 48C120 33 144 35 158 50C144 64 120 65 104 48Z" />
+      <path d="M158 50L176 37V63Z" />
+      <path d="M74 22C88 10 108 12 120 24C108 36 88 37 74 22Z" />
+      <path d="M120 24L136 13V35Z" />
+    </g>
   </g>
 </svg>
