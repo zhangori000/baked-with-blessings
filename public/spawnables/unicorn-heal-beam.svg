@@ -1,0 +1,5 @@
+<svg width="142" height="26" viewBox="0 0 142 26" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0 13C22 5 45 5 70 13C94 21 119 21 142 13V20C118 25 94 24 70 17C45 10 22 10 0 20Z" fill="#b8d9f0" opacity="0.68" />
+  <path d="M0 8C22 3 45 4 70 11C94 18 119 18 142 8V14C118 21 94 20 70 14C45 8 22 8 0 14Z" fill="#f3bfd0" opacity="0.76" />
+  <path d="M0 13C23 9 47 9 71 13C95 17 119 17 142 13" stroke="#fff6c8" stroke-width="4" stroke-linecap="round" opacity="0.95" />
+</svg>
