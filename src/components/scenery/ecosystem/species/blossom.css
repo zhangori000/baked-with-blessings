@@ -104,13 +104,62 @@
   filter: drop-shadow(0 0 0.18rem rgba(32, 32, 51, 0.35));
 }
 
-.ecoThing[data-species='kitsune'] .ecoArt {
-  filter: drop-shadow(0 0 0.28rem rgba(184, 244, 239, 0.45));
+.ecoThing[data-species='koi-pond'] .ecoArt {
+  filter: saturate(calc(0.78 + var(--blossom-koi-fullness, 1) * 0.28))
+    drop-shadow(0 0.22rem 0.24rem rgba(36, 86, 112, 0.18));
 }
 
-.ecoThing[data-species='kitsune'][data-state='restore'] .ecoArt {
-  animation: blossomRestore 0.8s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 0.7rem rgba(184, 244, 239, 0.95));
+.ecoThing[data-species='koi-pond'][data-fx='fed'] .ecoArt,
+.ecoThing[data-species='koi-pond'][data-state='ripen'] .ecoArt {
+  animation: blossomKoiFed 0.72s ease-in-out infinite alternate;
+  filter: saturate(1.18) brightness(1.08) drop-shadow(0 0 0.75rem rgba(184, 244, 239, 0.68));
+}
+
+.ecoThing[data-species='koi-pond'][data-state='empty'] .ecoArt {
+  filter: saturate(0.54) brightness(0.82);
+}
+
+.ecoThing[data-species='koi-dragon'] .ecoArt {
+  animation: blossomDragonSoar 1.7s ease-in-out infinite;
+  filter: drop-shadow(0 0 0.6rem rgba(184, 244, 239, 0.55));
+}
+
+.ecoThing[data-species='koi-dragon'][data-state='strike'] .ecoArt {
+  animation: blossomDragonStrike 0.44s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='koi-dragon'][data-state='mend'] .ecoArt {
+  filter: drop-shadow(0 0 0.75rem rgba(255, 217, 102, 0.72))
+    drop-shadow(0 0 1.2rem rgba(184, 244, 239, 0.72));
+}
+
+.ecoThing[data-species='kappa'] .ecoArt,
+.ecoThing[data-species='sumo'] .ecoArt {
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='kappa'][data-state='splash'] .ecoArt {
+  animation: blossomKappaSplash 0.28s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.45rem rgba(104, 192, 176, 0.55));
+}
+
+.ecoThing[data-species='kappa'][data-state='spilled'] .ecoArt {
+  animation: blossomKappaSpilled 0.24s ease-in-out infinite alternate;
+  filter: saturate(0.68) brightness(1.08);
+}
+
+.ecoThing[data-species='sumo'][data-state='charge'] .ecoArt {
+  animation: blossomSumoCharge 0.22s ease-in-out infinite alternate;
+  filter: drop-shadow(0.5rem 0 0 rgba(202, 123, 88, 0.28));
+}
+
+.ecoThing[data-species='sumo'][data-state='shove'] .ecoArt {
+  animation: blossomSumoShove 0.52s ease-out both;
+}
+
+.ecoThing[data-species='sumo'][data-state='trip'] .ecoArt {
+  animation: blossomSumoTrip 0.62s ease-out both;
+  filter: saturate(0.82);
 }
 
 .ecoThing[data-species='foxfire'] .ecoArt {
@@ -127,10 +176,6 @@
 .ecoThing[data-species='sheep'][data-state='sleep'] .ecoArt {
   animation: blossomSleep 2.8s ease-in-out infinite;
   transform-origin: center bottom;
-}
-
-.ecoThing[data-species='crane'][data-state='perch'] .ecoArt {
-  animation: blossomPerch 2.4s ease-in-out infinite;
 }
 
 .ecoThing[data-species='chochin'] .ecoArt {
@@ -302,13 +347,92 @@
   }
 }
 
-@keyframes blossomRestore {
+@keyframes blossomKoiFed {
   from {
     transform: translateY(0) scale(1);
   }
 
   to {
-    transform: translateY(-0.16rem) scale(1.04);
+    transform: translateY(-0.14rem) scale(1.035);
+  }
+}
+
+@keyframes blossomDragonSoar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-0.28rem) rotate(2deg);
+  }
+}
+
+@keyframes blossomDragonStrike {
+  from {
+    transform: translateX(-0.16rem) rotate(-5deg) scale(1.02, 0.98);
+  }
+
+  to {
+    transform: translateX(0.2rem) rotate(5deg) scale(0.98, 1.02);
+  }
+}
+
+@keyframes blossomKappaSplash {
+  from {
+    transform: rotate(-5deg) translateY(0);
+  }
+
+  to {
+    transform: rotate(6deg) translateY(-0.14rem);
+  }
+}
+
+@keyframes blossomKappaSpilled {
+  from {
+    transform: translateX(-0.08rem) rotate(-7deg) scale(1.02, 0.96);
+  }
+
+  to {
+    transform: translateX(0.08rem) rotate(7deg) scale(0.98, 1.02);
+  }
+}
+
+@keyframes blossomSumoCharge {
+  from {
+    transform: translateX(-0.08rem) scale(1.04, 0.96);
+  }
+
+  to {
+    transform: translateX(0.16rem) scale(0.98, 1.03);
+  }
+}
+
+@keyframes blossomSumoShove {
+  0% {
+    transform: translateX(-0.15rem) rotate(-4deg);
+  }
+
+  45% {
+    transform: translateX(0.3rem) rotate(6deg) scale(1.07, 0.94);
+  }
+
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+}
+
+@keyframes blossomSumoTrip {
+  0% {
+    transform: rotate(0) translateY(0);
+  }
+
+  60% {
+    transform: rotate(-12deg) translateY(0.22rem) scale(1.08, 0.9);
+  }
+
+  100% {
+    transform: rotate(-4deg) translateY(0.06rem);
   }
 }
 
@@ -346,17 +470,6 @@
   }
 }
 
-@keyframes blossomPerch {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-0.12rem);
-  }
-}
-
 @keyframes blossomLantern {
   0%,
   100% {
@@ -391,10 +504,12 @@
   .ecoThing[data-species='samurai'] .ecoArt,
   .ecoThing[data-species='ninja'] .ecoArt,
   .ecoThing[data-species='shuriken'] .ecoArt,
-  .ecoThing[data-species='kitsune'] .ecoArt,
+  .ecoThing[data-species='koi-pond'] .ecoArt,
+  .ecoThing[data-species='koi-dragon'] .ecoArt,
+  .ecoThing[data-species='kappa'] .ecoArt,
+  .ecoThing[data-species='sumo'] .ecoArt,
   .ecoThing[data-species='foxfire'] .ecoArt,
   .ecoThing[data-species='tanuki'] .ecoArt,
-  .ecoThing[data-species='crane'] .ecoArt,
   .ecoThing[data-species='chochin'] .ecoArt,
   .ecoThing[data-species='sheep'] .ecoArt {
     animation: none;

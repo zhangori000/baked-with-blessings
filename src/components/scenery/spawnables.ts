@@ -167,7 +167,6 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('hawk', 'Hawk'),
     creature('crow', 'Crow'),
     creature('balloon', 'Balloon'),
-    butterflyCreature,
     creature('carrot', 'Carrot'),
     creature('fox', 'Fox'),
     creature('hedgehog', 'Hedgehog'),
@@ -217,9 +216,10 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('samurai', 'Samurai'),
     creature('oni', 'Oni'),
     creature('ninja', 'Ninja'),
-    creature('kitsune', 'Kitsune'),
+    creature('koi-pond', 'Koi pond'),
+    creature('kappa', 'Kappa'),
+    creature('sumo', 'Sumo'),
     creature('tanuki', 'Tanuki'),
-    creature('crane', 'Crane'),
     creature('chochin', 'Lantern'),
   ],
   prehistoric: [
@@ -298,7 +298,6 @@ const placementByMotion: Record<
 
 const driftDurationById: Record<string, readonly [number, number]> = {
   birds: [18, 26],
-  crane: [24, 32],
 }
 
 const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {
