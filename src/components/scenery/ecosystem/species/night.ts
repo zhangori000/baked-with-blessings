@@ -36,6 +36,8 @@ const isSwan = (other: EcoEntity) => other.species === 'swan'
 const isPad = (other: EcoEntity) => other.species === 'lily-pad'
 const isLowPrey = (world: EcoWorld) => (other: EcoEntity) =>
   (isMoth(other) || isFirefly(other)) && other.y > world.waterY - world.unit * 12
+const isBatPrey = (world: EcoWorld) => (other: EcoEntity) =>
+  isMoth(other) || isFirefly(other) || isLantern(world)(other)
 
 function eatIfClose(hunter: EcoEntity, prey: EcoEntity, world: EcoWorld, reach = 1.7) {
   const gap = Math.hypot(prey.x - hunter.x, prey.y - hunter.y)
@@ -141,6 +143,20 @@ const boat: EcoSpecies = {
     const margin = world.width * 0.1
 
     entity.y = waterLine(entity, world)
+    const frog = world.nearest(entity, isFrog, Math.max(unit * 16, world.width * 0.24))
+
+    if (frog && chance(0.8 * world.edge(frog, entity), dt)) {
+      entity.facing = frog.x >= entity.x ? -1 : 1
+      entity.fx = 'dazed'
+      entity.data.startled = 0.8
+    }
+
+    entity.data.startled = Math.max(0, (entity.data.startled ?? 0) - dt)
+
+    if ((entity.data.startled ?? 0) <= 0 && entity.fx === 'dazed') {
+      entity.fx = ''
+    }
+
     entity.x += entity.facing * unit * 0.45 * dt
     entity.lift = (Math.sin(world.time * 1.4 + entity.id) + 1) * unit * 0.06
     entity.tilt = Math.sin(world.time * 1.1 + entity.id) * 2
@@ -358,9 +374,25 @@ const moth: EcoSpecies = {
   state: 'orbit',
   strongVs: ['lantern'],
   tags: ['insect', 'prey'],
-  weakTo: ['bat', 'owl', 'frog'],
+  weakTo: ['firefly', 'bat', 'owl', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
+    const firefly = world.nearest(entity, isFirefly, unit * 12)
+
+    if (firefly && chance(0.65 * world.edge(firefly, entity), dt)) {
+      entity.fx = 'dazed'
+      entity.targetId = null
+      flee(entity, firefly, unit * 3.6, dt, 4)
+      integrate(entity, dt)
+      faceTravel(entity)
+      keepInSky(entity, world, 0, world.groundY - unit)
+      return
+    }
+
+    if (entity.fx === 'dazed') {
+      entity.fx = ''
+    }
+
     let light = world.byId(entity.targetId)
 
     if (!light || entity.t > (entity.data.switchAt ?? 8)) {
@@ -409,7 +441,7 @@ const firefly: EcoSpecies = {
   style: (entity) => ({
     '--eco-glow': Math.pow(Math.max(0, Math.cos(entity.data.phase ?? 0)), 3).toFixed(2),
   }),
-  strongVs: ['moth', 'lantern'],
+  strongVs: ['moth'],
   tags: ['firefly', 'insect', 'prey'],
   weakTo: ['bat', 'frog'],
   tick(entity, world, dt) {
@@ -460,6 +492,23 @@ const owl: EcoSpecies = {
   weakTo: ['swan', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
+    const swanThreat = world.nearest(entity, isSwan, Math.max(unit * 28, world.height * 0.55))
+
+    if (swanThreat) {
+      entity.targetId = null
+      entity.fx = 'dazed'
+      flee(entity, swanThreat, unit * 5.8, dt, 4)
+      integrate(entity, dt)
+      faceTravel(entity)
+      tiltToVelocity(entity, 30)
+      keepInSky(entity, world, world.skyTop, world.height * 0.42)
+      world.setState(entity, 'glide')
+      return
+    }
+
+    if (entity.fx === 'dazed') {
+      entity.fx = ''
+    }
 
     if (entity.state === 'hoot') {
       entity.vx *= 0.9
@@ -555,13 +604,15 @@ const bat: EcoSpecies = {
   tick(entity, world, dt) {
     const unit = world.unit
     const owlThreat = world.nearest(entity, isOwl, unit * 20)
+    const swanThreat = world.nearest(entity, isSwan, Math.max(unit * 28, world.height * 0.55))
+    const threat = owlThreat ?? swanThreat
 
-    if (owlThreat) {
+    if (threat) {
       world.setState(entity, 'flee')
-      flee(entity, owlThreat, unit * 7.6, dt, 7)
+      flee(entity, threat, unit * 7.6, dt, 7)
       entity.vy += Math.sin(world.time * 14 + entity.id) * unit * dt * 2
     } else {
-      const prey = world.nearest(entity, (other) => isMoth(other) || isFirefly(other), unit * 20)
+      const prey = world.nearest(entity, isBatPrey(world), Math.max(unit * 28, world.width * 0.3))
 
       if (prey) {
         world.setState(entity, 'hunt')

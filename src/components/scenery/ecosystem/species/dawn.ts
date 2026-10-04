@@ -892,7 +892,7 @@ const crow: EcoSpecies = {
   layer: 'front',
   size: [2.15, 2.75],
   state: 'fly',
-  strongVs: ['hawk', 'carrot'],
+  strongVs: ['hawk', 'carrot', 'balloon'],
   tags: ['prey', 'burnable'],
   weakTo: ['fox', 'scarecrow'],
   tick(entity, world, dt) {
@@ -932,6 +932,43 @@ const crow: EcoSpecies = {
       if (entity.t > 1.5 && !scarecrow && !foxThreat) {
         entity.data.goalAt = 0
         entity.lift = 0
+        world.setState(entity, 'fly')
+      }
+      return
+    }
+
+    if (entity.state === 'balloon-peck') {
+      const target = world.byId(entity.targetId)
+
+      if (!target || !world.has(target, 'balloon') || target.state !== 'float') {
+        entity.targetId = null
+        world.setAsset(entity, crowAsset)
+        world.setState(entity, 'fly')
+        return
+      }
+
+      world.setAsset(entity, crowPeckAsset)
+      const gap = steer(entity, target.x, target.y, unit * 6.6, dt, 5)
+      integrate(entity, dt)
+      faceTravel(entity)
+      tiltToVelocity(entity, 24)
+      keepInSky(entity, world, world.skyTop + unit, world.skyBottom)
+
+      if (gap < unit * 1.35 && entity.t > 0.24) {
+        entity.fx = 'peck'
+        entity.data.fxUntil = world.time + 0.24
+
+        if (Math.random() < Math.min(0.96, 0.58 * world.edge(entity, target))) {
+          world.setState(target, 'popped')
+          entity.data.hunger = 0
+        }
+
+        entity.targetId = null
+        world.setAsset(entity, crowAsset)
+        world.setState(entity, 'fly')
+      } else if (entity.t > 5) {
+        entity.targetId = null
+        world.setAsset(entity, crowAsset)
         world.setState(entity, 'fly')
       }
       return
@@ -1076,7 +1113,22 @@ const crow: EcoSpecies = {
     entity.tilt = Math.sin(world.time * 2.3 + entity.id) * 6 + (entity.vy * 0.08) / unit
     keepInSky(entity, world, world.skyTop + unit, world.skyBottom)
 
-    if ((entity.data.hunger ?? 0) > 0.85 && chance(0.38, dt)) {
+    if ((entity.data.hunger ?? 0) > 0.55 && chance(0.72, dt)) {
+      const balloon = world.nearest(
+        entity,
+        (other) => world.has(other, 'balloon') && other.state === 'float',
+        Math.max(unit * 42, world.height * 0.7),
+      )
+
+      if (balloon && chance(0.95 * world.edge(entity, balloon), dt)) {
+        entity.targetId = balloon.id
+        entity.vx = 0
+        entity.vy = 0
+        world.setAsset(entity, crowPeckAsset)
+        world.setState(entity, 'balloon-peck')
+        return
+      }
+
       const food = crowFoodTarget(entity, world)
 
       if (food) {

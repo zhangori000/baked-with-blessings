@@ -266,7 +266,11 @@ function nearestLight(entity: EcoEntity, world: EcoWorld, reach: number) {
 function nearestThreat(entity: EcoEntity, world: EcoWorld, reach: number) {
   return world.nearest(
     entity,
-    (other) => world.has(other, 'oni') || world.has(other, 'beam') || world.has(other, 'shuriken'),
+    (other) =>
+      world.has(other, 'oni') ||
+      world.has(other, 'beam') ||
+      world.has(other, 'lantern') ||
+      world.has(other, 'shuriken'),
     reach,
   )
 }
@@ -704,6 +708,7 @@ const samurai: EcoSpecies = {
       entity,
       (other) =>
         world.has(other, 'oni') ||
+        world.has(other, 'fox') ||
         (world.has(other, 'ninja') && (other.state !== 'hidden' || other.fx === 'revealed')),
       Math.max(world.width, unit * 45),
     )
@@ -828,7 +833,8 @@ const ninja: EcoSpecies = {
     if ((entity.data.cool ?? 0) <= 0) {
       const target = world.nearest(
         entity,
-        (other) => world.has(other, 'samurai') || world.has(other, 'monk'),
+        (other) =>
+          world.has(other, 'samurai') || world.has(other, 'monk') || other.species === 'crane',
         Math.max(world.width, unit * 42),
       )
 
@@ -880,6 +886,7 @@ const shuriken: EcoSpecies = {
       (other) =>
         world.has(other, 'samurai') ||
         world.has(other, 'monk') ||
+        other.species === 'crane' ||
         world.has(other, 'lantern') ||
         world.has(other, 'tanuki'),
       world.unit * 1.5,
@@ -912,7 +919,7 @@ const kitsune: EcoSpecies = {
   state: 'trot',
   strongVs: ['oni', 'torii', 'spirit'],
   tags: ['fox', 'spirit'],
-  weakTo: ['monk', 'samurai'],
+  weakTo: ['samurai'],
   tick(entity, world, dt) {
     const unit = world.unit
     const ruin = world.nearest(entity, (other) => other.species === 'gate-ruin', unit * 56)
@@ -1075,7 +1082,7 @@ const crane: EcoSpecies = {
   state: 'fly',
   strongVs: ['torii'],
   tags: ['bird'],
-  weakTo: ['ninja', 'oni'],
+  weakTo: ['ninja', 'shuriken'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -1215,7 +1222,7 @@ const sheep: EcoSpecies = {
   state: 'graze',
   strongVs: ['sakura'],
   tags: ['sheep', 'prey', 'burnable', 'target'],
-  weakTo: ['oni', 'ninja'],
+  weakTo: ['oni'],
   tick(entity, world, dt) {
     const unit = world.unit
     const threat = world.nearest(entity, (other) => world.has(other, 'oni'), unit * 12)
