@@ -730,7 +730,7 @@ const fishControls = {
   idleState: 'school',
   move: 'swim',
   moveState: 'school',
-  speed: 4.3,
+  speed: 16,
 } as const
 
 const jellyControls = {
@@ -799,7 +799,7 @@ const jellyControls = {
   idleState: 'drift',
   move: 'swim',
   moveState: 'drift',
-  speed: 1.45,
+  speed: 5,
 } as const
 
 const turtleControls = {
@@ -864,7 +864,7 @@ const turtleControls = {
   idleState: 'paddle',
   move: 'swim',
   moveState: 'paddle',
-  speed: 2.6,
+  speed: 9,
 } as const
 
 const crabControls = {
@@ -926,7 +926,7 @@ const crabControls = {
   idleState: 'scuttle',
   move: 'ground',
   moveState: 'scuttle',
-  speed: 3.2,
+  speed: 9,
 } as const
 
 const pufferControls = {
@@ -993,7 +993,7 @@ const pufferControls = {
   idleState: 'drift',
   move: 'swim',
   moveState: 'drift',
-  speed: 2.1,
+  speed: 7,
 } as const
 
 const sharkControls = {
@@ -1062,7 +1062,7 @@ const sharkControls = {
   idleState: 'prowl',
   move: 'swim',
   moveState: 'prowl',
-  speed: 4.8,
+  speed: 17,
 } as const
 
 const swordfishControls = {
@@ -1135,7 +1135,7 @@ const swordfishControls = {
   idleState: 'lance',
   move: 'swim',
   moveState: 'lance',
-  speed: 5.6,
+  speed: 22,
 } as const
 
 const octopusControls = {
@@ -1203,7 +1203,7 @@ const octopusControls = {
   idleState: 'prowl',
   move: 'swim',
   moveState: 'prowl',
-  speed: 3.1,
+  speed: 11,
 } as const
 
 const whaleControls = {
@@ -1272,7 +1272,7 @@ const whaleControls = {
   idleState: 'cruise',
   move: 'swim',
   moveState: 'cruise',
-  speed: 3.1,
+  speed: 12,
 } as const
 
 const orcaControls = {
@@ -1358,7 +1358,7 @@ const orcaControls = {
   idleState: 'hunt',
   move: 'swim',
   moveState: 'hunt',
-  speed: 4.5,
+  speed: 18,
 } as const
 
 const anglerControls = {
@@ -1435,7 +1435,7 @@ const anglerControls = {
   idleState: 'lure',
   move: 'swim',
   moveState: 'lure',
-  speed: 2.4,
+  speed: 8,
 } as const
 
 const kelpCoral: EcoSpecies = {

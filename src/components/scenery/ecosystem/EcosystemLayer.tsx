@@ -6,11 +6,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
+import { createPortal } from 'react-dom'
 
 import { cn } from '@/utilities/cn'
 
@@ -213,6 +215,32 @@ function ControlHud({
     }
   }, [controlledId, hintKey, scene])
 
+  const castAbilityRef = useRef(castAbility)
+  const [coarsePointer, setCoarsePointer] = useState(false)
+
+  useEffect(() => {
+    if (!controlledId) {
+      return
+    }
+
+    const root = document.documentElement
+    const query = window.matchMedia('(pointer: coarse)')
+    const syncPointer = () => setCoarsePointer(query.matches)
+
+    syncPointer()
+    query.addEventListener('change', syncPointer)
+    root.dataset.ecoControlling = ''
+
+    return () => {
+      query.removeEventListener('change', syncPointer)
+      delete root.dataset.ecoControlling
+    }
+  }, [controlledId])
+
+  useEffect(() => {
+    castAbilityRef.current = castAbility
+  }, [castAbility])
+
   useEffect(() => {
     if (!controlledId) {
       return
@@ -248,7 +276,7 @@ function ControlHud({
 
       if (key === 'q' || key === 'w' || key === 'e' || key === 'r') {
         event.preventDefault()
-        castAbility(key)
+        castAbilityRef.current(key)
       }
     }
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -272,7 +300,7 @@ function ControlHud({
       window.removeEventListener('blur', handleBlur)
       store.setControlInput({ x: 0, y: 0 })
     }
-  }, [castAbility, controlledId, store])
+  }, [controlledId, store])
 
   useEffect(() => {
     if (!controlledId || controlled?.move !== 'swim') {
@@ -417,7 +445,7 @@ function ControlHud({
                     <AbilityGlyph ability={ability} />
                   </span>
                   <span className="ecoAbilityKey">{ability.key.toUpperCase()}</span>
-                  <span className="ecoAbilityName">{ability.name.split(' ')[0]}</span>
+                  <span className="ecoAbilityName">{ability.name}</span>
                   <span className="ecoAbilityCooldown">
                     {cooling ? Math.ceil(ability.cooldownLeft).toString() : ''}
                   </span>
@@ -435,14 +463,18 @@ function ControlHud({
               type="button"
             >
               <span className="ecoHintArrows">
-                {controlled.move === 'swim' && followCursor ? '⌖' : '← ↑ ↓ →'}
+                {controlled.move === 'swim' && followCursor ? '⌖' : coarsePointer ? '✥' : '← ↑ ↓ →'}
               </span>
               <span>
                 {controlled.move === 'swim' && followCursor
                   ? `Your ${controlled.label} follows your cursor`
-                  : 'Use arrow keys to move'}
+                  : coarsePointer
+                    ? 'Use the pad to move'
+                    : 'Use arrow keys to move'}
               </span>
-              <span className="ecoHintKeys">Q W E R for abilities</span>
+              <span className="ecoHintKeys">
+                {coarsePointer ? 'Tap Q W E R for abilities' : 'Q W E R for abilities'}
+              </span>
             </button>
           ) : null}
         </>
@@ -619,8 +651,17 @@ function AbilityGlyph({ ability }: { ability: EcoControlEntityView['abilities'][
 
 export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps) {
   const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot)
+  const [hudHost, setHudHost] = useState<HTMLElement | null>(null)
   const attach = useCallback(
-    (element: HTMLDivElement | null) => store.attachLayer(layer, element),
+    (element: HTMLDivElement | null) => {
+      store.attachLayer(layer, element)
+
+      if (layer === 'front') {
+        setHudHost(
+          element ? (element.closest<HTMLElement>('.bakeryThemeRoot') ?? document.body) : null,
+        )
+      }
+    },
     [layer, store],
   )
 
@@ -659,14 +700,17 @@ export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps)
         .map((view) => (
           <EcoThing key={view.id} store={store} view={view} />
         ))}
-      {layer === 'front' ? (
-        <ControlHud
-          controlled={snapshot.controlled}
-          scene={snapshot.scene}
-          store={store}
-          toast={snapshot.toast}
-        />
-      ) : null}
+      {layer === 'front' && hudHost
+        ? createPortal(
+            <ControlHud
+              controlled={snapshot.controlled}
+              scene={snapshot.scene}
+              store={store}
+              toast={snapshot.toast}
+            />,
+            hudHost,
+          )
+        : null}
     </div>
   )
 }

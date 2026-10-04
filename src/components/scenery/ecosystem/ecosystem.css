@@ -272,10 +272,10 @@
   justify-items: center;
   left: 50%;
   pointer-events: none;
-  position: absolute;
+  position: fixed;
   transform: translateX(-50%);
   width: min(94vw, 34rem);
-  z-index: 120;
+  z-index: 1000;
 }
 
 .ecoSwimPad {
@@ -354,12 +354,12 @@
   display: flex;
   flex-direction: column;
   font-family: var(--font-rounded-body);
-  height: 4.25rem;
+  height: 4.5rem;
   justify-content: center;
   overflow: hidden;
   padding: 0.32rem 0.28rem 0.26rem;
   position: relative;
-  width: 4.25rem;
+  width: 4.6rem;
 }
 
 .ecoAbilityButton[data-active] {
@@ -422,15 +422,17 @@
 }
 
 .ecoAbilityName {
-  font-size: 0.58rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  font-size: 0.56rem;
   font-weight: 900;
   letter-spacing: 0.01em;
-  line-height: 1;
+  line-height: 1.05;
   max-width: 100%;
   overflow: hidden;
-  padding-top: 0.18rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding-top: 0.14rem;
+  text-align: center;
   z-index: 1;
 }
 
@@ -931,6 +933,15 @@
     scale: 0.98;
     translate: 0 -0.25rem;
   }
+}
+
+.homeCookieCopy {
+  transition: opacity 0.2s ease;
+}
+
+:root[data-eco-controlling] .homeCookieCopy {
+  opacity: 0;
+  pointer-events: none;
 }
 
 @media (max-width: 639px) {

@@ -913,7 +913,7 @@ const trexControls = {
   idleState: 'prowl',
   move: 'ground',
   moveState: 'prowl',
-  speed: 3.2,
+  speed: 13,
 } as const
 
 const triceratopsControls = {
@@ -997,7 +997,7 @@ const triceratopsControls = {
   idleState: 'graze',
   move: 'ground',
   moveState: 'graze',
-  speed: 3.6,
+  speed: 13.5,
 } as const
 
 const stegosaurusControls = {
@@ -1083,7 +1083,7 @@ const stegosaurusControls = {
   idleState: 'graze',
   move: 'ground',
   moveState: 'graze',
-  speed: 3.1,
+  speed: 10,
 } as const
 
 const brachiosaurusControls = {
@@ -1180,7 +1180,7 @@ const brachiosaurusControls = {
   idleState: 'browse',
   move: 'ground',
   moveState: 'browse',
-  speed: 2.35,
+  speed: 8.5,
 } as const
 
 const pterodactylControls = {
@@ -1264,7 +1264,7 @@ const pterodactylControls = {
   idleState: 'soar',
   move: 'fly',
   moveState: 'soar',
-  speed: 5.2,
+  speed: 20,
 } as const
 
 const meganeuraControls = {
@@ -1354,7 +1354,7 @@ const meganeuraControls = {
   idleState: 'zip',
   move: 'fly',
   moveState: 'zip',
-  speed: 5.8,
+  speed: 22,
 } as const
 
 const trex: EcoSpecies = {
