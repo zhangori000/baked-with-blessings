@@ -407,13 +407,6 @@ export const menuCloudSpawnDesignsByScene: Record<SceneTone, readonly SceneCloud
   ],
 }
 
-export const getNextMenuSceneTone = (current: SceneTone): SceneTone => {
-  const currentIndex = menuSceneTones.indexOf(current)
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % menuSceneTones.length : 0
-
-  return menuSceneTones[nextIndex] ?? menuSceneTones[0]
-}
-
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
 const randomMoonlitAccentScale = () => {
   const useMedium = Math.random() < 0.5

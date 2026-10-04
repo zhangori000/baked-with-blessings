@@ -19,7 +19,6 @@ import { toast } from 'sonner'
 import {
   buildSeededMenuSceneAccents,
   createSpawnedMenuSceneAccent,
-  getNextMenuSceneTone,
   menuCloudSpawnDesignsByScene,
   menuHeroCloudsByScene,
   menuHeroCrittersByScene,
@@ -42,6 +41,7 @@ import {
 } from '@/components/scenery/cloudDrift'
 import { EcosystemLayer } from '@/components/scenery/ecosystem/EcosystemLayer'
 import { useEcosystem } from '@/components/scenery/ecosystem/useEcosystem'
+import { ScenePicker } from '@/components/scenery/ScenePicker'
 import { SceneSpawnLayer } from '@/components/scenery/SceneSpawnLayer'
 import { SpawnTray } from '@/components/scenery/SpawnTray'
 import type { SceneSpawnable } from '@/components/scenery/spawnables'
@@ -738,8 +738,8 @@ export function HomeCookieCarousel({
   const [spawnedSceneClouds, setSpawnedSceneClouds] = useState<ShowcaseSceneCloud[]>([])
   const [spawnedSceneFlowers, setSpawnedSceneFlowers] = useState<ShowcaseSceneFlower[]>([])
   const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
-  const { clearSprites, spawnSprite, spriteCounts, sprites } =
-    useSceneSprites(sceneTone)
+  const [isScenePickerOpen, setIsScenePickerOpen] = useState(false)
+  const { clearSprites, spawnSprite, spriteCounts, sprites } = useSceneSprites(sceneTone)
   const ecosystem = useEcosystem(sceneTone)
   const [isViewportZoomed, setIsViewportZoomed] = useState(false)
   const [transition, setTransition] = useState<CarouselTransition>(null)
@@ -848,7 +848,6 @@ export function HomeCookieCarousel({
       phase: 'idle',
       slug: null,
     })
-
   }, [activeIndex, transition])
 
   useEffect(() => {
@@ -1334,21 +1333,37 @@ export function HomeCookieCarousel({
                 ))}
 
                 <div className="homeCookieSceneActions">
-                  <BakeryAction
-                    className="homeCookieSceneButton"
-                    onClick={() => {
-                      setSceneTone(getNextMenuSceneTone(sceneTone))
-                    }}
-                    size="sm"
-                    type="button"
-                    variant="secondary"
+                  <ScenePicker
+                    activeTone={sceneTone}
+                    onClose={() => setIsScenePickerOpen(false)}
+                    onSelect={setSceneTone}
+                    open={isScenePickerOpen}
                   >
-                    Change scenery
-                  </BakeryAction>
+                    <BakeryAction
+                      aria-expanded={isScenePickerOpen}
+                      aria-haspopup="dialog"
+                      className="homeCookieSceneButton"
+                      onClick={() => {
+                        setIsSpawnTrayOpen(false)
+                        setIsScenePickerOpen((current) => !current)
+                      }}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      Change scenery
+                    </BakeryAction>
+                  </ScenePicker>
                   <SpawnTray
                     counts={spawnCounts}
                     onClear={handleClearSpawns}
-                    onOpenChange={setIsSpawnTrayOpen}
+                    onOpenChange={(next) => {
+                      if (next) {
+                        setIsScenePickerOpen(false)
+                      }
+
+                      setIsSpawnTrayOpen(next)
+                    }}
                     onSpawn={handleSpawn}
                     open={isSpawnTrayOpen}
                     renderTrigger={({ ref, ...triggerProps }) => (

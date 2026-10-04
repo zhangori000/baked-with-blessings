@@ -1,6 +1,6 @@
 # Scenery spawnables ("Spawn stuff")
 
-Every scenery has a "Spawn stuff" tray on the homepage and on MenuHero pages. Tapping a tile adds that thing to the scene. There is no limit. Things stay until the visitor presses "Clear all" or changes scenery, unless they die in a living scenery (see below).
+Every scenery has a "Spawn stuff" tray on the homepage and on MenuHero pages. On the homepage, "Change scenery" opens a picker listing every scenery with a small preview. Tapping a tile adds that thing to the scene. There is no limit. Things stay until the visitor presses "Clear all" or changes scenery, unless they die in a living scenery (see below).
 
 ## Where things live
 
