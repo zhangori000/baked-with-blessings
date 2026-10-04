@@ -36,8 +36,8 @@ registerViewBoxes({
   'sea-fish-school': [150, 70],
   'sea-jellyfish': [90, 112],
   'sea-kelp-coral': [116, 132],
-  'sea-kraken': [190, 156],
-  'sea-kraken-grab': [210, 164],
+  'sea-kraken': [230, 186],
+  'sea-kraken-grab': [280, 224],
   'sea-net': [118, 118],
   'sea-octopus': [120, 112],
   'sea-octopus-ink': [128, 112],
@@ -365,7 +365,10 @@ function clearFx(entity: EcoEntity, dt: number) {
 }
 
 function hurt(target: EcoEntity, world: EcoWorld, amount = 1) {
-  target.hp -= amount
+  const block =
+    (target.data.controlBlockUntil ?? 0) > world.time ? (target.data.controlBlock ?? 0.55) : 1
+
+  target.hp -= amount * block
   target.fx = 'hurt'
   target.data.fx = 0.35
 
@@ -424,7 +427,7 @@ function markBoatSunk(boat: EcoEntity, world: EcoWorld, cause?: EcoEntity) {
   const sunk = world.tally('boats-sunk')
   const callActive = world.nearest(
     boat,
-    (other) => isKraken(other) && other.state === 'rise' && (other.data.called ?? 0) > 0,
+    (other) => isKraken(other) && (other.data.called ?? 0) > 0 && other.age < 9,
     world.width,
   )
 
@@ -488,7 +491,7 @@ function consume(hunter: EcoEntity, prey: EcoEntity, world: EcoWorld, reach = 1.
 
   if (edge >= 1.6 || Math.random() < 0.78) {
     world.kill(prey)
-    hunter.hp += heal
+    hunter.hp = Math.min(hunter.maxHp, hunter.hp + heal)
     hunter.targetId = null
     hunter.data.fed = (hunter.data.fed ?? 0) + 1
     spawnBurst(world, prey.x, prey.y, 1.7)
@@ -563,6 +566,877 @@ function grazeKelp(fish: EcoEntity, kelp: EcoEntity, world: EcoWorld) {
 
   return true
 }
+
+function heal(entity: EcoEntity, amount: number) {
+  entity.hp = Math.min(entity.maxHp, entity.hp + amount)
+}
+
+function controlAction(
+  entity: EcoEntity,
+  world: EcoWorld,
+  state: string,
+  seconds: number,
+  asset?: string,
+  fx?: string,
+) {
+  entity.data.controlActionUntil = world.time + seconds
+  entity.controlResetAsset = entity.controlResetAsset || entity.asset
+  entity.targetId = null
+
+  if (asset) {
+    world.setAsset(entity, asset)
+  }
+
+  if (fx) {
+    entity.fx = fx
+    entity.data.controlFxUntil = world.time + seconds
+  }
+
+  world.setState(entity, state)
+}
+
+function controlBurst(
+  entity: EcoEntity,
+  world: EcoWorld,
+  kind: PaceKind,
+  seconds = 1.8,
+  boost = 1.65,
+) {
+  entity.data.controlSpeedUntil = world.time + seconds
+  entity.data.controlSpeed = boost
+  entity.vx += entity.facing * pace(entity, world, kind, 'burst') * 0.45
+  spawnBurst(world, entity.x, entity.y, Math.max(1.8, entity.size * 0.28))
+}
+
+function isControlTarget(entity: EcoEntity, other: EcoEntity) {
+  return (
+    other !== entity &&
+    !other.dying &&
+    !other.removed &&
+    (other.maxHp > 1 || isBoat(other)) &&
+    other.species !== 'kelp-coral'
+  )
+}
+
+function frontTarget(entity: EcoEntity, world: EcoWorld, reach: number, vertical = 5) {
+  const x = entity.x + entity.facing * reach * 0.5
+
+  return world.nearest(
+    { x, y: entity.y },
+    (other) =>
+      isControlTarget(entity, other) &&
+      Math.sign(other.x - entity.x || entity.facing) === entity.facing &&
+      Math.abs(other.y - entity.y) < world.unit * vertical,
+    reach,
+  )
+}
+
+function areaTargets(entity: EcoEntity, world: EcoWorld, radius: number) {
+  return world.within(entity.x, entity.y, radius, (other) => isControlTarget(entity, other))
+}
+
+function controlHit(attacker: EcoEntity, target: EcoEntity, world: EcoWorld, amount: number) {
+  if (isBoat(target)) {
+    if (amount * matchupEdge(attacker, target, world) > 1.1) {
+      capsizeBoat(target, world, attacker)
+    } else {
+      hurt(target, world, amount)
+    }
+    return
+  }
+
+  hurt(target, world, amount * matchupEdge(attacker, target, world))
+
+  if ((attacker.data.controlLifestealUntil ?? 0) > world.time) {
+    heal(attacker, amount * 0.22)
+  }
+}
+
+function shove(attacker: EcoEntity, target: EcoEntity, world: EcoWorld, force: number) {
+  target.vx += (target.x >= attacker.x ? 1 : -1) * world.unit * force
+  target.vy += (target.y >= attacker.y ? 1 : -1) * world.unit * force * 0.35
+  target.data.fx = Math.max(target.data.fx ?? 0, 0.45)
+  target.fx = 'dazed'
+}
+
+const fishControls = {
+  abilities: [
+    {
+      cooldown: 2.2,
+      description: 'Scatter fast in the facing direction.',
+      key: 'q',
+      name: 'Scatter',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'scatter', 0.7)
+        controlBurst(entity, world, 'fish', 1.5, 1.9)
+      },
+    },
+    {
+      cooldown: 5.4,
+      description: 'Tighten into a bait ball that blunts bites.',
+      key: 'w',
+      name: 'Bait ball',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 3.4
+        entity.data.controlBlock = 0.45
+        controlAction(entity, world, 'school', 0.9, undefined, 'block')
+        spawnBurst(world, entity.x, entity.y, 2.4)
+      },
+    },
+    {
+      cooldown: 3.4,
+      description: 'Dart through nearby kelp and predators.',
+      key: 'e',
+      name: 'Dart',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'scatter', 0.55)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 5,
+          world.unit,
+          world.width - world.unit,
+        )
+        const target = frontTarget(entity, world, world.unit * 4.5, 4)
+
+        if (target) {
+          controlHit(entity, target, world, 0.55)
+        }
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Split the school and call a small helper shoal.',
+      key: 'r',
+      name: 'School call',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'school', 0.8)
+
+        if (world.canBreed()) {
+          world.spawn('fish-school', {
+            countAs: 'fish-school',
+            size: entity.size * 0.72,
+            x: clamp(
+              entity.x - entity.facing * world.unit * 2,
+              world.unit,
+              world.width - world.unit,
+            ),
+            y: clamp(entity.y + between(-1, 1) * world.unit, waterTop(world), waterBottom(world)),
+          })
+        }
+
+        spawnBurst(world, entity.x, entity.y, 2.2)
+      },
+    },
+  ],
+  idleState: 'school',
+  move: 'swim',
+  moveState: 'school',
+  speed: 4.3,
+} as const
+
+const jellyControls = {
+  abilities: [
+    {
+      cooldown: 2.2,
+      description: 'Sting the closest creature in front.',
+      key: 'q',
+      name: 'Sting',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'drift', 0.7, undefined, 'sting')
+        const target = frontTarget(entity, world, world.unit * 4.2, 5)
+
+        if (target) {
+          controlHit(entity, target, world, isShark(target) ? 0.7 : 1.1)
+          target.data.controlSpeedUntil = world.time + 1.2
+          target.data.controlSpeed = 0.55
+        }
+      },
+    },
+    {
+      cooldown: 4.8,
+      description: 'Pulse outward and shove nearby swimmers.',
+      key: 'w',
+      name: 'Drift pulse',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'drift', 0.9, undefined, 'sting')
+        spawnBurst(world, entity.x, entity.y, 3)
+
+        for (const target of areaTargets(entity, world, world.unit * 5.5)) {
+          controlHit(entity, target, world, 0.55)
+          shove(entity, target, world, 2.4)
+        }
+      },
+    },
+    {
+      cooldown: 5.8,
+      description: 'Float upward out of danger.',
+      key: 'e',
+      name: 'Bell lift',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'drift', 0.8)
+        entity.y = clamp(entity.y - world.unit * 4, waterTop(world), waterBottom(world))
+        controlBurst(entity, world, 'jellyfish', 2.4, 1.5)
+      },
+    },
+    {
+      cooldown: 9,
+      description: 'Leave a small bloom of stinging bubbles.',
+      key: 'r',
+      name: 'Bloom',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'drift', 1, undefined, 'sting')
+
+        for (let index = 0; index < 3; index += 1) {
+          spawnBurst(
+            world,
+            clamp(entity.x + between(-2.5, 2.5) * world.unit, world.unit, world.width - world.unit),
+            clamp(entity.y + between(-1.5, 1.5) * world.unit, waterTop(world), waterBottom(world)),
+            1.7,
+          )
+        }
+      },
+    },
+  ],
+  idleState: 'drift',
+  move: 'swim',
+  moveState: 'drift',
+  speed: 1.45,
+} as const
+
+const turtleControls = {
+  abilities: [
+    {
+      cooldown: 2.4,
+      description: 'Bite jellyfish and small prey.',
+      key: 'q',
+      name: 'Jelly bite',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'paddle', 0.65)
+        const target = frontTarget(entity, world, world.unit * 4.5, 4.5)
+
+        if (target) {
+          controlHit(entity, target, world, isJelly(target) ? 1.6 : 0.85)
+          heal(entity, isJelly(target) ? 0.6 : 0.2)
+        }
+      },
+    },
+    {
+      cooldown: 5.6,
+      description: 'Tuck into the shell and reduce damage.',
+      key: 'w',
+      name: 'Shell block',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 3.8
+        entity.data.controlBlock = 0.28
+        controlAction(entity, world, 'paddle', 0.9, undefined, 'guard')
+      },
+    },
+    {
+      cooldown: 4.4,
+      description: 'Paddle dash away or through a target.',
+      key: 'e',
+      name: 'Paddle dash',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'paddle', 0.7)
+        controlBurst(entity, world, 'turtle', 1.8, 1.8)
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Graze kelp and heal.',
+      key: 'r',
+      name: 'Kelp snack',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'paddle', 0.85)
+        const kelp = world.nearest(
+          entity,
+          (other) => isKelp(other) && other.state !== 'grow',
+          world.unit * 8,
+        )
+
+        if (kelp) {
+          kelp.fx = 'wobble'
+          heal(entity, 1.4)
+          spawnBurst(world, kelp.x, kelp.y - world.heightOf(kelp) * 0.5, 1.7)
+        }
+      },
+    },
+  ],
+  idleState: 'paddle',
+  move: 'swim',
+  moveState: 'paddle',
+  speed: 2.6,
+} as const
+
+const crabControls = {
+  abilities: [
+    {
+      cooldown: 1.8,
+      description: 'Pinch anything close.',
+      key: 'q',
+      name: 'Pinch',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'scuttle', 0.5, undefined, 'pinch')
+        const target = frontTarget(entity, world, world.unit * 3.2, 5)
+
+        if (target) {
+          controlHit(entity, target, world, isKraken(target) ? 0.75 : 0.9)
+        }
+      },
+    },
+    {
+      cooldown: 5,
+      description: 'Burrow into sand to block damage.',
+      key: 'w',
+      name: 'Burrow',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 3.6
+        entity.data.controlBlock = 0.32
+        controlAction(entity, world, 'scuttle', 0.9, undefined, 'guard')
+      },
+    },
+    {
+      cooldown: 3.6,
+      description: 'Side scuttle in a quick burst.',
+      key: 'e',
+      name: 'Scuttle',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'scuttle', 0.65)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 4,
+          world.unit,
+          world.width - world.unit,
+        )
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Rake claws through nearby enemies.',
+      key: 'r',
+      name: 'Claw rake',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'scuttle', 0.85, undefined, 'pinch')
+
+        for (const target of areaTargets(entity, world, world.unit * 4.2)) {
+          controlHit(entity, target, world, 0.85)
+          shove(entity, target, world, 1.6)
+        }
+      },
+    },
+  ],
+  idleState: 'scuttle',
+  move: 'ground',
+  moveState: 'scuttle',
+  speed: 3.2,
+} as const
+
+const pufferControls = {
+  abilities: [
+    {
+      cooldown: 2.6,
+      description: 'Puff spikes and poison close attackers.',
+      key: 'q',
+      name: 'Puff spikes',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'puffed', 1.2, pufferPuffedAsset)
+        entity.scale = 1.2
+
+        for (const target of areaTargets(entity, world, world.unit * 4.5)) {
+          controlHit(entity, target, world, 1.25)
+          target.data.controlSpeedUntil = world.time + 1.8
+          target.data.controlSpeed = 0.65
+        }
+      },
+    },
+    {
+      cooldown: 5.2,
+      description: 'Poison cloud that slows nearby predators.',
+      key: 'w',
+      name: 'Toxin cloud',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'puffed', 1, pufferPuffedAsset, 'dazed')
+        spawnBurst(world, entity.x, entity.y, 2.8)
+
+        for (const target of areaTargets(entity, world, world.unit * 5.5)) {
+          controlHit(entity, target, world, 0.6)
+          target.data.controlSpeedUntil = world.time + 2.4
+          target.data.controlSpeed = 0.58
+        }
+      },
+    },
+    {
+      cooldown: 4,
+      description: 'Scoot backward from danger.',
+      key: 'e',
+      name: 'Back scoot',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'drift', 0.65, pufferAsset)
+        entity.x = clamp(
+          entity.x - entity.facing * world.unit * 3.5,
+          world.unit,
+          world.width - world.unit,
+        )
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Stay puffed longer and shrug off hits.',
+      key: 'r',
+      name: 'Spine armor',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 4.2
+        entity.data.controlBlock = 0.45
+        controlAction(entity, world, 'puffed', 1.2, pufferPuffedAsset, 'guard')
+        heal(entity, 0.5)
+      },
+    },
+  ],
+  idleState: 'drift',
+  move: 'swim',
+  moveState: 'drift',
+  speed: 2.1,
+} as const
+
+const sharkControls = {
+  abilities: [
+    {
+      cooldown: 1.6,
+      description: 'Lunge forward and bite.',
+      key: 'q',
+      name: 'Bite lunge',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.75, sharkBiteAsset)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 3.8,
+          world.unit,
+          world.width - world.unit,
+        )
+        const target = frontTarget(entity, world, world.unit * 8, 5)
+
+        if (target) {
+          controlHit(entity, target, world, 1.55)
+          heal(entity, 0.35)
+        } else {
+          spawnBurst(world, entity.x + entity.facing * world.unit * 2, entity.y, 1.9)
+        }
+      },
+    },
+    {
+      cooldown: 5.2,
+      description: 'Scent blood and sprint.',
+      key: 'w',
+      name: 'Blood scent',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.7, sharkAsset, 'dazed')
+        controlBurst(entity, world, 'shark', 3.8, 1.85)
+      },
+    },
+    {
+      cooldown: 3.6,
+      description: 'Thrash nearby creatures away.',
+      key: 'e',
+      name: 'Thrash',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.8, sharkBiteAsset)
+
+        for (const target of areaTargets(entity, world, world.unit * 6)) {
+          controlHit(entity, target, world, 0.95)
+          shove(entity, target, world, 3.2)
+        }
+
+        spawnBurst(world, entity.x, entity.y, 2.4)
+      },
+    },
+    {
+      cooldown: 9,
+      description: 'Fast lifesteal frenzy for a few seconds.',
+      key: 'r',
+      name: 'Frenzy',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlLifestealUntil = world.time + 5
+        controlAction(entity, world, 'hunt', 0.7, sharkBiteAsset, 'dazed')
+        controlBurst(entity, world, 'shark', 5, 1.65)
+        heal(entity, 0.6)
+      },
+    },
+  ],
+  idleState: 'prowl',
+  move: 'swim',
+  moveState: 'prowl',
+  speed: 4.8,
+} as const
+
+const swordfishControls = {
+  abilities: [
+    {
+      cooldown: 2,
+      description: 'Dash straight through prey.',
+      key: 'q',
+      name: 'Lance dash',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'strike', 0.72)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 7,
+          world.unit,
+          world.width - world.unit,
+        )
+        const target = frontTarget(entity, world, world.unit * 7.5, 4)
+
+        if (target) {
+          controlHit(entity, target, world, 1.35)
+        }
+
+        spawnBurst(world, entity.x, entity.y, 1.8)
+      },
+    },
+    {
+      cooldown: 3.2,
+      description: 'Side slash with the bill.',
+      key: 'w',
+      name: 'Bill slash',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'strike', 0.55)
+        const target = frontTarget(entity, world, world.unit * 4.8, 4)
+
+        if (target) {
+          controlHit(entity, target, world, 1.1)
+          shove(entity, target, world, 2.2)
+        }
+      },
+    },
+    {
+      cooldown: 5,
+      description: 'Sprint with a fast current.',
+      key: 'e',
+      name: 'Current sprint',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'lance', 0.65)
+        controlBurst(entity, world, 'swordfish', 3.2, 1.9)
+      },
+    },
+    {
+      cooldown: 8.5,
+      description: 'Pierce every target close by.',
+      key: 'r',
+      name: 'Skewer run',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'strike', 0.95)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 9,
+          world.unit,
+          world.width - world.unit,
+        )
+
+        for (const target of areaTargets(entity, world, world.unit * 6.5)) {
+          controlHit(entity, target, world, 1.2)
+        }
+      },
+    },
+  ],
+  idleState: 'lance',
+  move: 'swim',
+  moveState: 'lance',
+  speed: 5.6,
+} as const
+
+const octopusControls = {
+  abilities: [
+    {
+      cooldown: 3.2,
+      description: 'Release ink and daze nearby hunters.',
+      key: 'q',
+      name: 'Ink cloud',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'ink', 1, octopusInkAsset, 'ink')
+        spawnBurst(world, entity.x, entity.y, 3.1)
+
+        for (const target of areaTargets(entity, world, world.unit * 5.5)) {
+          target.targetId = null
+          target.data.controlSpeedUntil = world.time + 2
+          target.data.controlSpeed = 0.55
+          shove(entity, target, world, 2.4)
+        }
+      },
+    },
+    {
+      cooldown: 3.8,
+      description: 'Grab a close target.',
+      key: 'w',
+      name: 'Grab',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'grab', 0.8, octopusAsset)
+        const target = frontTarget(entity, world, world.unit * 5, 5)
+
+        if (target) {
+          controlHit(entity, target, world, isBoat(target) ? 1.6 : 1.1)
+          target.vx *= 0.25
+          target.vy *= 0.25
+        }
+      },
+    },
+    {
+      cooldown: 6,
+      description: 'Camouflage to reduce damage.',
+      key: 'e',
+      name: 'Camouflage',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 4
+        entity.data.controlBlock = 0.38
+        controlAction(entity, world, 'prowl', 0.9, octopusAsset, 'guard')
+      },
+    },
+    {
+      cooldown: 7,
+      description: 'Jet escape in a burst of bubbles.',
+      key: 'r',
+      name: 'Jet escape',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'ink', 0.8, octopusInkAsset, 'ink')
+        entity.x = clamp(
+          entity.x - entity.facing * world.unit * 7,
+          world.unit,
+          world.width - world.unit,
+        )
+        controlBurst(entity, world, 'octopus', 2.2, 1.8)
+      },
+    },
+  ],
+  idleState: 'prowl',
+  move: 'swim',
+  moveState: 'prowl',
+  speed: 3.1,
+} as const
+
+const whaleControls = {
+  abilities: [
+    {
+      cooldown: 4,
+      description: 'Breach upward and flip boats.',
+      key: 'q',
+      name: 'Breach',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'breach', 1.1, whaleBreachAsset)
+        entity.y = clamp(surfaceY(world) + world.unit * 1.6, surfaceY(world), waterBottom(world))
+        const boat = world.nearest({ x: entity.x, y: surfaceY(world) }, isBoat, world.unit * 10)
+
+        if (boat) {
+          capsizeBoat(boat, world, entity)
+        }
+
+        spawnBurst(world, entity.x, surfaceY(world) + world.unit * 2, 4)
+      },
+    },
+    {
+      cooldown: 4.8,
+      description: 'Tail slap nearby threats.',
+      key: 'w',
+      name: 'Tail slap',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'cruise', 0.9, whaleAsset)
+
+        for (const target of areaTargets(entity, world, world.unit * 9)) {
+          controlHit(entity, target, world, isBoat(target) ? 1.4 : 1)
+          shove(entity, target, world, 4.2)
+        }
+
+        spawnBurst(world, entity.x - entity.facing * world.unit * 3, entity.y, 3.2)
+      },
+    },
+    {
+      cooldown: 6.5,
+      description: 'Whale song scatters and calms enemies.',
+      key: 'e',
+      name: 'Song',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'cruise', 1, whaleAsset, 'dazed')
+
+        for (const target of areaTargets(entity, world, world.unit * 13)) {
+          target.targetId = null
+          target.data.controlSpeedUntil = world.time + 2.2
+          target.data.controlSpeed = 0.62
+          shove(entity, target, world, 2)
+        }
+      },
+    },
+    {
+      cooldown: 9,
+      description: 'Gulp krill bubbles and heal.',
+      key: 'r',
+      name: 'Krill gulp',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'cruise', 1, whaleAsset)
+        heal(entity, 2)
+        spawnBurst(world, entity.x + entity.facing * world.unit * 2, entity.y, 3.6)
+      },
+    },
+  ],
+  idleState: 'cruise',
+  move: 'swim',
+  moveState: 'cruise',
+  speed: 3.1,
+} as const
+
+const orcaControls = {
+  abilities: [
+    {
+      cooldown: 2.4,
+      description: 'Ram prey with a fast burst.',
+      key: 'q',
+      name: 'Ram',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.75)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 5.8,
+          world.unit,
+          world.width - world.unit,
+        )
+        const target = frontTarget(entity, world, world.unit * 7.5, 5)
+
+        if (target) {
+          controlHit(entity, target, world, 1.25)
+          shove(entity, target, world, 3.4)
+        }
+      },
+    },
+    {
+      cooldown: 4.5,
+      description: 'Tail slap and stun nearby prey.',
+      key: 'w',
+      name: 'Tail stun',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.8, undefined, 'dazed')
+
+        for (const target of areaTargets(entity, world, world.unit * 6.5)) {
+          controlHit(entity, target, world, 0.9)
+          target.data.controlSpeedUntil = world.time + 1.7
+          target.data.controlSpeed = 0.45
+        }
+      },
+    },
+    {
+      cooldown: 6,
+      description: 'Mark prey with echolocation.',
+      key: 'e',
+      name: 'Echolocate',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.9, undefined, 'aim')
+
+        for (const target of areaTargets(entity, world, world.unit * 14)) {
+          target.fx = 'aim'
+          target.data.fx = 1.6
+        }
+      },
+    },
+    {
+      cooldown: 10,
+      description: 'Call one brief helper orca.',
+      key: 'r',
+      name: 'Pod call',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'hunt', 0.8)
+
+        if (world.canBreed()) {
+          const helper = world.spawn('orca', {
+            countAs: null,
+            data: { life: 7 },
+            size: entity.size * 0.72,
+            x: clamp(
+              entity.x - entity.facing * world.unit * 4,
+              world.unit,
+              world.width - world.unit,
+            ),
+            y: clamp(entity.y + world.unit * 1.2, waterTop(world), waterBottom(world)),
+          })
+
+          if (helper) {
+            helper.hp = 2
+            helper.maxHp = 2
+          }
+        }
+      },
+    },
+  ],
+  idleState: 'hunt',
+  move: 'swim',
+  moveState: 'hunt',
+  speed: 4.5,
+} as const
+
+const anglerControls = {
+  abilities: [
+    {
+      cooldown: 3,
+      description: 'Lure small prey toward the lantern.',
+      key: 'q',
+      name: 'Lure',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'lure', 1, anglerAsset, 'aim')
+
+        for (const target of world.within(
+          entity.x,
+          entity.y,
+          world.unit * 9,
+          (other) => isFish(other) || isJelly(other),
+        )) {
+          steer(
+            target,
+            entity.x,
+            entity.y,
+            pace(target, world, isFish(target) ? 'fish' : 'jellyfish', 'cruise'),
+            0.2,
+            2.5,
+          )
+          target.fx = 'aim'
+          target.data.fx = 0.8
+        }
+      },
+    },
+    {
+      cooldown: 2.8,
+      description: 'Ambush bite after the lure.',
+      key: 'w',
+      name: 'Ambush',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'strike', 0.7)
+        const target = frontTarget(entity, world, world.unit * 4.8, 4)
+
+        if (target) {
+          controlHit(entity, target, world, 1.25)
+          heal(entity, 0.35)
+        }
+      },
+    },
+    {
+      cooldown: 5.6,
+      description: 'Dim the lantern and hide.',
+      key: 'e',
+      name: 'Deep hide',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 3
+        entity.data.controlBlock = 0.4
+        controlAction(entity, world, 'hide', 0.9, anglerAsset, 'guard')
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Flash the lure and daze close prey.',
+      key: 'r',
+      name: 'Lantern flash',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'lure', 0.9, anglerAsset, 'dazed')
+
+        for (const target of areaTargets(entity, world, world.unit * 6)) {
+          target.fx = 'dazed'
+          target.data.fx = 1.2
+          controlHit(entity, target, world, 0.45)
+        }
+      },
+    },
+  ],
+  idleState: 'lure',
+  move: 'swim',
+  moveState: 'lure',
+  speed: 2.4,
+} as const
 
 const kelpCoral: EcoSpecies = {
   anchor: 'bottom',
@@ -642,6 +1516,7 @@ const fishSchool: EcoSpecies = {
   anchor: 'center',
   asset: fishAsset,
   countAs: 'fish-school',
+  controls: fishControls,
   hp: 2,
   init(entity, world) {
     entity.data.goalAt = 0
@@ -751,6 +1626,7 @@ const jellyfish: EcoSpecies = {
   anchor: 'center',
   asset: jellyAsset,
   countAs: 'jellyfish',
+  controls: jellyControls,
   hp: 2,
   idle: 'undulate',
   init(entity, world) {
@@ -802,6 +1678,7 @@ const seaTurtle: EcoSpecies = {
   anchor: 'center',
   asset: turtleAsset,
   countAs: 'sea-turtle',
+  controls: turtleControls,
   hp: 3,
   idle: 'bob',
   init(entity, world) {
@@ -864,6 +1741,7 @@ const crab: EcoSpecies = {
   anchor: 'bottom',
   asset: crabAsset,
   countAs: 'crab',
+  controls: crabControls,
   hp: 2,
   idle: 'trot',
   init(entity, world) {
@@ -916,6 +1794,7 @@ const pufferfish: EcoSpecies = {
   anchor: 'center',
   asset: pufferAsset,
   countAs: 'pufferfish',
+  controls: pufferControls,
   hp: 2,
   idle: 'bob',
   init(entity, world) {
@@ -983,6 +1862,7 @@ const shark: EcoSpecies = {
   anchor: 'center',
   asset: sharkAsset,
   countAs: 'shark',
+  controls: sharkControls,
   hp: 4,
   idle: 'none',
   init(entity, world) {
@@ -1061,6 +1941,7 @@ const swordfish: EcoSpecies = {
   anchor: 'center',
   asset: swordfishAsset,
   countAs: 'swordfish',
+  controls: swordfishControls,
   hp: 3,
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 2, waterBottom(world))
@@ -1141,6 +2022,7 @@ const octopus: EcoSpecies = {
   anchor: 'center',
   asset: octopusAsset,
   countAs: 'octopus',
+  controls: octopusControls,
   hp: 3,
   idle: 'undulate',
   init(entity, world) {
@@ -1233,6 +2115,7 @@ const whale: EcoSpecies = {
   anchor: 'center',
   asset: whaleAsset,
   countAs: 'whale',
+  controls: whaleControls,
   hp: 5,
   idle: 'bob',
   init(entity, world) {
@@ -1318,6 +2201,7 @@ const orca: EcoSpecies = {
   anchor: 'center',
   asset: orcaAsset,
   countAs: 'orca',
+  controls: orcaControls,
   hp: 4,
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 3, waterBottom(world))
@@ -1329,6 +2213,12 @@ const orca: EcoSpecies = {
   tags: ['predator'],
   tick(entity, world, dt) {
     clearFx(entity, dt)
+
+    if ((entity.data.life ?? 0) > 0 && entity.age > (entity.data.life ?? 0)) {
+      world.kill(entity)
+      return
+    }
+
     const unit = world.unit
     const kraken = world.nearest(
       entity,
@@ -1393,6 +2283,7 @@ const anglerfish: EcoSpecies = {
   anchor: 'center',
   asset: anglerAsset,
   countAs: 'anglerfish',
+  controls: anglerControls,
   hp: 2,
   idle: 'glow',
   init(entity, world) {
