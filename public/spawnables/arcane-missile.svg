@@ -1,7 +1,7 @@
-<svg width="74" height="42" viewBox="0 0 74 42" xmlns="http://www.w3.org/2000/svg">
-  <path d="M3 21C15 9 29 5 45 11L74 21L45 31C29 37 15 33 3 21Z" fill="#d8bfd8" />
-  <path d="M18 21C28 15 42 14 56 19L68 21L56 23C42 28 28 27 18 21Z" fill="#b8d9f0" opacity="0.9" />
-  <circle cx="54" cy="21" r="8" fill="#fff6c8" opacity="0.92" />
-  <path d="M2 7C10 12 18 15 29 16" stroke="#b8d9f0" stroke-width="3" stroke-linecap="round" opacity="0.62" />
-  <path d="M1 35C11 29 19 26 31 26" stroke="#d8bfd8" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+<svg width="92" height="48" viewBox="0 0 92 48" xmlns="http://www.w3.org/2000/svg">
+  <path d="M3 25C20 12 38 9 57 15C45 19 38 25 33 35C20 37 10 34 3 25Z" fill="#8a72d2" opacity="0.68"/>
+  <path d="M18 24C35 13 56 14 78 23C58 25 48 31 39 40C29 38 22 33 18 24Z" fill="#d8bfff" opacity="0.86"/>
+  <path d="M58 8L83 24L58 41L47 24Z" fill="#fff6c8"/>
+  <circle cx="68" cy="24" r="10" fill="#d8f4ff" opacity="0.82"/>
+  <circle cx="72" cy="23" r="5" fill="#ffffff" opacity="0.9"/>
 </svg>

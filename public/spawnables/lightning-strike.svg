@@ -1,6 +1,7 @@
-<svg width="80" height="210" viewBox="0 0 80 210" xmlns="http://www.w3.org/2000/svg">
-  <path d="M44 0L15 72H38L22 132H45L28 210L72 99H48L63 45H41Z" fill="#ffd966" />
-  <path d="M47 7L28 68H49L34 124H55L39 184L67 104H43L57 51H36Z" fill="#fff6c8" opacity="0.88" />
-  <path d="M29 31L9 57" stroke="#b8d9f0" stroke-width="4" stroke-linecap="round" opacity="0.72" />
-  <path d="M58 116L75 145" stroke="#b8d9f0" stroke-width="4" stroke-linecap="round" opacity="0.72" />
+<svg width="96" height="220" viewBox="0 0 96 220" xmlns="http://www.w3.org/2000/svg">
+  <path d="M55 0L17 85H43L27 151L69 65H43Z" fill="#fff6c8"/>
+  <path d="M63 18L35 80H58L44 132L80 55H58Z" fill="#ffd966" opacity="0.88"/>
+  <path d="M24 96L5 132H25L14 178L45 116H27Z" fill="#fff6c8" opacity="0.74"/>
+  <path d="M68 94L48 139H64L55 188L88 122H70Z" fill="#ffd966" opacity="0.78"/>
+  <ellipse cx="49" cy="203" rx="34" ry="11" fill="#ffd966" opacity="0.24"/>
 </svg>

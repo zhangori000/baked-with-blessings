@@ -1378,3 +1378,248 @@
     animation: none;
   }
 }
+
+.ecoThing[data-species='wizard'][data-state='meteor'] {
+  --wizard-glow: rgba(255, 166, 94, 0.98);
+  --wizard-rune: rgba(255, 217, 102, 0.9);
+}
+
+.ecoThing[data-species='wizard'][data-state='summon'] {
+  --wizard-glow: rgba(216, 191, 255, 0.98);
+  --wizard-rune: rgba(216, 191, 255, 0.88);
+}
+
+.ecoThing[data-species='wizard'][data-state='polymorph'] {
+  --wizard-glow: rgba(168, 218, 130, 0.98);
+  --wizard-rune: rgba(119, 170, 82, 0.88);
+}
+
+.ecoThing[data-species='wizard'][data-state='meteor'] .ecoArt,
+.ecoThing[data-species='wizard'][data-state='summon'] .ecoArt,
+.ecoThing[data-species='wizard'][data-state='polymorph'] .ecoArt {
+  animation: siegeWizardWindup 0.54s cubic-bezier(0.34, 1.56, 0.64, 1) infinite alternate;
+  filter: drop-shadow(0 0 0.64rem var(--wizard-glow));
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='wizard'][data-state='meteor'] .ecoPose::before,
+.ecoThing[data-species='wizard'][data-state='summon'] .ecoPose::before,
+.ecoThing[data-species='wizard'][data-state='polymorph'] .ecoPose::before {
+  animation: siegeRunePulse 0.92s linear infinite;
+  background:
+    radial-gradient(circle, transparent 35%, var(--wizard-rune) 37% 40%, transparent 43%),
+    conic-gradient(
+      from 0deg,
+      transparent,
+      var(--wizard-rune),
+      transparent 26%,
+      var(--wizard-rune),
+      transparent 58%,
+      var(--wizard-rune),
+      transparent
+    );
+  border-radius: 50%;
+  bottom: -0.18rem;
+  content: '';
+  height: 118%;
+  left: 50%;
+  opacity: 0.9;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%) rotate(0deg) scaleY(0.24);
+  width: 140%;
+  z-index: -1;
+}
+
+.ecoThing[data-species='wizard'][data-state='meteor'] .ecoPose::after,
+.ecoThing[data-species='wizard'][data-state='summon'] .ecoPose::after,
+.ecoThing[data-species='wizard'][data-state='polymorph'] .ecoPose::after {
+  animation: siegeGatherSparkles 0.7s ease-in-out infinite alternate;
+  background:
+    radial-gradient(circle at 24% 58%, var(--wizard-glow) 0 0.13rem, transparent 0.18rem),
+    radial-gradient(circle at 68% 20%, #fff6c8 0 0.17rem, transparent 0.22rem),
+    radial-gradient(circle at 82% 62%, var(--wizard-rune) 0 0.15rem, transparent 0.21rem),
+    radial-gradient(circle, var(--wizard-glow), transparent 62%);
+  border-radius: 50%;
+  content: '';
+  height: 82%;
+  left: 50%;
+  opacity: 0.92;
+  pointer-events: none;
+  position: absolute;
+  top: -25%;
+  width: 82%;
+  z-index: 3;
+}
+
+.ecoThing[data-species='wizard-fireball'] .ecoPose::before,
+.ecoThing[data-species='spell-meteor'] .ecoPose::before,
+.ecoThing[data-species='arcane-missile'] .ecoPose::before,
+.ecoThing[data-species='ice-shard'] .ecoPose::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 246, 200, 0.72), transparent);
+  border-radius: 999px;
+  content: '';
+  height: 28%;
+  left: -42%;
+  opacity: 0.72;
+  pointer-events: none;
+  position: absolute;
+  top: 42%;
+  transform: rotate(3deg);
+  width: 92%;
+  z-index: -1;
+}
+
+.ecoThing[data-species='wizard-fireball'] .ecoPose::before,
+.ecoThing[data-species='spell-meteor'] .ecoPose::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 217, 102, 0.45),
+    rgba(255, 143, 61, 0.82)
+  );
+}
+
+.ecoThing[data-species='spell-meteor'] .ecoArt {
+  animation: siegeMeteorFall 0.16s linear infinite alternate;
+  filter: drop-shadow(0 0 0.72rem rgba(255, 166, 94, 0.96));
+}
+
+.ecoThing[data-species='spell-familiar'] .ecoArt {
+  animation: siegeFamiliarFlap 0.24s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.5rem rgba(216, 191, 255, 0.9));
+  transform-origin: center;
+}
+
+.ecoThing[data-species='spell-polymorph'] .ecoArt {
+  animation: siegePolymorphBounce 0.34s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.58rem rgba(168, 218, 130, 0.9));
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-fx='polymorph'] .ecoArt {
+  filter: saturate(0.68) brightness(1.12) drop-shadow(0 0 0.42rem rgba(168, 218, 130, 0.82));
+  opacity: 0.35;
+}
+
+.ecoThing[data-fx='polymorph'] .ecoPose::after {
+  animation: siegePolymorphHop 0.34s ease-in-out infinite alternate;
+  background: url('/spawnables/spell-polymorph.svg') center / contain no-repeat;
+  content: '';
+  height: 95%;
+  left: 50%;
+  opacity: 0.95;
+  pointer-events: none;
+  position: absolute;
+  top: 18%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  z-index: 4;
+}
+
+.ecoThing[data-fx='blink'] .ecoPose::before,
+.ecoThing[data-species='wizard-cast'][data-fx='blink'] .ecoPose::before {
+  animation: siegeBlinkSparkle 0.55s ease-out forwards;
+  background:
+    radial-gradient(circle at 20% 55%, rgba(216, 191, 255, 0.9) 0 0.14rem, transparent 0.2rem),
+    radial-gradient(circle at 65% 22%, rgba(255, 246, 200, 0.92) 0 0.18rem, transparent 0.24rem),
+    radial-gradient(circle at 82% 70%, rgba(184, 217, 240, 0.86) 0 0.15rem, transparent 0.22rem),
+    radial-gradient(circle, rgba(216, 191, 255, 0.42), transparent 68%);
+  border-radius: 50%;
+  content: '';
+  height: 130%;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 130%;
+  z-index: 5;
+}
+
+.ecoThing[data-species='cottage'] .ecoPose::after,
+.ecoThing[data-species='wizard'][data-state='shield'] .ecoPose::after {
+  filter: drop-shadow(0 0 0.45rem rgba(184, 217, 240, 0.8));
+}
+
+.ecoThing[data-species='spell-impact'][data-fx='polymorph'] .ecoArt {
+  filter: hue-rotate(92deg) saturate(1.5) drop-shadow(0 0 0.7rem rgba(168, 218, 130, 0.95));
+}
+
+@keyframes siegeMeteorFall {
+  from {
+    opacity: 0.82;
+    transform: translateX(-0.06rem) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0.08rem) scale(1.06);
+  }
+}
+
+@keyframes siegeFamiliarFlap {
+  from {
+    transform: translateY(0.04rem) rotate(-5deg) scale(0.96, 1.04);
+  }
+
+  to {
+    transform: translateY(-0.1rem) rotate(5deg) scale(1.04, 0.96);
+  }
+}
+
+@keyframes siegePolymorphBounce {
+  from {
+    transform: translateY(0.04rem) scale(0.92, 1.04);
+  }
+
+  to {
+    transform: translateY(-0.12rem) scale(1.04, 0.94);
+  }
+}
+
+@keyframes siegePolymorphHop {
+  from {
+    transform: translate(-50%, -46%) scale(0.92, 1.04);
+  }
+
+  to {
+    transform: translate(-50%, -58%) scale(1.04, 0.94);
+  }
+}
+
+@keyframes siegeBlinkSparkle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.45) rotate(-12deg);
+  }
+
+  45% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4) rotate(20deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='wizard'][data-state='meteor'] .ecoArt,
+  .ecoThing[data-species='wizard'][data-state='summon'] .ecoArt,
+  .ecoThing[data-species='wizard'][data-state='polymorph'] .ecoArt,
+  .ecoThing[data-species='wizard'][data-state='meteor'] .ecoPose::before,
+  .ecoThing[data-species='wizard'][data-state='summon'] .ecoPose::before,
+  .ecoThing[data-species='wizard'][data-state='polymorph'] .ecoPose::before,
+  .ecoThing[data-species='wizard'][data-state='meteor'] .ecoPose::after,
+  .ecoThing[data-species='wizard'][data-state='summon'] .ecoPose::after,
+  .ecoThing[data-species='wizard'][data-state='polymorph'] .ecoPose::after,
+  .ecoThing[data-species='spell-meteor'] .ecoArt,
+  .ecoThing[data-species='spell-familiar'] .ecoArt,
+  .ecoThing[data-species='spell-polymorph'] .ecoArt,
+  .ecoThing[data-fx='polymorph'] .ecoPose::after,
+  .ecoThing[data-fx='blink'] .ecoPose::before,
+  .ecoThing[data-species='wizard-cast'][data-fx='blink'] .ecoPose::before {
+    animation: none;
+  }
+}

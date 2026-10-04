@@ -1,13 +1,5 @@
-<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-  <path
-    d="M36 2L43 25L68 14L53 36L70 56L45 49L36 70L27 49L2 56L19 36L4 14L29 25Z"
-    fill="#fff6c8"
-    opacity="0.92"
-  />
-  <path
-    d="M36 12L41 29L58 25L47 38L58 51L41 47L36 62L31 47L14 51L25 38L14 25L31 29Z"
-    fill="#ffd966"
-    opacity="0.86"
-  />
-  <circle cx="36" cy="37" r="12" fill="#b8d9f0" opacity="0.78" />
+<svg width="86" height="86" viewBox="0 0 86 86" xmlns="http://www.w3.org/2000/svg">
+  <path d="M43 2L49 29L73 15L58 38L84 43L58 49L73 71L49 57L43 84L37 57L13 71L28 49L2 43L28 38L13 15L37 29Z" fill="#fff6c8" opacity="0.9"/>
+  <circle cx="43" cy="43" r="25" fill="#ffd966" opacity="0.34"/>
+  <circle cx="43" cy="43" r="11" fill="#ffffff" opacity="0.82"/>
 </svg>

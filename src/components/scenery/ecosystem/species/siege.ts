@@ -22,43 +22,46 @@ import type { EcoEntity, EcoSpecies, EcoWorld } from '../types'
 
 registerViewBoxes({
   ballista: [126, 82],
-  'arcane-missile': [74, 42],
+  'arcane-missile': [92, 48],
   bolt: [128, 24],
   'duel-beam-dark': [144, 18],
   'duel-beam-good': [144, 18],
   'fire-lance': [144, 22],
-  'frost-nova': [104, 104],
+  'frost-nova': [116, 116],
   'green-flame': [58, 70],
   'ice-wall': [86, 96],
-  'ice-shard': [96, 34],
-  'lightning-strike': [80, 210],
+  'ice-shard': [108, 42],
+  'lightning-strike': [96, 220],
   'mounted-knight': [156, 104],
   'mounted-knight-charge': [172, 104],
   prince: [76, 88],
   princess: [78, 96],
   'shield-bubble': [124, 112],
-  'spell-impact': [72, 72],
-  'spell-tornado': [96, 106],
+  'spell-familiar': [96, 74],
+  'spell-impact': [86, 86],
+  'spell-meteor': [84, 118],
+  'spell-polymorph': [92, 82],
+  'spell-tornado': [104, 116],
   'sword-arc': [108, 82],
   'sword-beam': [126, 30],
   treasure: [96, 78],
   'treasure-empty': [96, 78],
   'unicorn-heal-beam': [142, 26],
   'vine-snare': [116, 74],
-  wizard: [82, 98],
-  'wizard-archmage': [82, 98],
-  'wizard-archmage-cast': [82, 98],
-  'wizard-cast': [64, 64],
-  'wizard-druid': [82, 98],
-  'wizard-druid-cast': [82, 98],
-  'wizard-frost': [82, 98],
-  'wizard-frost-cast': [82, 98],
-  'wizard-pyromancer': [82, 98],
-  'wizard-pyromancer-cast': [82, 98],
-  'wizard-raise': [82, 98],
-  'wizard-storm': [82, 98],
-  'wizard-storm-cast': [82, 98],
-  'wizard-fireball': [86, 58],
+  wizard: [92, 112],
+  'wizard-archmage': [92, 112],
+  'wizard-archmage-cast': [92, 112],
+  'wizard-cast': [86, 86],
+  'wizard-druid': [92, 112],
+  'wizard-druid-cast': [92, 112],
+  'wizard-frost': [92, 112],
+  'wizard-frost-cast': [92, 112],
+  'wizard-pyromancer': [92, 112],
+  'wizard-pyromancer-cast': [92, 112],
+  'wizard-raise': [92, 112],
+  'wizard-storm': [92, 112],
+  'wizard-storm-cast': [92, 112],
+  'wizard-fireball': [110, 70],
   'dark-lord': [92, 104],
   'dark-lord-cast': [92, 104],
 })
@@ -1487,6 +1490,151 @@ const lightningStrike: EcoSpecies = {
   },
 }
 
+const spellMeteor: EcoSpecies = {
+  anchor: 'center',
+  asset: ecoAsset('spell-meteor'),
+  countAs: null,
+  layer: 'front',
+  size: [2, 2.7],
+  state: 'fall',
+  strongVs: ['knight', 'building', 'burnable', 'dark-lord'],
+  tags: ['projectile', 'fireball', 'fire'],
+  weakTo: ['unicorn', 'ice-wall', 'knight'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+
+    entity.vy += fireballGravity * unit * dt
+    integrate(entity, dt)
+    tiltToVelocity(entity, 25)
+
+    const foe = world.nearest(
+      entity,
+      (other) => other.id !== (entity.data.ownerId ?? -1) && isSpellDuelTarget(world)(other),
+      unit * 2.6,
+    )
+    const hitGround = entity.y >= world.groundY - unit * 0.2
+
+    if (!foe && !hitGround && entity.t <= 1.7) {
+      return
+    }
+
+    const x = foe?.x ?? entity.x
+    const y = foe ? bodyPoint(foe, world).y : world.groundY - unit * 0.6
+
+    spawnImpact(world, x, y, 3.4, 'fire', 0.64)
+
+    for (const other of world.within(x, world.groundY, unit * 3.4, (target) => target !== entity)) {
+      if (world.has(other, 'fuel') || world.has(other, 'burnable')) {
+        other.data.burn = Math.max(other.data.burn ?? 0, 0.01)
+      }
+
+      if (other.id !== (entity.data.ownerId ?? -1) && isSpellDuelTarget(world)(other)) {
+        damageGroundTarget(other, world, other === foe ? 1.05 : 0.58, entity, 2.2)
+      }
+    }
+
+    if (!world.nearest(entity, (other) => world.has(other, 'fire'), unit * 1.3)) {
+      world.spawn('fire', { x })
+    }
+
+    world.remove(entity)
+  },
+}
+
+const wizardFamiliar: EcoSpecies = {
+  anchor: 'center',
+  asset: ecoAsset('spell-familiar'),
+  countAs: null,
+  idle: 'flap',
+  init(entity) {
+    entity.data.life = between(3.2, 4.4)
+  },
+  layer: 'front',
+  size: [1.8, 2.3],
+  state: 'hunt',
+  strongVs: ['dragon', 'dark-lord', 'knight'],
+  tags: ['owl', 'projectile'],
+  weakTo: ['archer', 'fireball'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    entity.data.life = (entity.data.life ?? 3.6) - dt
+
+    const target = world.byId(entity.data.targetId ?? entity.targetId)
+    const foe =
+      target && isSpellDuelTarget(world)(target)
+        ? target
+        : world.nearest(entity, isSpellDuelTarget(world), unit * 24)
+
+    if (foe) {
+      entity.targetId = foe.id
+      const point = bodyPoint(foe, world)
+      steer(entity, point.x, point.y - unit * 0.4, unit * 8.5, dt, 4.2)
+    } else {
+      entity.vx += entity.facing * unit * 0.8 * dt
+      entity.vy += Math.sin(world.time * 4 + entity.id) * unit * 0.18 * dt
+    }
+
+    integrate(entity, dt)
+    faceTravel(entity, 1)
+    entity.tilt = Math.sin(world.time * 8 + entity.id) * 8
+    entity.scale = 0.9 + Math.sin(world.time * 10 + entity.id) * 0.06
+
+    if (foe && Math.hypot(foe.x - entity.x, bodyPoint(foe, world).y - entity.y) < unit * 2) {
+      spawnImpact(world, entity.x, entity.y, 2, 'arcane', 0.45)
+      damageGroundTarget(foe, world, 0.72, entity, 1.8)
+      entity.data.life = Math.min(entity.data.life ?? 0, 0.2)
+      entity.vx *= -0.55
+      entity.vy -= unit * 1.2
+      entity.targetId = null
+    }
+
+    if (
+      (entity.data.life ?? 0) <= 0 ||
+      entity.x < -unit * 4 ||
+      entity.x > world.width + unit * 4 ||
+      entity.y < world.skyTop - unit * 5 ||
+      entity.y > world.groundY + unit * 3
+    ) {
+      world.remove(entity)
+    }
+  },
+}
+
+const spellPolymorph: EcoSpecies = {
+  anchor: 'center',
+  asset: ecoAsset('spell-polymorph'),
+  countAs: null,
+  idle: 'glow',
+  layer: 'front',
+  size: [2, 2.6],
+  state: 'frog',
+  strongVs: ['knight', 'wizard', 'dark-lord'],
+  tags: [],
+  weakTo: ['fireball'],
+  tick(entity, world) {
+    const target = world.byId(entity.data.targetId ?? null)
+
+    if (target && !target.dying && !target.removed) {
+      const point = bodyPoint(target, world)
+      entity.x = point.x
+      entity.y = point.y + world.unit * 0.3
+      entity.scale = 0.82 + Math.sin(world.time * 12 + entity.id) * 0.05
+
+      if ((target.data.polymorphUntil ?? 0) <= world.time && target.fx === 'polymorph') {
+        target.fx = ''
+      }
+    }
+
+    if (!target || entity.t > (entity.data.life ?? 2.1)) {
+      if (target && target.fx === 'polymorph') {
+        target.fx = ''
+      }
+
+      world.remove(entity)
+    }
+  },
+}
+
 const swordArc: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('sword-arc'),
@@ -2069,6 +2217,9 @@ const wizardSpellStates = [
   'ice-shard',
   'rain',
   'blink',
+  'meteor',
+  'summon',
+  'polymorph',
   'fire-lance',
   'ice-wall',
   'vine',
@@ -2333,11 +2484,14 @@ function releaseWizardSpell(entity: EcoEntity, world: EcoWorld) {
       const seconds = Math.max(0.24, Math.hypot(foe.x - origin.x, foe.y - origin.y) / speed)
       const launch = ballistic(origin.x, origin.y, foe.x, foe.y, seconds, 0)
 
+      const foePoint = bodyPoint(foe, world)
+
       world.spawn('lightning-strike', {
-        size: clamp(Math.abs(origin.y - bodyPoint(foe, world).y) / unit, 4.2, 7.2),
+        size: clamp(Math.abs(origin.y - foePoint.y) / unit, 4.2, 7.2),
         x: foe.x,
-        y: bodyPoint(foe, world).y,
+        y: foePoint.y,
       })
+      spawnBeam(world, 'duel-beam-good', origin, foePoint, 0.16)
       damageGroundTarget(foe, world, 1.15, entity, 2.1)
       world.spawn('bolt', {
         ...launch,
@@ -2434,6 +2588,73 @@ function releaseWizardSpell(entity: EcoEntity, world: EcoWorld) {
         y: origin.y,
       })
       spawnCast(world, origin.x, origin.y, 2.1, 'frost', 0.55)
+    }
+  } else if (entity.state === 'meteor') {
+    const foe = world.byId(entity.targetId)
+    const strikeX = foe?.x ?? entity.x + entity.facing * unit * 7
+
+    for (let index = 0; index < 4; index += 1) {
+      const targetX = clamp(strikeX + between(-3.8, 3.8) * unit, unit, world.width - unit)
+      const startX = clamp(
+        targetX - entity.facing * between(5, 11) * unit,
+        unit,
+        world.width - unit,
+      )
+      const startY = world.skyTop + between(0.4, 2.4) * unit
+      const seconds = between(0.62, 0.96)
+      const launch = ballistic(
+        startX,
+        startY,
+        targetX,
+        world.groundY - unit * 0.55,
+        seconds,
+        fireballGravity * unit,
+      )
+
+      world.spawn('spell-meteor', {
+        ...launch,
+        data: { ownerId: entity.id, targetId: foe?.id ?? -1 },
+        size: between(2, 2.7),
+        x: startX,
+        y: startY,
+      })
+    }
+
+    spawnCast(world, origin.x, origin.y, 2.7, 'fire', 0.62)
+  } else if (entity.state === 'summon') {
+    const foe = world.byId(entity.targetId)
+
+    world.spawn('wizard-familiar', {
+      data: { ownerId: entity.id, targetId: foe?.id ?? -1 },
+      facing: entity.facing,
+      size: 2.1,
+      vx: entity.facing * unit * 4.2,
+      vy: -unit * 1.4,
+      x: origin.x,
+      y: origin.y,
+    })
+    spawnCast(world, origin.x, origin.y, 2.5, 'arcane', 0.64)
+  } else if (entity.state === 'polymorph') {
+    const foe = world.byId(entity.targetId)
+
+    if (foe && isSpellDuelTarget(world)(foe)) {
+      entity.facing = foe.x >= entity.x ? 1 : -1
+      const target = bodyPoint(foe, world)
+
+      spawnBeam(world, 'duel-beam-good', origin, target, 0.18)
+      world.spawn('spell-polymorph', {
+        data: { life: 2.1, targetId: foe.id },
+        size: world.has(foe, 'dragon') ? 3.1 : 2.2,
+        x: target.x,
+        y: target.y,
+      })
+      spawnImpact(world, target.x, target.y, 2.7, 'polymorph', 0.62)
+      foe.data.polymorphUntil = world.time + 2.1
+      foe.data.slowUntil = world.time + 2.4
+      foe.fx = 'polymorph'
+      foe.vx *= 0.12
+      foe.vy = Math.min(foe.vy, unit * 0.3)
+      damageGroundTarget(foe, world, world.has(foe, 'knight') ? 0.45 : 0.25, entity, 0.8)
     }
   } else if (entity.state === 'storm') {
     const foes = world.entities
@@ -2539,6 +2760,8 @@ const wizard: EcoSpecies = {
     entity.data.lightningCool = between(1.2, 2.2)
     entity.data.rainCool = between(0.6, 1.4)
     entity.data.shieldCool = between(0.3, 1)
+    entity.data.summonCool = between(1.6, 3)
+    entity.data.polymorphCool = between(2.2, 4)
     entity.data.specialCool = between(1.4, 2.6)
     entity.data.spellCool = between(0.4, 1)
   },
@@ -2565,6 +2788,8 @@ const wizard: EcoSpecies = {
     entity.data.lightningCool = (entity.data.lightningCool ?? 0) - dt
     entity.data.rainCool = (entity.data.rainCool ?? 0) - dt
     entity.data.shieldCool = (entity.data.shieldCool ?? 0) - dt
+    entity.data.summonCool = (entity.data.summonCool ?? 0) - dt
+    entity.data.polymorphCool = (entity.data.polymorphCool ?? 0) - dt
     entity.data.specialCool = (entity.data.specialCool ?? 0) - dt
     entity.data.spellCool = (entity.data.spellCool ?? 0) - dt
 
@@ -2706,7 +2931,33 @@ const wizard: EcoSpecies = {
 
         if (nearbyGround.length >= 3 && (entity.data.specialCool ?? 0) <= 0) {
           entity.data.specialCool = between(6, 8)
-          startWizardSpell(entity, world, 'tornado', foe, between(2.3, 3.3))
+          startWizardSpell(
+            entity,
+            world,
+            type.code === 1 ? 'meteor' : 'tornado',
+            foe,
+            between(2.3, 3.3),
+          )
+          return
+        }
+
+        if (
+          type.code === 0 &&
+          (entity.data.summonCool ?? 0) <= 0 &&
+          (world.has(foe, 'dragon') || foe.species === 'dark-lord')
+        ) {
+          entity.data.summonCool = between(8, 12)
+          startWizardSpell(entity, world, 'summon', foe, between(2.6, 3.8))
+          return
+        }
+
+        if (
+          type.code === 3 &&
+          (entity.data.polymorphCool ?? 0) <= 0 &&
+          (world.has(foe, 'knight') || world.has(foe, 'wizard') || foe.species === 'dark-lord')
+        ) {
+          entity.data.polymorphCool = between(8, 12)
+          startWizardSpell(entity, world, 'polymorph', foe, between(2.6, 3.8))
           return
         }
 
@@ -2721,7 +2972,7 @@ const wizard: EcoSpecies = {
           startWizardSpell(
             entity,
             world,
-            Math.random() < 0.65 ? 'fireball' : 'fire-lance',
+            Math.random() < 0.45 ? 'meteor' : Math.random() < 0.72 ? 'fireball' : 'fire-lance',
             foe,
             between(2.4, 3.2),
           )
@@ -3258,7 +3509,10 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   pennant,
   prince,
   princess,
+  'spell-familiar': wizardFamiliar,
   'spell-impact': spellImpact,
+  'spell-meteor': spellMeteor,
+  'spell-polymorph': spellPolymorph,
   'spell-tornado': spellTornado,
   'sword-arc': swordArc,
   'sword-beam': swordBeam,
