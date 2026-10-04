@@ -1295,3 +1295,14 @@
     animation: none;
   }
 }
+
+.homeCookieStage,
+.cateringHeroBand,
+.ecoLayer,
+.ecoControlHud,
+:root[data-eco-controlling] body,
+:root[data-eco-play] body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
