@@ -1,17 +1,13 @@
-<svg width="82" height="92" viewBox="0 0 82 92" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="39" cy="88" rx="22" ry="4" fill="#000000" opacity="0.1" />
-  <ellipse cx="40" cy="22" rx="15" ry="17" fill="#7cb342" />
-  <path d="M27 22C29 9 42 3 55 12C51 17 44 21 35 25Z" fill="#558b2f" />
-  <ellipse cx="46" cy="23" rx="8" ry="9" fill="#f0d4b0" />
-  <circle cx="50" cy="22" r="1.2" fill="#2a2a2a" />
-  <path d="M31 36C40 28 53 30 60 40C58 57 51 72 40 80C29 70 25 52 31 36Z" fill="#8bc34a" />
-  <path d="M45 33C55 38 59 48 57 60C55 69 48 76 40 80C44 63 45 48 45 33Z" fill="#558b2f" opacity="0.5" />
-  <path d="M56 42Q68 34 78 26" fill="none" stroke="#6b4423" stroke-width="1.8" stroke-linecap="round" />
-  <path d="M54 42Q67 44 78 49" fill="none" stroke="#6b4423" stroke-width="1.6" stroke-linecap="round" />
-  <path d="M78 26Q68 38 78 49" fill="none" stroke="#8b7355" stroke-width="1.5" stroke-linecap="round" />
-  <path d="M56 42L80 35" stroke="#d4a652" stroke-width="1.3" stroke-linecap="round" />
-  <path d="M76 35L82 31L80 38Z" fill="#d4a652" />
-  <path d="M32 45Q22 51 16 60" fill="none" stroke="#6b4423" stroke-width="1.8" stroke-linecap="round" />
-  <path d="M35 78Q30 84 27 91" fill="none" stroke="#6b4423" stroke-width="2.4" stroke-linecap="round" />
-  <path d="M47 77Q51 84 57 89" fill="none" stroke="#6b4423" stroke-width="2.4" stroke-linecap="round" />
+<svg width="96" height="116" viewBox="0 0 96 116" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
+  <style>.bowArm{transform-box:fill-box;transform-origin:45% 48%;animation:draw 1.5s ease-in-out infinite}.string{transform-box:fill-box;transform-origin:50% 50%;animation:string 1.5s ease-in-out infinite}.cloak{transform-box:fill-box;transform-origin:center bottom;animation:cloak 1.8s ease-in-out infinite}@keyframes draw{0%,58%,100%{transform:rotate(0deg)}72%{transform:rotate(-8deg) translateX(-3px)}}@keyframes string{0%,58%,100%{transform:translateX(0)}72%{transform:translateX(-8px)}}@keyframes cloak{0%,100%{transform:skewX(-2deg)}50%{transform:skewX(3deg)}}</style>
+  <ellipse cx="47" cy="106" rx="30" ry="8" fill="#7b6a4a" opacity=".2"/>
+  <path d="M36 12C50 5 69 14 73 31C62 25 47 25 34 32C28 24 29 17 36 12Z" fill="#2f5f45"/>
+  <path d="M28 35C35 20 58 19 68 35C62 48 36 51 28 35Z" fill="#2f5f45"/>
+  <path d="M35 36C42 29 55 29 62 37C62 50 57 59 48 61C38 58 33 49 35 36Z" fill="#f0c79a"/>
+  <circle cx="43" cy="42" r="1.7" fill="#242234"/><circle cx="54" cy="42" r="1.7" fill="#242234"/><circle cx="43.5" cy="41.4" r=".45" fill="#fff"/><circle cx="54.5" cy="41.4" r=".45" fill="#fff"/><path d="M49 45C51 48 50 50 47 51" stroke="#ad7657" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <g class="cloak"><path d="M26 101C28 76 35 58 48 51C64 57 72 77 75 101C61 109 42 109 26 101Z" fill="#4e8b45"/><path d="M39 57C42 71 45 85 47 103C51 84 54 70 59 57C53 54 45 54 39 57Z" fill="#e8d9a8" opacity=".65"/></g>
+  <path d="M33 64C20 70 12 83 9 98C22 96 34 87 41 71Z" fill="#6cab50"/>
+  <g class="bowArm"><path d="M64 63C75 53 78 36 72 19" stroke="#6b4d36" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M72 19C88 39 88 70 69 94" stroke="#6b4d36" stroke-width="5" stroke-linecap="round" fill="none"/><path class="string" d="M72 20Q54 57 70 94" stroke="#e8eef8" stroke-width="2" fill="none"/><path d="M35 64H70" stroke="#8b6a2c" stroke-width="3" stroke-linecap="round"/><path d="M72 64L62 59L63 69Z" fill="#e8eef8"/></g>
+  <path d="M31 18L18 14M37 15L29 7M46 14L45 4" stroke="#7b664c" stroke-width="4" stroke-linecap="round"/>
+  <path d="M37 101Q31 109 23 113" stroke="#4b2e2a" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M57 101Q63 109 72 112" stroke="#4b2e2a" stroke-width="6" stroke-linecap="round" fill="none"/>
 </svg>

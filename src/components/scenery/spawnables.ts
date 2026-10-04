@@ -263,14 +263,11 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('dragon', 'Dragon', spawnableAsset('dragon-western-ember')),
     creature('knight', 'Knight'),
     creature('archer', 'Archer'),
-    creature('unicorn', 'Unicorn'),
     creature('frog-prince', 'Frog prince'),
-    creature('pennant', 'Pennant'),
     creature('princess', 'Princess'),
     creature('wizard', 'Wizard', spawnableAsset('wizard-archmage')),
     creature('dark-lord', 'Dark lord'),
     creature('ballista', 'Ballista'),
-    creature('treasure', 'Treasure'),
   ],
 }
 
