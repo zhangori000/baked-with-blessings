@@ -222,6 +222,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
   prehistoric: [
     creatureCloud,
     creature('fern', 'Fern', '/flowers/prehistoric-fern.svg'),
+    creature('araucaria-tree', 'Tree', spawnableAsset('araucaria-tree')),
     creature('trex', 'T. rex', spawnableAsset('trex')),
     creature('triceratops', 'Triceratops'),
     creature('brachiosaurus', 'Brachiosaurus'),
@@ -231,8 +232,8 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('compy', 'Compy'),
     creature('meganeura', 'Dragonfly'),
     creature('dino-nest', 'Egg'),
-    creature('shooting-star', 'Shooting star', spawnableAsset('shooting-star-icon')),
-    creature('volcano', 'Volcano'),
+    creature('shooting-star', 'Shooting star', spawnableAsset('dino-shooting-star-icon')),
+    creature('eruption', 'Eruption', spawnableAsset('dino-eruption')),
   ],
   'fairy-castle': [
     creatureCloud,

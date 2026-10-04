@@ -2,8 +2,19 @@
   transform-origin: center bottom;
 }
 
+.ecoThing[data-species='araucaria-tree'] .ecoArt {
+  filter: saturate(calc(0.75 + var(--prehistoric-tree-foliage, 1) * 0.25));
+  opacity: calc(0.68 + var(--prehistoric-tree-foliage, 1) * 0.32);
+  transform-origin: center bottom;
+}
+
 .ecoThing[data-species='fern'][data-state='grow'] .ecoArt {
   animation: prehistoricFernGrow 2.6s ease-in-out infinite;
+}
+
+.ecoThing[data-species='araucaria-tree'][data-state='regrow'] .ecoArt,
+.ecoThing[data-species='araucaria-tree'][data-fx='nibbled'] .ecoArt {
+  animation: prehistoricTreeRecover 3.4s ease-in-out infinite;
 }
 
 .ecoThing[data-species='trex'] .ecoArt,
@@ -23,8 +34,13 @@
   animation: prehistoricWalk 0.56s ease-in-out infinite alternate;
 }
 
-.ecoThing[data-species='brachiosaurus'][data-state='browse'] .ecoArt {
+.ecoThing[data-species='brachiosaurus'][data-state='browse'] .ecoArt,
+.ecoThing[data-species='brachiosaurus'][data-state='tree-seek'] .ecoArt {
   animation: prehistoricBrachioBrowse 3.8s ease-in-out infinite;
+}
+
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoArt {
+  animation: prehistoricBrachioNeckReach 1.2s ease-in-out infinite alternate;
 }
 
 .ecoThing[data-species='trex'][data-state='stalk'] .ecoArt {
@@ -132,6 +148,93 @@
   transform-origin: center center;
 }
 
+.ecoThing[data-species='eruption'] .ecoArt {
+  animation: prehistoricEruptionPulse 0.42s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 1rem rgba(255, 138, 61, 0.8));
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='eruption'][data-state='cool'] .ecoArt {
+  animation: prehistoricEruptionCool 4s ease-out both;
+  filter: saturate(0.78) brightness(0.85);
+}
+
+.ecoThing[data-species='lava-flow'] .ecoArt {
+  animation: prehistoricLavaFlow 0.72s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.6rem rgba(255, 138, 61, 0.72));
+  transform-origin: center center;
+}
+
+.ecoThing[data-species='lava-flow'][data-state='cooled'] .ecoArt {
+  animation: prehistoricCooledLava 4.8s ease-out both;
+  filter: none;
+}
+
+.ecoThing[data-species='trex'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='triceratops'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='brachiosaurus'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='stegosaurus'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='raptor'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='compy'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='pterodactyl'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='meganeura'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='araucaria-tree'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='dino-nest'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='baby-triceratops'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='baby-stegosaurus'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='baby-brachiosaurus'][data-fx='hurt'] .ecoArt {
+  animation: prehistoricScorch 0.5s ease-out;
+}
+
+.ecoThing[data-species='lava-flank-left'] .ecoPop,
+.ecoThing[data-species='lava-flank-right'] .ecoPop,
+.ecoThing[data-species='lava-ground-sheet'] .ecoPop {
+  animation: none;
+}
+
+.ecoThing[data-species='lava-flank-left'] .ecoArt,
+.ecoThing[data-species='lava-flank-right'] .ecoArt {
+  animation: prehistoricLavaGlow 0.9s ease-in-out infinite alternate;
+  clip-path: inset(-2rem -2rem calc((1 - var(--prehistoric-lava-progress, 1)) * 100%) -2rem);
+}
+
+.ecoThing[data-species='lava-flank-left'][data-state='cooled'] .ecoArt,
+.ecoThing[data-species='lava-flank-right'][data-state='cooled'] .ecoArt {
+  animation: prehistoricLavaCool 3.2s ease-out both;
+}
+
+.ecoThing[data-species='lava-ground-sheet'] .ecoArt {
+  animation: prehistoricLavaGlow 0.9s ease-in-out infinite alternate;
+  clip-path: inset(-2rem calc((1 - var(--prehistoric-lava-progress, 1)) * 100%) -2rem -2rem);
+}
+
+.ecoThing[data-species='lava-ground-sheet'][data-state='cooled'] .ecoArt {
+  animation: prehistoricLavaCool 3.2s ease-out both;
+}
+
+.ecoThing[data-species='dino-dust'] .ecoArt,
+.ecoThing[data-species='dino-bite-burst'] .ecoArt,
+.ecoThing[data-species='dino-feather-puff'] .ecoArt,
+.ecoThing[data-species='dino-tail-streak'] .ecoArt {
+  animation: prehistoricFxFade 0.72s ease-out both;
+  opacity: var(--prehistoric-fx-opacity, 1);
+}
+
+.ecoThing[data-species='dino-bite-burst'] .ecoArt,
+.ecoThing[data-species='dino-tail-streak'] .ecoArt {
+  mix-blend-mode: screen;
+}
+
+.ecoThing[data-species='shooting-star'] .ecoArt {
+  filter: drop-shadow(0 0 0.5rem rgba(255, 138, 61, 0.7));
+  opacity: var(--dino-star-opacity, 1);
+}
+
+.ecoThing[data-species='shooting-star'][data-state='asteroid'] .ecoArt {
+  animation: prehistoricAsteroidBurn 0.18s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 1rem rgba(255, 138, 61, 0.95));
+}
+
 .ecoThing[data-species='dino-ash'] {
   mix-blend-mode: multiply;
   opacity: var(--prehistoric-ash-opacity, 1);
@@ -212,6 +315,17 @@
   }
 }
 
+@keyframes prehistoricTreeRecover {
+  0%,
+  100% {
+    transform: rotate(-0.8deg) scale(0.98, 1.02);
+  }
+
+  50% {
+    transform: rotate(0.8deg) scale(1.02, 0.99);
+  }
+}
+
 @keyframes prehistoricWalk {
   from {
     transform: translateY(0) rotate(-1.2deg);
@@ -230,6 +344,16 @@
 
   50% {
     transform: rotate(1.5deg) translateY(-0.12rem);
+  }
+}
+
+@keyframes prehistoricBrachioNeckReach {
+  from {
+    transform: translateY(0) rotate(-1deg) scale(1);
+  }
+
+  to {
+    transform: translateY(-0.28rem) rotate(1deg) scale(1.02, 1.04);
   }
 }
 
@@ -395,6 +519,110 @@
   }
 }
 
+@keyframes prehistoricEruptionPulse {
+  from {
+    transform: translateY(0) scale(0.98);
+  }
+
+  to {
+    transform: translateY(-0.18rem) scale(1.04);
+  }
+}
+
+@keyframes prehistoricEruptionCool {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0.15;
+    transform: translateY(-0.8rem) scale(0.84);
+  }
+}
+
+@keyframes prehistoricLavaFlow {
+  from {
+    transform: translateX(-0.16rem) scale(0.98, 1.02);
+  }
+
+  to {
+    transform: translateX(0.16rem) scale(1.02, 0.98);
+  }
+}
+
+@keyframes prehistoricLavaGlow {
+  from {
+    filter: drop-shadow(0 0 0.4rem rgba(255, 138, 61, 0.6)) brightness(0.96);
+  }
+
+  to {
+    filter: drop-shadow(0 0 0.85rem rgba(255, 170, 70, 0.85)) brightness(1.08);
+  }
+}
+
+@keyframes prehistoricScorch {
+  0%,
+  55% {
+    filter: sepia(0.7) saturate(2.4) hue-rotate(-18deg) brightness(0.78);
+  }
+
+  100% {
+    filter: none;
+  }
+}
+
+@keyframes prehistoricLavaCool {
+  0% {
+    filter: drop-shadow(0 0 0.5rem rgba(255, 138, 61, 0.6));
+    opacity: 1;
+  }
+
+  45% {
+    filter: saturate(0.35) brightness(0.42);
+    opacity: 0.95;
+  }
+
+  100% {
+    filter: saturate(0.2) brightness(0.32);
+    opacity: 0;
+  }
+}
+
+@keyframes prehistoricCooledLava {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0.16;
+    transform: scale(0.96) translateY(0.18rem);
+  }
+}
+
+@keyframes prehistoricFxFade {
+  from {
+    opacity: 1;
+    transform: scale(0.72);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.25) translateY(-0.16rem);
+  }
+}
+
+@keyframes prehistoricAsteroidBurn {
+  from {
+    transform: scale(0.98) rotate(-1deg);
+  }
+
+  to {
+    transform: scale(1.04) rotate(2deg);
+  }
+}
+
 @keyframes prehistoricLavaSpin {
   from {
     transform: rotate(0deg) scale(1);
@@ -513,6 +741,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ecoThing[data-species='fern'] .ecoArt,
+  .ecoThing[data-species='araucaria-tree'] .ecoArt,
   .ecoThing[data-species='trex'] .ecoArt,
   .ecoThing[data-species='triceratops'] .ecoArt,
   .ecoThing[data-species='brachiosaurus'] .ecoArt,
@@ -522,7 +751,17 @@
   .ecoThing[data-species='pterodactyl'] .ecoArt,
   .ecoThing[data-species='dino-nest'] .ecoArt,
   .ecoThing[data-species='volcano'] .ecoArt,
+  .ecoThing[data-species='eruption'] .ecoArt,
+  .ecoThing[data-species='lava-flow'] .ecoArt,
+  .ecoThing[data-species='lava-flank-left'] .ecoArt,
+  .ecoThing[data-species='lava-flank-right'] .ecoArt,
+  .ecoThing[data-species='lava-ground-sheet'] .ecoArt,
   .ecoThing[data-species='lava-bomb'] .ecoArt,
+  .ecoThing[data-species='dino-dust'] .ecoArt,
+  .ecoThing[data-species='dino-bite-burst'] .ecoArt,
+  .ecoThing[data-species='dino-feather-puff'] .ecoArt,
+  .ecoThing[data-species='dino-tail-streak'] .ecoArt,
+  .ecoThing[data-species='shooting-star'] .ecoArt,
   .ecoThing[data-species='dino-ash'] .ecoPop,
   .ecoThing[data-species='dino-impact'] .ecoAnchor::before,
   .ecoThing[data-species='dino-impact'] .ecoAnchor::after,

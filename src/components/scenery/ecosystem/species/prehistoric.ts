@@ -16,35 +16,54 @@ import {
   walkToward,
   wander,
 } from '../behaviors'
+import { asteroidStarCount } from '../../spawnables'
 import type { EcoEntity, EcoSpecies, EcoSpeciesMap, EcoWorld } from '../types'
-import { shootingStar } from './night'
 
 registerViewBoxes({
-  'baby-brachiosaurus': [100, 92],
-  'baby-stegosaurus': [98, 62],
-  'baby-triceratops': [96, 62],
-  'dino-ash': [280, 160],
+  'araucaria-tree': [118, 188],
+  'araucaria-tree-charred': [118, 188],
+  'araucaria-tree-thin': [118, 188],
+  'baby-brachiosaurus': [114, 118],
+  'baby-stegosaurus': [108, 70],
+  'baby-triceratops': [108, 72],
+  'dino-ash': [320, 190],
+  'dino-asteroid': [190, 134],
+  'dino-bite-burst': [96, 70],
+  'dino-dust': [132, 58],
   'dino-egg-crack': [88, 66],
+  'dino-eruption': [260, 260],
+  'dino-feather-puff': [106, 72],
+  'dino-shooting-star': [220, 54],
+  'dino-shooting-star-icon': [88, 52],
   'dino-nest': [88, 66],
-  'dino-scrap': [64, 38],
-  compy: [82, 48],
-  'lava-bomb': [54, 54],
-  meganeura: [118, 78],
-  pterodactyl: [154, 92],
-  'pterodactyl-dive': [142, 110],
-  raptor: [120, 76],
-  'raptor-leap': [124, 82],
-  stegosaurus: [154, 94],
-  'stegosaurus-swing': [164, 94],
-  trex: [164, 104],
-  'trex-chomp': [166, 104],
-  'trex-moss': [164, 104],
-  'trex-roar': [164, 112],
-  'trex-russet': [164, 104],
-  triceratops: [150, 94],
-  'triceratops-charge': [154, 88],
+  'dino-scrap': [70, 42],
+  'dino-tail-streak': [150, 56],
+  'cooled-lava': [280, 70],
+  impact: [260, 180],
+  compy: [90, 54],
+  'lava-flank-left': [220, 270],
+  'lava-flank-right': [220, 270],
+  'lava-flow': [280, 78],
+  'lava-ground-sheet': [360, 86],
+  'lava-bomb': [60, 60],
+  meganeura: [122, 78],
+  pterodactyl: [172, 104],
+  'pterodactyl-dive': [150, 120],
+  raptor: [132, 84],
+  'raptor-leap': [136, 90],
+  stegosaurus: [168, 104],
+  'stegosaurus-swing': [178, 104],
+  trex: [232, 170],
+  'trex-chomp': [232, 170],
+  'trex-moss': [232, 170],
+  'trex-roar': [232, 170],
+  'trex-russet': [232, 170],
+  triceratops: [168, 98],
+  'triceratops-charge': [172, 92],
   volcano: [122, 108],
   'volcano-erupt': [126, 132],
+  brachiosaurus: [190, 200],
+  'brachiosaurus-browse': [190, 230],
 })
 
 const fernAssets = ['/flowers/prehistoric-fern.svg', '/flowers/prehistoric-horsetail.svg'] as const
@@ -54,6 +73,7 @@ const trexChompAsset = ecoAsset('trex-chomp')
 const triceratopsAsset = ecoAsset('triceratops')
 const triceratopsChargeAsset = ecoAsset('triceratops-charge')
 const brachiosaurusAsset = ecoAsset('brachiosaurus')
+const brachiosaurusBrowseAsset = ecoAsset('brachiosaurus-browse')
 const stegosaurusAsset = ecoAsset('stegosaurus')
 const stegosaurusSwingAsset = ecoAsset('stegosaurus-swing')
 const raptorAsset = ecoAsset('raptor')
@@ -62,8 +82,23 @@ const pterodactylAsset = ecoAsset('pterodactyl')
 const pterodactylDiveAsset = ecoAsset('pterodactyl-dive')
 const nestAsset = ecoAsset('dino-nest')
 const crackedNestAsset = ecoAsset('dino-egg-crack')
+const treeAsset = ecoAsset('araucaria-tree')
+const treeCharredAsset = ecoAsset('araucaria-tree-charred')
+const treeThinAsset = ecoAsset('araucaria-tree-thin')
 const volcanoAsset = ecoAsset('volcano')
 const volcanoEruptAsset = ecoAsset('volcano-erupt')
+const dinoShootingStarAsset = ecoAsset('dino-shooting-star')
+const dinoAsteroidAsset = ecoAsset('dino-asteroid')
+const dinoEruptionAsset = ecoAsset('dino-eruption')
+const lavaFlankLeftAsset = ecoAsset('lava-flank-left')
+const lavaFlankRightAsset = ecoAsset('lava-flank-right')
+const lavaFlowAsset = ecoAsset('lava-flow')
+const lavaGroundSheetAsset = ecoAsset('lava-ground-sheet')
+const cooledLavaAsset = ecoAsset('cooled-lava')
+const dustAsset = ecoAsset('dino-dust')
+const biteBurstAsset = ecoAsset('dino-bite-burst')
+const featherPuffAsset = ecoAsset('dino-feather-puff')
+const tailStreakAsset = ecoAsset('dino-tail-streak')
 const babyBySpecies: Record<string, string> = {
   brachiosaurus: ecoAsset('baby-brachiosaurus'),
   stegosaurus: ecoAsset('baby-stegosaurus'),
@@ -73,12 +108,55 @@ const herbivoreSpecies = ['triceratops', 'stegosaurus', 'brachiosaurus'] as cons
 
 const living = (entity: EcoEntity) => !entity.dying && !entity.removed
 const isFern = (other: EcoEntity) => other.species === 'fern' && other.state !== 'grow'
+const isTree = (other: EcoEntity) =>
+  other.species === 'araucaria-tree' && other.state !== 'regrow' && (other.data.foliage ?? 1) > 0.2
 const isHerbivore = (other: EcoEntity) => herbivoreSpecies.includes(other.species as never)
 const isBabyHerbivore = (other: EcoEntity) => isHerbivore(other) && (other.data.baby ?? 0) > 0
 const isAdultHerbivore = (other: EcoEntity) => isHerbivore(other) && (other.data.baby ?? 0) <= 0
 const isEgg = (other: EcoEntity) => other.species === 'dino-nest'
 const isRaptor = (other: EcoEntity) => other.species === 'raptor'
 const isTrex = (other: EcoEntity) => other.species === 'trex'
+
+function spawnEffect(
+  world: EcoWorld,
+  species: string,
+  x: number,
+  y: number,
+  size?: number,
+  data: Record<string, number> = {},
+) {
+  return world.spawn(species, { countAs: null, data, size, x, y })
+}
+
+function backdropRect(world: EcoWorld, x: number, y: number, width: number, height: number) {
+  const mobile = world.width <= 767 || world.height > world.width * 1.25
+  const fit = mobile ? 0.86 : 1
+  const left = mobile ? x * fit - 190.4 : x
+  const top = mobile ? y * fit + 188.4 : y
+  const view = mobile ? { width: 430, height: 860 } : { width: 1200, height: 600 }
+  const scale = Math.max(world.width / view.width, world.height / view.height)
+  const offsetX = (world.width - view.width * scale) / 2
+
+  return {
+    width: width * fit * scale,
+    x: (left + (width * fit) / 2) * scale + offsetX,
+    y: (top + (height * fit) / 2) * scale,
+  }
+}
+
+function craterPoint(world: EcoWorld) {
+  const mobile = world.width <= 767 || world.height > world.width * 1.25
+  const view = mobile
+    ? { width: 430, height: 860, x: 96, y: 340 }
+    : { width: 1200, height: 600, x: 333, y: 176 }
+  const scale = Math.max(world.width / view.width, world.height / view.height)
+  const offsetX = (world.width - view.width * scale) / 2
+  const x = clamp(view.x * scale + offsetX, world.unit * 1.5, world.width - world.unit * 1.5)
+  const y = clamp(view.y * scale, world.skyTop + world.unit, world.groundY - world.unit * 3)
+
+  return { x, y, scale }
+}
+
 function clearTimedFx(entity: EcoEntity, dt: number) {
   if ((entity.data.hurt ?? 0) > 0) {
     entity.data.hurt = (entity.data.hurt ?? 0) - dt
@@ -117,22 +195,45 @@ function groundFlee(
 }
 
 function nearestFire(entity: EcoEntity, world: EcoWorld, reach = 5) {
-  return world.nearest(entity, (other) => world.has(other, 'fire'), world.unit * reach)
+  return world.nearest(
+    entity,
+    (other) => world.has(other, 'fire') && other.state !== 'cooled',
+    world.unit * reach,
+  )
 }
 
-function damage(entity: EcoEntity, world: EcoWorld, amount = 1, fromX = entity.x) {
+function damage(
+  entity: EcoEntity,
+  world: EcoWorld,
+  amount = 1,
+  fromX = entity.x,
+  attacker?: EcoEntity,
+) {
   if (!living(entity)) {
     return
   }
 
-  if (entity.species === 'brachiosaurus' && amount < 6) {
+  const edge = attacker ? world.edge(attacker, entity) : 1
+  const adjusted = Math.max(0.35, amount * edge)
+
+  if (attacker) {
+    spawnEffect(
+      world,
+      edge > 1 ? 'dino-bite-burst' : 'dino-dust',
+      entity.x,
+      entity.anchor === 'bottom' ? entity.y - world.heightOf(entity) * 0.45 : entity.y,
+      edge > 1 ? 2.3 : 1.8,
+    )
+  }
+
+  if (entity.species === 'brachiosaurus' && adjusted < 5.5) {
     entity.fx = 'dazed'
     entity.data.shake = 0.45
     world.tally('brachio-shrug')
     return
   }
 
-  entity.hp -= amount
+  entity.hp -= adjusted
   entity.fx = 'hurt'
   entity.data.hurt = 0.45
   entity.vx += (entity.x >= fromX ? 1 : -1) * world.unit * 1.8
@@ -175,6 +276,17 @@ function eatFern(plant: EcoEntity, world: EcoWorld) {
   plant.data.nibbled = 1
   plant.scale = 0.42
   world.setState(plant, 'grow')
+}
+
+function eatTreeFoliage(tree: EcoEntity, world: EcoWorld) {
+  tree.data.foliage = Math.max(0, (tree.data.foliage ?? 1) - between(0.28, 0.42))
+  tree.data.regrowAt = world.time + between(12, 20)
+  tree.fx = 'nibbled'
+
+  if ((tree.data.foliage ?? 0) <= 0.38) {
+    world.setAsset(tree, treeThinAsset)
+    world.setState(tree, 'regrow')
+  }
 }
 
 function layNest(entity: EcoEntity, world: EcoWorld, chancePerSecond: number, dt: number) {
@@ -423,6 +535,71 @@ const fern: EcoSpecies = {
   },
 }
 
+const araucariaTree: EcoSpecies = {
+  anchor: 'bottom',
+  asset: treeAsset,
+  burnTime: 4.5,
+  countAs: 'araucaria-tree',
+  idle: 'sway',
+  init(entity) {
+    entity.data.foliage = entity.data.foliage ?? 1
+    entity.data.regrowAt = entity.data.regrowAt ?? 0
+  },
+  layer: 'front',
+  rest(entity) {
+    entity.data.foliage = 1
+    entity.scale = 1
+    entity.state = 'ripe'
+  },
+  size: [7.2, 9.2],
+  state: 'ripe',
+  style: (entity) => ({
+    '--prehistoric-tree-foliage': `${clamp(entity.data.foliage ?? 1, 0.25, 1)}`,
+  }),
+  tags: ['plant', 'fuel', 'burnable'],
+  tick(entity, world, dt) {
+    if ((entity.data.burn ?? 0) > 0) {
+      world.setAsset(entity, treeCharredAsset)
+    }
+
+    if ((entity.data.foliage ?? 1) >= 1 && entity.fx === 'nibbled') {
+      entity.fx = ''
+    }
+
+    if (entity.state === 'regrow') {
+      const ready = (entity.data.regrowAt ?? 0) < world.time
+      entity.data.foliage = Math.min(1, (entity.data.foliage ?? 0.25) + dt * (ready ? 0.12 : 0.025))
+
+      if ((entity.data.foliage ?? 0) >= 0.88) {
+        entity.data.foliage = 1
+        entity.fx = ''
+        world.setAsset(entity, treeAsset)
+        world.setState(entity, 'ripe')
+      }
+    }
+
+    if (
+      world.canBreed() &&
+      entity.t > 9 &&
+      (entity.data.foliage ?? 1) > 0.85 &&
+      chance(0.012, dt) &&
+      !world.nearest(
+        entity,
+        (other) => other.species === 'araucaria-tree' && other !== entity,
+        world.unit * 10,
+      )
+    ) {
+      world.spawn('araucaria-tree', {
+        x: clamp(
+          entity.x + pick([-1, 1]) * between(7, 14) * world.unit,
+          world.unit * 2,
+          world.width - world.unit * 2,
+        ),
+      })
+    }
+  },
+}
+
 const trex: EcoSpecies = {
   anchor: 'bottom',
   asset: () => pick(trexAssets),
@@ -433,9 +610,11 @@ const trex: EcoSpecies = {
     entity.data.roarAt = between(3, 7)
   },
   layer: 'front',
-  size: [5.8, 7.2],
+  size: [9.2, 10.4],
   state: 'prowl',
+  strongVs: ['brachiosaurus', 'raptor', 'compy', 'pterodactyl', 'dino-nest'],
   tags: ['predator', 'burnable'],
+  weakTo: ['triceratops', 'stegosaurus'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -516,16 +695,46 @@ const trex: EcoSpecies = {
       settle(entity, dt)
       world.setAsset(entity, trexChompAsset)
 
-      if (entity.t > 0.52) {
+      if (entity.t > 0.18 && (entity.data.snapped ?? 0) <= 0) {
+        entity.data.snapped = 1
         const prey = world.byId(entity.targetId)
 
-        if (prey && Math.abs(prey.x - entity.x) < unit * 2.4 && prey.species !== 'brachiosaurus') {
-          world.kill(prey)
-          world.spawn('dino-scrap', { countAs: null, x: prey.x })
+        if (prey) {
+          spawnEffect(
+            world,
+            'dino-bite-burst',
+            prey.x,
+            prey.anchor === 'bottom' ? prey.y - world.heightOf(prey) * 0.48 : prey.y,
+            2.6,
+          )
+          spawnEffect(world, 'dino-dust', prey.x, prey.y, 2)
+        }
+      }
+
+      if (entity.t > 0.62) {
+        const prey = world.byId(entity.targetId)
+
+        if (prey && Math.abs(prey.x - entity.x) < unit * 2.6) {
+          const edge = world.edge(entity, prey)
+
+          if (edge >= 1.4 && prey.species !== 'brachiosaurus') {
+            world.kill(prey)
+          } else {
+            damage(prey, world, prey.species === 'brachiosaurus' ? 4 : 2.2, entity.x, entity)
+          }
+
+          if (prey.dying || prey.hp <= 0 || edge >= 1.4) {
+            world.spawn('dino-scrap', { countAs: null, x: prey.x })
+          } else {
+            prey.data.avoidX = entity.x
+            world.setState(prey, prey.species === 'pterodactyl' ? 'takeoff' : 'flee')
+          }
+
           world.tally('trex-kill')
           entity.data.hunger = 0
         }
 
+        entity.data.snapped = 0
         entity.targetId = null
         world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
         world.setState(entity, 'prowl')
@@ -537,7 +746,7 @@ const trex: EcoSpecies = {
     if (entity.state === 'charge' || entity.state === 'stalk') {
       const prey = world.byId(entity.targetId)
 
-      if (!prey || prey.species === 'brachiosaurus' || entity.t > 8) {
+      if (!prey || entity.t > 8 || world.matchup(entity, prey) === 'weak') {
         entity.targetId = null
         world.setAsset(entity, trexAssets[entity.data.variant ?? 0] ?? trexAssets[0])
         world.setState(entity, 'prowl')
@@ -590,8 +799,13 @@ const trex: EcoSpecies = {
         ) ??
         world.nearest(
           entity,
-          (other) => isAdultHerbivore(other) && other.species !== 'brachiosaurus',
+          (other) => isAdultHerbivore(other) && world.matchup(entity, other) !== 'weak',
           unit * 30,
+        ) ??
+        world.nearest(
+          entity,
+          (other) => other.species === 'brachiosaurus' && world.matchup(entity, other) === 'strong',
+          unit * 18,
         )
 
       if (prey) {
@@ -625,9 +839,11 @@ const triceratops: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [4.6, 5.7],
+  size: [7.1, 7.9],
   state: 'graze',
+  strongVs: ['trex'],
   tags: ['prey', 'burnable'],
+  weakTo: ['raptor', 'compy'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -652,8 +868,9 @@ const triceratops: EcoSpecies = {
       hop(entity, dt, unit * 0.25, 5)
 
       if (gap < unit * 1.7) {
-        damage(target, world, target.species === 'trex' ? 1 : 2, entity.x)
-        target.vx += entity.facing * unit * 5
+        damage(target, world, target.species === 'trex' ? 2.2 : 2, entity.x, entity)
+        target.vx += entity.facing * unit * 5 * world.edge(entity, target)
+        spawnEffect(world, 'dino-dust', target.x, target.y, 2.4)
         entity.data.meals = Math.max(0, (entity.data.meals ?? 0) - 1)
         entity.targetId = null
         world.tally('triceratops-charge')
@@ -688,6 +905,10 @@ const brachiosaurus: EcoSpecies = {
   asset: brachiosaurusAsset,
   hp: 10,
   init(entity, world) {
+    if (world.width > 0 && world.width < 500) {
+      entity.size = Math.min(entity.size, 15.2)
+    }
+
     entity.data.hunger = between(0.1, 0.6)
 
     if ((entity.data.baby ?? 0) > 0) {
@@ -698,9 +919,11 @@ const brachiosaurus: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [6.8, 8.4],
+  size: [15.2, 17.2],
   state: 'browse',
+  strongVs: ['raptor', 'compy', 'meganeura'],
   tags: ['prey'],
+  weakTo: ['trex'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -712,7 +935,20 @@ const brachiosaurus: EcoSpecies = {
     const fire = nearestFire(entity, world, 4.5)
 
     if (fire) {
+      entity.targetId = null
+      world.setAsset(entity, brachiosaurusAsset)
+      world.setState(entity, 'flee')
       groundFlee(entity, world, fire, dt)
+      return
+    }
+
+    if (entity.state === 'flee') {
+      walk(entity, world, dt, unit * 1.3)
+
+      if (entity.t > 2.5) {
+        world.setState(entity, 'browse')
+      }
+
       return
     }
 
@@ -730,8 +966,7 @@ const brachiosaurus: EcoSpecies = {
           (entry) => entry !== entity,
         )) {
           if (other.species === 'compy' || other.species === 'raptor') {
-            other.fx = 'dazed'
-            other.data.shake = 1
+            damage(other, world, 1.4, entity.x, entity)
             other.data.avoidX = entity.x
             world.setState(other, 'flee')
           } else if (other.species === 'meganeura') {
@@ -763,7 +998,69 @@ const brachiosaurus: EcoSpecies = {
 
     entity.data.hunger = (entity.data.hunger ?? 0) + dt / 12
 
+    if (entity.state === 'tree-eat') {
+      const tree = world.byId(entity.targetId)
+      settle(entity, dt)
+      world.setAsset(entity, brachiosaurusBrowseAsset)
+
+      if (!tree || !isTree(tree)) {
+        entity.targetId = null
+        world.setAsset(entity, brachiosaurusAsset)
+        world.setState(entity, 'browse')
+        return
+      }
+
+      face(entity, tree.x)
+
+      if (entity.t > 1.2 && (entity.data.browsed ?? 0) <= 0) {
+        entity.data.browsed = 1
+        eatTreeFoliage(tree, world)
+        spawnEffect(world, 'dino-dust', tree.x, tree.y - world.heightOf(tree) * 0.72, 1.8, {
+          life: 0.8,
+        })
+        entity.data.hunger = 0
+        entity.data.meals = (entity.data.meals ?? 0) + 1
+        world.tally('brachio-tree-browse')
+      }
+
+      if (entity.t > 3.4) {
+        entity.data.browsed = 0
+        entity.targetId = null
+        world.setAsset(entity, brachiosaurusAsset)
+        world.setState(entity, 'browse')
+      }
+
+      return
+    }
+
+    if (entity.state === 'tree-seek') {
+      const tree = world.byId(entity.targetId)
+
+      if (!tree || !isTree(tree)) {
+        entity.targetId = null
+        world.setState(entity, 'browse')
+        return
+      }
+
+      const side = entity.x <= tree.x ? -1 : 1
+      const goal = clamp(tree.x + side * unit * 1.4, unit, world.width - unit)
+
+      if (walkToward(entity, world, goal, unit * 0.82, dt) < unit * 0.8) {
+        world.setState(entity, 'tree-eat')
+      }
+
+      return
+    }
+
     if ((entity.data.hunger ?? 0) > 1.05) {
+      const tree = world.nearest(entity, isTree, unit * 28)
+
+      if (tree) {
+        entity.targetId = tree.id
+        world.setState(entity, 'tree-seek')
+        return
+      }
+
       const plant = world.nearest(entity, isFern, unit * 16)
 
       if (plant && Math.abs(plant.x - entity.x) < unit * 3.2) {
@@ -802,9 +1099,11 @@ const stegosaurus: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [4.8, 5.9],
+  size: [7.1, 7.9],
   state: 'graze',
+  strongVs: ['trex', 'raptor'],
   tags: ['prey', 'burnable'],
+  weakTo: ['compy'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -822,7 +1121,15 @@ const stegosaurus: EcoSpecies = {
         const target = world.byId(entity.targetId)
 
         if (target && Math.abs(target.x - entity.x) < unit * 3.6) {
-          damage(target, world, target.species === 'trex' ? 1 : 2, entity.x)
+          damage(target, world, target.species === 'trex' ? 2.1 : 2, entity.x, entity)
+          spawnEffect(
+            world,
+            'dino-tail-streak',
+            entity.x - entity.facing * unit * 2,
+            entity.y - world.heightOf(entity) * 0.42,
+            3,
+          )
+          target.vx += entity.facing * unit * 4 * world.edge(entity, target)
           world.tally('stego-tail-hit')
         }
       }
@@ -865,9 +1172,11 @@ const raptor: EcoSpecies = {
     entity.data.hunger = between(0.35, 0.9)
   },
   layer: 'front',
-  size: [2.8, 3.5],
+  size: [3.2, 3.8],
   state: 'prowl',
+  strongVs: ['triceratops', 'pterodactyl', 'compy', 'dino-nest'],
   tags: ['predator', 'burnable'],
+  weakTo: ['trex', 'stegosaurus', 'brachiosaurus'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -911,15 +1220,20 @@ const raptor: EcoSpecies = {
       hop(entity, dt, unit * 1.1, 8)
 
       if (gap < unit * 1.25) {
+        spawnEffect(world, 'dino-feather-puff', entity.x, entity.y - unit * 1.2, 2)
+
         if (target.species === 'dino-nest') {
           world.kill(target)
           world.tally('eggs-stolen')
-        } else if (isBabyHerbivore(target) || target.species === 'compy') {
+        } else if (
+          (isBabyHerbivore(target) || target.species === 'compy') &&
+          world.matchup(entity, target) !== 'weak'
+        ) {
           world.kill(target)
           world.tally('raptor-kill')
           entity.data.hunger = 0
         } else {
-          damage(target, world, 1, entity.x)
+          damage(target, world, packCount(entity, world) >= 2 ? 1.5 : 1, entity.x, entity)
           world.tally('raptor-pack-hit')
           entity.data.hunger = 0.2
         }
@@ -959,7 +1273,10 @@ const raptor: EcoSpecies = {
 
       if (target) {
         entity.targetId = target.id
-        world.setState(entity, pack >= 2 ? 'flank' : 'leap')
+        world.setState(
+          entity,
+          pack >= 2 || world.matchup(entity, target) === 'strong' ? 'flank' : 'leap',
+        )
         return
       }
     }
@@ -982,15 +1299,19 @@ const pterodactyl: EcoSpecies = {
     entity.data.hunger = between(0.2, 0.85)
   },
   layer: 'front',
-  size: [4.2, 5.4],
+  size: [3.9, 5.1],
   state: 'soar',
+  strongVs: ['meganeura', 'compy', 'dino-nest'],
   tags: ['predator', 'burnable'],
+  weakTo: ['raptor'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
     const volcanoThreat = world.nearest(
       entity,
-      (other) => other.species === 'volcano' && other.state === 'erupt',
+      (other) =>
+        (other.species === 'eruption' && other.state !== 'cool') ||
+        (other.species === 'volcano' && other.state === 'erupt'),
       unit * 20,
     )
 
@@ -1043,6 +1364,10 @@ const pterodactyl: EcoSpecies = {
         if (target.species === 'dino-nest') {
           world.kill(target)
           world.tally('eggs-stolen')
+        } else if (world.matchup(entity, target) === 'weak') {
+          damage(target, world, 0.7, entity.x, entity)
+          entity.data.avoidX = target.x
+          world.setState(entity, 'takeoff')
         } else {
           world.kill(target)
           world.tally(target.species === 'meganeura' ? 'ptero-dragonfly' : 'ptero-compy')
@@ -1116,9 +1441,11 @@ const compy: EcoSpecies = {
     entity.data.hunger = between(0.25, 0.85)
   },
   layer: 'front',
-  size: [1.3, 1.8],
+  size: [1.6, 2],
   state: 'skitter',
+  strongVs: ['dino-nest', 'dino-scrap', 'stegosaurus'],
   tags: ['prey', 'burnable'],
+  weakTo: ['pterodactyl', 'raptor', 'trex', 'meganeura'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
@@ -1165,7 +1492,13 @@ const compy: EcoSpecies = {
       }
 
       if (entity.t > 0.9) {
-        world.kill(food)
+        if (food.species === 'meganeura' && world.matchup(entity, food) === 'weak') {
+          damage(food, world, 0.5, entity.x, entity)
+        } else {
+          world.kill(food)
+        }
+
+        spawnEffect(world, 'dino-bite-burst', food.x, food.y, 1.3)
         world.tally(food.species === 'dino-nest' ? 'eggs-stolen' : 'compy-meal')
         entity.data.hunger = 0
         entity.targetId = null
@@ -1225,16 +1558,18 @@ const meganeura: EcoSpecies = {
     entity.data.breedAt = world.time + between(20, 34)
   },
   layer: 'front',
-  size: [1.8, 2.5],
+  size: [1.35, 1.55],
   state: 'zip',
+  strongVs: ['compy'],
   tags: ['insect', 'prey', 'burnable'],
+  weakTo: ['pterodactyl', 'raptor'],
   tick(entity, world, dt) {
     const unit = world.unit
     clearTimedFx(entity, dt)
     const threat = world.nearest(
       entity,
       (other) =>
-        other.species === 'compy' || other.species === 'pterodactyl' || world.has(other, 'fire'),
+        other.species === 'raptor' || other.species === 'pterodactyl' || world.has(other, 'fire'),
       unit * 7,
     )
 
@@ -1253,7 +1588,25 @@ const meganeura: EcoSpecies = {
         6,
       )
     } else {
-      const plant = world.nearest(entity, isFern, unit * 24)
+      entity.data.hunger = (entity.data.hunger ?? 0) + dt / 8
+      const smallPrey = world.nearest(entity, (other) => other.species === 'compy', unit * 10)
+      let hunting = false
+
+      if ((entity.data.hunger ?? 0) > 0.9 && smallPrey && chance(0.65, dt)) {
+        hunting = true
+        steer(entity, smallPrey.x, smallPrey.y - unit * 1.2, unit * 6.2, dt, 7)
+
+        if (Math.hypot(smallPrey.x - entity.x, smallPrey.y - entity.y) < unit * 1.4) {
+          damage(smallPrey, world, 0.9, entity.x, entity)
+          smallPrey.data.scatter = 1.4
+          smallPrey.data.avoidX = entity.x
+          world.setState(smallPrey, 'scatter')
+          entity.data.hunger = 0
+          world.tally('dragonfly-hunt')
+        }
+      }
+
+      const plant = hunting ? null : world.nearest(entity, isFern, unit * 24)
 
       if (plant && chance(0.35, dt)) {
         entity.data.goalX = plant.x + between(-3, 3) * unit
@@ -1261,7 +1614,17 @@ const meganeura: EcoSpecies = {
         entity.data.goalAt = world.time + between(1.8, 3.2)
       }
 
-      wander(entity, world, dt, unit * 4.4, world.groundY - unit * 10, world.groundY - unit * 2, 5)
+      if (!hunting) {
+        wander(
+          entity,
+          world,
+          dt,
+          unit * 4.4,
+          world.groundY - unit * 10,
+          world.groundY - unit * 2,
+          5,
+        )
+      }
     }
 
     integrate(entity, dt)
@@ -1348,6 +1711,373 @@ const dinoScrap: EcoSpecies = {
 
     if ((entity.data.life ?? 0) <= 0) {
       world.remove(entity)
+    }
+  },
+}
+
+const transientSprite = (
+  asset: string,
+  size: readonly [number, number],
+  state = 'burst',
+  layer: 'front' | 'back' = 'front',
+): EcoSpecies => ({
+  anchor: 'center',
+  asset,
+  countAs: null,
+  init(entity) {
+    entity.data.life = entity.data.life ?? between(0.45, 0.9)
+  },
+  layer,
+  size,
+  state,
+  tags: [],
+  tick(entity, world, dt) {
+    entity.data.life = (entity.data.life ?? 0.6) - dt
+    entity.scale += dt * (entity.data.grow ?? 0.35)
+    entity.data.opacity = clamp((entity.data.life ?? 0) / 0.8, 0, 1)
+
+    if ((entity.data.life ?? 0) <= 0) {
+      world.remove(entity)
+    }
+  },
+})
+
+const dinoDust = transientSprite(dustAsset, [1.8, 3.2], 'dust')
+const dinoBiteBurst = transientSprite(biteBurstAsset, [1.3, 2.5], 'burst')
+const dinoFeatherPuff = transientSprite(featherPuffAsset, [1.4, 2.4], 'feathers')
+const dinoTailStreak = transientSprite(tailStreakAsset, [2.8, 4.2], 'streak')
+
+const lavaFlow: EcoSpecies = {
+  anchor: 'center',
+  asset: lavaFlowAsset,
+  countAs: null,
+  init(entity) {
+    entity.data.life = entity.data.life ?? between(8, 12)
+    entity.data.coolAt = entity.data.coolAt ?? between(4.5, 6.5)
+    entity.tilt = entity.data.tilt ?? between(-8, 8)
+  },
+  layer: 'front',
+  size: [8, 18],
+  state: 'flow',
+  tags: ['fire', 'projectile'],
+  tick(entity, world, dt) {
+    entity.data.life = (entity.data.life ?? 10) - dt
+
+    if (entity.state !== 'cooled') {
+      if (entity.data.goalX !== undefined && entity.data.goalY !== undefined) {
+        steer(
+          entity,
+          entity.data.goalX,
+          entity.data.goalY,
+          entity.data.speed ?? world.unit * 14,
+          dt,
+          3.5,
+        )
+        integrate(entity, dt)
+      } else {
+        entity.x += (entity.data.drift ?? 0) * dt
+      }
+
+      burnNearby(entity, world, world.unit * (entity.data.radius ?? 4.6), 9)
+
+      if (entity.t > (entity.data.coolAt ?? 5)) {
+        world.setAsset(entity, cooledLavaAsset)
+        world.setState(entity, 'cooled')
+      }
+    }
+
+    if ((entity.data.life ?? 0) <= 0) {
+      world.remove(entity)
+    }
+  },
+}
+
+const lavaFlank = (asset: string): EcoSpecies => ({
+  anchor: 'center',
+  asset,
+  countAs: null,
+  init(entity) {
+    entity.data.coolAt = entity.data.coolAt ?? 6.8
+    entity.data.life = entity.data.life ?? entity.data.coolAt + 3.4
+    entity.data.progress = 0
+  },
+  layer: 'front',
+  size: [8, 13],
+  state: 'flow',
+  style: (entity) => ({
+    '--prehistoric-lava-progress': `${clamp(entity.data.progress ?? 1, 0, 1)}`,
+  }),
+  tags: ['fire', 'projectile'],
+  tick(entity, world, dt) {
+    entity.data.life = (entity.data.life ?? 10) - dt
+    entity.data.progress = Math.min(1, (entity.data.progress ?? 0) + dt * 0.5)
+
+    if (entity.state !== 'cooled') {
+      burnNearby(entity, world, world.unit * 3.8, 8)
+
+      if (entity.t > (entity.data.coolAt ?? 6.8)) {
+        world.setState(entity, 'cooled')
+      }
+    }
+
+    if ((entity.data.life ?? 0) <= 0) {
+      world.remove(entity)
+    }
+  },
+})
+
+const lavaFlankLeft = lavaFlank(lavaFlankLeftAsset)
+const lavaFlankRight = lavaFlank(lavaFlankRightAsset)
+
+function burnGroundSheet(entity: EcoEntity, world: EcoWorld) {
+  const width = world.widthOf(entity) * clamp(entity.data.progress ?? 1, 0, 1)
+  const left = entity.x - world.widthOf(entity) * 0.5
+  const right = left + width
+  const top = entity.y - world.heightOf(entity) * 0.65
+  const bottom = entity.y + world.heightOf(entity) * 0.45
+
+  for (const other of world.within(
+    entity.x,
+    entity.y,
+    world.widthOf(entity) * 0.56,
+    (entry) => entry !== entity,
+  )) {
+    if (world.has(other, 'fire')) {
+      continue
+    }
+
+    if (other.x < left || other.x > right || other.y < top || other.y > bottom + world.unit * 4) {
+      continue
+    }
+
+    if (world.has(other, 'fuel')) {
+      other.data.burn = Math.max(other.data.burn ?? 0, 0.2)
+    }
+
+    if (world.has(other, 'burnable') || other.species === 'brachiosaurus') {
+      damage(other, world, 9, entity.x)
+      world.tally('lava-hit')
+    }
+  }
+}
+
+const lavaGroundSheet: EcoSpecies = {
+  anchor: 'center',
+  asset: lavaGroundSheetAsset,
+  countAs: null,
+  init(entity) {
+    entity.data.coolAt = entity.data.coolAt ?? 7.2
+    entity.data.life = entity.data.life ?? entity.data.coolAt + 3.4
+    entity.data.progress = 0
+    entity.tilt = between(-1.5, 1.5)
+  },
+  layer: 'front',
+  size: [15, 24],
+  state: 'flow',
+  style: (entity) => ({
+    '--prehistoric-lava-progress': `${clamp(entity.data.progress ?? 1, 0, 1)}`,
+  }),
+  tags: ['fire', 'projectile'],
+  tick(entity, world, dt) {
+    entity.data.life = (entity.data.life ?? 11) - dt
+    entity.data.progress = Math.min(
+      1,
+      (entity.data.progress ?? 0) + dt * (entity.data.rate ?? 0.22),
+    )
+
+    if (entity.state !== 'cooled') {
+      burnGroundSheet(entity, world)
+
+      if (entity.t > (entity.data.coolAt ?? 7.2)) {
+        world.setState(entity, 'cooled')
+      }
+    }
+
+    if ((entity.data.life ?? 0) <= 0) {
+      world.remove(entity)
+    }
+  },
+}
+
+function launchBackdropLava(world: EcoWorld, x: number, y: number, mega = 1) {
+  const unit = world.unit
+  const targetX = clamp(x + between(-22, 28) * unit, unit, world.width - unit)
+  const targetY = world.groundY - between(0.2, 1.8) * unit
+  const arc = ballistic(
+    x + between(-1.8, 1.8) * unit,
+    y,
+    targetX,
+    targetY,
+    between(1.0, 1.9),
+    unit * 20,
+  )
+
+  world.spawn('lava-bomb', {
+    countAs: null,
+    data: { gravity: unit * 20, mega },
+    vx: arc.vx,
+    vy: arc.vy,
+    x,
+    y,
+  })
+}
+
+function spawnLavaRiver(world: EcoWorld, x: number, y: number, index: number) {
+  const unit = world.unit
+  const mobile = world.width <= 767 || world.height > world.width * 1.25
+
+  if (index === 1 || index === 2) {
+    const rect =
+      index === 1
+        ? backdropRect(world, 160, 170, 188, 188)
+        : backdropRect(world, 316, 170, 190, 188)
+    const flow = world.spawn(index === 1 ? 'lava-flank-left' : 'lava-flank-right', {
+      countAs: null,
+      data: {
+        coolAt: between(6.5, 8.2),
+      },
+      facing: 1,
+      size: rect.width / unit,
+      x: rect.x,
+      y: rect.y,
+    })
+
+    if (flow) {
+      flow.data.zBoost = -70
+    }
+
+    return
+  }
+
+  if (index > 5) {
+    return
+  }
+
+  const baseX = clamp(x - unit * (mobile ? 5.4 : 9.2), unit * -1, world.width - unit)
+  const width = Math.min(world.width * (mobile ? 0.72 : 0.52), unit * (mobile ? 22 : 30))
+  const xOffset = (index - 3) * unit * (mobile ? 2.6 : 4.2)
+  const sheet = world.spawn('lava-ground-sheet', {
+    countAs: null,
+    facing: 1,
+    data: {
+      coolAt: between(7, 9),
+      rate: between(0.18, 0.27),
+    },
+    size: (width * between(0.7, 1)) / unit,
+    x: clamp(baseX + width * 0.42 + xOffset, unit, world.width - unit),
+    y: world.groundY - unit * between(mobile ? 4.6 : 3.9, mobile ? 5.8 : 5.1),
+  })
+
+  if (sheet) {
+    sheet.data.zBoost = 110 + index
+  }
+}
+
+const eruption: EcoSpecies = {
+  anchor: 'center',
+  asset: dinoEruptionAsset,
+  countAs: 'eruption',
+  init(entity, world) {
+    const crater = craterPoint(world)
+    entity.x = crater.x
+    entity.y = crater.y
+    entity.size = clamp(world.width / world.unit / 5.8, 9, 15)
+    entity.data.craterX = crater.x
+    entity.data.craterY = crater.y
+    entity.data.burst = 0
+    entity.data.river = 0
+    entity.data.life = 12
+    entity.data.zBoost = 500
+  },
+  layer: 'front',
+  size: [9, 15],
+  state: 'rumble',
+  tags: ['fire'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    const crater = craterPoint(world)
+    entity.x = crater.x
+    entity.y = crater.y
+    entity.data.life = (entity.data.life ?? 12) - dt
+
+    for (const other of world.within(
+      entity.x,
+      world.groundY,
+      unit * 26,
+      (entry) => entry !== entity,
+    )) {
+      if (
+        other.species === 'dino-nest' ||
+        other.species === 'araucaria-tree' ||
+        other.species === 'fern' ||
+        world.has(other, 'projectile')
+      ) {
+        continue
+      }
+
+      if (entity.state === 'rumble' || entity.t < 3.5) {
+        other.data.avoidX = entity.x
+        other.targetId = null
+        world.setState(other, other.species === 'pterodactyl' ? 'takeoff' : 'flee')
+      }
+    }
+
+    if (entity.state === 'rumble') {
+      if ((entity.data.rumbled ?? 0) <= 0) {
+        entity.data.rumbled = 1
+        spawnEffect(world, 'dino-dust', entity.x, world.groundY - unit * 2, 4.2, { life: 1.2 })
+      }
+
+      if (entity.t > 1.2) {
+        world.setState(entity, 'erupt')
+      }
+
+      return
+    }
+
+    if (entity.state === 'erupt') {
+      if ((entity.data.burst ?? 0) <= 0) {
+        entity.data.burst = 1
+        world.tally('volcano-eruption')
+
+        for (let index = 0; index < 9; index += 1) {
+          world.spawn('dino-ash', {
+            countAs: null,
+            data: {
+              driftX: between(-0.55, 0.35) * unit,
+              driftY: -between(0.35, 0.9) * unit,
+              life: between(6.5, 9.5),
+              zBoost: 8500,
+            },
+            size: between(6.8, 13.5),
+            x: entity.x + between(-3.8, 3.8) * unit,
+            y: entity.y - between(1.2, 8) * unit,
+          })
+        }
+
+        for (let index = 0; index < 12; index += 1) {
+          launchBackdropLava(world, entity.x, entity.y, 1)
+        }
+      }
+
+      if (entity.t > 0.55 && (entity.data.river ?? 0) < 8) {
+        entity.data.river = (entity.data.river ?? 0) + 1
+        spawnLavaRiver(world, entity.x, entity.y, entity.data.river)
+      }
+
+      if (entity.t > 5.8) {
+        world.setState(entity, 'cool')
+      }
+
+      return
+    }
+
+    if (entity.state === 'cool') {
+      entity.scale = Math.max(0.7, entity.scale - dt * 0.05)
+
+      if ((entity.data.life ?? 0) <= 0) {
+        world.remove(entity)
+      }
     }
   },
 }
@@ -1468,22 +2198,191 @@ const dinoAsh: EcoSpecies = {
   countAs: null,
   init(entity) {
     entity.data.opacity = 1
+    entity.data.life = entity.data.life ?? between(6, 9)
   },
   layer: 'back',
-  size: [28, 34],
+  size: [6, 14],
   state: 'spread',
   style: (entity) => ({
     '--prehistoric-ash-opacity': `${Math.max(0, entity.data.opacity ?? 1)}`,
   }),
   tags: [],
   tick(entity, world, dt) {
-    entity.data.life = (entity.data.life ?? 10) - dt
-    entity.data.opacity = clamp((entity.data.life ?? 0) / 10, 0, 1)
-    entity.x = world.width / 2
-    entity.y = world.height * 0.28
+    const life = entity.data.life ?? 8
+    entity.data.life = life - dt
+    entity.data.opacity = clamp((entity.data.life ?? 0) / 8, 0, 0.92)
+    entity.x += (entity.data.driftX ?? world.wind * 0.04) * dt
+    entity.y += (entity.data.driftY ?? -world.unit * 0.28) * dt
+    entity.scale += dt * 0.025
 
     if ((entity.data.life ?? 0) <= 0) {
       world.remove(entity)
+    }
+  },
+}
+
+function dinoStarTilt(entity: EcoEntity) {
+  entity.tilt = clamp(
+    (Math.atan2(entity.vy, Math.max(1, Math.abs(entity.vx))) * 180) / Math.PI,
+    -8,
+    42,
+  )
+}
+
+function launchDinoStar(entity: EcoEntity, world: EcoWorld) {
+  entity.x = between(-world.width * 0.12, world.width * 0.42)
+  entity.y = between(world.skyTop + world.unit, Math.min(world.height * 0.24, world.skyBottom))
+  entity.vx = world.width * between(0.52, 0.68)
+  entity.vy = world.height * between(0.1, 0.17)
+  entity.data.life = between(1.15, 1.55)
+  entity.data.opacity = 0
+  dinoStarTilt(entity)
+}
+
+function triggerDinoImpact(entity: EcoEntity, world: EcoWorld) {
+  const impact = world.spawn('dino-impact', {
+    countAs: null,
+    data: { siteX: clamp(entity.x, 0, world.width) },
+    x: clamp(entity.x, world.unit * 2, world.width - world.unit * 2),
+    y: world.groundY + world.unit * 0.5,
+  })
+
+  if (impact) {
+    impact.data.zBoost = world.height * 4
+  }
+
+  for (const other of [...world.entities]) {
+    if (other === impact || other === entity || other.dying || other.removed) {
+      continue
+    }
+
+    if (other.species === 'dino-nest') {
+      other.data.warm = 1
+      other.data.hatchAt = Math.min(other.data.hatchAt ?? 36, 12)
+      other.fx = 'wobble'
+      continue
+    }
+
+    if (other.species === 'araucaria-tree' || other.species === 'fern') {
+      other.data.burn = Math.max(other.data.burn ?? 0, 0.4)
+      continue
+    }
+
+    world.kill(other)
+  }
+
+  world.remove(entity)
+}
+
+const dinoShootingStar: EcoSpecies = {
+  anchor: 'center',
+  asset: dinoShootingStarAsset,
+  countAs: 'shooting-star',
+  init(entity, world) {
+    const launched = world.tally('shooting-star')
+    entity.data.turnAt = between(0.36, 0.62)
+    entity.data.asteroid = launched >= asteroidStarCount ? 1 : 0
+
+    if (entity.data.asteroid) {
+      world.resetTally('shooting-star')
+    }
+
+    entity.size = between(5.4, 7.2)
+    entity.facing = 1
+    launchDinoStar(entity, world)
+  },
+  layer: 'front',
+  rest(entity) {
+    entity.data.opacity = 0.9
+  },
+  size: [5.4, 7.2],
+  state: 'shoot',
+  style: (entity) => ({
+    '--dino-star-opacity': `${entity.data.opacity ?? 1}`,
+  }),
+  tags: ['star'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+
+    if (entity.state === 'asteroid') {
+      const impactX =
+        entity.data.impactX ?? clamp(entity.x + world.width * 0.22, unit, world.width - unit)
+      const impactY = world.groundY + unit * 0.4
+      steer(entity, impactX, impactY, unit * 18, dt, 1.6)
+      entity.vy += unit * 20 * dt
+      integrate(entity, dt)
+      const approach = clamp(entity.y / Math.max(1, impactY), 0, 1)
+      entity.size = 5.5 + approach * (entity.data.asteroidMax ?? 8)
+      entity.scale = 1 + approach * 0.3
+      tiltToVelocity(entity, 82)
+      entity.data.opacity = 1
+
+      for (const other of world.within(
+        entity.x,
+        entity.y,
+        unit * 30,
+        (entry) => entry !== entity,
+      )) {
+        if (other.species === 'pterodactyl') {
+          other.data.avoidX = entity.x
+          world.setState(other, 'takeoff')
+        } else if (other.anchor === 'bottom' && other.species !== 'dino-nest') {
+          other.fx = 'dazed'
+          other.data.shake = Math.max(other.data.shake ?? 0, 0.35)
+        }
+      }
+
+      if (entity.y >= impactY || entity.x < -unit * 10 || entity.x > world.width + unit * 10) {
+        triggerDinoImpact(entity, world)
+      }
+
+      return
+    }
+
+    if ((entity.data.asteroid ?? 0) > 0 && entity.t > (entity.data.turnAt ?? 0.5)) {
+      world.setAsset(entity, dinoAsteroidAsset)
+      world.setState(entity, 'asteroid')
+      entity.data.impactX = clamp(
+        entity.x + between(0.16, 0.34) * world.width,
+        unit,
+        world.width - unit,
+      )
+      entity.vx *= 0.42
+      entity.vy = unit * between(8, 12)
+      entity.size = 5
+      entity.scale = 1
+      entity.data.asteroidMax = between(7, 9)
+      entity.data.opacity = 1
+      return
+    }
+
+    if (entity.state === 'wait') {
+      entity.data.opacity = 0
+
+      if (entity.t > (entity.data.waitFor ?? 5)) {
+        launchDinoStar(entity, world)
+        world.setAsset(entity, dinoShootingStarAsset)
+        world.setState(entity, 'shoot')
+      }
+
+      return
+    }
+
+    integrate(entity, dt)
+    dinoStarTilt(entity)
+    const life = entity.data.life ?? 1.4
+    const fadeIn = clamp(entity.t / 0.08, 0, 1)
+    const fadeOut = clamp((life - entity.t) / 0.32, 0, 1)
+    entity.data.opacity = Math.min(fadeIn, fadeOut)
+
+    if (
+      entity.t > life ||
+      entity.x > world.width + world.widthOf(entity) ||
+      entity.y > world.height * 0.48
+    ) {
+      entity.data.opacity = 0
+      entity.data.waitFor = between(4, 7.5)
+      world.setState(entity, 'wait')
     }
   },
 }
@@ -1511,13 +2410,21 @@ const dinoImpact: EcoSpecies = {
   tick(entity, world, dt) {
     if ((entity.data.dust ?? 0) <= 0) {
       entity.data.dust = 1
-      world.spawn('dino-ash', {
-        countAs: null,
-        data: { life: 9, zBoost: 9000 },
-        size: Math.max(28, world.width / world.unit),
-        x: world.width / 2,
-        y: world.height * 0.3,
-      })
+
+      for (let index = 0; index < 12; index += 1) {
+        world.spawn('dino-ash', {
+          countAs: null,
+          data: {
+            driftX: between(-0.8, 0.8) * world.unit,
+            driftY: -between(0.15, 0.55) * world.unit,
+            life: between(7.5, 10),
+            zBoost: 9000,
+          },
+          size: between(8, 16),
+          x: clamp(entity.x + between(-18, 18) * world.unit, world.unit, world.width - world.unit),
+          y: world.height * between(0.18, 0.42),
+        })
+      }
 
       for (let index = 0; index < 8; index += 1) {
         const fire = world.spawn('fire', {
@@ -1546,18 +2453,29 @@ const dinoImpact: EcoSpecies = {
 }
 
 export const prehistoricSpecies: EcoSpeciesMap = {
+  'araucaria-tree': araucariaTree,
+  'cooled-lava': lavaFlow,
+  'dino-bite-burst': dinoBiteBurst,
   'dino-impact': dinoImpact,
   'dino-ash': dinoAsh,
+  'dino-dust': dinoDust,
+  'dino-feather-puff': dinoFeatherPuff,
   'dino-nest': dinoNest,
   'dino-scrap': dinoScrap,
+  'dino-tail-streak': dinoTailStreak,
   brachiosaurus,
   compy,
+  eruption,
   fern,
+  'lava-flank-left': lavaFlankLeft,
+  'lava-flank-right': lavaFlankRight,
+  'lava-flow': lavaFlow,
   'lava-bomb': lavaBomb,
+  'lava-ground-sheet': lavaGroundSheet,
   meganeura,
   pterodactyl,
   raptor,
-  'shooting-star': shootingStar,
+  'shooting-star': dinoShootingStar,
   stegosaurus,
   trex,
   triceratops,
