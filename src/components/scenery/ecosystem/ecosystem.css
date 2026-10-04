@@ -278,27 +278,31 @@
 }
 
 .ecoTelegraph {
-  background: color-mix(in srgb, var(--warning) 30%, transparent);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
   border: 0.125rem solid color-mix(in srgb, var(--warning) 86%, var(--scene-text));
   border-radius: 999rem;
   box-shadow:
-    inset 0 0 0 999rem color-mix(in srgb, var(--warning) 24%, transparent),
+    inset 0 0 0 999rem color-mix(in srgb, var(--warning) 8%, transparent),
     0 0 0.55rem color-mix(in srgb, var(--scene-text) 18%, transparent);
   display: none;
-  height: var(--eco-cast-width, 2rem);
-  left: 0;
-  opacity: 0.96;
+  height: clamp(0.58rem, calc(var(--eco-cast-width, 2rem) * 0.2), 1.35rem);
+  left: 50%;
+  opacity: 0.9;
   overflow: hidden;
   pointer-events: none;
   position: absolute;
-  top: -0.35rem;
+  top: -0.42rem;
   transform-origin: left center;
   width: var(--eco-cast-range, 4rem);
   z-index: 1;
 }
 
 .ecoTelegraph::after {
-  background: color-mix(in srgb, var(--accent) 46%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 26%, transparent),
+    color-mix(in srgb, var(--warning) 18%, transparent)
+  );
   content: '';
   inset: 0;
   position: absolute;
@@ -329,12 +333,18 @@
 }
 
 .ecoThing[data-cast-shape='circle'] .ecoTelegraph,
+.ecoThing[data-cast-shape='ellipse'] .ecoTelegraph,
 .ecoThing[data-cast-shape='self'] .ecoTelegraph {
-  aspect-ratio: 1;
   border-radius: 999rem;
-  height: var(--eco-cast-range, 5rem);
+  height: clamp(0.78rem, calc(var(--eco-cast-range, 5rem) * 0.18), 2rem);
   transform: translate(-50%, -50%);
   width: var(--eco-cast-range, 5rem);
+}
+
+.ecoThing[data-cast-shape='ellipse'] .ecoTelegraph {
+  aspect-ratio: auto;
+  height: clamp(0.9rem, calc(var(--eco-cast-width, 3rem) * 0.32), 2.4rem);
+  width: var(--eco-cast-range, 8rem);
 }
 
 .ecoThing[data-cast-shape='cone'] .ecoTelegraph {
@@ -347,14 +357,6 @@
   border-radius: 999rem 0 0 999rem;
   clip-path: polygon(100% 50%, 0 0, 0 100%);
   transform: translate(-100%, -50%);
-}
-
-.ecoThing[data-cast-phase='windup'] .ecoPose {
-  filter: drop-shadow(0 0 0.45rem color-mix(in srgb, var(--warning) 42%, transparent));
-}
-
-.ecoThing[data-cast-phase='active'] .ecoPose {
-  filter: brightness(1.16) saturate(1.1);
 }
 
 .ecoThing[data-health-tone='warn'] .ecoHealthFill {
@@ -615,6 +617,11 @@
   border-color: color-mix(in srgb, var(--warning) 58%, var(--scene-text));
 }
 
+.ecoAbilityButton[data-denied] {
+  animation: ecoAbilityDenied 0.46s ease-out;
+  border-color: color-mix(in srgb, var(--error) 58%, var(--scene-text));
+}
+
 .ecoAbilityButton::before {
   background: conic-gradient(
     color-mix(in srgb, var(--scene-text) 46%, transparent) calc(var(--eco-cooldown, 0) * 1turn),
@@ -631,6 +638,20 @@
 
 .ecoAbilityButton[data-cooling]::before {
   opacity: 1;
+}
+
+.ecoAbilityButton[data-charge]::after {
+  background: conic-gradient(
+    color-mix(in srgb, var(--warning) 82%, var(--scene-text)) calc(var(--eco-charge, 0) * 1turn),
+    transparent 0
+  );
+  border-radius: inherit;
+  content: '';
+  inset: 0;
+  opacity: calc(var(--eco-charge, 0) * 0.92);
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
 }
 
 .ecoAbilityButton[data-locked] {
@@ -898,11 +919,13 @@
   filter: sepia(0.5) saturate(1.6) brightness(0.8);
 }
 
-.ecoThing[data-fx='hurt'] .ecoArt {
+.ecoThing[data-fx='hurt'] .ecoArt,
+.ecoThing[data-fx='hurt'] .ecoDinoSvg {
   animation: ecoHurt 0.45s ease-out;
 }
 
-.ecoThing[data-hit] .ecoArt {
+.ecoThing[data-hit] .ecoArt,
+.ecoThing[data-hit] .ecoDinoSvg {
   animation: ecoHurt 0.45s ease-out;
 }
 
@@ -950,14 +973,14 @@
 }
 
 .ecoFloat--banner {
-  animation: ecoSkillBanner 1.05s ease-out forwards;
-  background: var(--scene-panel-fill);
-  border: 0.12rem solid color-mix(in srgb, var(--warning) 64%, var(--scene-text));
+  animation: ecoSkillBanner 0.52s ease-out forwards;
+  background: color-mix(in srgb, var(--scene-panel-fill) 94%, transparent);
+  border: 0.08rem solid color-mix(in srgb, var(--warning) 50%, var(--scene-text));
   border-radius: 999rem;
   box-shadow: var(--bakery-shadow-panelFloat);
   color: var(--scene-text);
-  font-size: clamp(1rem, 2.2vw, 1.42rem);
-  padding: 0.42rem 0.84rem;
+  font-size: clamp(0.64rem, 1.35vw, 0.86rem);
+  padding: 0.2rem 0.5rem;
   -webkit-text-stroke: 0;
   white-space: nowrap;
 }
@@ -1055,7 +1078,7 @@
 }
 
 .ecoThing[data-dying] .ecoPose {
-  animation: ecoVanish 0.42s ease-in forwards;
+  animation: ecoVanish 0.58s ease-in forwards;
 }
 
 .ecoThing[data-fx='carried'] .ecoArt {
@@ -1318,6 +1341,29 @@
   }
 }
 
+@keyframes ecoAbilityDenied {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  18% {
+    transform: translateX(-0.18rem);
+  }
+
+  36% {
+    transform: translateX(0.18rem);
+  }
+
+  54% {
+    transform: translateX(-0.12rem);
+  }
+
+  72% {
+    transform: translateX(0.12rem);
+  }
+}
+
 @keyframes ecoFloatRise {
   0% {
     opacity: 0;
@@ -1343,18 +1389,18 @@
 @keyframes ecoSkillBanner {
   0% {
     opacity: 0;
-    transform: translate(-50%, 0.8rem) scale(0.82);
+    transform: translate(-50%, 0.25rem) scale(0.86);
   }
 
-  18%,
-  72% {
+  22%,
+  58% {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, -0.8rem) scale(0.96);
+    transform: translate(-50%, -0.35rem) scale(0.95);
   }
 }
 

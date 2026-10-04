@@ -142,7 +142,7 @@ export type EcoControlAbilityKey = 'q' | 'w' | 'e' | 'r'
 export type EcoTelegraph = {
   angle?: number
   range: number
-  shape: 'circle' | 'cone' | 'line' | 'self'
+  shape: 'circle' | 'cone' | 'ellipse' | 'line' | 'self'
   width?: number
 }
 
@@ -158,6 +158,7 @@ export type EcoControlCast = {
   phase: EcoControlCastPhase
   phaseElapsed: number
   queuedKey: EcoControlAbilityKey | null
+  releaseRequested: boolean
   startX: number
   startY: number
 }
@@ -177,6 +178,8 @@ export type EcoControlAbilityContext = {
 
 export type EcoControlAbility = {
   active?: number
+  archetype?: string
+  charge?: { max: number; min?: number }
   cooldown: number
   description: string
   dash?: number
@@ -239,6 +242,7 @@ export type EcoWorld = {
     maxDistance?: number,
   ): EcoEntity | null
   remove(entity: EcoEntity): void
+  releaseControlAbility(key: EcoControlAbilityKey): boolean
   resetTally(key: string): void
   setAsset(entity: EcoEntity, asset: string): void
   shake(amount?: number): void
@@ -303,6 +307,9 @@ export type EcoControlBuffView = {
 }
 
 export type EcoControlAbilityView = {
+  archetype?: string
+  chargeProgress: number
+  chargeable: boolean
   cooldown: number
   cooldownLeft: number
   description: string

@@ -11,6 +11,7 @@ import type {
 } from './types'
 
 type NodeCache = {
+  attack: string
   fx: string
   hitFlash: number
   healthUntil: number
@@ -157,6 +158,7 @@ export class EcosystemStore {
     }
 
     this.nodes.set(id, {
+      attack: '',
       fx: '',
       hitFlash: 0,
       healthUntil: 0,
@@ -336,6 +338,14 @@ export class EcosystemStore {
     }
   }
 
+  releaseAbility = (key: EcoControlAbilityKey) => {
+    const engine = this.engine
+
+    if (engine?.releaseControlAbility(key)) {
+      this.publish()
+    }
+  }
+
   setFollowCursor = (followCursor: boolean) => {
     this.engine?.setControlInput({ followCursor })
     this.publish()
@@ -411,7 +421,7 @@ export class EcosystemStore {
     const element = document.createElement('span')
     const width = host.clientWidth || this.layers.front?.clientWidth || 0
     const height = host.clientHeight || this.layers.front?.clientHeight || 0
-    const pad = effect.type === 'banner' ? 88 : 36
+    const pad = effect.type === 'banner' ? 54 : 36
     const rawX = effect.x - (effect.type === 'banner' ? 0 : this.offset.x)
     const rawY = effect.y - (effect.type === 'banner' ? 0 : this.offset.y)
     const x = width ? Math.min(Math.max(rawX, pad), width - pad) : rawX
@@ -433,7 +443,7 @@ export class EcosystemStore {
     }
 
     host.append(element)
-    window.setTimeout(() => element.remove(), effect.type === 'banner' ? 1100 : 900)
+    window.setTimeout(() => element.remove(), effect.type === 'banner' ? 520 : 900)
   }
 
   private placePopover(root: HTMLElement, x: number, y: number, width: number) {
@@ -514,6 +524,31 @@ export class EcosystemStore {
       node.root.dataset.fx = entity.fx
     }
 
+    const attackCode = entity.data.attackKind ?? 7
+    const attack =
+      (entity.data.attackTimer ?? 0) > 0
+        ? ((
+            {
+              1: 'bite',
+              2: 'tail',
+              3: 'charge',
+              4: 'stomp',
+              5: 'dive',
+              6: 'gust',
+              7: 'strike',
+            } as Record<number, string>
+          )[attackCode] ?? 'strike')
+        : ''
+
+    if (node.attack !== attack) {
+      node.attack = attack
+      if (attack) {
+        node.root.dataset.attack = attack
+      } else {
+        delete node.root.dataset.attack
+      }
+    }
+
     node.root.dataset.facing = String(entity.facing)
     node.root.style.setProperty(
       '--eco-overlay-shift',
@@ -525,7 +560,7 @@ export class EcosystemStore {
     if (node.hitFlash !== hitFlash) {
       node.hitFlash = hitFlash
       node.root.dataset.hit = hitFlash > 0 ? String(Math.round(hitFlash * 1000)) : ''
-      const art = node.root.querySelector<HTMLElement>('.ecoArt')
+      const art = node.root.querySelector<HTMLElement>('.ecoArt, .ecoDinoSvg')
 
       if (art && hitFlash > 0) {
         art.style.animation = 'none'
@@ -540,6 +575,7 @@ export class EcosystemStore {
       : null
 
     if (cast && ability) {
+      node.root.dataset.castKey = ability.key
       node.root.dataset.castPhase = cast.phase
       node.root.dataset.castShape = ability.telegraph?.shape ?? 'self'
       node.root.dataset.castVfx = ability.vfx ?? 'buff'
@@ -557,6 +593,7 @@ export class EcosystemStore {
       )
       node.root.style.setProperty('--eco-cast-angle', `${ability.telegraph?.angle ?? 60}deg`)
     } else {
+      delete node.root.dataset.castKey
       delete node.root.dataset.castPhase
       delete node.root.dataset.castShape
       delete node.root.dataset.castVfx
@@ -635,6 +672,12 @@ export class EcosystemStore {
         controlled && controlledDefinition?.controls
           ? {
               abilities: controlledDefinition.controls.abilities.map((ability) => ({
+                archetype: ability.archetype,
+                chargeable: Boolean(ability.charge),
+                chargeProgress:
+                  castKey === ability.key && controlled.controlCast?.phase === 'windup'
+                    ? Math.max(0, Math.min(1, controlled.data.controlCastProgress ?? 0))
+                    : 0,
                 cooldown: ability.cooldown,
                 cooldownLeft: Math.max(
                   0,

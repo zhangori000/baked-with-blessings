@@ -55,6 +55,7 @@ registerViewBoxes({
   meganeura: [122, 78],
   pterodactyl: [200, 110],
   'pterodactyl-dive': [200, 110],
+  spinosaurus: [320, 150],
   stegosaurus: [168, 104],
   'stegosaurus-swing': [178, 104],
   triceratops: [168, 98],
@@ -90,6 +91,7 @@ const stegosaurusAsset = ecoAsset('stegosaurus')
 const stegosaurusSwingAsset = ecoAsset('stegosaurus-swing')
 const pterodactylAsset = ecoAsset('pterodactyl')
 const pterodactylDiveAsset = ecoAsset('pterodactyl-dive')
+const spinosaurusAsset = ecoAsset('spinosaurus')
 const nestAsset = ecoAsset('dino-nest')
 const crackedNestAsset = ecoAsset('dino-egg-crack')
 const treeAsset = ecoAsset('araucaria-tree')
@@ -167,6 +169,8 @@ function craterPoint(world: EcoWorld) {
 }
 
 function clearTimedFx(entity: EcoEntity, dt: number) {
+  entity.data.attackTimer = Math.max(0, (entity.data.attackTimer ?? 0) - dt)
+
   if ((entity.data.hurt ?? 0) > 0) {
     entity.data.hurt = (entity.data.hurt ?? 0) - dt
 
@@ -275,7 +279,28 @@ function damage(
   }
 
   if (attacker) {
-    world.gainControlResource(attacker, adjusted * 8)
+    attacker.data.attackTimer = Math.max(attacker.data.attackTimer ?? 0, 0.5)
+    attacker.data.attackKind =
+      attacker.species === 'trex'
+        ? attacker.state === 'chomp'
+          ? 1
+          : 2
+        : attacker.species === 'triceratops'
+          ? 3
+          : attacker.species === 'brachiosaurus'
+            ? attacker.state === 'stomp' || attacker.state === 'quake'
+              ? 4
+              : 2
+            : attacker.species === 'pterodactyl'
+              ? attacker.state === 'dive'
+                ? 5
+                : 6
+              : attacker.species === 'spinosaurus'
+                ? attacker.state === 'snap'
+                  ? 1
+                  : 2
+                : 7
+    world.gainControlResource(attacker, adjusted * 25)
   }
 
   if (entity.hp > 0) {
@@ -286,7 +311,8 @@ function damage(
     entity.targetId = null
     entity.data.carcassId = 0
     world.setAsset(entity, trexPose(entity))
-    world.setState(entity, 'limp')
+    spawnEffect(world, 'dino-dust', entity.x, entity.y, 3.2)
+    world.kill(entity)
     world.tally('trex-downed')
     return adjusted
   }
@@ -835,8 +861,10 @@ function trexPrey(entity: EcoEntity, world: EcoWorld) {
 type DinoAbilityConfig = {
   active?: number
   amount?: number | ((target: EcoEntity) => number)
+  archetype?: string
   asset?: string | ((entity: EcoEntity) => string)
   buff?: { block?: number; icon: string; name: string; seconds: number; speed?: number }
+  charge?: { max: number; min?: number }
   cooldown: number
   dash?: number
   description: string
@@ -844,9 +872,10 @@ type DinoAbilityConfig = {
   icon?: string
   key: 'q' | 'w' | 'e' | 'r'
   name: string
+  projectile?: { amount: number; life?: number; size?: number; species: string; speed: number }
   radius?: number
   recovery?: number
-  shape: 'circle' | 'cone' | 'line' | 'self'
+  shape: 'circle' | 'cone' | 'ellipse' | 'line' | 'self'
   state?: string
   target?: 'area' | 'front'
   ultimate?: boolean
@@ -867,6 +896,8 @@ function dinoAbility(config: DinoAbilityConfig): EcoControlAbility {
 
   return {
     active: config.active ?? 0.26,
+    archetype: config.archetype,
+    charge: config.charge,
     cooldown: config.cooldown,
     dash: config.dash,
     description: config.description,
@@ -910,6 +941,32 @@ function dinoAbility(config: DinoAbilityConfig): EcoControlAbility {
         world.heal(entity, amount)
       }
 
+      if (config.projectile) {
+        const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+        const projectile = world.spawn(config.projectile.species, {
+          countAs: null,
+          data: {
+            amount: config.projectile.amount * (0.7 + charge * 0.65),
+            life: config.projectile.life ?? 1.4,
+            ownerId: entity.id,
+          },
+          facing: entity.facing,
+          size: (config.projectile.size ?? 1) * (0.8 + charge * 0.35),
+          vx: entity.facing * world.unit * config.projectile.speed * (0.7 + charge * 0.55),
+          vy: config.projectile.species === 'dino-boulder' ? -world.unit * 5.4 * charge : 0,
+          x: clamp(
+            entity.x + entity.facing * world.unit * 3.2,
+            world.unit,
+            world.width - world.unit,
+          ),
+          y: entity.y - world.heightOf(entity) * 0.45,
+        })
+
+        if (projectile) {
+          projectile.data.zBoost = 12000
+        }
+      }
+
       if (config.vfx === 'shockwave' || config.ultimate) {
         world.shake(config.ultimate ? 0.9 : 0.42)
       }
@@ -939,7 +996,31 @@ function dinoAbility(config: DinoAbilityConfig): EcoControlAbility {
         }
 
         context.cast.hitIds.add(target.id)
-        const amount = typeof config.amount === 'function' ? config.amount(target) : config.amount
+        if (config.archetype?.includes('Basic')) {
+          const comboKey = `combo-${config.key}`
+          const lastAt = entity.data[`${comboKey}-at`] ?? 0
+          const nextStep = lastAt + 1.2 > world.time ? ((entity.data[comboKey] ?? 0) % 3) + 1 : 1
+          entity.data[comboKey] = nextStep
+          entity.data[`${comboKey}-at`] = world.time
+          if (nextStep === 3) {
+            world.effect({
+              text: 'Combo!',
+              tone: 'heavy',
+              type: 'banner',
+              x: entity.x,
+              y: entity.y - world.heightOf(entity),
+            })
+          }
+        }
+
+        const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+        const comboStep = config.archetype?.includes('Basic')
+          ? (entity.data[`combo-${config.key}`] ?? 1)
+          : 1
+        const baseAmount =
+          typeof config.amount === 'function' ? config.amount(target) : config.amount
+        const amount =
+          baseAmount * (config.charge ? 0.7 + charge * 0.75 : 1) * (comboStep === 3 ? 1.45 : 1)
 
         damage(target, world, amount, entity.x, entity)
         shove(entity, target, world, config.ultimate ? 5.2 : 3.2)
@@ -954,10 +1035,11 @@ const trexControls = {
     dinoAbility({
       active: 0.32,
       amount: (target) => (target.species === 'triceratops' ? 2.7 : 3.2),
+      archetype: 'Basic 3-hit bite',
       asset: (entity) => trexPose(entity, 'chomp'),
-      cooldown: 1.4,
+      cooldown: 0.72,
       dash: 1.4,
-      description: 'Wind up a crushing bite, or chew a nearby carcass to heal first.',
+      description: 'Fast jaw snap basic attack; every third bite hits harder.',
       icon: 'bite',
       key: 'q',
       name: 'Bone bite',
@@ -967,7 +1049,7 @@ const trexControls = {
       target: 'front',
       vfx: 'bite',
       width: 5.8,
-      windup: 0.24,
+      windup: 0.16,
       onRun(entity, world) {
         eatNearbyCarcass(entity, world)
         world.tally('trex-bite')
@@ -994,18 +1076,21 @@ const trexControls = {
     }),
     dinoAbility({
       amount: 1.45,
+      archetype: 'Hold to charge',
       asset: (entity) => trexPose(entity, 'clamp'),
+      charge: { max: 1.15, min: 0.22 },
       cooldown: 3.2,
-      description: 'Stomp and sweep a crescent around the body.',
-      icon: 'tail',
+      description: 'Hold to brace the skull and shove with a short shoulder-check.',
+      icon: 'charge',
       key: 'w',
-      name: 'Tail stomp',
-      radius: 7.4,
-      shape: 'circle',
-      state: 'swat',
-      target: 'area',
-      vfx: 'slash',
-      windup: 0.26,
+      name: 'Shoulder check',
+      radius: 5.6,
+      shape: 'line',
+      state: 'charge',
+      target: 'front',
+      vfx: 'charge',
+      width: 5.2,
+      windup: 0.45,
       onRun(entity, world) {
         spawnEffect(world, 'dino-dust', entity.x + entity.facing * world.unit * 2, entity.y, 3.2)
         world.tally('trex-swat')
@@ -1013,13 +1098,14 @@ const trexControls = {
     }),
     dinoAbility({
       active: 0.34,
+      archetype: 'Intimidation shout',
       asset: (entity) => trexPose(entity),
-      cooldown: 5.8,
-      description: 'Roar with dust and force weaker creatures to flee.',
+      cooldown: 3.8,
+      description: 'Roar in place so smaller creatures flinch and back off.',
       icon: 'roar',
       key: 'e',
-      name: 'Dust roar',
-      radius: 13,
+      name: 'Tyrant roar',
+      radius: 10,
       shape: 'circle',
       state: 'prowl',
       vfx: 'shockwave',
@@ -1052,21 +1138,29 @@ const trexControls = {
       },
     }),
     dinoAbility({
+      amount: 3.1,
+      asset: (entity) => trexPose(entity, 'clamp'),
       buff: { icon: '⚡', name: 'Frenzy', seconds: 5.2, speed: 1.42 },
       cooldown: 3,
-      description: 'Ultimate: rage-fueled speed and lifesteal.',
-      heal: 0.8,
-      icon: 'frenzy',
+      description: 'Final Smash: clamp with the jaws and shake the target like prey.',
+      icon: 'bite',
       key: 'r',
-      name: 'Frenzy',
-      radius: 4,
-      shape: 'self',
-      state: 'charge',
+      name: 'Head-shake rip',
+      radius: 6.2,
+      shape: 'line',
+      state: 'shake',
+      target: 'front',
       ultimate: true,
-      vfx: 'buff',
+      vfx: 'bite',
+      width: 5.4,
       windup: 0.18,
       onRun(entity, world) {
         entity.data.frenzyUntil = world.time + 5.2
+      },
+      onHit(entity, target, world) {
+        target.data.shake = 1.2
+        spawnEffect(world, 'dino-bite-burst', target.x, target.y - world.heightOf(target) * 0.45, 3)
+        world.heal(entity, 0.8)
       },
     }),
   ],
@@ -1079,66 +1173,87 @@ const trexControls = {
 const triceratopsControls = {
   abilities: [
     dinoAbility({
-      active: 0.42,
-      amount: (target) => (target.species === 'trex' ? 2.8 : 1.8),
+      active: 0.24,
+      amount: (target) => (target.species === 'trex' ? 1.65 : 1.2),
+      archetype: 'Basic 3-hit horn',
       asset: triceratopsChargeAsset,
-      cooldown: 3.6,
-      dash: 5,
-      description: 'Line up, then charge horn-first through a target.',
+      cooldown: 0.78,
+      dash: 1.2,
+      description: 'Quick horn basic attack; every third jab hits harder.',
       icon: 'horn',
       key: 'q',
-      name: 'Horn charge',
+      name: 'Horn gore',
       shape: 'line',
       state: 'charge',
-      target: 'area',
+      target: 'front',
       vfx: 'charge',
       width: 4.8,
-      windup: 0.34,
+      windup: 0.14,
       onRun(entity, world) {
         spawnEffect(world, 'dino-dust', entity.x, entity.y, 2.8)
         world.tally('triceratops-charge')
       },
     }),
     dinoAbility({
+      archetype: 'Frill intimidation',
       buff: { block: 0.34, icon: '◆', name: 'Frill', seconds: 4 },
       cooldown: 6.5,
-      description: 'Raise the frill to blunt incoming hits.',
+      description: 'Flash the frill so smaller predators hesitate and back off.',
       icon: 'frill',
       key: 'w',
-      name: 'Frill block',
-      radius: 3,
+      name: 'Frill flare',
+      radius: 8,
       shape: 'self',
       state: 'graze',
-      vfx: 'buff',
+      vfx: 'shockwave',
       windup: 0.18,
+      onRun(entity, world) {
+        for (const target of areaTargets(entity, world, world.unit * 8)) {
+          if (target.species === 'trex' || target.size > entity.size * 1.2) {
+            continue
+          }
+          target.data.avoidX = entity.x
+          target.data.scatter = 1.8
+          target.targetId = null
+          world.setState(target, target.anchor === 'center' ? 'takeoff' : 'flee')
+        }
+      },
     }),
     dinoAbility({
-      amount: 1.85,
+      amount: (target) => (target.species === 'trex' ? 2.6 : 1.85),
+      archetype: 'Hold to charge',
       asset: triceratopsChargeAsset,
-      cooldown: 2.3,
-      description: 'Quick horn jab that knocks enemies back.',
+      charge: { max: 1.2, min: 0.25 },
+      cooldown: 3.4,
+      dash: 2.8,
+      description: 'Hook under a target with the horns and toss it upward.',
       icon: 'headbutt',
       key: 'e',
-      name: 'Headbutt',
-      radius: 4.6,
+      name: 'Horn toss',
+      radius: 5.4,
       shape: 'line',
       state: 'charge',
-      target: 'front',
+      target: 'area',
       vfx: 'charge',
       width: 4,
-      windup: 0.16,
+      windup: 0.45,
+      onHit(_entity, target) {
+        target.vy -= 9
+        target.lift = Math.max(target.lift, 1.6)
+      },
     }),
     dinoAbility({
       active: 0.62,
       amount: 2.05,
+      archetype: 'Herd-call Final Smash',
       asset: triceratopsChargeAsset,
-      buff: { icon: '⚡', name: 'Stampede', seconds: 3.4, speed: 1.35 },
+      buff: { icon: '⚡', name: 'Herd', seconds: 3.4, speed: 1.35 },
       cooldown: 3,
       dash: 7.2,
-      description: 'Ultimate: trample a long line with rumbling force.',
-      icon: 'stampede',
+      description: 'Final Smash: bellow for the herd and surge forward behind their rumble.',
+      icon: 'herd',
       key: 'r',
-      name: 'Stampede',
+      name: 'Herd call',
       shape: 'line',
       state: 'charge',
       target: 'area',
@@ -1158,9 +1273,10 @@ const stegosaurusControls = {
   abilities: [
     dinoAbility({
       amount: (target) => (target.species === 'trex' ? 2.3 : 1.65),
+      archetype: 'Basic 3-hit tail',
       asset: stegosaurusSwingAsset,
-      cooldown: 2.4,
-      description: 'A telegraphed thagomizer crescent that punishes close threats.',
+      cooldown: 0.78,
+      description: 'Fast thagomizer basic attack; every third spike swing hits harder.',
       icon: 'thagomizer',
       key: 'q',
       name: 'Thagomizer',
@@ -1170,7 +1286,7 @@ const stegosaurusControls = {
       target: 'area',
       vfx: 'slash',
       width: 6,
-      windup: 0.28,
+      windup: 0.16,
       onRun(entity, world) {
         spawnEffect(
           world,
@@ -1182,46 +1298,64 @@ const stegosaurusControls = {
       },
     }),
     dinoAbility({
-      buff: { block: 0.3, icon: '◆', name: 'Plates', seconds: 4.4 },
+      archetype: 'Plate intimidation',
+      buff: { block: 0.24, icon: '◆', name: 'Flush', seconds: 3.6 },
       cooldown: 6.5,
-      description: 'Angle the plates into an armored guard.',
+      description: 'Flush the plates warm red to warn predators off.',
       icon: 'plate',
       key: 'w',
-      name: 'Plate guard',
-      radius: 3,
+      name: 'Plate flush',
+      radius: 7,
       shape: 'self',
-      state: 'graze',
-      vfx: 'buff',
+      state: 'plate-flush',
+      vfx: 'shockwave',
       windup: 0.18,
+      onRun(entity, world) {
+        for (const target of areaTargets(entity, world, world.unit * 7)) {
+          if (world.matchup(target, entity) === 'strong') {
+            continue
+          }
+          target.data.avoidX = entity.x
+          target.data.scatter = 1.2
+          target.targetId = null
+        }
+      },
     }),
     dinoAbility({
-      amount: 1.55,
+      archetype: 'Sidestep pivot',
       asset: stegosaurusSwingAsset,
-      cooldown: 4.2,
-      description: 'Spin in place for a full-body swipe.',
-      icon: 'swipe',
+      cooldown: 3.8,
+      dash: -2.4,
+      description: 'Step sideways, pivot the hips and line up the thagomizer.',
+      icon: 'pivot',
       key: 'e',
-      name: 'Spin swipe',
-      radius: 6.2,
-      shape: 'circle',
-      state: 'swing',
-      target: 'area',
-      vfx: 'slash',
+      name: 'Sidestep pivot',
+      radius: 4,
+      shape: 'line',
+      state: 'sidestep',
+      vfx: 'charge',
       windup: 0.32,
+      onRun(entity, world) {
+        entity.facing *= -1
+        entity.data.controlSpeedUntil = world.time + 1.4
+        entity.data.controlSpeed = 1.25
+        spawnEffect(world, 'dino-dust', entity.x, entity.y, 2)
+      },
     }),
     dinoAbility({
       amount: 1.9,
+      archetype: 'Low-brace Final Smash',
       asset: stegosaurusSwingAsset,
-      buff: { block: 0.5, icon: '◆', name: 'Plate rush', seconds: 3.2, speed: 1.25 },
+      buff: { block: 0.58, icon: '◆', name: 'Brace', seconds: 3.2 },
+      charge: { max: 1.25, min: 0.28 },
       cooldown: 3,
-      dash: 3.8,
-      description: 'Ultimate: brace, rush and punish anything close.',
+      description: 'Final Smash: crouch low, armor the flank and punish anything close.',
       icon: 'rush',
       key: 'r',
-      name: 'Plate rush',
+      name: 'Low brace',
       radius: 5.2,
       shape: 'line',
-      state: 'swing',
+      state: 'brace',
       target: 'area',
       ultimate: true,
       vfx: 'charge',
@@ -1238,48 +1372,50 @@ const brachiosaurusControls = {
   abilities: [
     dinoAbility({
       amount: 2.1,
+      archetype: 'Basic 3-hit neck sweep',
       asset: brachiosaurusAsset,
-      cooldown: 3,
-      description: 'Sweep the tail through close attackers.',
-      icon: 'tail',
+      cooldown: 0.82,
+      description: 'Swing the long neck down from height; every third head-butt hits harder.',
+      icon: 'headbutt',
       key: 'q',
-      name: 'Tail whip',
+      name: 'Neck sweep',
       radius: 8,
       shape: 'cone',
-      state: 'stomp',
+      state: 'neck',
       target: 'area',
-      vfx: 'slash',
+      vfx: 'charge',
       width: 8,
-      windup: 0.34,
+      windup: 0.18,
     }),
     dinoAbility({
       amount: 2.35,
+      archetype: 'Hold to charge ellipse',
       asset: brachiosaurusAsset,
+      charge: { max: 1.35, min: 0.32 },
       cooldown: 5,
-      description: 'Raise a foot, then quake the valley floor.',
+      description: 'Hold a rearing stomp, then slam a big elliptical quake.',
       icon: 'quake',
       key: 'w',
       name: 'Stomp quake',
       radius: 10,
-      shape: 'circle',
-      state: 'stomp',
+      shape: 'ellipse',
+      state: 'quake',
       target: 'area',
       vfx: 'shockwave',
-      windup: 0.46,
+      width: 6.5,
+      windup: 0.55,
       onHit(_entity, target) {
         target.data.shake = 0.7
       },
     }),
     dinoAbility({
       asset: brachiosaurusBrowseAsset,
-      cooldown: 5.5,
-      description: 'Stretch into a tree or fern and heal from browsing.',
-      heal(entity, world) {
-        return world.nearest(entity, isTree, world.unit * 14) ? 3.2 : 1.4
-      },
+      archetype: 'Browse heal',
+      cooldown: 4.2,
+      description: 'Lean into a tree or fern, browse leaves and heal.',
       icon: 'neck',
       key: 'e',
-      name: 'Neck browse',
+      name: 'Lean browse',
       radius: 7,
       shape: 'line',
       state: 'tree-eat',
@@ -1290,25 +1426,28 @@ const brachiosaurusControls = {
         if (tree) {
           face(entity, tree.x)
           eatTreeFoliage(tree, world)
+          world.heal(entity, 3.2)
           world.tally('brachio-tree-browse')
           return
         }
         const fern = world.nearest(entity, isFern, world.unit * 7)
         if (fern) {
           eatFern(fern, world)
+          world.heal(entity, 1.4)
         }
       },
     }),
     dinoAbility({
       amount: 1.65,
+      archetype: 'Ultimate buff',
       asset: brachiosaurusAsset,
-      buff: { block: 0.55, icon: '◆', name: 'High stride', seconds: 4, speed: 1.3 },
+      buff: { block: 0.55, icon: '◆', name: 'Body block', seconds: 4, speed: 1.3 },
       cooldown: 3,
       dash: 4.2,
-      description: 'Ultimate: tower forward and shrug off damage.',
-      icon: 'stride',
+      description: 'Final Smash: use sheer size to body-block and shove through enemies.',
+      icon: 'shield',
       key: 'r',
-      name: 'High stride',
+      name: 'Body block',
       radius: 7.5,
       shape: 'line',
       state: 'browse',
@@ -1327,86 +1466,86 @@ const brachiosaurusControls = {
 const pterodactylControls = {
   abilities: [
     dinoAbility({
-      amount: (target) => (target.species === 'dino-nest' ? 3 : 1.45),
-      asset: pterodactylDiveAsset,
-      cooldown: 2.4,
-      dash: 4.8,
-      description: 'Dive through the target line, then pull back up.',
-      icon: 'dive',
+      amount: 0.85,
+      archetype: 'Long range crescent',
+      asset: pterodactylAsset,
+      cooldown: 0,
+      description: 'Flare both wings and throw a far crescent gust across the valley.',
+      icon: 'gust',
       key: 'q',
-      name: 'Dive strike',
-      radius: 7,
+      name: 'Wing crescent',
+      projectile: { amount: 0.9, life: 1.45, size: 2.5, species: 'dino-roar-wave', speed: 16 },
+      radius: 14,
+      shape: 'line',
+      state: 'gust',
+      target: 'front',
+      vfx: 'shockwave',
+      width: 6,
+      windup: 0.16,
+    }),
+    dinoAbility({
+      active: 0.54,
+      amount: (target) => (target.species === 'dino-nest' ? 3 : 1.8),
+      asset: pterodactylDiveAsset,
+      archetype: 'Hold diagonal dive-bomb',
+      charge: { max: 1.2, min: 0.24 },
+      cooldown: 0,
+      dash: 9.8,
+      description: 'Fold the wings high, hold a long diagonal line, then dive-bomb through it.',
+      icon: 'dive',
+      key: 'w',
+      name: 'Dive-bomb',
+      radius: 14,
       shape: 'line',
       state: 'dive',
       target: 'area',
       vfx: 'charge',
-      width: 4,
-      windup: 0.2,
-    }),
-    dinoAbility({
-      asset: pterodactylDiveAsset,
-      cooldown: 4.8,
-      description: 'Snatch an egg, baby or giant dragonfly after a dive tell.',
-      icon: 'snatch',
-      key: 'w',
-      name: 'Snatch',
-      radius: 8,
-      shape: 'line',
-      state: 'dive',
-      vfx: 'bite',
-      windup: 0.26,
-      onRun(entity, world) {
-        const target = world.nearest(
-          entity,
-          (other) =>
-            living(other) &&
-            (other.species === 'dino-nest' ||
-              other.species === 'meganeura' ||
-              isBabyHerbivore(other)),
-          world.unit * 8,
-        )
-        if (target) {
-          spawnEffect(world, 'dino-feather-puff', target.x, target.y, 2.2)
-          world.kill(target)
-          world.heal(entity, 0.8)
-          world.tally(target.species === 'dino-nest' ? 'eggs-stolen' : 'ptero-snatch')
-        }
+      width: 4.8,
+      windup: 0.38,
+      onHit(_entity, target, world) {
+        spawnEffect(world, 'dino-feather-puff', target.x, target.y, 3.2)
       },
     }),
     dinoAbility({
       amount: 0.65,
+      archetype: 'Spiral pull projectile',
       asset: pterodactylAsset,
-      cooldown: 5.2,
-      description: 'Beat the wings into a gust that scatters ground threats.',
-      icon: 'gust',
+      cooldown: 0,
+      description: 'Beat a spinning tornado that pulls small creatures into its path.',
+      icon: 'thermal',
       key: 'e',
-      name: 'Wing gust',
-      radius: 8,
+      name: 'Sky spiral',
+      projectile: { amount: 0.75, life: 1.55, size: 2.2, species: 'dino-tornado', speed: 10 },
+      radius: 10,
       shape: 'cone',
-      state: 'takeoff',
+      state: 'spiral',
       target: 'area',
-      vfx: 'shockwave',
-      width: 8,
+      vfx: 'buff',
+      width: 9,
       onHit(entity, target) {
-        target.data.scatter = 1.5
-        target.data.avoidX = entity.x
+        target.vx += (entity.x - target.x) * 0.9
+        target.vy -= 1.8
+        target.data.scatter = 0.5
       },
     }),
     dinoAbility({
       asset: pterodactylAsset,
+      archetype: 'Final Smash figure-eight',
       buff: { icon: '⚡', name: 'Thermal', seconds: 4.5, speed: 1.7 },
       cooldown: 3,
-      description: 'Ultimate: catch a thermal and fly much faster.',
+      description: 'Final Smash: loop a figure-eight sky path and rake everything below.',
       icon: 'thermal',
       key: 'r',
-      name: 'Thermal rush',
-      radius: 5,
-      shape: 'self',
-      state: 'takeoff',
+      name: 'Sky rake',
+      radius: 16,
+      shape: 'circle',
+      state: 'figure',
+      target: 'area',
       ultimate: true,
-      vfx: 'buff',
+      vfx: 'charge',
       onRun(entity, world) {
         entity.vy -= world.unit * 4
+        spawnEffect(world, 'dino-feather-puff', entity.x, entity.y, 4)
       },
     }),
   ],
@@ -1420,9 +1559,10 @@ const meganeuraControls = {
   abilities: [
     dinoAbility({
       amount: 0.8,
-      cooldown: 1.4,
-      dash: 4,
-      description: 'Needle forward with a fast dart.',
+      archetype: 'Basic 3-hit dart',
+      cooldown: 0.55,
+      dash: 3.4,
+      description: 'Tiny fast basic dart; every third jab stings harder.',
       icon: 'dart',
       key: 'q',
       name: 'Dart',
@@ -1435,8 +1575,10 @@ const meganeuraControls = {
     }),
     dinoAbility({
       amount: 0.55,
+      archetype: 'Hold to pester',
+      charge: { max: 1, min: 0.2 },
       cooldown: 4.2,
-      description: 'Buzz a T. rex face until it staggers.',
+      description: 'Hold a buzzing windup, then pester a T. rex into a stumble.',
       icon: 'pester',
       key: 'w',
       name: 'Pester',
@@ -1456,10 +1598,11 @@ const meganeuraControls = {
       },
     }),
     dinoAbility({
+      archetype: 'Long range feint',
       buff: { icon: '⚡', name: 'Feint', seconds: 2.5, speed: 1.9 },
       cooldown: 5,
       dash: -3.2,
-      description: 'Jink sideways in a shimmering dodge.',
+      description: 'Flick backward and leave a distracting shimmer trail.',
       icon: 'feint',
       key: 'e',
       name: 'Wing feint',
@@ -1469,6 +1612,7 @@ const meganeuraControls = {
       vfx: 'buff',
     }),
     dinoAbility({
+      archetype: 'Ultimate summon',
       cooldown: 3,
       description: 'Ultimate: call another giant dragonfly from the ferns.',
       icon: 'swarm',
@@ -1499,6 +1643,101 @@ const meganeuraControls = {
   move: 'fly',
   moveState: 'zip',
   speed: 22,
+} as const
+
+const spinosaurusControls = {
+  abilities: [
+    dinoAbility({
+      active: 0.24,
+      amount: (target) => (target.species === 'trex' ? 1.65 : 1.35),
+      archetype: 'Basic 3-hit snap',
+      asset: spinosaurusAsset,
+      cooldown: 0.7,
+      dash: 1.3,
+      description: 'Snap with the long fish-grabbing snout; every third bite shakes harder.',
+      icon: 'bite',
+      key: 'q',
+      name: 'Snout snap',
+      radius: 5.4,
+      shape: 'line',
+      state: 'snap',
+      target: 'front',
+      vfx: 'bite',
+      width: 4.8,
+      windup: 0.14,
+    }),
+    dinoAbility({
+      archetype: 'Mobility dive',
+      buff: { icon: '⚡', name: 'River dive', seconds: 2.8, speed: 1.8 },
+      cooldown: 4.8,
+      dash: 4.8,
+      description: 'Submerge through the river band, move fast, then surface biting.',
+      icon: 'dive',
+      key: 'w',
+      name: 'River dive',
+      radius: 5.8,
+      shape: 'line',
+      state: 'dive',
+      target: 'area',
+      vfx: 'water',
+      width: 5.2,
+      onRun(entity, world) {
+        entity.data.submergedUntil = world.time + 2.8
+        entity.y = Math.min(entity.y + world.unit * 0.8, world.groundY - world.unit * 1.6)
+      },
+      onHit(entity, _target, world) {
+        world.heal(entity, 0.35)
+      },
+    }),
+    dinoAbility({
+      active: 0.32,
+      amount: 1.65,
+      archetype: 'Thumb-claw hook',
+      asset: spinosaurusAsset,
+      cooldown: 3.6,
+      description: 'Hook with the huge thumb claw and drag prey toward the snout.',
+      icon: 'claw',
+      key: 'e',
+      name: 'Claw hook',
+      radius: 5.8,
+      shape: 'line',
+      state: 'claw',
+      target: 'front',
+      vfx: 'slash',
+      width: 5.2,
+      windup: 0.32,
+      onHit(entity, target) {
+        target.vx += (entity.x - target.x) * 1.6
+        target.vy -= 1.2
+      },
+    }),
+    dinoAbility({
+      active: 0.52,
+      amount: (target) => (target.species === 'triceratops' ? 1.5 : 2.25),
+      archetype: 'Hold ultimate lunge',
+      asset: spinosaurusAsset,
+      buff: { icon: '⚡', name: 'Sail display', seconds: 3.8, speed: 1.35 },
+      charge: { max: 1.45, min: 0.34 },
+      cooldown: 3,
+      dash: 6.4,
+      description: 'Final Smash: flash the sail to intimidate, then surge forward.',
+      icon: 'sail',
+      key: 'r',
+      name: 'Sail display',
+      radius: 8,
+      shape: 'line',
+      state: 'display',
+      target: 'area',
+      ultimate: true,
+      vfx: 'charge',
+      width: 5.4,
+      windup: 0.52,
+    }),
+  ],
+  idleState: 'prowl',
+  move: 'ground',
+  moveState: 'prowl',
+  speed: 12.5,
 } as const
 
 const trex: EcoSpecies = {
@@ -1764,6 +2003,77 @@ const trex: EcoSpecies = {
 
     world.setAsset(entity, trexPose(entity))
     walk(entity, world, dt, unit * 1.05)
+    settle(entity, dt)
+
+    if (chance(0.08, dt)) {
+      entity.facing = entity.facing === 1 ? -1 : 1
+    }
+  },
+}
+
+const spinosaurus: EcoSpecies = {
+  anchor: 'bottom',
+  asset: spinosaurusAsset,
+  controls: spinosaurusControls,
+  hp: 8.6,
+  init(entity) {
+    entity.data.hunger = between(0.25, 0.8)
+  },
+  layer: 'front',
+  size: [10.5, 10],
+  state: 'prowl',
+  strongVs: ['pterodactyl', 'meganeura', 'dino-nest'],
+  tags: ['predator', 'burnable'],
+  weakTo: ['triceratops', 'stegosaurus'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    clearTimedFx(entity, dt)
+
+    if ((entity.data.submergedUntil ?? 0) > world.time) {
+      entity.data.opacity = 0.72
+      entity.fx = 'aim'
+    } else {
+      entity.data.opacity = 1
+    }
+
+    if (entity.state === 'snap' || entity.state === 'jet' || entity.state === 'display') {
+      settle(entity, dt)
+      if (entity.t > 0.9) {
+        world.setState(entity, 'prowl')
+      }
+      return
+    }
+
+    if (entity.state === 'dive') {
+      walk(entity, world, dt, unit * 3.8)
+      if (entity.t > 1.2) {
+        world.setState(entity, 'prowl')
+      }
+      return
+    }
+
+    const prey = world.nearest(
+      entity,
+      (other) =>
+        living(other) &&
+        (other.species === 'pterodactyl' ||
+          other.species === 'meganeura' ||
+          isBabyHerbivore(other) ||
+          other.species === 'dino-nest'),
+      unit * 15,
+    )
+
+    if (prey && chance(0.55, dt)) {
+      face(entity, prey.x)
+      walkToward(entity, world, clamp(prey.x, unit, world.width - unit), unit * 2.7, dt)
+      if (Math.abs(prey.x - entity.x) < unit * 4) {
+        entity.targetId = prey.id
+        world.setState(entity, 'snap')
+      }
+      return
+    }
+
+    walk(entity, world, dt, unit * 1.15)
     settle(entity, dt)
 
     if (chance(0.08, dt)) {
@@ -2580,6 +2890,61 @@ const dinoBiteBurst = transientSprite(biteBurstAsset, [1.3, 2.5], 'burst')
 const dinoFeatherPuff = transientSprite(featherPuffAsset, [1.4, 2.4], 'feathers')
 const dinoTailStreak = transientSprite(tailStreakAsset, [2.8, 4.2], 'streak')
 
+const dinoProjectile = (
+  asset: string,
+  size: readonly [number, number],
+  state = 'fly',
+): EcoSpecies => ({
+  anchor: 'center',
+  asset,
+  countAs: null,
+  init(entity) {
+    entity.data.life = entity.data.life ?? 1.3
+  },
+  layer: 'front',
+  size,
+  state,
+  tags: ['projectile'],
+  tick(entity, world, dt) {
+    entity.data.life = (entity.data.life ?? 1.2) - dt
+    if (entity.species === 'dino-boulder') {
+      entity.vy += world.unit * 13 * dt
+    }
+    integrate(entity, dt)
+    tiltToVelocity(entity, 68)
+
+    const owner = world.byId(entity.data.ownerId ?? null)
+
+    for (const target of world.within(entity.x, entity.y, world.unit * 2.7, (other) =>
+      owner ? isControlTarget(owner, other) : living(other),
+    )) {
+      if (entity.species === 'dino-tornado') {
+        target.vx += (entity.x - target.x) * 0.9
+        target.vy -= world.unit * 2.2
+      }
+      damage(target, world, entity.data.amount ?? 1, entity.x, owner ?? undefined)
+      shove(entity, target, world, 3.2)
+      spawnEffect(world, 'dino-dust', target.x, target.y, 2.2)
+      world.remove(entity)
+      return
+    }
+
+    if (
+      (entity.data.life ?? 0) <= 0 ||
+      entity.x < -world.unit * 3 ||
+      entity.x > world.width + world.unit * 3 ||
+      entity.y > world.groundY + world.unit * 2
+    ) {
+      world.remove(entity)
+    }
+  },
+})
+
+const dinoRoarWave = dinoProjectile(dustAsset, [2.8, 5.8], 'wave')
+const dinoBoulder = dinoProjectile(ecoAsset('dino-scrap'), [1.4, 2.2], 'boulder')
+const dinoSpikeProjectile = dinoProjectile(tailStreakAsset, [1.2, 3.2], 'spike')
+const dinoTornado = dinoProjectile(featherPuffAsset, [3.8, 4.2], 'tornado')
+
 const lavaFlow: EcoSpecies = {
   anchor: 'center',
   asset: lavaFlowAsset,
@@ -3296,8 +3661,12 @@ export const prehistoricSpecies: EcoSpeciesMap = {
   'dino-feather-puff': dinoFeatherPuff,
   'dino-meat-bit': dinoMeatBit,
   'dino-nest': dinoNest,
+  'dino-boulder': dinoBoulder,
+  'dino-roar-wave': dinoRoarWave,
   'dino-scrap': dinoScrap,
+  'dino-spike': dinoSpikeProjectile,
   'dino-tail-streak': dinoTailStreak,
+  'dino-tornado': dinoTornado,
   brachiosaurus,
   eruption,
   fern,
@@ -3309,6 +3678,7 @@ export const prehistoricSpecies: EcoSpeciesMap = {
   meganeura,
   pterodactyl,
   'shooting-star': dinoShootingStar,
+  spinosaurus,
   stegosaurus,
   trex,
   triceratops,

@@ -211,10 +211,10 @@ export class Ecosystem implements EcoWorld {
 
     if (attacker) {
       attacker.data.hitStopUntil = this.time + 0.05
-      this.gainControlResource(attacker, adjusted * 8)
+      this.gainControlResource(attacker, adjusted * 13)
     }
 
-    this.gainControlResource(target, adjusted * 5)
+    this.gainControlResource(target, adjusted * 8)
 
     if (adjusted >= 1.8 || edge > 1) {
       this.shake(edge > 1 ? 0.75 : 0.45)
@@ -447,13 +447,15 @@ export class Ecosystem implements EcoWorld {
         type: 'banner',
         vfx: ability.vfx,
         x: entity.x,
-        y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.45 : 0.9),
+        y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.9 : 1.55) - 18,
       })
       this.shake(0.85)
     }
 
-    entity.data[`controlCooldown-${key}`] = this.time + ability.cooldown
-    entity.data[`controlReadyAt-${key}`] = this.time + ability.cooldown
+    const cooldown = ability.ultimate ? ability.cooldown : 0
+
+    entity.data[`controlCooldown-${key}`] = this.time + cooldown
+    entity.data[`controlReadyAt-${key}`] = cooldown > 0 ? this.time + cooldown : 0
     entity.controlCast = {
       activeStarted: false,
       elapsed: 0,
@@ -464,6 +466,7 @@ export class Ecosystem implements EcoWorld {
       phase: 'windup',
       phaseElapsed: 0,
       queuedKey: null,
+      releaseRequested: false,
       startX: entity.x,
       startY: entity.y,
     }
@@ -475,8 +478,31 @@ export class Ecosystem implements EcoWorld {
     return true
   }
 
+  releaseControlAbility(key: string) {
+    if (key !== 'q' && key !== 'w' && key !== 'e' && key !== 'r') {
+      return false
+    }
+
+    const entity = this.byId(this.controlledId)
+    const cast = entity?.controlCast
+    const ability = entity && cast ? this.abilityFor(entity, cast.key) : null
+
+    if (!entity || !cast || !ability?.charge || cast.key !== key || cast.phase !== 'windup') {
+      return false
+    }
+
+    cast.releaseRequested = true
+    this.dirty = true
+
+    return true
+  }
+
   private castDuration(ability: EcoControlAbility, phase: 'active' | 'recovery' | 'windup') {
     if (phase === 'windup') {
+      if (ability.charge) {
+        return ability.charge.max
+      }
+
       return ability.windup ?? 0.18
     }
 
@@ -519,6 +545,9 @@ export class Ecosystem implements EcoWorld {
     }
 
     if (cast.phase === 'windup') {
+      entity.data.controlCharge = ability.charge
+        ? clampValue(cast.phaseElapsed / ability.charge.max, 0, 1)
+        : 1
       cast.phase = 'active'
       cast.phaseElapsed = 0
       cast.activeStarted = false
@@ -543,6 +572,7 @@ export class Ecosystem implements EcoWorld {
 
     entity.controlCast = undefined
     entity.fx = ''
+    entity.data.controlCharge = 0
     entity.data.controlCastProgress = 0
 
     if (queuedKey) {
@@ -563,29 +593,19 @@ export class Ecosystem implements EcoWorld {
     cast.elapsed += dt
 
     const phaseProgress = clampValue(cast.phaseElapsed / duration, 0, 1)
+    const chargeProgress = ability.charge
+      ? clampValue(cast.phaseElapsed / ability.charge.max, 0, 1)
+      : phaseProgress
     const activeDuration = Math.max(0.01, this.castDuration(ability, 'active'))
     const activeProgress =
       cast.phase === 'active' ? clampValue(cast.phaseElapsed / activeDuration, 0, 1) : 0
 
-    entity.data.controlCastProgress = phaseProgress
+    entity.data.controlCastProgress = chargeProgress
 
     if (cast.phase === 'active') {
       if (!cast.activeStarted) {
         cast.activeStarted = true
         ability.run?.(entity, this, { activeProgress, cast, phaseProgress })
-
-        if (!ability.ultimate) {
-          this.effect({
-            key: ability.key,
-            name: ability.name,
-            text: ability.name,
-            tone: 'heavy',
-            type: 'banner',
-            vfx: ability.vfx,
-            x: entity.x,
-            y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.55 : 1.06),
-          })
-        }
 
         if (ability.vfx) {
           this.effect({
@@ -611,7 +631,14 @@ export class Ecosystem implements EcoWorld {
       ability.tick?.(entity, this, { activeProgress, cast, phaseProgress }, dt)
     }
 
-    if (cast.phaseElapsed >= duration) {
+    const chargeMin = ability.charge?.min ?? 0
+    const chargeReady =
+      ability.charge && cast.phase === 'windup'
+        ? cast.phaseElapsed >= ability.charge.max ||
+          (cast.releaseRequested && cast.phaseElapsed >= chargeMin)
+        : false
+
+    if (cast.phaseElapsed >= duration || chargeReady) {
       this.advanceCastPhase(entity, ability)
     }
   }
@@ -627,6 +654,8 @@ export class Ecosystem implements EcoWorld {
     const input = this.controlInput
     const cast = entity.controlCast
     const castAbility = cast ? this.abilityFor(entity, cast.key) : null
+
+    this.gainControlResource(entity, (maxControlResource / 25) * dt)
 
     if (cast?.phase === 'active' && castAbility) {
       this.tickCast(entity, castAbility, dt)

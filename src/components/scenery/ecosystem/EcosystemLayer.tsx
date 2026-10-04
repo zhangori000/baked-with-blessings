@@ -18,6 +18,7 @@ import { cn } from '@/utilities/cn'
 
 import { SpriteParticles } from '../SceneSpawnLayer'
 import { ecoAsset } from './assets'
+import { DinoRig, riggedDinos } from './DinoRig'
 import type { EcosystemStore } from './store'
 import type { EcoControlAbilityKey, EcoControlEntityView, EcoEntityView, EcoLayer } from './types'
 
@@ -53,6 +54,7 @@ const EcoThing = memo(function EcoThing({
       data-controllable={view.controllable ? '' : undefined}
       data-controlled={view.controlled ? '' : undefined}
       data-dying={view.dying ? '' : undefined}
+      data-rig={riggedDinos.has(view.species) ? 'dino' : undefined}
       data-selected={view.selected ? '' : undefined}
       data-species={view.species}
       onClick={
@@ -114,15 +116,19 @@ const EcoThing = memo(function EcoThing({
       <span className="ecoAnchor">
         <span className="ecoPop">
           <span className="ecoPose">
-            <Image
-              alt=""
-              className={cn('ecoArt', `ecoArt--${view.idle}`)}
-              draggable={false}
-              height={120}
-              src={view.asset}
-              unoptimized
-              width={120}
-            />
+            {riggedDinos.has(view.species) ? (
+              <DinoRig asset={view.asset} species={view.species} />
+            ) : (
+              <Image
+                alt=""
+                className={cn('ecoArt', `ecoArt--${view.idle}`)}
+                draggable={false}
+                height={120}
+                src={view.asset}
+                unoptimized
+                width={120}
+              />
+            )}
             {view.fuel ? (
               <Image
                 alt=""
@@ -190,6 +196,8 @@ function ControlHud({
 }) {
   const [hintVisible, setHintVisible] = useState(false)
   const [castKey, setCastKey] = useState<EcoControlAbilityKey | null>(null)
+  const [deniedKey, setDeniedKey] = useState<EcoControlAbilityKey | null>(null)
+  const [deniedText, setDeniedText] = useState('')
   const followCursor = Boolean(controlled?.followCursor)
   const hintMode =
     controlled?.move === 'swim' ? (followCursor ? 'swim-cursor' : 'swim-arrows') : 'arrows'
@@ -203,11 +211,29 @@ function ControlHud({
         return
       }
 
+      if (ability.ultimate && ability.resourceFill < 1) {
+        setCastKey(key)
+        setDeniedKey(key)
+        setDeniedText('Charge Final Smash')
+        window.setTimeout(() => {
+          setCastKey((current) => (current === key ? null : current))
+          setDeniedKey((current) => (current === key ? null : current))
+          setDeniedText('')
+        }, 720)
+        return
+      }
+
       store.activateAbility(key)
       setCastKey(key)
       window.setTimeout(() => setCastKey((current) => (current === key ? null : current)), 360)
     },
     [controlled?.abilities, store],
+  )
+  const releaseAbility = useCallback(
+    (key: EcoControlAbilityKey) => {
+      store.releaseAbility(key)
+    },
+    [store],
   )
 
   useEffect(() => {
@@ -256,6 +282,12 @@ function ControlHud({
   useEffect(() => {
     castAbilityRef.current = castAbility
   }, [castAbility])
+
+  const releaseAbilityRef = useRef(releaseAbility)
+
+  useEffect(() => {
+    releaseAbilityRef.current = releaseAbility
+  }, [releaseAbility])
 
   const hudRef = useRef<HTMLDivElement | null>(null)
 
@@ -329,6 +361,7 @@ function ControlHud({
     }
 
     const pressed = new Set<string>()
+    const abilityPressed = new Set<EcoControlAbilityKey>()
     const sync = () => {
       store.setControlInput({
         x: (pressed.has('ArrowRight') ? 1 : 0) - (pressed.has('ArrowLeft') ? 1 : 0),
@@ -358,6 +391,10 @@ function ControlHud({
 
       if (key === 'q' || key === 'w' || key === 'e' || key === 'r') {
         event.preventDefault()
+        if (event.repeat || abilityPressed.has(key)) {
+          return
+        }
+        abilityPressed.add(key)
         castAbilityRef.current(key)
       }
     }
@@ -366,9 +403,18 @@ function ControlHud({
         event.preventDefault()
         sync()
       }
+
+      const key = event.key.toLowerCase()
+
+      if (key === 'q' || key === 'w' || key === 'e' || key === 'r') {
+        event.preventDefault()
+        abilityPressed.delete(key)
+        releaseAbilityRef.current(key)
+      }
     }
     const handleBlur = () => {
       pressed.clear()
+      abilityPressed.clear()
       sync()
     }
 
@@ -417,15 +463,31 @@ function ControlHud({
 
     store.setControlInput({ x: 0, y: 0 })
   }
-  const abilityHandler = (key: EcoControlAbilityKey) => () => castAbility(key)
+  const abilityPointerDown =
+    (ability: EcoControlEntityView['abilities'][number]) =>
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.currentTarget.setPointerCapture(event.pointerId)
+      castAbility(ability.key)
+    }
+  const abilityPointerUp =
+    (ability: EcoControlEntityView['abilities'][number]) =>
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId)
+      }
+
+      releaseAbility(ability.key)
+    }
 
   if (!controlled && !toast) {
     return null
   }
 
+  const hudToast = deniedText || toast
+
   return (
     <div className="ecoControlHud" data-move={controlled?.move} ref={hudRef}>
-      {toast ? <div className="ecoControlToast">{toast}</div> : null}
+      {hudToast ? <div className="ecoControlToast">{hudToast}</div> : null}
       {controlled ? (
         <>
           {controlled.move === 'swim' && followCursor ? (
@@ -555,28 +617,34 @@ function ControlHud({
           <div className="ecoAbilityBar">
             {controlled.abilities.map((ability) => {
               const cooling = ability.cooldownLeft > 0
-              const cooldown = Math.max(0, Math.min(1, ability.cooldownLeft / ability.cooldown))
-              const unavailable = cooling || (ability.ultimate && ability.resourceFill < 1)
-
+              const cooldown =
+                ability.cooldown > 0
+                  ? Math.max(0, Math.min(1, ability.cooldownLeft / ability.cooldown))
+                  : 0
               return (
                 <button
                   aria-label={`${ability.key.toUpperCase()}: ${ability.name}`}
                   className="ecoAbilityButton"
                   data-active={castKey === ability.key ? '' : undefined}
-                  data-cooling={cooling || undefined}
-                  data-locked={ability.locked && !unavailable ? '' : undefined}
+                  data-cooling={cooling && ability.ultimate ? '' : undefined}
+                  data-charge={ability.chargeable ? '' : undefined}
+                  data-denied={deniedKey === ability.key ? '' : undefined}
+                  data-locked={ability.locked ? '' : undefined}
                   data-ready={ability.readyFlash ? '' : undefined}
                   data-ultimate={ability.ultimate ? '' : undefined}
-                  disabled={unavailable}
+                  disabled={cooling && castKey !== ability.key}
                   key={ability.key}
-                  onClick={abilityHandler(ability.key)}
+                  onPointerCancel={abilityPointerUp(ability)}
+                  onPointerDown={abilityPointerDown(ability)}
+                  onPointerUp={abilityPointerUp(ability)}
                   style={
                     {
+                      ['--eco-charge' as string]: ability.chargeProgress.toFixed(3),
                       ['--eco-cooldown' as string]: cooldown.toFixed(3),
                       ['--eco-resource' as string]: ability.resourceFill.toFixed(3),
                     } as CSSProperties
                   }
-                  title={`${ability.name}: ${ability.description}`}
+                  title={`${ability.name}${ability.archetype ? ` · ${ability.archetype}` : ''}: ${ability.description}`}
                   type="button"
                 >
                   <span className="ecoAbilityIcon">
@@ -585,7 +653,7 @@ function ControlHud({
                   <span className="ecoAbilityKey">{ability.key.toUpperCase()}</span>
                   <span className="ecoAbilityName">{ability.name}</span>
                   <span className="ecoAbilityCooldown">
-                    {cooling ? Math.ceil(ability.cooldownLeft).toString() : ''}
+                    {cooling && ability.ultimate ? Math.ceil(ability.cooldownLeft).toString() : ''}
                   </span>
                 </button>
               )
@@ -611,7 +679,9 @@ function ControlHud({
                     : 'Use arrow keys to move'}
               </span>
               <span className="ecoHintKeys">
-                {coarsePointer ? 'Tap Q W E R for abilities' : 'Q W E R for abilities'}
+                {coarsePointer
+                  ? 'Tap Q basic · hold E to charge'
+                  : 'Q basic · hold E to charge · R ultimate'}
               </span>
               {controlled.move === 'swim' ? (
                 <span className="ecoHintKeys">
@@ -635,7 +705,7 @@ type EcosystemLayerProps = {
 }
 
 function AbilityGlyph({ ability }: { ability: EcoControlEntityView['abilities'][number] }) {
-  const id = ability.icon ?? ability.name.toLowerCase()
+  const id = [ability.icon, ability.name, ability.archetype].filter(Boolean).join(' ').toLowerCase()
 
   if (id.includes('bite') || id.includes('bone')) {
     return (
@@ -658,6 +728,91 @@ function AbilityGlyph({ ability }: { ability: EcoControlEntityView['abilities'][
     return (
       <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
         <path d="M5 20c7.8-9.1 15.2-10.7 22.3-4.8-5.8-.5-9.8.7-12.1 3.6l5.1 1.7-6.2 2.1 1.9 5.7-5.5-3.9L5 26.1l2.1-4.4Z" />
+      </svg>
+    )
+  }
+
+  if (id.includes('banner') || id.includes('rally')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M8 27V5M9 6h15l-3 5 3 5H9" />
+        <path d="M8 27h10" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('arrow') ||
+    id.includes('archer') ||
+    id.includes('shot') ||
+    id.includes('volley')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M4 17 26 6l-7.6 21-3.5-8.5L4 17Z" />
+        <path d="m18.4 18.5 7.3-12.1" />
+      </svg>
+    )
+  }
+
+  if (id.includes('fire') || id.includes('flame') || id.includes('meteor')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M17.4 3.8c1.6 4.9 5.9 7.4 5.9 13.2A7.3 7.3 0 0 1 8.7 17c0-4 2.1-6.9 6.4-10.9-.2 3.1.5 5.3 2.1 6.6 1.1-2.5 1.2-5.5.2-8.9Z" />
+      </svg>
+    )
+  }
+
+  if (id.includes('ice') || id.includes('frost') || id.includes('blizzard')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 4v24M6.6 9.5l18.8 13M25.4 9.5l-18.8 13" />
+        <path d="m11.5 6.2 4.5 4.5 4.5-4.5M11.5 25.8l4.5-4.5 4.5 4.5" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('thorn') ||
+    id.includes('root') ||
+    id.includes('flytrap') ||
+    id.includes('overgrowth')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 27c-1.4-8.4 2-14.5 10.2-18.3-1.1 7.5-4.5 11.9-10.2 13.1" />
+        <path d="M16 27C17.4 18.6 14 12.5 5.8 8.7c1.1 7.5 4.5 11.9 10.2 13.1M16 27V8" />
+      </svg>
+    )
+  }
+
+  if (id.includes('zap') || id.includes('lightning') || id.includes('storm')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M18.5 3 7.5 17h7L12 29l12.5-16h-7L18.5 3Z" />
+      </svg>
+    )
+  }
+
+  if (id.includes('light') || id.includes('beam') || id.includes('heal')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 4v6M16 22v6M4 16h6M22 16h6M7.5 7.5l4.2 4.2M20.3 20.3l4.2 4.2M24.5 7.5l-4.2 4.2M11.7 20.3l-4.2 4.2" />
+        <path d="M16 11.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('ward') ||
+    id.includes('mirror') ||
+    id.includes('bubble') ||
+    id.includes('prison')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 4 25 8.5v8.2c0 4.7-3 8.5-9 11.3-6-2.8-9-6.6-9-11.3V8.5L16 4Z" />
+        <path d="M11 15.7 14.4 19 21 12" />
       </svg>
     )
   }
@@ -695,6 +850,9 @@ function AbilityGlyph({ ability }: { ability: EcoControlEntityView['abilities'][
   if (
     id.includes('block') ||
     id.includes('guard') ||
+    id.includes('shield') ||
+    id.includes('bash') ||
+    id.includes('parry') ||
     id.includes('plate') ||
     id.includes('frill')
   ) {

@@ -227,6 +227,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('fern', 'Fern', '/flowers/prehistoric-fern.svg'),
     creature('araucaria-tree', 'Tree', spawnableAsset('araucaria-tree')),
     creature('trex', 'T. rex', spawnableAsset('trex')),
+    creature('spinosaurus', 'Spinosaurus', spawnableAsset('spinosaurus')),
     creature('triceratops', 'Triceratops'),
     creature('brachiosaurus', 'Brachiosaurus'),
     creature('stegosaurus', 'Stegosaurus'),
