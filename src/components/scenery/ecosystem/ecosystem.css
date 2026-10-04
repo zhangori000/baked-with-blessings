@@ -436,6 +436,8 @@
   pointer-events: none;
   position: fixed;
   transform: translateX(-50%);
+  transition: translate 260ms ease;
+  translate: 0 calc(-1 * var(--eco-hud-raise, 0px));
   width: min(94vw, 34rem);
   z-index: 1000;
 }
@@ -1360,6 +1362,7 @@
 }
 
 :root[data-eco-controlling] .homeCookieCopy,
+:root[data-eco-controlling] .homeCookieRigShell,
 :root[data-eco-play] .homeCookieCopy,
 :root[data-eco-play] .homeCookieRigShell,
 :root[data-eco-play] .cateringHeroEyebrow,

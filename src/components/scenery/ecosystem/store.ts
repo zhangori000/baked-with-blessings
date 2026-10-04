@@ -177,6 +177,19 @@ export class EcosystemStore {
     }
   }
 
+  sceneLines() {
+    const front = this.layers.front
+    const engine = this.engine
+
+    if (!front || !engine) {
+      return null
+    }
+
+    const rect = front.getBoundingClientRect()
+
+    return { bottom: rect.bottom, ground: rect.top + engine.groundY, unit: engine.unit }
+  }
+
   measure() {
     const front = this.layers.front
     const engine = this.engine

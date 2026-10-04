@@ -257,6 +257,72 @@ function ControlHud({
     castAbilityRef.current = castAbility
   }, [castAbility])
 
+  const hudRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!controlledId) {
+      return
+    }
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const measure = () => {
+      const hud = hudRef.current
+      const lines = store.sceneLines()
+
+      if (!hud || !lines) {
+        return null
+      }
+
+      const rects = [
+        ...hud.querySelectorAll<HTMLElement>('.ecoControlCard, .ecoAbilityBar, .ecoDpad'),
+      ]
+        .map((element) => element.getBoundingClientRect())
+        .filter((rect) => rect.height > 0)
+
+      if (!rects.length) {
+        return null
+      }
+
+      const top = Math.min(...rects.map((rect) => rect.top))
+      const bottom = Math.max(...rects.map((rect) => rect.bottom))
+
+      return { bottom, hud, lines, overlap: lines.bottom - top + 12, top }
+    }
+    let raiseTimer = 0
+    let raised: HTMLElement | null = null
+    const frame = window.requestAnimationFrame(() => {
+      const first = measure()
+
+      if (!first || first.overlap <= 0) {
+        return
+      }
+
+      window.scrollBy({ behavior: reduce ? 'auto' : 'smooth', top: first.overlap })
+      raiseTimer = window.setTimeout(
+        () => {
+          const next = measure()
+
+          if (!next || next.overlap <= 0) {
+            return
+          }
+
+          const clearance = next.lines.ground - next.lines.unit * 11
+          const raise = Math.max(0, Math.min(next.bottom - clearance, next.top - 96))
+
+          raised = next.hud
+          raised.style.setProperty('--eco-hud-raise', `${Math.round(raise)}px`)
+        },
+        reduce ? 0 : 480,
+      )
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(raiseTimer)
+      raised?.style.removeProperty('--eco-hud-raise')
+    }
+  }, [controlledId, store])
+
   useEffect(() => {
     if (!controlledId) {
       return
@@ -358,7 +424,7 @@ function ControlHud({
   }
 
   return (
-    <div className="ecoControlHud" data-move={controlled?.move}>
+    <div className="ecoControlHud" data-move={controlled?.move} ref={hudRef}>
       {toast ? <div className="ecoControlToast">{toast}</div> : null}
       {controlled ? (
         <>
