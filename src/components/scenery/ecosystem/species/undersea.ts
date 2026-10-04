@@ -91,7 +91,7 @@ const boatVariants = [
     hp: 2,
     id: 'rowboat',
     size: [4.2, 4.7],
-    speed: [0.95, 1.35],
+    speed: [6, 7.5],
     strongVs: ['fish-school'],
     waterline: 42 / 80,
     weakTo: ['shark', 'whale', 'kraken'],
@@ -102,7 +102,7 @@ const boatVariants = [
     hp: 2,
     id: 'dinghy',
     size: [4.8, 5.3],
-    speed: [1.25, 1.85],
+    speed: [6.5, 8],
     strongVs: ['jellyfish'],
     waterline: 34 / 70,
     weakTo: ['shark', 'octopus', 'kraken'],
@@ -113,7 +113,7 @@ const boatVariants = [
     hp: 2,
     id: 'sailboat',
     size: [6.6, 7.2],
-    speed: [1.1, 1.75],
+    speed: [7, 9],
     strongVs: ['pufferfish', 'fish-school'],
     waterline: 84 / 124,
     weakTo: ['whale', 'kraken', 'octopus'],
@@ -124,7 +124,7 @@ const boatVariants = [
     hp: 3,
     id: 'trawler',
     size: [10.2, 11],
-    speed: [0.85, 1.25],
+    speed: [6, 7.2],
     strongVs: ['fish-school', 'jellyfish', 'sea-turtle'],
     waterline: 60 / 108,
     weakTo: ['octopus', 'kraken', 'whale'],
@@ -135,7 +135,7 @@ const boatVariants = [
     hp: 1,
     id: 'surfboard',
     size: [2.4, 2.8],
-    speed: [2.5, 3.7],
+    speed: [8, 12],
     strongVs: ['fish-school'],
     waterline: 50 / 70,
     weakTo: ['shark', 'whale', 'jellyfish'],
@@ -146,7 +146,7 @@ const boatVariants = [
     hp: 2,
     id: 'speedboat',
     size: [5.5, 6.2],
-    speed: [2.25, 3.25],
+    speed: [9, 12],
     strongVs: ['fish-school', 'jellyfish'],
     waterline: 44 / 74,
     weakTo: ['shark', 'whale', 'kraken'],
@@ -157,7 +157,7 @@ const boatVariants = [
     hp: 5,
     id: 'battleship',
     size: [16.8, 18],
-    speed: [0.75, 1.1],
+    speed: [6, 7],
     strongVs: ['shark', 'orca', 'kraken'],
     waterline: 50 / 92,
     weakTo: ['whale', 'octopus'],
@@ -168,7 +168,7 @@ const boatVariants = [
     hp: 4,
     id: 'pirate-ship',
     size: [11.4, 12.3],
-    speed: [0.95, 1.45],
+    speed: [7, 9],
     strongVs: ['boat', 'shark'],
     waterline: 88 / 138,
     weakTo: ['kraken', 'orca', 'whale'],
@@ -179,7 +179,7 @@ const boatVariants = [
     hp: 4,
     id: 'submarine',
     size: [12, 12.9],
-    speed: [1.15, 1.75],
+    speed: [8, 10],
     strongVs: ['kraken', 'orca', 'anglerfish'],
     waterline: 14 / 80,
     weakTo: ['whale', 'octopus', 'crab'],
@@ -290,27 +290,32 @@ function capWidth(entity: EcoEntity, world: EcoWorld, fraction = 0.9) {
   entity.size = Math.min(entity.size, (world.width * fraction) / Math.max(world.unit, 1))
 }
 
-const paceProfiles = {
-  anglerfish: { burst: [1.35, 2.2, 8], cruise: [0.35, 0.8, 3.2] },
-  crab: { burst: [2.8, 4.5, 9], cruise: [1.45, 2.4, 5.6] },
-  fish: { burst: [4.6, 12, 24], cruise: [1.15, 4.5, 9] },
-  jellyfish: { burst: [0.45, 0.8, 2.8], cruise: [0.16, 0.3, 1.3] },
-  kraken: { burst: [0.72, 8, 20], cruise: [0.22, 3, 8] },
-  octopus: { burst: [1.85, 4, 13], cruise: [0.28, 1.2, 3.8] },
-  orca: { burst: [0.92, 9, 19], cruise: [0.28, 3.4, 7] },
-  pufferfish: { burst: [1.55, 2.2, 8], cruise: [0.46, 0.85, 3] },
-  shark: { burst: [1.75, 8, 22], cruise: [0.58, 4, 10] },
-  swordfish: { burst: [3.6, 12, 30], cruise: [0.82, 5, 12] },
-  turtle: { burst: [1.55, 3.4, 11], cruise: [0.42, 1.3, 3.8] },
-  whale: { burst: [0.68, 8, 17], cruise: [0.18, 3.2, 7] },
+const seaMovementSpeeds = {
+  anglerfish: { burst: 5, cruise: 2 },
+  crab: { burst: 5, cruise: 2.2 },
+  fish: { burst: 22, cruise: 9 },
+  jellyfish: { burst: 1.5, cruise: 0.65 },
+  kraken: { burst: 12, cruise: 5 },
+  octopus: { burst: 8, cruise: 3.2 },
+  orca: { burst: 30, cruise: 13.5 },
+  pufferfish: { burst: 4, cruise: 1.8 },
+  shark: { burst: 26, cruise: 11.5 },
+  swordfish: { burst: 36, cruise: 15 },
+  turtle: { burst: 13, cruise: 5 },
+  whale: { burst: 15, cruise: 6.5 },
 } as const
 
-type PaceKind = keyof typeof paceProfiles
+type PaceKind = keyof typeof seaMovementSpeeds
 
-function pace(entity: EcoEntity, world: EcoWorld, kind: PaceKind, mode: 'burst' | 'cruise') {
-  const [bodyLengths, minUnits, maxUnits] = paceProfiles[kind][mode]
+const seaSpeedUnitPx = 16
+const seaControlUnitScale = 1
 
-  return clamp(world.widthOf(entity) * bodyLengths, world.unit * minUnits, world.unit * maxUnits)
+function pace(_entity: EcoEntity, _world: EcoWorld, kind: PaceKind, mode: 'burst' | 'cruise') {
+  return seaSpeedUnitPx * seaMovementSpeeds[kind][mode]
+}
+
+function controlledSeaSpeed(kind: PaceKind) {
+  return seaMovementSpeeds[kind].burst * seaControlUnitScale
 }
 
 function matchesKey(entity: EcoEntity, world: EcoWorld, key: string) {
@@ -656,8 +661,10 @@ function shove(attacker: EcoEntity, target: EcoEntity, world: EcoWorld, force: n
 type SeaAbilityConfig = {
   active?: number
   amount?: number | ((target: EcoEntity) => number)
+  archetype?: string
   asset?: string
   buff?: { block?: number; icon: string; name: string; seconds: number; speed?: number }
+  charge?: { max: number; min?: number }
   cooldown: number
   dash?: number
   description: string
@@ -665,6 +672,7 @@ type SeaAbilityConfig = {
   icon?: string
   key: 'q' | 'w' | 'e' | 'r'
   name: string
+  projectile?: { amount: number; life?: number; size?: number; species: string; speed: number }
   radius?: number
   recovery?: number
   shape: 'circle' | 'cone' | 'line' | 'self'
@@ -688,6 +696,8 @@ function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
 
   return {
     active: config.active ?? 0.26,
+    archetype: config.archetype,
+    charge: config.charge,
     cooldown: config.cooldown,
     dash: config.dash,
     description: config.description,
@@ -725,6 +735,32 @@ function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
         world.heal(entity, config.heal)
       }
 
+      if (config.projectile) {
+        const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+        const projectile = world.spawn(config.projectile.species, {
+          countAs: null,
+          data: {
+            amount: config.projectile.amount * (0.7 + charge * 0.65),
+            life: config.projectile.life ?? 1.2,
+            ownerId: entity.id,
+          },
+          facing: entity.facing,
+          size: (config.projectile.size ?? 1) * (0.8 + charge * 0.35),
+          vx: entity.facing * world.unit * config.projectile.speed * (0.75 + charge * 0.5),
+          vy: 0,
+          x: clamp(
+            entity.x + entity.facing * world.unit * 2.4,
+            world.unit,
+            world.width - world.unit,
+          ),
+          y: entity.y,
+        })
+
+        if (projectile) {
+          projectile.data.zBoost = 12000
+        }
+      }
+
       if (config.ultimate || config.vfx === 'shockwave') {
         world.shake(config.ultimate ? 0.8 : 0.35)
       }
@@ -754,7 +790,10 @@ function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
         }
 
         context.cast.hitIds.add(target.id)
-        const amount = typeof config.amount === 'function' ? config.amount(target) : config.amount
+        const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+        const baseAmount =
+          typeof config.amount === 'function' ? config.amount(target) : config.amount
+        const amount = baseAmount * (config.charge ? 0.7 + charge * 0.75 : 1)
 
         controlHit(entity, target, world, amount)
         shove(entity, target, world, config.ultimate ? 4.8 : 2.8)
@@ -832,7 +871,7 @@ const fishControls = {
   idleState: 'school',
   move: 'swim',
   moveState: 'school',
-  speed: 4.3,
+  speed: controlledSeaSpeed('fish'),
 } as const
 
 const jellyControls = {
@@ -909,7 +948,7 @@ const jellyControls = {
   idleState: 'drift',
   move: 'swim',
   moveState: 'drift',
-  speed: 1.45,
+  speed: controlledSeaSpeed('jellyfish'),
 } as const
 
 const turtleControls = {
@@ -917,10 +956,10 @@ const turtleControls = {
     seaAbility({
       amount: (target) => (isJelly(target) ? 1.6 : 0.85),
       cooldown: 2.4,
-      description: 'Bite jellyfish and small prey.',
+      description: 'Crunch jellyfish and small prey with a hard turtle beak.',
       icon: 'bite',
       key: 'q',
-      name: 'Jelly bite',
+      name: 'Beak crunch',
       radius: 4.5,
       shape: 'line',
       state: 'paddle',
@@ -982,7 +1021,7 @@ const turtleControls = {
   idleState: 'paddle',
   move: 'swim',
   moveState: 'paddle',
-  speed: 2.6,
+  speed: controlledSeaSpeed('turtle'),
 } as const
 
 const crabControls = {
@@ -1042,7 +1081,7 @@ const crabControls = {
   idleState: 'scuttle',
   move: 'ground',
   moveState: 'scuttle',
-  speed: 3.2,
+  speed: controlledSeaSpeed('crab'),
 } as const
 
 const pufferControls = {
@@ -1109,7 +1148,7 @@ const pufferControls = {
   idleState: 'drift',
   move: 'swim',
   moveState: 'drift',
-  speed: 2.1,
+  speed: controlledSeaSpeed('pufferfish'),
 } as const
 
 const sharkControls = {
@@ -1117,13 +1156,14 @@ const sharkControls = {
     seaAbility({
       active: 0.32,
       amount: 1.55,
+      archetype: 'Ram-bite',
       asset: sharkBiteAsset,
       cooldown: 1.6,
       dash: 3.8,
-      description: 'Wind up, lunge forward and bite.',
+      description: 'Burst in with the snout, bite and start a head-shake.',
       icon: 'bite',
       key: 'q',
-      name: 'Bite lunge',
+      name: 'Ram bite',
       radius: 7.2,
       shape: 'line',
       state: 'hunt',
@@ -1135,29 +1175,30 @@ const sharkControls = {
       },
     }),
     seaAbility({
-      buff: { icon: '⚡', name: 'Blood scent', seconds: 3.8, speed: 1.85 },
+      archetype: 'Head-shake hold',
+      buff: { icon: '⚡', name: 'Head shake', seconds: 2.4, speed: 1.25 },
+      charge: { max: 1.1, min: 0.22 },
       cooldown: 5.2,
-      description: 'Scent blood and sprint.',
-      icon: 'blood',
+      description: 'Hold after closing in, then thrash the head side to side.',
+      icon: 'thrash',
       key: 'w',
-      name: 'Blood scent',
+      name: 'Head shake',
       shape: 'self',
       state: 'hunt',
       vfx: 'buff',
     }),
     seaAbility({
-      amount: 0.95,
+      archetype: 'Blood-scent sprint',
       asset: sharkBiteAsset,
+      buff: { icon: '⚡', name: 'Blood scent', seconds: 2.6, speed: 1.4 },
       cooldown: 3.6,
-      description: 'Thrash nearby creatures away.',
-      icon: 'thrash',
+      description: 'Smell blood and sprint toward wounded prey.',
+      icon: 'blood',
       key: 'e',
-      name: 'Thrash',
-      radius: 6,
-      shape: 'circle',
+      name: 'Blood scent',
+      shape: 'self',
       state: 'hunt',
-      target: 'area',
-      vfx: 'slash',
+      vfx: 'buff',
     }),
     seaAbility({
       asset: sharkBiteAsset,
@@ -1180,19 +1221,20 @@ const sharkControls = {
   idleState: 'prowl',
   move: 'swim',
   moveState: 'prowl',
-  speed: 4.8,
+  speed: controlledSeaSpeed('shark'),
 } as const
 
 const swordfishControls = {
   abilities: [
     seaAbility({
       amount: 1.35,
+      archetype: 'Bill thrust',
       cooldown: 2,
       dash: 7,
-      description: 'Dash straight through prey.',
+      description: 'Thrust the long bill straight through prey.',
       icon: 'lance',
       key: 'q',
-      name: 'Lance dash',
+      name: 'Bill thrust',
       shape: 'line',
       state: 'strike',
       target: 'area',
@@ -1201,11 +1243,13 @@ const swordfishControls = {
     }),
     seaAbility({
       amount: 1.1,
+      archetype: 'Side-sweep slash',
       cooldown: 3.2,
-      description: 'Side slash with the bill.',
+      description: 'Sweep the bill sideways and throw a cutting current.',
       icon: 'slash',
       key: 'w',
-      name: 'Bill slash',
+      name: 'Side sweep',
+      projectile: { amount: 1, life: 1.2, size: 1.4, species: 'sea-current-shot', speed: 14 },
       radius: 4.8,
       shape: 'cone',
       state: 'strike',
@@ -1213,7 +1257,9 @@ const swordfishControls = {
       vfx: 'slash',
     }),
     seaAbility({
+      archetype: 'Hold sprint',
       buff: { icon: '⚡', name: 'Current', seconds: 3.2, speed: 1.9 },
+      charge: { max: 1.15, min: 0.22 },
       cooldown: 5,
       description: 'Sprint with a fast current.',
       icon: 'sprint',
@@ -1242,17 +1288,19 @@ const swordfishControls = {
   idleState: 'lance',
   move: 'swim',
   moveState: 'lance',
-  speed: 5.6,
+  speed: controlledSeaSpeed('swordfish'),
 } as const
 
 const octopusControls = {
   abilities: [
     seaAbility({
+      archetype: 'Projectile ink',
       cooldown: 3.2,
-      description: 'Release ink and daze nearby hunters.',
+      description: 'Launch an ink cloud projectile that dazes hunters.',
       icon: 'ink',
       key: 'q',
       name: 'Ink cloud',
+      projectile: { amount: 0.55, life: 1.1, size: 1.9, species: 'sea-current-shot', speed: 9 },
       radius: 5.5,
       shape: 'circle',
       state: 'ink',
@@ -1270,7 +1318,9 @@ const octopusControls = {
     }),
     seaAbility({
       amount: (target) => (isBoat(target) ? 1.6 : 1.1),
+      archetype: 'Hold grab',
       asset: octopusAsset,
+      charge: { max: 1.1, min: 0.24 },
       cooldown: 3.8,
       description: 'Grab a close target after a tentacle tell.',
       icon: 'grab',
@@ -1297,6 +1347,7 @@ const octopusControls = {
     }),
     seaAbility({
       asset: octopusInkAsset,
+      buff: { icon: '⚡', name: 'Jet', seconds: 1.3, speed: 3.25 },
       cooldown: 3,
       dash: -7,
       description: 'Ultimate: jet escape in a burst of ink.',
@@ -1313,7 +1364,7 @@ const octopusControls = {
   idleState: 'prowl',
   move: 'swim',
   moveState: 'prowl',
-  speed: 3.1,
+  speed: controlledSeaSpeed('octopus'),
 } as const
 
 const whaleControls = {
@@ -1344,15 +1395,21 @@ const whaleControls = {
       amount: (target) => (isBoat(target) ? 1.4 : 1),
       asset: whaleAsset,
       cooldown: 4.8,
-      description: 'Tail slap nearby threats.',
-      icon: 'tail',
+      description: 'Spin a bubble-net ring that traps fish close enough to feed.',
+      icon: 'bubble',
       key: 'w',
-      name: 'Tail slap',
+      name: 'Bubble net',
       radius: 9,
-      shape: 'cone',
+      shape: 'circle',
       state: 'cruise',
       target: 'area',
-      vfx: 'slash',
+      vfx: 'water',
+      onHit(entity, target) {
+        if (isFish(target)) {
+          target.vx += (entity.x - target.x) * 1.1
+          target.vy += (entity.y - target.y) * 0.7
+        }
+      },
     }),
     seaAbility({
       asset: whaleAsset,
@@ -1391,19 +1448,20 @@ const whaleControls = {
   idleState: 'cruise',
   move: 'swim',
   moveState: 'cruise',
-  speed: 3.1,
+  speed: controlledSeaSpeed('whale'),
 } as const
 
 const orcaControls = {
   abilities: [
     seaAbility({
       amount: 1.25,
+      archetype: 'Wave-wash',
       cooldown: 2.4,
-      dash: 5.8,
-      description: 'Ram prey with a fast burst.',
-      icon: 'ram',
+      dash: 2.4,
+      description: 'Wash a bow wave forward to roll prey off balance.',
+      icon: 'wave',
       key: 'q',
-      name: 'Ram',
+      name: 'Wave wash',
       shape: 'line',
       state: 'hunt',
       target: 'front',
@@ -1412,6 +1470,8 @@ const orcaControls = {
     }),
     seaAbility({
       amount: 0.9,
+      archetype: 'Hold tail slap',
+      charge: { max: 1.15, min: 0.24 },
       cooldown: 4.5,
       description: 'Tail slap and stun nearby prey.',
       icon: 'tail',
@@ -1428,32 +1488,35 @@ const orcaControls = {
       },
     }),
     seaAbility({
+      amount: 1.15,
+      archetype: 'Coordinated pod ram',
       cooldown: 6,
-      description: 'Mark prey with echolocation.',
-      icon: 'echolocate',
+      dash: 6.8,
+      description: 'Coordinate a pod-style ram through the target line.',
+      icon: 'pod',
       key: 'e',
-      name: 'Echolocate',
-      radius: 14,
-      shape: 'circle',
+      name: 'Pod ram',
+      radius: 9,
+      shape: 'line',
       state: 'hunt',
-      vfx: 'shockwave',
-      onRun(entity, world) {
-        for (const target of areaTargets(entity, world, world.unit * 14)) {
-          target.fx = 'aim'
-          target.data.fx = 1.6
-        }
-      },
+      target: 'area',
+      vfx: 'charge',
+      width: 5.2,
     }),
     seaAbility({
+      amount: 1.6,
       cooldown: 3,
-      description: 'Ultimate: call a brief helper orca.',
-      icon: 'pod',
+      dash: 7.2,
+      description: 'Final Smash: beaching lunge with a brief helper orca.',
+      icon: 'lunge',
       key: 'r',
-      name: 'Pod call',
-      shape: 'self',
+      name: 'Beach lunge',
+      shape: 'line',
       state: 'hunt',
+      target: 'area',
       ultimate: true,
       vfx: 'buff',
+      width: 5.4,
       onRun(entity, world) {
         if (world.canBreed()) {
           const helper = world.spawn('orca', {
@@ -1478,7 +1541,7 @@ const orcaControls = {
   idleState: 'hunt',
   move: 'swim',
   moveState: 'hunt',
-  speed: 4.5,
+  speed: controlledSeaSpeed('orca'),
 } as const
 
 const anglerControls = {
@@ -1517,10 +1580,10 @@ const anglerControls = {
     seaAbility({
       amount: 1.25,
       cooldown: 2.8,
-      description: 'Ambush bite after the lure.',
+      description: 'Ambush gulp after the lure pulls prey close.',
       icon: 'bite',
       key: 'w',
-      name: 'Ambush',
+      name: 'Ambush gulp',
       radius: 4.8,
       shape: 'line',
       state: 'strike',
@@ -1566,7 +1629,7 @@ const anglerControls = {
   idleState: 'lure',
   move: 'swim',
   moveState: 'lure',
-  speed: 2.4,
+  speed: controlledSeaSpeed('anglerfish'),
 } as const
 
 const kelpCoral: EcoSpecies = {
@@ -2836,6 +2899,48 @@ const bubbleRing: EcoSpecies = {
   },
 }
 
+const seaCurrentShot: EcoSpecies = {
+  anchor: 'center',
+  asset: bubbleRingAsset,
+  countAs: null,
+  init(entity) {
+    entity.data.life ??= 1.1
+  },
+  layer: 'front',
+  size: [2, 4],
+  state: 'current',
+  tags: ['projectile'],
+  tick(entity, world, dt) {
+    entity.data.life = (entity.data.life ?? 1) - dt
+    integrate(entity, dt)
+    entity.tilt = entity.facing * 18
+
+    const owner = world.byId(entity.data.ownerId ?? null)
+
+    for (const target of world.within(entity.x, entity.y, world.unit * 2.5, (other) =>
+      owner ? isControlTarget(owner, other) : !world.has(other, 'projectile'),
+    )) {
+      if (owner) {
+        controlHit(owner, target, world, entity.data.amount ?? 1)
+        shove(owner, target, world, 2.8)
+      } else {
+        hurt(target, world, entity.data.amount ?? 1)
+      }
+      spawnBurst(world, target.x, target.y, 2.3)
+      world.remove(entity)
+      return
+    }
+
+    if (
+      (entity.data.life ?? 0) <= 0 ||
+      entity.x < -world.unit * 3 ||
+      entity.x > world.width + world.unit * 3
+    ) {
+      world.remove(entity)
+    }
+  },
+}
+
 const swimmer: EcoSpecies = {
   anchor: 'center',
   asset: swimmerAsset,
@@ -2884,6 +2989,7 @@ export const underseaSpecies: EcoSpeciesMap = {
   orca,
   pufferfish,
   'sea-bubble-ring': bubbleRing,
+  'sea-current-shot': seaCurrentShot,
   'sea-depth-charge': depthCharge,
   'sea-net': seaNet,
   'sea-swimmer': swimmer,
