@@ -164,6 +164,7 @@ export const menuSceneryTones: MenuSceneryTone[] = [
   'blossom',
   'fairy-castle',
   'prehistoric',
+  'undersea',
 ]
 
 const menuSceneryLabelByTone: Record<MenuSceneryTone, string> = {
@@ -174,6 +175,7 @@ const menuSceneryLabelByTone: Record<MenuSceneryTone, string> = {
   blossom: 'Sakura',
   'fairy-castle': 'Medieval fantasy',
   prehistoric: 'Dino valley',
+  undersea: 'Water world',
 }
 
 const brownAnimeCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
@@ -208,6 +210,12 @@ const prehistoricCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
   { maxWidth: 14.4, minWidth: 9.8, src: '/clouds/prehistoric-cloud-puff.svg' },
 ] as const
 
+const underseaCloudSpawnDesigns: readonly CloudSpawnDesign[] = [
+  { maxWidth: 18.4, minWidth: 12.6, src: '/spawnables/sea-drifter-fish.svg' },
+  { maxWidth: 16.2, minWidth: 10.4, src: '/spawnables/sea-drifter-manta.svg' },
+  { maxWidth: 19.2, minWidth: 13.8, src: '/spawnables/sea-drifter-jelly.svg' },
+] as const
+
 const cloudSpawnDesignsByScenery: Record<MenuSceneryTone, readonly CloudSpawnDesign[]> = {
   dawn: brownAnimeCloudSpawnDesigns,
   'under-tree': girlUnderTreeCloudSpawnDesigns,
@@ -216,6 +224,7 @@ const cloudSpawnDesignsByScenery: Record<MenuSceneryTone, readonly CloudSpawnDes
   blossom: blossomCloudSpawnDesigns,
   'fairy-castle': fairyCastleCloudSpawnDesigns,
   prehistoric: prehistoricCloudSpawnDesigns,
+  undersea: underseaCloudSpawnDesigns,
 }
 
 export const skyByScenery: Record<MenuSceneryTone, string> = {
@@ -226,6 +235,7 @@ export const skyByScenery: Record<MenuSceneryTone, string> = {
   blossom: '/sceneries/blossom-breeze-sky.svg',
   'fairy-castle': '/sceneries/fairy-castle.svg',
   prehistoric: '/sceneries/prehistoric-valley.svg',
+  undersea: '/sceneries/undersea-deep.svg',
 }
 
 export const mobileSkyByScenery: Partial<Record<MenuSceneryTone, string>> = {
@@ -233,6 +243,7 @@ export const mobileSkyByScenery: Partial<Record<MenuSceneryTone, string>> = {
   blossom: '/sceneries/blossom-breeze-sky-mobile-experimental.svg',
   'fairy-castle': '/sceneries/fairy-castle-mobile-experimental.svg',
   prehistoric: '/sceneries/prehistoric-valley-mobile.svg',
+  undersea: '/sceneries/undersea-deep-mobile.svg',
 }
 
 export const meadowByScenery: Record<MenuSceneryTone, string> = {
@@ -243,6 +254,7 @@ export const meadowByScenery: Record<MenuSceneryTone, string> = {
   blossom: '/sceneries/blossom-grass-mound.svg',
   'fairy-castle': '/sceneries/transparent-meadow.svg',
   prehistoric: '/sceneries/transparent-meadow.svg',
+  undersea: '/sceneries/transparent-meadow.svg',
 }
 
 const mobileMeadowByScenery: Partial<Record<MenuSceneryTone, string>> = {
@@ -260,6 +272,7 @@ const panelBackgroundByScenery: Record<MenuSceneryTone, string> = {
     'linear-gradient(180deg, rgba(214, 220, 209, 0.96) 0%, rgba(191, 201, 186, 0.94) 100%)',
   prehistoric:
     'linear-gradient(180deg, rgba(222, 240, 232, 0.95) 0%, rgba(246, 232, 204, 0.94) 100%)',
+  undersea: 'linear-gradient(180deg, rgba(18, 111, 146, 0.95) 0%, rgba(9, 76, 105, 0.94) 100%)',
 }
 
 const sceneButtonAuraByScenery: Record<MenuSceneryTone, string> = {
@@ -270,6 +283,7 @@ const sceneButtonAuraByScenery: Record<MenuSceneryTone, string> = {
   blossom: 'rgba(255, 176, 208, 0.9)',
   'fairy-castle': 'rgba(154, 172, 138, 0.88)',
   prehistoric: 'rgba(255, 170, 92, 0.88)',
+  undersea: 'rgba(98, 218, 230, 0.9)',
 }
 
 const noScenePieces: readonly StaticScenePiece[] = []
@@ -328,6 +342,7 @@ const heroPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> 
   blossom: noScenePieces,
   'fairy-castle': noScenePieces,
   prehistoric: noScenePieces,
+  undersea: noScenePieces,
 }
 
 const panelPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]> = {
@@ -338,6 +353,7 @@ const panelPiecesByScenery: Record<MenuSceneryTone, readonly StaticScenePiece[]>
   blossom: noScenePieces,
   'fairy-castle': noScenePieces,
   prehistoric: noScenePieces,
+  undersea: noScenePieces,
 }
 
 const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
@@ -366,6 +382,7 @@ const heroCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter
   ],
   'fairy-castle': noSceneCritters,
   prehistoric: noSceneCritters,
+  undersea: noSceneCritters,
 }
 
 const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritter[]> = {
@@ -394,6 +411,7 @@ const panelCrittersByScenery: Record<MenuSceneryTone, readonly StaticSceneCritte
   ],
   'fairy-castle': noSceneCritters,
   prehistoric: noSceneCritters,
+  undersea: noSceneCritters,
 }
 
 const heroCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
@@ -483,6 +501,23 @@ const heroCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> 
       style: { animationDelay: '-13s' },
     },
   ],
+  undersea: [
+    {
+      className: 'left-[8%] top-[22%] w-[15rem] opacity-70 md:left-[12%] md:w-[19rem]',
+      src: '/spawnables/sea-drifter-whale.svg',
+      style: { animationDelay: '-8s' },
+    },
+    {
+      className: 'right-[18%] top-[34%] w-[11rem] opacity-75 md:w-[15rem]',
+      src: '/spawnables/sea-drifter-manta.svg',
+      style: { animationDelay: '-16s' },
+    },
+    {
+      className: 'left-[42%] top-[46%] hidden w-[13rem] opacity-65 md:block',
+      src: '/spawnables/sea-drifter-fish.svg',
+      style: { animationDelay: '-4s' },
+    },
+  ],
 }
 
 const panelCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
@@ -559,6 +594,17 @@ const panelCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]>
       style: { animationDelay: '-9s' },
     },
   ],
+  undersea: [
+    {
+      className: 'left-[6%] top-[1.6rem] w-[12rem] opacity-70',
+      src: '/spawnables/sea-drifter-fish.svg',
+    },
+    {
+      className: 'right-[7%] top-[3.1rem] w-[10rem] opacity-70',
+      src: '/spawnables/sea-drifter-jelly.svg',
+      style: { animationDelay: '-10s' },
+    },
+  ],
 }
 
 export const flavorCardCloudsByScenery: Record<MenuSceneryTone, readonly StaticSceneCloud[]> = {
@@ -624,6 +670,17 @@ export const flavorCardCloudsByScenery: Record<MenuSceneryTone, readonly StaticS
       style: { animationDelay: '-6s' },
     },
   ],
+  undersea: [
+    {
+      className: 'left-[-10%] top-[14%] z-10 w-[5.6rem] opacity-75',
+      src: '/spawnables/sea-drifter-fish.svg',
+    },
+    {
+      className: 'right-[4%] top-[26%] z-10 w-[4.8rem] opacity-75',
+      src: '/spawnables/sea-drifter-jelly.svg',
+      style: { animationDelay: '-6s' },
+    },
+  ],
 }
 
 const spawnedFlowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> = {
@@ -645,6 +702,7 @@ const spawnedFlowerAssetsByScenery: Record<MenuSceneryTone, readonly string[]> =
   ],
   'fairy-castle': ['/sceneries/fairy-castle-house.svg', '/sceneries/fairy-castle-house-wide.svg'],
   prehistoric: ['/flowers/prehistoric-fern.svg', '/flowers/prehistoric-horsetail.svg'],
+  undersea: ['/spawnables/sea-kelp-coral.svg'],
 }
 
 const seededAccentCountByScenery: Record<MenuSceneryTone, number> = {
@@ -655,6 +713,7 @@ const seededAccentCountByScenery: Record<MenuSceneryTone, number> = {
   blossom: 9,
   'fairy-castle': 0,
   prehistoric: 7,
+  undersea: 5,
 }
 
 const noLandscapeFlowers: readonly LandscapeFlower[] = []
@@ -700,6 +759,7 @@ const heroLineFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower
   ],
   'fairy-castle': noLandscapeFlowers,
   prehistoric: noLandscapeFlowers,
+  undersea: noLandscapeFlowers,
 }
 
 const persuasionWildflowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
@@ -725,6 +785,7 @@ const persuasionWildflowersByScenery: Record<MenuSceneryTone, readonly Landscape
   ],
   'fairy-castle': noLandscapeFlowers,
   prehistoric: noLandscapeFlowers,
+  undersea: noLandscapeFlowers,
 }
 
 const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly LandscapeFlower[]> = {
@@ -766,6 +827,7 @@ const persuasionGardenFlowersByScenery: Record<MenuSceneryTone, readonly Landsca
   ],
   'fairy-castle': noLandscapeFlowers,
   prehistoric: noLandscapeFlowers,
+  undersea: noLandscapeFlowers,
 }
 
 const persuasionSheep = [{ left: '89%', src: '/catering/decor/sheep-grin.svg' }] as const
@@ -946,6 +1008,7 @@ const heroFlowerSeamByScenery: Record<MenuSceneryTone, string> = {
   blossom: '0rem',
   'fairy-castle': '0.5rem',
   prehistoric: '0.5rem',
+  undersea: '0.5rem',
 }
 
 const createSpawnedCloud = (
@@ -977,6 +1040,10 @@ const getSpawnedAccentBottomRange = (
 
   if (sceneryTone === 'fairy-castle') {
     return kind === 'hero' ? [5, 38] : [4, 36]
+  }
+
+  if (sceneryTone === 'undersea') {
+    return kind === 'hero' ? [8, 42] : [6, 36]
   }
 
   if (sceneryTone === 'moonlit') {
@@ -1014,7 +1081,9 @@ const createSpawnedFlower = ({
             ? [0.74, 0.94]
             : sceneryTone === 'fairy-castle'
               ? [1.04, 1.52]
-              : [0.76, 0.98]
+              : sceneryTone === 'undersea'
+                ? [1.02, 1.34]
+                : [0.76, 0.98]
   const panelScaleRange =
     sceneryTone === 'under-tree'
       ? [0.78, 1]
@@ -1026,7 +1095,9 @@ const createSpawnedFlower = ({
             ? [0.84, 1.06]
             : sceneryTone === 'fairy-castle'
               ? [1.08, 1.58]
-              : [0.86, 1.08]
+              : sceneryTone === 'undersea'
+                ? [1.02, 1.32]
+                : [0.86, 1.08]
   const [minLeft, maxLeft] = kind === 'hero' ? [8, 92] : [8, 92]
   const [minBottom, maxBottom] = getSpawnedAccentBottomRange(sceneryTone, kind)
   const [minScale, maxScale] = kind === 'hero' ? heroScaleRange : panelScaleRange
@@ -1058,7 +1129,9 @@ const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'pan
               ? [0.74, 0.94]
               : sceneryTone === 'fairy-castle'
                 ? [1.04, 1.52]
-                : [0.76, 0.98]
+                : sceneryTone === 'undersea'
+                  ? [1.02, 1.34]
+                  : [0.76, 0.98]
 
     return { leftRange, scaleRange }
   }
@@ -1074,7 +1147,9 @@ const getSeededFlowerRanges = (sceneryTone: MenuSceneryTone, kind: 'hero' | 'pan
             ? [0.84, 1.06]
             : sceneryTone === 'fairy-castle'
               ? [1.08, 1.58]
-              : [0.86, 1.08]
+              : sceneryTone === 'undersea'
+                ? [1.02, 1.32]
+                : [0.86, 1.08]
 
   return { leftRange, scaleRange }
 }
@@ -1311,8 +1386,7 @@ export function MenuHero({
   const chooserButtonRef = useRef<HTMLButtonElement | null>(null)
   const [chooserAnchorX, setChooserAnchorX] = useState<number | null>(null)
   const [isSpawnTrayOpen, setIsSpawnTrayOpen] = useState(false)
-  const { clearSprites, spawnSprite, spriteCounts, sprites } =
-    useSceneSprites(sceneryTone)
+  const { clearSprites, spawnSprite, spriteCounts, sprites } = useSceneSprites(sceneryTone)
   const ecosystem = useEcosystem(sceneryTone)
   const spawnCounts: Record<string, number> = {
     ...spriteCounts,
@@ -1752,149 +1826,148 @@ export function PersuasionGardenPanel({
         style={{ minHeight: panelMinHeightValue, ...styles?.viewport }}
       >
         <BakeryCard
-            aria-hidden={isDetailsDormant}
-            className={cn(
-              'cateringPanelLayer cateringPersuasionPanel relative overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
-              `cateringScene-${sceneryTone}`,
-              !isScenery && 'cateringPanelPaper',
-              !isGalleryFace && panelTransition === 'idle' && 'cateringPanelLayerActive',
-              isDetailsDormant && 'cateringPanelFaceDormant',
-              isPaintingToGallery && 'cateringPanelLayerBase',
-              isPaintingToDetails &&
-                'cateringPanelLayerPaintIn cateringPanelLayerPaintInFromBottom',
-              classNames?.detailFace,
-            )}
-            radius="xl"
-            spacing="none"
-            style={{ minHeight: panelMinHeightValue, ...styles?.detailFace }}
-            tone="transparent"
-          >
-            {isScenery ? (
-              <>
+          aria-hidden={isDetailsDormant}
+          className={cn(
+            'cateringPanelLayer cateringPersuasionPanel relative overflow-hidden rounded-[1.45rem] border border-[rgba(91,70,37,0.12)] bg-[#dbeeff] px-5 py-5 shadow-[0_10px_24px_rgba(23,21,16,0.07)] md:px-6 md:py-6',
+            `cateringScene-${sceneryTone}`,
+            !isScenery && 'cateringPanelPaper',
+            !isGalleryFace && panelTransition === 'idle' && 'cateringPanelLayerActive',
+            isDetailsDormant && 'cateringPanelFaceDormant',
+            isPaintingToGallery && 'cateringPanelLayerBase',
+            isPaintingToDetails && 'cateringPanelLayerPaintIn cateringPanelLayerPaintInFromBottom',
+            classNames?.detailFace,
+          )}
+          radius="xl"
+          spacing="none"
+          style={{ minHeight: panelMinHeightValue, ...styles?.detailFace }}
+          tone="transparent"
+        >
+          {isScenery ? (
+            <>
+              <DecorativeSceneImage
+                className={cn('cateringSceneSky cateringPersuasionSky', classNames?.sky)}
+                fit="cover"
+                mobileSrc={mobileSkySrc}
+                sizes="100vw"
+                src={skySrc}
+                style={styles?.sky}
+              />
+              {sceneClouds.map((cloud) => (
                 <DecorativeSceneImage
-                  className={cn('cateringSceneSky cateringPersuasionSky', classNames?.sky)}
-                  fit="cover"
-                  mobileSrc={mobileSkySrc}
-                  sizes="100vw"
-                  src={skySrc}
-                  style={styles?.sky}
+                  className={cn('cateringPersuasionCloud', cloud.className, classNames?.cloud)}
+                  key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
+                  sizes="24vw"
+                  src={cloud.src}
+                  style={{ ...cloud.style, ...styles?.cloud }}
                 />
-                {sceneClouds.map((cloud) => (
-                  <DecorativeSceneImage
-                    className={cn('cateringPersuasionCloud', cloud.className, classNames?.cloud)}
-                    key={`${sceneryTone}-${cloud.className}-${cloud.src}`}
-                    sizes="24vw"
-                    src={cloud.src}
-                    style={{ ...cloud.style, ...styles?.cloud }}
-                  />
-                ))}
-                {spawnedClouds.map((cloud) => (
-                  <DecorativeSceneImage
-                    className={cn('cateringPersuasionCloud', classNames?.cloud)}
-                    key={cloud.id}
-                    src={cloud.src}
-                    style={{ left: cloud.left, top: cloud.top, width: cloud.width, ...styles?.cloud }}
-                  />
-                ))}
-              </>
-            ) : null}
+              ))}
+              {spawnedClouds.map((cloud) => (
+                <DecorativeSceneImage
+                  className={cn('cateringPersuasionCloud', classNames?.cloud)}
+                  key={cloud.id}
+                  src={cloud.src}
+                  style={{ left: cloud.left, top: cloud.top, width: cloud.width, ...styles?.cloud }}
+                />
+              ))}
+            </>
+          ) : null}
 
+          <div
+            className={cn(
+              'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pr-0',
+              isScenery && 'md:pr-[10rem]',
+              children ? 'pb-2 md:pb-3' : isScenery ? 'pb-16 md:pb-20' : 'pb-4',
+              classNames?.foreground,
+            )}
+            style={styles?.foreground}
+          >
+            {product.menuExpandedPitch ? (
+              <RichText
+                className={cn(
+                  'cateringPitch cateringPersuasionBody prose-p:leading-7',
+                  classNames?.body,
+                )}
+                data={product.menuExpandedPitch}
+                enableGutter={false}
+                style={styles?.body}
+              />
+            ) : (
+              <div
+                className={cn('cateringPersuasionBody space-y-3', classNames?.body)}
+                style={styles?.body}
+              >
+                {persuasionCopy.map((paragraph) => (
+                  <p className="text-[1rem] leading-7 md:text-[1.04rem]" key={paragraph}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            <BakeryPopoverPanel
+              block
+              className={cn('pt-1', classNames?.actionShell)}
+              content={
+                <SceneryChooserPopover
+                  activeTone={sceneryTone}
+                  anchorX={chooserAnchorX}
+                  onSelectScenery={onSelectScenery}
+                />
+              }
+              contentClassName="cateringSceneryChooser absolute left-0 top-full z-[8]"
+              onClose={onToggleSceneryPicker}
+              ref={chooserAnchorRef}
+              style={styles?.actionShell}
+              visible={isSceneryPickerOpen}
+            >
+              <SceneActionRow
+                className={cn('cateringActionRow cateringPanelActionRow', classNames?.actionRow)}
+                gap="2"
+                style={styles?.actionRow}
+              >
+                {hasGallery ? (
+                  <CateringActionButton
+                    className={cn(
+                      'cateringPhotosButton',
+                      classNames?.actionButton,
+                      classNames?.photosButton,
+                    )}
+                    disabled={isPanelTransitioning}
+                    onClick={() => runPanelTransition('gallery')}
+                    style={{ ...styles?.actionButton, ...styles?.photosButton }}
+                    wrapperClassName={classNames?.actionButtonWrap}
+                    wrapperStyle={styles?.actionButtonWrap}
+                  >
+                    <Image
+                      alt=""
+                      aria-hidden="true"
+                      className="cateringPhotosButtonIcon"
+                      height={52}
+                      src="/flowers/menu-nav-flower.svg"
+                      unoptimized
+                      width={64}
+                    />
+                    <span>See photos</span>
+                  </CateringActionButton>
+                ) : null}
+              </SceneActionRow>
+            </BakeryPopoverPanel>
+          </div>
+
+          {children ? (
             <div
               className={cn(
-                'cateringPanelForeground relative z-[2] max-w-[44rem] space-y-3 pr-0',
-                isScenery && 'md:pr-[10rem]',
-                children ? 'pb-2 md:pb-3' : isScenery ? 'pb-16 md:pb-20' : 'pb-4',
-                classNames?.foreground,
+                'cateringPanelOrderArea relative z-[2] pt-3 md:pt-4',
+                isScenery ? 'pb-[6.6rem] md:pb-[7rem]' : 'pb-1 md:pb-2',
+                classNames?.orderArea,
               )}
-              style={styles?.foreground}
+              style={styles?.orderArea}
             >
-              {product.menuExpandedPitch ? (
-                <RichText
-                  className={cn(
-                    'cateringPitch cateringPersuasionBody prose-p:leading-7',
-                    classNames?.body,
-                  )}
-                  data={product.menuExpandedPitch}
-                  enableGutter={false}
-                  style={styles?.body}
-                />
-              ) : (
-                <div
-                  className={cn('cateringPersuasionBody space-y-3', classNames?.body)}
-                  style={styles?.body}
-                >
-                  {persuasionCopy.map((paragraph) => (
-                    <p className="text-[1rem] leading-7 md:text-[1.04rem]" key={paragraph}>
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              )}
-
-              <BakeryPopoverPanel
-                block
-                className={cn('pt-1', classNames?.actionShell)}
-                content={
-                  <SceneryChooserPopover
-                    activeTone={sceneryTone}
-                    anchorX={chooserAnchorX}
-                    onSelectScenery={onSelectScenery}
-                  />
-                }
-                contentClassName="cateringSceneryChooser absolute left-0 top-full z-[8]"
-                onClose={onToggleSceneryPicker}
-                ref={chooserAnchorRef}
-                style={styles?.actionShell}
-                visible={isSceneryPickerOpen}
-              >
-                <SceneActionRow
-                  className={cn('cateringActionRow cateringPanelActionRow', classNames?.actionRow)}
-                  gap="2"
-                  style={styles?.actionRow}
-                >
-                  {hasGallery ? (
-                    <CateringActionButton
-                      className={cn(
-                        'cateringPhotosButton',
-                        classNames?.actionButton,
-                        classNames?.photosButton,
-                      )}
-                      disabled={isPanelTransitioning}
-                      onClick={() => runPanelTransition('gallery')}
-                      style={{ ...styles?.actionButton, ...styles?.photosButton }}
-                      wrapperClassName={classNames?.actionButtonWrap}
-                      wrapperStyle={styles?.actionButtonWrap}
-                    >
-                      <Image
-                        alt=""
-                        aria-hidden="true"
-                        className="cateringPhotosButtonIcon"
-                        height={52}
-                        src="/flowers/menu-nav-flower.svg"
-                        unoptimized
-                        width={64}
-                      />
-                      <span>See photos</span>
-                    </CateringActionButton>
-                  ) : null}
-                </SceneActionRow>
-              </BakeryPopoverPanel>
+              {children}
             </div>
+          ) : null}
 
-            {children ? (
-              <div
-                className={cn(
-                  'cateringPanelOrderArea relative z-[2] pt-3 md:pt-4',
-                  isScenery ? 'pb-[6.6rem] md:pb-[7rem]' : 'pb-1 md:pb-2',
-                  classNames?.orderArea,
-                )}
-                style={styles?.orderArea}
-              >
-                {children}
-              </div>
-            ) : null}
-
-            {isScenery ? (
+          {isScenery ? (
             <div
               className={cn(
                 'pointer-events-none absolute inset-x-0 bottom-0 h-[5.9rem] overflow-hidden',
@@ -1998,8 +2071,8 @@ export function PersuasionGardenPanel({
                 />
               ))}
             </div>
-            ) : null}
-          </BakeryCard>
+          ) : null}
+        </BakeryCard>
 
         {hasGallery && showGalleryFace ? (
           <BakeryCard

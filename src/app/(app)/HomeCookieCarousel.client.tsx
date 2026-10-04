@@ -2989,6 +2989,10 @@ export function HomeCookieCarousel({
             object-position: center top;
           }
 
+          .homeCookieScene-undersea .homeCookieSceneSky {
+            object-position: center top;
+          }
+
           .homeCookieScene-moonlit .homeCookieSceneSky {
             object-position: center top;
           }
@@ -3005,6 +3009,11 @@ export function HomeCookieCarousel({
 
           .homeCookieScene-moonlit .homeCookieSpawnLayer--ground {
             --spawn-water-bottom: calc(var(--home-meadow-height) * 0.6);
+          }
+
+          .homeCookieScene-undersea .homeCookieSpawnLayer--ground {
+            --spawn-ground-bottom: 11.5%;
+            --spawn-water-bottom: 84%;
           }
 
           .homeCookieScene-moonlit .homeCookieFlowerRailBloom {

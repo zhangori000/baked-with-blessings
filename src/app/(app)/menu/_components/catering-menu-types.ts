@@ -10,6 +10,7 @@ export type MenuSceneryTone =
   | 'blossom'
   | 'fairy-castle'
   | 'prehistoric'
+  | 'undersea'
 
 export type SelectableFlavor = {
   allergens?: string[]

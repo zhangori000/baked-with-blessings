@@ -18,6 +18,7 @@ import './species/meadow.css'
 import './species/night.css'
 import './species/prehistoric.css'
 import './species/siege.css'
+import './species/undersea.css'
 
 const EcoThing = memo(function EcoThing({
   store,

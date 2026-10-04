@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 96">
+  <path
+    d="M20 50C58 22 92 26 110 50C128 26 162 22 200 50C164 60 139 72 110 88C81 72 56 60 20 50Z"
+    fill="#164d63"
+    opacity="0.7"
+  />
+  <path d="M104 47C110 38 116 38 122 47C118 57 108 57 104 47Z" fill="#0e3f55" opacity="0.8" />
+  <path
+    d="M110 50C108 35 116 24 132 17"
+    stroke="#164d63"
+    stroke-linecap="round"
+    stroke-width="5"
+    opacity="0.7"
+  />
+</svg>

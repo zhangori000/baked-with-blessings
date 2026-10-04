@@ -3443,6 +3443,11 @@ html[data-menu-scene='prehistoric'] body:has(.routeLoadingSurface) .siteHeaderVi
   background: #e4efe0 !important;
 }
 
+html[data-menu-scene='undersea'] body:has(.routeLoadingSurface) .siteHeader,
+html[data-menu-scene='undersea'] body:has(.routeLoadingSurface) .siteHeaderViewport {
+  background: #0b5f7d !important;
+}
+
 html[data-menu-scene='blossom'] body:has(.routeLoadingSurface) .siteHeader,
 html[data-menu-scene='blossom'] body:has(.routeLoadingSurface) .siteHeaderViewport {
   background: #f7edf2 !important;

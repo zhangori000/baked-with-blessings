@@ -48,6 +48,7 @@ export const asteroidStarCount = 25
 export const spawnMilestoneByScene: Partial<Record<SceneTone, SpawnMilestone>> = {
   moonlit: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
   prehistoric: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
+  undersea: { at: 5, noun: 'sunken boats', tally: 'boats-sunk' },
 }
 
 export type SceneSprite = {
@@ -109,6 +110,7 @@ const accentLabelByScene: Record<SceneTone, string> = {
   'fairy-castle': 'Cottage',
   moonlit: 'Flower',
   prehistoric: 'Fern',
+  undersea: 'Coral',
   'under-tree': 'Flower',
 }
 
@@ -234,6 +236,21 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('dino-nest', 'Egg'),
     creature('shooting-star', 'Shooting star', spawnableAsset('dino-shooting-star-icon')),
     creature('eruption', 'Eruption', spawnableAsset('dino-eruption')),
+  ],
+  undersea: [
+    creature('fish-school', 'Fish school', spawnableAsset('sea-fish-school')),
+    creature('kelp-coral', 'Kelp coral', spawnableAsset('sea-kelp-coral')),
+    creature('boat', 'Boat', spawnableAsset('boat-rowboat')),
+    creature('jellyfish', 'Jellyfish', spawnableAsset('sea-jellyfish')),
+    creature('sea-turtle', 'Sea turtle', spawnableAsset('sea-turtle')),
+    creature('crab', 'Crab', spawnableAsset('sea-crab')),
+    creature('pufferfish', 'Pufferfish', spawnableAsset('sea-puffer')),
+    creature('shark', 'Shark', spawnableAsset('sea-shark')),
+    creature('octopus', 'Octopus', spawnableAsset('sea-octopus')),
+    creature('whale', 'Whale', spawnableAsset('sea-whale')),
+    creature('orca', 'Orca', spawnableAsset('sea-orca')),
+    creature('anglerfish', 'Anglerfish', spawnableAsset('sea-anglerfish')),
+    creature('kraken', 'Kraken', spawnableAsset('sea-kraken')),
   ],
   'fairy-castle': [
     creatureCloud,

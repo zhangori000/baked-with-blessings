@@ -15,6 +15,21 @@ type NodeCache = {
 }
 
 const emptySnapshot: EcoSnapshot = { counts: {}, entities: [], scene: '', tallies: {} }
+const underseaDesktopBackdrop = { floorY: 520, height: 600, surfaceY: 95, width: 1200 }
+const underseaMobileBackdrop = { floorY: 760, height: 860, surfaceY: 150, width: 430 }
+
+const underseaBackdropLines = (rect: DOMRect) => {
+  const backdrop =
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+      ? underseaMobileBackdrop
+      : underseaDesktopBackdrop
+  const scale = Math.max(rect.width / backdrop.width, rect.height / backdrop.height)
+
+  return {
+    groundY: backdrop.floorY * scale,
+    waterY: backdrop.surfaceY * scale,
+  }
+}
 
 export class EcosystemStore {
   private frozen = false
@@ -133,8 +148,13 @@ export class EcosystemStore {
     const ground = front.querySelector<HTMLElement>('[data-eco-probe="ground"]')
     const water = front.querySelector<HTMLElement>('[data-eco-probe="water"]')
     const unit = front.querySelector<HTMLElement>('[data-eco-probe="unit"]')
-    const groundY = ground ? ground.getBoundingClientRect().top - rect.top : rect.height * 0.9
-    const waterY = water ? water.getBoundingClientRect().top - rect.top : groundY
+    const measuredGroundY = ground
+      ? ground.getBoundingClientRect().top - rect.top
+      : rect.height * 0.9
+    const measuredWaterY = water ? water.getBoundingClientRect().top - rect.top : measuredGroundY
+    const underseaLines = this.scene === 'undersea' ? underseaBackdropLines(rect) : null
+    const groundY = underseaLines?.groundY ?? measuredGroundY
+    const waterY = underseaLines?.waterY ?? measuredWaterY
     const unitPx = unit ? unit.getBoundingClientRect().width || 16 : 16
     const back = this.layers.back?.getBoundingClientRect()
 

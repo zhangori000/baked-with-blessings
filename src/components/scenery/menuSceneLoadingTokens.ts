@@ -57,6 +57,15 @@ export const menuSceneLoadingTokens = {
     sky: "url('/sceneries/prehistoric-valley.svg')",
     skyMobile: "url('/sceneries/prehistoric-valley-mobile.svg')",
   },
+  undersea: {
+    background: '#0b5f7d',
+    bannerBackground: 'rgba(232, 252, 255, 0.9)',
+    bannerColor: '#06364c',
+    meadow: "url('/sceneries/transparent-meadow.svg')",
+    overlay: 'linear-gradient(180deg, rgba(98, 218, 230, 0.08) 0%, rgba(7, 65, 93, 0.22) 100%)',
+    sky: "url('/sceneries/undersea-deep.svg')",
+    skyMobile: "url('/sceneries/undersea-deep-mobile.svg')",
+  },
   'under-tree': {
     background: '#e7f0d8',
     bannerBackground: 'rgba(250, 255, 241, 0.9)',

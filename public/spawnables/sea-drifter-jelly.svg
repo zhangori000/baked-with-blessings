@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 130">
+  <path
+    d="M36 55C38 22 62 8 88 14C120 21 136 42 130 72C98 82 66 78 36 55Z"
+    fill="#eaa2dc"
+    opacity="0.62"
+  />
+  <g fill="none" stroke="#eaa2dc" stroke-linecap="round" stroke-width="6" opacity="0.54">
+    <path d="M55 70C44 86 66 98 55 118" />
+    <path d="M78 74C66 91 89 102 78 124" />
+    <path d="M101 72C92 88 116 101 106 121" />
+    <path d="M121 68C116 85 136 96 130 116" />
+  </g>
+</svg>
