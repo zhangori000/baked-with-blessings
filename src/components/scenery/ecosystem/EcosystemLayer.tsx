@@ -288,7 +288,6 @@ function ControlHud({
 
       return { bottom, hud, lines, overlap: lines.bottom - top + 12, top }
     }
-    let raiseTimer = 0
     let raised: HTMLElement | null = null
     const frame = window.requestAnimationFrame(() => {
       const first = measure()
@@ -297,28 +296,29 @@ function ControlHud({
         return
       }
 
-      window.scrollBy({ behavior: reduce ? 'auto' : 'smooth', top: first.overlap })
-      raiseTimer = window.setTimeout(
-        () => {
-          const next = measure()
-
-          if (!next || next.overlap <= 0) {
-            return
-          }
-
-          const clearance = next.lines.ground - next.lines.unit * 11
-          const raise = Math.max(0, Math.min(next.bottom - clearance, next.top - 96))
-
-          raised = next.hud
-          raised.style.setProperty('--eco-hud-raise', `${Math.round(raise)}px`)
-        },
-        reduce ? 0 : 480,
+      const room = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight - window.scrollY,
       )
+      const scroll = Math.min(room, first.overlap)
+
+      if (scroll > 0) {
+        window.scrollBy({ behavior: reduce ? 'auto' : 'smooth', top: scroll })
+      }
+
+      if (scroll >= first.overlap) {
+        return
+      }
+
+      const clearance = first.lines.ground - scroll - first.lines.unit * 11
+      const raise = Math.max(0, Math.min(first.bottom - clearance, first.top - 96))
+
+      raised = first.hud
+      raised.style.setProperty('--eco-hud-raise', `${Math.round(raise)}px`)
     })
 
     return () => {
       window.cancelAnimationFrame(frame)
-      window.clearTimeout(raiseTimer)
       raised?.style.removeProperty('--eco-hud-raise')
     }
   }, [controlledId, store])
@@ -428,7 +428,7 @@ function ControlHud({
       {toast ? <div className="ecoControlToast">{toast}</div> : null}
       {controlled ? (
         <>
-          {controlled.move === 'swim' ? (
+          {controlled.move === 'swim' && followCursor ? (
             <div
               className="ecoSwimPad"
               onPointerDown={(event) => {
@@ -468,16 +468,43 @@ function ControlHud({
               </div>
             ) : null}
             {controlled.move === 'swim' ? (
-              <button
-                aria-pressed={followCursor}
-                className="ecoControlToggle"
-                onClick={() => {
-                  store.setFollowCursor(!followCursor)
-                }}
-                type="button"
-              >
-                {followCursor ? 'Follow cursor' : 'Arrows'}
-              </button>
+              <div aria-label="How to steer" className="ecoSteer" role="group">
+                <span aria-hidden="true" className="ecoSteerLabel">
+                  Steer with
+                </span>
+                <span className="ecoSteerOptions">
+                  <button
+                    aria-pressed={followCursor}
+                    className="ecoSteerOption"
+                    onClick={() => store.setFollowCursor(true)}
+                    title={
+                      coarsePointer
+                        ? 'Drag on the water to swim'
+                        : 'Your creature follows your mouse'
+                    }
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="ecoSteerIcon">
+                      {coarsePointer ? '☝' : '⌖'}
+                    </span>
+                    {coarsePointer ? 'Drag' : 'Mouse'}
+                  </button>
+                  <button
+                    aria-pressed={!followCursor}
+                    className="ecoSteerOption"
+                    onClick={() => store.setFollowCursor(false)}
+                    title={
+                      coarsePointer ? 'Use the arrow pad to swim' : 'Use the arrow keys to swim'
+                    }
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="ecoSteerIcon">
+                      {coarsePointer ? '✥' : '↔'}
+                    </span>
+                    {coarsePointer ? 'Pad' : 'Arrows'}
+                  </button>
+                </span>
+              </div>
             ) : null}
             <button className="ecoControlRelease" onClick={store.releaseControl} type="button">
               Release
@@ -586,6 +613,13 @@ function ControlHud({
               <span className="ecoHintKeys">
                 {coarsePointer ? 'Tap Q W E R for abilities' : 'Q W E R for abilities'}
               </span>
+              {controlled.move === 'swim' ? (
+                <span className="ecoHintKeys">
+                  {coarsePointer
+                    ? 'Prefer buttons? Pick Pad under “Steer with”'
+                    : 'Prefer keys? Pick Arrows under “Steer with”'}
+                </span>
+              ) : null}
             </button>
           ) : null}
         </>

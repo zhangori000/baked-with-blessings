@@ -410,8 +410,7 @@
 }
 
 .ecoControlPopoverButton,
-.ecoControlRelease,
-.ecoControlToggle {
+.ecoControlRelease {
   align-items: center;
   background: var(--scene-text);
   border: 0;
@@ -459,6 +458,8 @@
   display: flex;
   gap: 0.7rem;
   justify-content: space-between;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   min-width: min(92vw, 22rem);
   padding: 0.58rem 0.62rem 0.58rem 0.78rem;
   pointer-events: auto;
@@ -512,9 +513,65 @@
   width: 1.48rem;
 }
 
-.ecoControlToggle {
-  background: color-mix(in srgb, var(--scene-text) 9%, var(--scene-panel-fill));
+.ecoSteer {
+  align-items: center;
+  display: grid;
+  gap: 0.18rem;
+  justify-items: start;
+}
+
+.ecoSteerLabel {
+  font-family: var(--font-rounded-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+  text-transform: uppercase;
+}
+
+.ecoSteerOptions {
+  background: color-mix(in srgb, var(--scene-text) 10%, var(--scene-panel-fill));
+  border-radius: 999rem;
+  display: inline-flex;
+  gap: 0.15rem;
+  padding: 0.18rem;
+}
+
+.ecoSteerOption {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999rem;
   color: var(--scene-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-rounded-body);
+  font-size: 0.76rem;
+  font-weight: 800;
+  gap: 0.28rem;
+  min-height: 1.8rem;
+  opacity: 0.72;
+  padding: 0.3rem 0.62rem;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.ecoSteerOption:hover,
+.ecoSteerOption:focus-visible {
+  opacity: 1;
+}
+
+.ecoSteerOption[aria-pressed='true'] {
+  background: var(--scene-text);
+  color: var(--scene-panel-fill);
+  opacity: 1;
+}
+
+.ecoSteerIcon {
+  font-size: 0.86rem;
+  line-height: 1;
 }
 
 .ecoControlRelease {
