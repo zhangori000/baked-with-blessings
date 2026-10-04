@@ -1,6 +1,7 @@
 import { aspectOf } from './assets'
 import { between } from './behaviors'
 import type {
+  EcoControlInput,
   EcoEntity,
   EcoMatchup,
   EcoSpawnOptions,
@@ -25,6 +26,8 @@ export class Ecosystem implements EcoWorld {
   tallies: Record<string, number> = {}
   private sequence = 0
   private readonly windDirection = Math.random() < 0.5 ? -1 : 1
+  controlledId: number | null = null
+  controlInput: EcoControlInput = { followCursor: false, x: 0, y: 0 }
 
   constructor(readonly species: EcoSpeciesMap) {}
 
@@ -141,6 +144,7 @@ export class Ecosystem implements EcoWorld {
           : definition.countAs !== undefined
             ? definition.countAs
             : speciesId,
+      controlResetAsset: asset,
       data: { depth, ...options.data },
       dying: false,
       facing: options.facing ?? (Math.random() < 0.5 ? -1 : 1),
@@ -149,6 +153,7 @@ export class Ecosystem implements EcoWorld {
       id: ++this.sequence,
       idle: definition.idle ?? 'none',
       lift: 0,
+      maxHp: definition.hp ?? 1,
       removed: false,
       scale: 1,
       size: options.size ?? between(definition.size[0], definition.size[1]),
@@ -169,6 +174,7 @@ export class Ecosystem implements EcoWorld {
     }
 
     definition.init?.(entity, this)
+    entity.maxHp = entity.hp
     this.entities.push(entity)
     this.dirty = true
 
@@ -252,6 +258,110 @@ export class Ecosystem implements EcoWorld {
     )
   }
 
+  setControlled(id: number | null) {
+    this.controlledId = id
+  }
+
+  setControlInput(input: Partial<EcoControlInput>) {
+    this.controlInput = { ...this.controlInput, ...input }
+  }
+
+  private controlEntity(entity: EcoEntity, definition: EcoSpecies, dt: number) {
+    const controls = definition.controls
+
+    if (!controls) {
+      return false
+    }
+
+    const unit = this.unit
+    const input = this.controlInput
+    let moveX = input.x
+    let moveY = input.y
+
+    if (
+      input.followCursor &&
+      input.cursorX !== undefined &&
+      input.cursorY !== undefined &&
+      controls.move !== 'ground'
+    ) {
+      const dx = input.cursorX - entity.x
+      const dy = input.cursorY - entity.y
+      const gap = Math.hypot(dx, dy)
+
+      if (gap > unit * 0.3) {
+        moveX = dx / gap
+        moveY = dy / gap
+      } else {
+        moveX = 0
+        moveY = 0
+      }
+    }
+
+    const moving = Math.hypot(moveX, moveY) > 0.1
+    const length = Math.max(1, Math.hypot(moveX, moveY))
+    const speedBoost =
+      (entity.data.controlSpeedUntil ?? 0) > this.time ? (entity.data.controlSpeed ?? 1) : 1
+    const speed = controls.speed * unit * speedBoost
+    const vx = (moveX / length) * speed
+    const vy = (moveY / length) * speed
+
+    if (controls.move === 'ground') {
+      entity.x = Math.min(Math.max(entity.x + vx * dt, unit), this.width - unit)
+      const depth = Math.min(Math.max((entity.data.depth ?? 0) + vy * dt, -unit * 1.5), unit * 1.3)
+      entity.data.depth = depth
+      entity.y = this.groundY + depth
+      entity.vx = vx
+      entity.vy = 0
+      entity.lift = Math.max(0, entity.lift - dt * unit * 4)
+      entity.tilt *= 0.85
+    } else if (controls.move === 'swim') {
+      entity.x = Math.min(Math.max(entity.x + vx * dt, unit), this.width - unit)
+      entity.y = Math.min(
+        Math.max(entity.y + vy * dt, this.waterY + unit),
+        this.groundY - unit * 0.8,
+      )
+      entity.vx = vx
+      entity.vy = vy
+      entity.tilt = Math.min(
+        Math.max((Math.atan2(vy, Math.abs(vx) + 0.001) * 180) / Math.PI, -28),
+        28,
+      )
+    } else {
+      entity.x = Math.min(Math.max(entity.x + vx * dt, unit), this.width - unit)
+      entity.y = Math.min(
+        Math.max(entity.y + vy * dt, this.skyTop + unit),
+        Math.min(this.skyBottom, this.groundY - unit * 1.4),
+      )
+      entity.vx = vx
+      entity.vy = vy
+      entity.tilt = Math.min(
+        Math.max((Math.atan2(vy, Math.abs(vx) + 0.001) * 180) / Math.PI, -35),
+        35,
+      )
+    }
+
+    if (moveX > 0.05) {
+      entity.facing = 1
+    } else if (moveX < -0.05) {
+      entity.facing = -1
+    }
+
+    if ((entity.data.controlActionUntil ?? 0) <= this.time) {
+      this.setAsset(entity, entity.controlResetAsset)
+
+      this.setState(
+        entity,
+        moving
+          ? (controls.moveState ?? controls.idleState ?? 'move')
+          : (controls.idleState ?? 'idle'),
+      )
+      entity.fx =
+        entity.data.controlFxUntil && entity.data.controlFxUntil > this.time ? entity.fx : ''
+    }
+
+    return true
+  }
+
   private burn(entity: EcoEntity, dt: number) {
     const burn = entity.data.burn ?? 0
 
@@ -259,6 +369,7 @@ export class Ecosystem implements EcoWorld {
       if (entity.fx === 'burning') {
         entity.fx = ''
       }
+
       return
     }
 
@@ -298,7 +409,13 @@ export class Ecosystem implements EcoWorld {
       this.burn(entity, dt)
 
       if (!entity.dying) {
-        this.species[entity.species]?.tick(entity, this, dt)
+        const definition = this.species[entity.species]
+
+        if (entity.id === this.controlledId && definition?.controls) {
+          this.controlEntity(entity, definition, dt)
+        } else {
+          definition?.tick(entity, this, dt)
+        }
       }
     }
 

@@ -82,6 +82,7 @@ export type EcoEntity = {
   aspect: number
   asset: string
   countAs: string | null
+  controlResetAsset: string
   data: Record<string, number>
   dying: boolean
   facing: 1 | -1
@@ -90,6 +91,7 @@ export type EcoEntity = {
   id: number
   idle: EcoIdle
   lift: number
+  maxHp: number
   removed: boolean
   scale: number
   size: number
@@ -116,6 +118,35 @@ export type EcoSpawnOptions = {
   vy?: number
   x?: number
   y?: number
+}
+
+export type EcoControlMove = 'fly' | 'ground' | 'swim'
+
+export type EcoControlAbilityKey = 'q' | 'w' | 'e' | 'r'
+
+export type EcoControlAbility = {
+  cooldown: number
+  description: string
+  icon?: string
+  key: EcoControlAbilityKey
+  name: string
+  run(entity: EcoEntity, world: EcoWorld): void
+}
+
+export type EcoControls = {
+  abilities: readonly EcoControlAbility[]
+  idleState?: string
+  move: EcoControlMove
+  moveState?: string
+  speed: number
+}
+
+export type EcoControlInput = {
+  cursorX?: number
+  cursorY?: number
+  followCursor: boolean
+  x: number
+  y: number
 }
 
 export type EcoWorld = {
@@ -158,6 +189,7 @@ export type EcoSpecies = {
   asset: string | (() => string)
   burnTime?: number
   countAs?: string | null
+  controls?: EcoControls
   hp?: number
   idle?: EcoIdle
   init?: (entity: EcoEntity, world: EcoWorld) => void
@@ -177,21 +209,62 @@ export type EcoSpeciesMap = Record<string, EcoSpecies>
 
 export type EcoEntityView = {
   anchor: EcoAnchor
+  aspect: number
   asset: string
+  controllable: boolean
+  controlled: boolean
   dying: boolean
   fuel: boolean
+  health: number
+  healthMax: number
   id: number
   idle: EcoIdle
   layer: EcoLayer
+  label: string
   particles?: SpawnParticles
   rain: boolean
+  selected: boolean
   size: number
+  species: string
+  strong: readonly string[]
+  weak: readonly string[]
+}
+
+export type EcoControlAbilityView = {
+  cooldown: number
+  cooldownLeft: number
+  description: string
+  icon?: string
+  key: EcoControlAbilityKey
+  name: string
+}
+
+export type EcoControlEntityView = {
+  abilities: readonly EcoControlAbilityView[]
+  followCursor: boolean
+  health: number
+  healthMax: number
+  id: number
+  label: string
+  move: EcoControlMove
   species: string
 }
 
+export type EcoSelectionView = {
+  health: number
+  healthMax: number
+  id: number
+  label: string
+  strong: readonly string[]
+  weak: readonly string[]
+}
+
 export type EcoSnapshot = {
+  controlled: EcoControlEntityView | null
   counts: Readonly<Record<string, number>>
   entities: readonly EcoEntityView[]
   scene: string
+  selected: EcoSelectionView | null
   tallies: Readonly<Record<string, number>>
+  toast: string
 }

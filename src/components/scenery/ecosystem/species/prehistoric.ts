@@ -204,6 +204,10 @@ function nearestFire(entity: EcoEntity, world: EcoWorld, reach = 5) {
   )
 }
 
+function heal(entity: EcoEntity, amount: number) {
+  entity.hp = Math.min(entity.maxHp, entity.hp + amount)
+}
+
 function damage(
   entity: EcoEntity,
   world: EcoWorld,
@@ -212,11 +216,13 @@ function damage(
   attacker?: EcoEntity,
 ) {
   if (!living(entity)) {
-    return
+    return 0
   }
 
   const edge = attacker ? world.edge(attacker, entity) : 1
-  const adjusted = Math.max(0.35, amount * edge)
+  const block =
+    (entity.data.controlBlockUntil ?? 0) > world.time ? (entity.data.controlBlock ?? 0.5) : 1
+  const adjusted = Math.max(0.2, amount * edge * block)
 
   if (attacker) {
     spawnEffect(
@@ -232,7 +238,7 @@ function damage(
     entity.fx = 'dazed'
     entity.data.shake = 0.45
     world.tally('brachio-shrug')
-    return
+    return 0
   }
 
   entity.hp -= adjusted
@@ -240,8 +246,12 @@ function damage(
   entity.data.hurt = 0.45
   entity.vx += (entity.x >= fromX ? 1 : -1) * world.unit * 1.8
 
+  if (attacker && (attacker.data.frenzyUntil ?? 0) > world.time) {
+    heal(attacker, adjusted * 0.28)
+  }
+
   if (entity.hp > 0) {
-    return
+    return adjusted
   }
 
   if (entity.species === 'trex') {
@@ -250,10 +260,11 @@ function damage(
     world.setAsset(entity, trexPose(entity))
     world.setState(entity, 'limp')
     world.tally('trex-downed')
-    return
+    return adjusted
   }
 
   world.kill(entity)
+  return adjusted
 }
 
 function burnNearby(entity: EcoEntity, world: EcoWorld, radius: number, amount = 8) {
@@ -271,6 +282,102 @@ function burnNearby(entity: EcoEntity, world: EcoWorld, radius: number, amount =
       world.tally('lava-hit')
     }
   }
+}
+
+function controlAction(
+  entity: EcoEntity,
+  world: EcoWorld,
+  state: string,
+  seconds: number,
+  asset?: string,
+  fx?: string,
+) {
+  entity.data.controlActionUntil = world.time + seconds
+  entity.controlResetAsset = entity.controlResetAsset || entity.asset
+  entity.targetId = null
+
+  if (asset) {
+    world.setAsset(entity, asset)
+  }
+
+  if (fx) {
+    entity.fx = fx
+    entity.data.controlFxUntil = world.time + seconds
+  }
+
+  world.setState(entity, state)
+}
+
+function isControlTarget(entity: EcoEntity, other: EcoEntity) {
+  return (
+    other !== entity &&
+    living(other) &&
+    other.maxHp > 1 &&
+    other.species !== 'dino-carcass' &&
+    !worldlessEffectSpecies.has(other.species)
+  )
+}
+
+const worldlessEffectSpecies = new Set([
+  'dino-ash',
+  'dino-bite-burst',
+  'dino-dust',
+  'dino-feather-puff',
+  'dino-impact',
+  'dino-meat-bit',
+  'dino-scrap',
+  'dino-tail-streak',
+  'eruption',
+  'lava-bomb',
+  'lava-flow',
+  'lava-flank-left',
+  'lava-flank-right',
+  'lava-ground-sheet',
+  'shooting-star',
+  'volcano',
+])
+
+function frontTarget(entity: EcoEntity, world: EcoWorld, reach: number, vertical = 4.5) {
+  const x = entity.x + entity.facing * reach * 0.5
+
+  return world.nearest(
+    { x, y: entity.y },
+    (other) =>
+      isControlTarget(entity, other) &&
+      Math.sign(other.x - entity.x || entity.facing) === entity.facing &&
+      Math.abs(other.y - entity.y) < world.unit * vertical,
+    reach,
+  )
+}
+
+function areaTargets(entity: EcoEntity, world: EcoWorld, radius: number) {
+  return world.within(entity.x, entity.y, radius, (other) => isControlTarget(entity, other))
+}
+
+function shove(from: EcoEntity, target: EcoEntity, world: EcoWorld, force: number) {
+  target.vx += (target.x >= from.x ? 1 : -1) * world.unit * force
+  target.data.avoidX = from.x
+}
+
+function eatNearbyCarcass(entity: EcoEntity, world: EcoWorld) {
+  const carcass = world.nearest(
+    entity,
+    (other) => other.species === 'dino-carcass' && (other.data.meat ?? 0) > 0,
+    world.unit * 5,
+  )
+
+  if (!carcass) {
+    return false
+  }
+
+  face(entity, carcass.x)
+  carcass.data.meat = Math.max(0, (carcass.data.meat ?? 1) - 0.25)
+  carcass.data.shake = 0.35
+  heal(entity, 2.4)
+  controlAction(entity, world, 'feed', 0.85, trexPose(entity, 'feed'))
+  spawnEffect(world, 'dino-meat-bit', trexMouth(entity, world).x, trexMouth(entity, world).y, 1)
+  world.tally('trex-feed')
+  return true
 }
 
 function eatFern(plant: EcoEntity, world: EcoWorld) {
@@ -312,6 +419,20 @@ function layNest(entity: EcoEntity, world: EcoWorld, chancePerSecond: number, dt
     ),
   })
   world.tally('eggs-laid')
+}
+
+function nestPredator(entity: EcoEntity, world: EcoWorld, radius: number) {
+  const nest = world.nearest(entity, isEgg, radius)
+
+  if (!nest) {
+    return null
+  }
+
+  return world.nearest(
+    nest,
+    (other) => other.species === 'trex' || other.species === 'pterodactyl',
+    world.unit * 7,
+  )
 }
 
 function graze(entity: EcoEntity, world: EcoWorld, dt: number, speed: number) {
@@ -411,6 +532,7 @@ function handleBaby(entity: EcoEntity, world: EcoWorld, dt: number, adultAsset: 
     entity.data.baby = 0
     entity.scale = 1
     entity.hp = entity.species === 'brachiosaurus' ? 10 : 4
+    entity.maxHp = entity.hp
     world.setAsset(entity, adultAsset)
     world.setState(entity, 'graze')
     world.tally('eggs-hatched')
@@ -682,9 +804,563 @@ function trexPrey(entity: EcoEntity, world: EcoWorld) {
   )
 }
 
+const trexControls = {
+  abilities: [
+    {
+      cooldown: 1.4,
+      description: 'Lunge forward for a crushing bite, or eat a nearby carcass to heal.',
+      key: 'q',
+      name: 'Bone bite',
+      run(entity: EcoEntity, world: EcoWorld) {
+        if (eatNearbyCarcass(entity, world)) {
+          return
+        }
+
+        controlAction(entity, world, 'chomp', 0.82, trexPose(entity, 'chomp'))
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 1.2,
+          world.unit,
+          world.width - world.unit,
+        )
+        const target = frontTarget(entity, world, world.unit * 7.2, 5.8)
+        const mouth = trexMouth(entity, world)
+
+        if (target) {
+          face(entity, target.x)
+          damage(target, world, target.species === 'triceratops' ? 3.2 : 3.7, entity.x, entity)
+          shove(entity, target, world, 2.4)
+          spawnEffect(
+            world,
+            'dino-bite-burst',
+            target.x,
+            target.y - world.heightOf(target) * 0.4,
+            2.6,
+          )
+        } else {
+          spawnEffect(world, 'dino-dust', mouth.x, entity.y, 1.8)
+        }
+
+        world.tally('trex-bite')
+      },
+    },
+    {
+      cooldown: 3.2,
+      description: 'Slam the ground and sweep nearby creatures back.',
+      key: 'w',
+      name: 'Tail stomp',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'swat', 0.9, trexPose(entity, 'clamp'))
+        spawnEffect(world, 'dino-dust', entity.x + entity.facing * world.unit * 2, entity.y, 3.2)
+
+        for (const target of areaTargets(entity, world, world.unit * 7.4)) {
+          damage(target, world, 1.45, entity.x, entity)
+          shove(entity, target, world, 3.4)
+        }
+
+        world.tally('trex-swat')
+      },
+    },
+    {
+      cooldown: 5.8,
+      description: 'Roar with dust and shake, making weaker dinos flee.',
+      key: 'e',
+      name: 'Dust roar',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'prowl', 1, trexPose(entity), 'dazed')
+        spawnEffect(world, 'dino-dust', entity.x + entity.facing * world.unit * 1.8, entity.y, 4, {
+          life: 1,
+        })
+
+        for (const target of world.within(
+          entity.x,
+          entity.y,
+          world.unit * 13,
+          (other) => other !== entity && living(other),
+        )) {
+          if (
+            target.species === 'dino-nest' ||
+            target.species === 'araucaria-tree' ||
+            target.species === 'fern'
+          ) {
+            continue
+          }
+
+          if (world.matchup(entity, target) === 'strong' || isBabyHerbivore(target)) {
+            target.data.avoidX = entity.x
+            target.data.scatter = 1.8
+            target.data.shake = 0.65
+            target.targetId = null
+            world.setState(target, target.anchor === 'center' ? 'takeoff' : 'flee')
+          }
+        }
+      },
+    },
+    {
+      cooldown: 9,
+      description: 'Move faster and heal from damage for a short frenzy.',
+      key: 'r',
+      name: 'Frenzy',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlSpeedUntil = world.time + 5.2
+        entity.data.controlSpeed = 1.42
+        entity.data.frenzyUntil = world.time + 5.2
+        controlAction(entity, world, 'charge', 0.55, trexPose(entity), 'dazed')
+        heal(entity, 0.8)
+        spawnEffect(world, 'dino-dust', entity.x, entity.y, 2.8)
+      },
+    },
+  ],
+  idleState: 'prowl',
+  move: 'ground',
+  moveState: 'prowl',
+  speed: 3.2,
+} as const
+
+const triceratopsControls = {
+  abilities: [
+    {
+      cooldown: 3.6,
+      description: 'Dash horn-first, especially hard into a T. rex.',
+      key: 'q',
+      name: 'Horn charge',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'charge', 0.9, triceratopsChargeAsset)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 5,
+          world.unit,
+          world.width - world.unit,
+        )
+        spawnEffect(world, 'dino-dust', entity.x, entity.y, 2.8)
+
+        for (const target of areaTargets(entity, world, world.unit * 5.8)) {
+          if (Math.sign(target.x - entity.x || entity.facing) !== entity.facing) {
+            continue
+          }
+
+          damage(target, world, target.species === 'trex' ? 2.8 : 1.9, entity.x, entity)
+          shove(entity, target, world, target.species === 'trex' ? 5.6 : 3.4)
+        }
+
+        world.tally('triceratops-charge')
+      },
+    },
+    {
+      cooldown: 6.5,
+      description: 'Raise the frill and blunt incoming damage.',
+      key: 'w',
+      name: 'Frill block',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 4
+        entity.data.controlBlock = 0.34
+        controlAction(entity, world, 'graze', 0.9, triceratopsAsset, 'block')
+      },
+    },
+    {
+      cooldown: 2.3,
+      description: 'Short horn jab with heavy knockback.',
+      key: 'e',
+      name: 'Headbutt',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'charge', 0.48, triceratopsChargeAsset)
+        const target = frontTarget(entity, world, world.unit * 4.6, 4)
+
+        if (target) {
+          damage(target, world, 1.85, entity.x, entity)
+          shove(entity, target, world, 4)
+          spawnEffect(world, 'dino-dust', target.x, target.y, 2)
+        }
+      },
+    },
+    {
+      cooldown: 8.5,
+      description: 'A rumbling burst of speed that tramples a line.',
+      key: 'r',
+      name: 'Stampede',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlSpeedUntil = world.time + 3.6
+        entity.data.controlSpeed = 1.65
+        controlAction(entity, world, 'charge', 1.05, triceratopsChargeAsset)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 7.2,
+          world.unit,
+          world.width - world.unit,
+        )
+        spawnEffect(world, 'dino-dust', entity.x, entity.y, 3.6)
+
+        for (const target of areaTargets(entity, world, world.unit * 7)) {
+          damage(target, world, 2.05, entity.x, entity)
+          shove(entity, target, world, 4.8)
+        }
+      },
+    },
+  ],
+  idleState: 'graze',
+  move: 'ground',
+  moveState: 'graze',
+  speed: 3.6,
+} as const
+
+const stegosaurusControls = {
+  abilities: [
+    {
+      cooldown: 2.4,
+      description: 'Whip tail spikes through anything behind or beside you.',
+      key: 'q',
+      name: 'Thagomizer',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'swing', 0.78, stegosaurusSwingAsset)
+        spawnEffect(
+          world,
+          'dino-tail-streak',
+          entity.x - entity.facing * world.unit * 2.2,
+          entity.y - world.heightOf(entity) * 0.38,
+          3.4,
+        )
+
+        for (const target of areaTargets(entity, world, world.unit * 5.6)) {
+          damage(target, world, target.species === 'trex' ? 2.45 : 1.8, entity.x, entity)
+          shove(entity, target, world, 4.2)
+        }
+      },
+    },
+    {
+      cooldown: 6.5,
+      description: 'Angle the plates into an armored guard.',
+      key: 'w',
+      name: 'Plate guard',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlBlockUntil = world.time + 4.4
+        entity.data.controlBlock = 0.3
+        controlAction(entity, world, 'graze', 0.9, stegosaurusAsset, 'guard')
+      },
+    },
+    {
+      cooldown: 4.2,
+      description: 'Spin in place for a full-body swipe.',
+      key: 'e',
+      name: 'Spin swipe',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'swing', 0.95, stegosaurusSwingAsset)
+
+        for (const target of areaTargets(entity, world, world.unit * 6.2)) {
+          damage(target, world, 1.55, entity.x, entity)
+          shove(entity, target, world, 3.2)
+        }
+
+        spawnEffect(
+          world,
+          'dino-tail-streak',
+          entity.x,
+          entity.y - world.heightOf(entity) * 0.35,
+          4,
+        )
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Brace, shuffle forward and punish anything close.',
+      key: 'r',
+      name: 'Plate rush',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlSpeedUntil = world.time + 3.2
+        entity.data.controlSpeed = 1.38
+        entity.data.controlBlockUntil = world.time + 3.2
+        entity.data.controlBlock = 0.5
+        controlAction(entity, world, 'swing', 0.9, stegosaurusSwingAsset)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 3.8,
+          world.unit,
+          world.width - world.unit,
+        )
+
+        for (const target of areaTargets(entity, world, world.unit * 5.2)) {
+          damage(target, world, 1.9, entity.x, entity)
+          shove(entity, target, world, 3.8)
+        }
+      },
+    },
+  ],
+  idleState: 'graze',
+  move: 'ground',
+  moveState: 'graze',
+  speed: 3.1,
+} as const
+
+const brachiosaurusControls = {
+  abilities: [
+    {
+      cooldown: 3,
+      description: 'Sweep the tail through close attackers.',
+      key: 'q',
+      name: 'Tail whip',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'stomp', 0.85, brachiosaurusAsset)
+
+        for (const target of areaTargets(entity, world, world.unit * 8)) {
+          damage(target, world, 2.1, entity.x, entity)
+          shove(entity, target, world, 4.4)
+        }
+
+        spawnEffect(
+          world,
+          'dino-tail-streak',
+          entity.x - entity.facing * world.unit * 3,
+          entity.y - world.heightOf(entity) * 0.2,
+          4.2,
+        )
+      },
+    },
+    {
+      cooldown: 5,
+      description: 'Shake the valley floor with a heavy stomp.',
+      key: 'w',
+      name: 'Stomp quake',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'stomp', 1, brachiosaurusAsset, 'dazed')
+        spawnEffect(world, 'dino-dust', entity.x + entity.facing * world.unit * 2, entity.y, 4.8)
+
+        for (const target of areaTargets(entity, world, world.unit * 10)) {
+          damage(target, world, 2.35, entity.x, entity)
+          target.data.shake = 0.7
+          shove(entity, target, world, 5.2)
+        }
+      },
+    },
+    {
+      cooldown: 5.5,
+      description: 'Stretch into an Araucaria tree and heal from the canopy.',
+      key: 'e',
+      name: 'Neck browse',
+      run(entity: EcoEntity, world: EcoWorld) {
+        const tree = world.nearest(entity, isTree, world.unit * 14)
+
+        controlAction(entity, world, 'tree-eat', 1.25, brachiosaurusBrowseAsset)
+
+        if (tree) {
+          face(entity, tree.x)
+          eatTreeFoliage(tree, world)
+          heal(entity, 3.2)
+          spawnEffect(world, 'dino-dust', tree.x, entity.y - world.heightOf(entity) * 0.72, 1.6)
+          world.tally('brachio-tree-browse')
+          return
+        }
+
+        const fern = world.nearest(entity, isFern, world.unit * 7)
+
+        if (fern) {
+          eatFern(fern, world)
+          heal(entity, 1.4)
+        }
+      },
+    },
+    {
+      cooldown: 8.5,
+      description: 'Tower forward, shove rivals aside and shrug off damage.',
+      key: 'r',
+      name: 'High stride',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlSpeedUntil = world.time + 4
+        entity.data.controlSpeed = 1.45
+        entity.data.controlBlockUntil = world.time + 4
+        entity.data.controlBlock = 0.55
+        controlAction(entity, world, 'browse', 0.8, brachiosaurusAsset)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 4.2,
+          world.unit,
+          world.width - world.unit,
+        )
+
+        for (const target of areaTargets(entity, world, world.unit * 7.5)) {
+          damage(target, world, 1.65, entity.x, entity)
+          shove(entity, target, world, 3.8)
+        }
+      },
+    },
+  ],
+  idleState: 'browse',
+  move: 'ground',
+  moveState: 'browse',
+  speed: 2.35,
+} as const
+
+const pterodactylControls = {
+  abilities: [
+    {
+      cooldown: 2.4,
+      description: 'Dive into a target below, then pull back up.',
+      key: 'q',
+      name: 'Dive strike',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'dive', 0.9, pterodactylDiveAsset)
+        const target =
+          frontTarget(entity, world, world.unit * 7, 8) ??
+          world.nearest(entity, (other) => isControlTarget(entity, other), world.unit * 7)
+
+        if (target) {
+          face(entity, target.x)
+          damage(target, world, target.species === 'dino-nest' ? 3 : 1.45, entity.x, entity)
+          target.data.scatter = 1.2
+          spawnEffect(world, 'dino-feather-puff', target.x, target.y, 2)
+        }
+      },
+    },
+    {
+      cooldown: 4.8,
+      description: 'Snatch an egg, baby or giant dragonfly.',
+      key: 'w',
+      name: 'Snatch',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'dive', 0.75, pterodactylDiveAsset)
+        const target = world.nearest(
+          entity,
+          (other) =>
+            living(other) &&
+            (other.species === 'dino-nest' ||
+              other.species === 'meganeura' ||
+              isBabyHerbivore(other)),
+          world.unit * 8,
+        )
+
+        if (!target) {
+          return
+        }
+
+        spawnEffect(world, 'dino-feather-puff', target.x, target.y, 2.2)
+        world.kill(target)
+        heal(entity, 0.8)
+        world.tally(target.species === 'dino-nest' ? 'eggs-stolen' : 'ptero-snatch')
+      },
+    },
+    {
+      cooldown: 5.2,
+      description: 'Beat the wings into a gust that scatters ground threats.',
+      key: 'e',
+      name: 'Wing gust',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'takeoff', 1, pterodactylAsset)
+        spawnEffect(world, 'dino-dust', entity.x, entity.y + world.unit * 1.2, 3.4)
+
+        for (const target of areaTargets(entity, world, world.unit * 8)) {
+          target.data.scatter = 1.5
+          target.data.avoidX = entity.x
+          shove(entity, target, world, 3.4)
+          damage(target, world, 0.65, entity.x, entity)
+        }
+      },
+    },
+    {
+      cooldown: 8,
+      description: 'Catch a thermal and fly much faster for a few seconds.',
+      key: 'r',
+      name: 'Thermal rush',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlSpeedUntil = world.time + 4.5
+        entity.data.controlSpeed = 1.7
+        controlAction(entity, world, 'takeoff', 0.9, pterodactylAsset)
+        entity.vy -= world.unit * 4
+      },
+    },
+  ],
+  idleState: 'soar',
+  move: 'fly',
+  moveState: 'soar',
+  speed: 5.2,
+} as const
+
+const meganeuraControls = {
+  abilities: [
+    {
+      cooldown: 1.4,
+      description: 'Needle forward with a fast dart.',
+      key: 'q',
+      name: 'Dart',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'zip', 0.55)
+        entity.x = clamp(
+          entity.x + entity.facing * world.unit * 4,
+          world.unit,
+          world.width - world.unit,
+        )
+        const target = frontTarget(entity, world, world.unit * 4.5, 4)
+
+        if (target) {
+          damage(target, world, 0.8, entity.x, entity)
+          target.data.scatter = 0.8
+          spawnEffect(world, 'dino-feather-puff', target.x, target.y, 1.2)
+        }
+      },
+    },
+    {
+      cooldown: 4.2,
+      description: 'Buzz a T. rex face until it staggers.',
+      key: 'w',
+      name: 'Pester',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'zip', 0.9, undefined, 'dazed')
+        const rex = world.nearest(entity, isTrex, world.unit * 9)
+
+        if (!rex) {
+          return
+        }
+
+        rex.fx = 'dazed'
+        rex.data.shake = 1.1
+        rex.data.scatter = 1.4
+        rex.targetId = null
+        damage(rex, world, 0.55, entity.x, entity)
+        world.tally('dragonfly-pester')
+      },
+    },
+    {
+      cooldown: 5,
+      description: 'Jink sideways in a shimmering dodge.',
+      key: 'e',
+      name: 'Wing feint',
+      run(entity: EcoEntity, world: EcoWorld) {
+        entity.data.controlSpeedUntil = world.time + 2.5
+        entity.data.controlSpeed = 1.9
+        controlAction(entity, world, 'zip', 0.65, undefined, 'dazed')
+        entity.x = clamp(
+          entity.x - entity.facing * world.unit * 3.2,
+          world.unit,
+          world.width - world.unit,
+        )
+      },
+    },
+    {
+      cooldown: 10,
+      description: 'Call another giant dragonfly from the ferns.',
+      key: 'r',
+      name: 'Swarm call',
+      run(entity: EcoEntity, world: EcoWorld) {
+        controlAction(entity, world, 'zip', 0.8)
+
+        if (world.canBreed()) {
+          world.spawn('meganeura', {
+            countAs: null,
+            x: clamp(entity.x + between(-2, 2) * world.unit, world.unit, world.width - world.unit),
+            y: clamp(
+              entity.y + between(-1, 1) * world.unit,
+              world.skyTop + world.unit,
+              world.groundY - world.unit * 2,
+            ),
+          })
+        }
+
+        spawnEffect(world, 'dino-feather-puff', entity.x, entity.y, 2.2)
+      },
+    },
+  ],
+  idleState: 'zip',
+  move: 'fly',
+  moveState: 'zip',
+  speed: 5.8,
+} as const
+
 const trex: EcoSpecies = {
   anchor: 'bottom',
   asset: () => pick(trexAssets),
+  controls: trexControls,
   hp: 9,
   init(entity) {
     entity.data.variant = Math.max(0, trexAssets.indexOf(entity.asset))
@@ -955,6 +1631,7 @@ const trex: EcoSpecies = {
 const triceratops: EcoSpecies = {
   anchor: 'bottom',
   asset: triceratopsAsset,
+  controls: triceratopsControls,
   hp: 4,
   init(entity, world) {
     entity.data.hunger = between(0.1, 0.7)
@@ -1009,7 +1686,8 @@ const triceratops: EcoSpecies = {
       return
     }
 
-    const threat = world.nearest(entity, (other) => other.species === 'trex', unit * 13)
+    const guarding = nestPredator(entity, world, unit * 12)
+    const threat = guarding ?? world.nearest(entity, (other) => other.species === 'trex', unit * 13)
 
     if (threat && (entity.data.chargeAt ?? 0) < world.time) {
       entity.data.chargeAt = world.time + between(4.5, 7)
@@ -1040,6 +1718,7 @@ function brachioBrowseX(entity: EcoEntity, tree: EcoEntity, world: EcoWorld) {
 const brachiosaurus: EcoSpecies = {
   anchor: 'bottom',
   asset: brachiosaurusAsset,
+  controls: brachiosaurusControls,
   hp: 10,
   init(entity, world) {
     entity.data.hunger = between(0.6, 1.1)
@@ -1120,12 +1799,12 @@ const brachiosaurus: EcoSpecies = {
           unit * 8,
           (entry) => entry !== entity,
         )) {
-          if (isGrazerRival(other)) {
+          if (isGrazerRival(other) || other.species === 'trex' || other.species === 'pterodactyl') {
             damage(other, world, 1.4, entity.x, entity)
             other.vx += (other.x >= entity.x ? 1 : -1) * unit * 4
             other.data.avoidX = entity.x
             other.targetId = null
-            world.setState(other, 'flee')
+            world.setState(other, other.anchor === 'center' ? 'takeoff' : 'flee')
           } else if (other.species === 'meganeura') {
             other.vy -= unit * 4
             other.data.scatter = 1.2
@@ -1141,11 +1820,10 @@ const brachiosaurus: EcoSpecies = {
       return
     }
 
-    const rival = world.nearest(
-      entity,
-      isGrazerRival,
-      unit * (entity.state === 'tree-eat' ? 7 : 4.5),
-    )
+    const guarding = nestPredator(entity, world, unit * 13)
+    const rival =
+      guarding ??
+      world.nearest(entity, isGrazerRival, unit * (entity.state === 'tree-eat' ? 7 : 4.5))
 
     if (rival && (entity.data.stompAt ?? 0) < world.time) {
       entity.data.stompAt = world.time + between(5, 8)
@@ -1254,6 +1932,7 @@ const brachiosaurus: EcoSpecies = {
 const stegosaurus: EcoSpecies = {
   anchor: 'bottom',
   asset: stegosaurusAsset,
+  controls: stegosaurusControls,
   hp: 4,
   init(entity, world) {
     entity.data.hunger = between(0.1, 0.7)
@@ -1311,13 +1990,16 @@ const stegosaurus: EcoSpecies = {
       return
     }
 
-    const behind = world.nearest(
-      entity,
-      (other) =>
-        other.species === 'trex' &&
-        Math.sign(other.x - entity.x || entity.facing) !== entity.facing,
-      unit * 4.2,
-    )
+    const guarding = nestPredator(entity, world, unit * 11)
+    const behind =
+      guarding ??
+      world.nearest(
+        entity,
+        (other) =>
+          other.species === 'trex' &&
+          Math.sign(other.x - entity.x || entity.facing) !== entity.facing,
+        unit * 4.2,
+      )
 
     if (behind && (entity.data.swingAt ?? 0) < world.time) {
       entity.data.swingAt = world.time + between(3.8, 6.2)
@@ -1334,6 +2016,7 @@ const stegosaurus: EcoSpecies = {
 const pterodactyl: EcoSpecies = {
   anchor: 'center',
   asset: pterodactylAsset,
+  controls: pterodactylControls,
   idle: 'flap',
   init(entity, world) {
     entity.y = between(world.skyTop + world.unit * 2, world.height * 0.35)
@@ -1477,6 +2160,7 @@ const pterodactyl: EcoSpecies = {
 const meganeura: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('meganeura'),
+  controls: meganeuraControls,
   idle: 'buzz',
   init(entity, world) {
     entity.y = between(world.groundY - world.unit * 9, world.groundY - world.unit * 3.5)
@@ -1579,6 +2263,9 @@ const dinoNest: EcoSpecies = {
   layer: 'front',
   size: [2.3, 3],
   state: 'warm',
+  style: (entity) => ({
+    '--dino-hatch-progress': `${clamp(entity.data.hatchProgress ?? 0, 0, 1)}`,
+  }),
   tags: ['prey'],
   tick(entity, world, _dt) {
     const predator = world.nearest(
@@ -1594,6 +2281,7 @@ const dinoNest: EcoSpecies = {
     }
 
     const hatchAt = (entity.data.hatchAt ?? 36) / ((entity.data.warm ?? 0) > 0 ? 2.7 : 1)
+    entity.data.hatchProgress = clamp(entity.t / hatchAt, 0, 1)
 
     if (entity.t > hatchAt * 0.72) {
       world.setAsset(entity, crackedNestAsset)

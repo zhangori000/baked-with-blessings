@@ -126,6 +126,33 @@
   transform-origin: center bottom;
 }
 
+.ecoThing[data-species='dino-nest'] .ecoAnchor::after {
+  background: color-mix(in srgb, var(--scene-text) 16%, transparent);
+  border-radius: 999rem;
+  bottom: 0.1rem;
+  content: '';
+  height: 0.2rem;
+  left: 50%;
+  overflow: hidden;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 62%;
+}
+
+.ecoThing[data-species='dino-nest'] .ecoAnchor::before {
+  background: color-mix(in srgb, var(--warning) 72%, var(--scene-panel-fill));
+  border-radius: 999rem;
+  bottom: 0.1rem;
+  content: '';
+  height: 0.2rem;
+  left: 19%;
+  position: absolute;
+  transform: scaleX(var(--dino-hatch-progress, 0));
+  transform-origin: left center;
+  width: 62%;
+  z-index: 1;
+}
+
 .ecoThing[data-species='dino-nest'][data-state='crack'] .ecoArt,
 .ecoThing[data-species='dino-nest'][data-fx='wobble'] .ecoArt {
   animation: prehistoricEggWobble 0.46s ease-in-out infinite;

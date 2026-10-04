@@ -1,14 +1,23 @@
 'use client'
 
 import Image from 'next/image'
-import { memo, useCallback, useSyncExternalStore, type CSSProperties } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 
 import { cn } from '@/utilities/cn'
 
 import { SpriteParticles } from '../SceneSpawnLayer'
 import { ecoAsset } from './assets'
 import type { EcosystemStore } from './store'
-import type { EcoEntityView, EcoLayer } from './types'
+import type { EcoControlAbilityKey, EcoControlEntityView, EcoEntityView, EcoLayer } from './types'
 
 import '../scene-spawn.css'
 import './ecosystem.css'
@@ -31,15 +40,58 @@ const EcoThing = memo(function EcoThing({
     (element: HTMLSpanElement | null) => store.attachNode(view.id, element),
     [store, view.id],
   )
+  const health = Math.max(0, Math.min(1, view.health / Math.max(1, view.healthMax)))
+  const matchupText = (items: readonly string[]) =>
+    items.length ? items.map((item) => item.replaceAll('-', ' ')).join(', ') : 'none'
 
   return (
     <span
       className={cn('ecoThing', `ecoThing--${view.anchor}`)}
+      aria-label={view.controllable ? `${view.label} controls` : undefined}
+      data-controllable={view.controllable ? '' : undefined}
+      data-controlled={view.controlled ? '' : undefined}
       data-dying={view.dying ? '' : undefined}
+      data-selected={view.selected ? '' : undefined}
       data-species={view.species}
+      onClick={
+        view.controllable
+          ? (event) => {
+              event.stopPropagation()
+              store.selectEntity(view.id)
+            }
+          : undefined
+      }
+      onKeyDown={
+        view.controllable
+          ? (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                store.selectEntity(view.id)
+              }
+            }
+          : undefined
+      }
+      role={view.controllable ? 'button' : undefined}
       ref={attach}
-      style={{ ['--eco-size' as string]: view.size.toFixed(2) } as CSSProperties}
+      style={
+        {
+          ['--eco-aspect' as string]: view.aspect.toFixed(3),
+          ['--eco-size' as string]: view.size.toFixed(2),
+        } as CSSProperties
+      }
+      tabIndex={view.controllable ? 0 : undefined}
     >
+      {view.healthMax > 1 ? (
+        <span className="ecoHealth" style={{ ['--eco-health' as string]: health.toFixed(3) }}>
+          <span className="ecoHealthFill" />
+        </span>
+      ) : null}
+      {view.controlled ? (
+        <span className="ecoControlledMarker">
+          <span className="ecoControlledArrow">⌄</span>
+          <span className="ecoControlledName">{view.label}</span>
+        </span>
+      ) : null}
       {view.rain ? <span className="ecoRain" /> : null}
       <span className="ecoAnchor">
         <span className="ecoPop">
@@ -79,14 +131,490 @@ const EcoThing = memo(function EcoThing({
           />
         ) : null}
       </span>
+      {view.selected ? (
+        <span className="ecoControlPopover" onClick={(event) => event.stopPropagation()}>
+          <span className="ecoControlPopoverTitle">{view.label}</span>
+          <span className="ecoControlPopoverHealth">
+            <span
+              className="ecoControlPopoverHealthFill"
+              style={{ ['--eco-health' as string]: health.toFixed(3) }}
+            />
+          </span>
+          <span className="ecoControlPopoverText">
+            Beats {matchupText(view.strong)} · Fears {matchupText(view.weak)}
+          </span>
+          <button
+            className="ecoControlPopoverButton"
+            onClick={(event) => {
+              event.stopPropagation()
+              store.takeControl(view.id)
+            }}
+            type="button"
+          >
+            Take control
+          </button>
+        </span>
+      ) : null}
     </span>
   )
 })
+
+function ControlHud({
+  controlled,
+  scene,
+  store,
+  toast,
+}: {
+  controlled: EcoControlEntityView | null
+  scene: string
+  store: EcosystemStore
+  toast: string
+}) {
+  const [hintVisible, setHintVisible] = useState(false)
+  const [castKey, setCastKey] = useState<EcoControlAbilityKey | null>(null)
+  const followCursor = Boolean(controlled?.followCursor)
+  const hintMode =
+    controlled?.move === 'swim' ? (followCursor ? 'swim-cursor' : 'swim-arrows') : 'arrows'
+  const hintKey = useMemo(() => `bwb-eco-control-hint-${scene}-${hintMode}`, [hintMode, scene])
+  const controlledId = controlled?.id ?? null
+  const castAbility = useCallback(
+    (key: EcoControlAbilityKey) => {
+      const ability = controlled?.abilities.find((entry) => entry.key === key)
+
+      if (!ability || ability.cooldownLeft > 0) {
+        return
+      }
+
+      store.activateAbility(key)
+      setCastKey(key)
+      window.setTimeout(() => setCastKey((current) => (current === key ? null : current)), 360)
+    },
+    [controlled?.abilities, store],
+  )
+
+  useEffect(() => {
+    if (!controlledId || !scene) {
+      return
+    }
+
+    if (window.localStorage.getItem(hintKey) === 'seen') {
+      return
+    }
+
+    const showTimer = window.setTimeout(() => setHintVisible(true), 0)
+    const timer = window.setTimeout(() => {
+      window.localStorage.setItem(hintKey, 'seen')
+      setHintVisible(false)
+    }, 1400)
+
+    return () => {
+      window.clearTimeout(showTimer)
+      window.clearTimeout(timer)
+    }
+  }, [controlledId, hintKey, scene])
+
+  useEffect(() => {
+    if (!controlledId) {
+      return
+    }
+
+    const pressed = new Set<string>()
+    const sync = () => {
+      store.setControlInput({
+        x: (pressed.has('ArrowRight') ? 1 : 0) - (pressed.has('ArrowLeft') ? 1 : 0),
+        y: (pressed.has('ArrowDown') ? 1 : 0) - (pressed.has('ArrowUp') ? 1 : 0),
+      })
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        store.releaseControl()
+        return
+      }
+
+      if (
+        event.key === 'ArrowUp' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowLeft' ||
+        event.key === 'ArrowRight'
+      ) {
+        event.preventDefault()
+        pressed.add(event.key)
+        sync()
+        return
+      }
+
+      const key = event.key.toLowerCase()
+
+      if (key === 'q' || key === 'w' || key === 'e' || key === 'r') {
+        event.preventDefault()
+        castAbility(key)
+      }
+    }
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (pressed.delete(event.key)) {
+        event.preventDefault()
+        sync()
+      }
+    }
+    const handleBlur = () => {
+      pressed.clear()
+      sync()
+    }
+
+    window.addEventListener('keydown', handleKeyDown, { passive: false })
+    window.addEventListener('keyup', handleKeyUp, { passive: false })
+    window.addEventListener('blur', handleBlur)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('blur', handleBlur)
+      store.setControlInput({ x: 0, y: 0 })
+    }
+  }, [castAbility, controlledId, store])
+
+  useEffect(() => {
+    if (!controlledId || controlled?.move !== 'swim') {
+      return
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' || event.buttons > 0) {
+        store.setControlCursorFromClient(
+          event.clientX,
+          event.clientY,
+          event.pointerType === 'mouse' ? undefined : true,
+        )
+      }
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+    }
+  }, [controlled?.move, controlledId, store])
+
+  const pressMove = (x: number, y: number) => (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    store.setControlInput({ x, y })
+  }
+  const releaseMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+
+    store.setControlInput({ x: 0, y: 0 })
+  }
+  const abilityHandler = (key: EcoControlAbilityKey) => () => castAbility(key)
+
+  if (!controlled && !toast) {
+    return null
+  }
+
+  return (
+    <div className="ecoControlHud" data-move={controlled?.move}>
+      {toast ? <div className="ecoControlToast">{toast}</div> : null}
+      {controlled ? (
+        <>
+          {controlled.move === 'swim' ? (
+            <div
+              className="ecoSwimPad"
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId)
+                store.setControlCursorFromClient(event.clientX, event.clientY, true)
+              }}
+              onPointerMove={(event) => {
+                if (event.buttons > 0 || event.pointerType !== 'mouse') {
+                  store.setControlCursorFromClient(event.clientX, event.clientY, true)
+                }
+              }}
+            />
+          ) : null}
+          <div className="ecoControlCard">
+            <div>
+              <p className="ecoControlEyebrow">Controlling</p>
+              <p className="ecoControlName">{controlled.label}</p>
+            </div>
+            {controlled.move === 'swim' ? (
+              <button
+                aria-pressed={followCursor}
+                className="ecoControlToggle"
+                onClick={() => {
+                  store.setFollowCursor(!followCursor)
+                }}
+                type="button"
+              >
+                {followCursor ? 'Follow cursor' : 'Arrows'}
+              </button>
+            ) : null}
+            <button className="ecoControlRelease" onClick={store.releaseControl} type="button">
+              Release
+            </button>
+          </div>
+          <div aria-label="Move" className="ecoDpad">
+            <button
+              aria-label="Move up"
+              className="ecoDpadButton ecoDpadButton--up"
+              onPointerCancel={releaseMove}
+              onPointerDown={pressMove(0, -1)}
+              onPointerUp={releaseMove}
+              type="button"
+            >
+              ↑
+            </button>
+            <button
+              aria-label="Move left"
+              className="ecoDpadButton ecoDpadButton--left"
+              onPointerCancel={releaseMove}
+              onPointerDown={pressMove(-1, 0)}
+              onPointerUp={releaseMove}
+              type="button"
+            >
+              ←
+            </button>
+            <button
+              aria-label="Move right"
+              className="ecoDpadButton ecoDpadButton--right"
+              onPointerCancel={releaseMove}
+              onPointerDown={pressMove(1, 0)}
+              onPointerUp={releaseMove}
+              type="button"
+            >
+              →
+            </button>
+            <button
+              aria-label="Move down"
+              className="ecoDpadButton ecoDpadButton--down"
+              onPointerCancel={releaseMove}
+              onPointerDown={pressMove(0, 1)}
+              onPointerUp={releaseMove}
+              type="button"
+            >
+              ↓
+            </button>
+          </div>
+          <div className="ecoAbilityBar">
+            {controlled.abilities.map((ability) => {
+              const cooling = ability.cooldownLeft > 0
+              const cooldown = Math.max(0, Math.min(1, ability.cooldownLeft / ability.cooldown))
+
+              return (
+                <button
+                  aria-label={`${ability.key.toUpperCase()}: ${ability.name}`}
+                  className="ecoAbilityButton"
+                  data-active={castKey === ability.key ? '' : undefined}
+                  data-cooling={cooling || undefined}
+                  disabled={cooling}
+                  key={ability.key}
+                  onClick={abilityHandler(ability.key)}
+                  style={{ ['--eco-cooldown' as string]: cooldown.toFixed(3) }}
+                  title={`${ability.name}: ${ability.description}`}
+                  type="button"
+                >
+                  <span className="ecoAbilityIcon">
+                    <AbilityGlyph ability={ability} />
+                  </span>
+                  <span className="ecoAbilityKey">{ability.key.toUpperCase()}</span>
+                  <span className="ecoAbilityName">{ability.name.split(' ')[0]}</span>
+                  <span className="ecoAbilityCooldown">
+                    {cooling ? Math.ceil(ability.cooldownLeft).toString() : ''}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+          {hintVisible ? (
+            <button
+              className="ecoControlHint"
+              onClick={() => {
+                window.localStorage.setItem(hintKey, 'seen')
+                setHintVisible(false)
+              }}
+              type="button"
+            >
+              <span className="ecoHintArrows">
+                {controlled.move === 'swim' && followCursor ? '⌖' : '← ↑ ↓ →'}
+              </span>
+              <span>
+                {controlled.move === 'swim' && followCursor
+                  ? `Your ${controlled.label} follows your cursor`
+                  : 'Use arrow keys to move'}
+              </span>
+              <span className="ecoHintKeys">Q W E R for abilities</span>
+            </button>
+          ) : null}
+        </>
+      ) : null}
+    </div>
+  )
+}
 
 type EcosystemLayerProps = {
   className?: string
   layer: EcoLayer
   store: EcosystemStore
+}
+
+function AbilityGlyph({ ability }: { ability: EcoControlEntityView['abilities'][number] }) {
+  const id = ability.icon ?? ability.name.toLowerCase()
+
+  if (id.includes('bite') || id.includes('bone')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M7 8c5.5 1.1 11.9 1 18 0-2.7 2.6-4.3 5.4-4.8 8.3 1.5 1.8 2.5 4.1 3 6.9-3.4-2.2-5.9-4.8-7.4-7.7-1.5 2.9-4 5.5-7.4 7.7.5-2.8 1.5-5.1 3-6.9C10.8 13.4 9.2 10.6 7 8Z" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('tail') ||
+    id.includes('thagomizer') ||
+    id.includes('swipe') ||
+    id.includes('thrash') ||
+    id.includes('slash') ||
+    id.includes('skewer') ||
+    id.includes('pinch') ||
+    id.includes('claw')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M5 20c7.8-9.1 15.2-10.7 22.3-4.8-5.8-.5-9.8.7-12.1 3.6l5.1 1.7-6.2 2.1 1.9 5.7-5.5-3.9L5 26.1l2.1-4.4Z" />
+      </svg>
+    )
+  }
+
+  if (id.includes('roar') || id.includes('gust') || id.includes('quake')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M4 19c5.4-4.8 10.8-4.8 16.2 0M7.5 24c4-3.4 8-3.4 12 0M11 13.6c5.4-5 10.9-5 16.4 0M17 8.4c3.5-2.7 7-2.7 10.5 0" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('frenzy') ||
+    id.includes('rush') ||
+    id.includes('stampede') ||
+    id.includes('blood') ||
+    id.includes('sprint')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M7 23.5 14.1 4l2.1 9 8.8-3.7-5.7 7.5 5.7 2.8-8.3 1.1 1.4 7.3-5.4-5.3L7 23.5Z" />
+      </svg>
+    )
+  }
+
+  if (id.includes('horn') || id.includes('headbutt') || id.includes('charge')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M5 17c6.2-5.2 12.8-6.9 19.8-5.2L29 7l-1.4 8.6L29 24l-5-4.7C17.6 20.8 11.3 20 5 17Z" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('block') ||
+    id.includes('guard') ||
+    id.includes('plate') ||
+    id.includes('frill')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 4 26 8.6v7.1c0 5.4-3.4 9.5-10 12.3C9.4 25.2 6 21.1 6 15.7V8.6L16 4Z" />
+      </svg>
+    )
+  }
+
+  if (id.includes('browse') || id.includes('neck')) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M9 26c7.6-7.4 9.5-14.2 5.8-20.4 7.8 2.3 10.4 8.2 7.8 17.7M18.8 8.3c3.6-1.5 6.4-.8 8.2 2.1-4 .6-6.8-.1-8.2-2.1Z" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('snatch') ||
+    id.includes('dive') ||
+    id.includes('wing') ||
+    id.includes('thermal')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M4 14.2c8.2-7.4 14.9-6.8 20 1.8 1.5-1.4 3-2 4.5-1.8-1.7 2.9-4.5 5.2-8.3 6.9C14.6 23.5 9.2 21.2 4 14.2Z" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('scatter') ||
+    id.includes('school') ||
+    id.includes('bait') ||
+    id.includes('dart') ||
+    id.includes('lance') ||
+    id.includes('pester') ||
+    id.includes('swarm') ||
+    id.includes('feint')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 15.8 27 8l-7.9 11L24 24l-7.4-2.9L9 27l3.1-7.7L5 13l8.2 1.2L16 5v10.8Z" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('sting') ||
+    id.includes('pulse') ||
+    id.includes('puff') ||
+    id.includes('toxin') ||
+    id.includes('spine')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 4v24M8 9l16 14M24 9 8 23M5 16h22M10 5l12 22M22 5 10 27" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('ink') ||
+    id.includes('camouflage') ||
+    id.includes('jet') ||
+    id.includes('lure') ||
+    id.includes('lantern')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M16 5c5.4 3.1 8.1 7 8.1 11.7A8.1 8.1 0 0 1 7.9 17C7.9 12.2 10.6 8.2 16 5Z" />
+        <path d="M9 23c2.8-1.4 4.6-1.3 5.5.3 1.6-1.5 3.4-1.5 5.5 0 1.2-1.5 2.5-1.7 4-.6" />
+      </svg>
+    )
+  }
+
+  if (
+    id.includes('breach') ||
+    id.includes('song') ||
+    id.includes('gulp') ||
+    id.includes('echolocate') ||
+    id.includes('ram')
+  ) {
+    return (
+      <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+        <path d="M4 18c5.4-7 12.4-9 21-6l3-3-.8 6.7 2.8 5.4-6.4-1.9C16.1 23.4 9.6 23 4 18Z" />
+        <path d="M7 24c4 2.3 8.1 2.3 12.2 0" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg aria-hidden="true" className="ecoAbilitySvg" viewBox="0 0 32 32">
+      <path d="M16 4 20 13h9l-7.2 5.4 2.7 9.6L16 22.5 7.5 28l2.7-9.6L3 13h9l4-9Z" />
+    </svg>
+  )
 }
 
 export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps) {
@@ -102,8 +630,21 @@ export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps)
 
   return (
     <div
-      aria-hidden="true"
+      aria-hidden={layer === 'back' ? true : undefined}
       className={cn('ecoLayer', `ecoLayer--${layer}`, className)}
+      onClick={layer === 'front' ? store.dismissSelection : undefined}
+      onPointerMove={
+        layer === 'front'
+          ? (event) => {
+              const rect = event.currentTarget.getBoundingClientRect()
+
+              store.setControlInput({
+                cursorX: event.clientX - rect.left,
+                cursorY: event.clientY - rect.top,
+              })
+            }
+          : undefined
+      }
       ref={attach}
     >
       {layer === 'front' ? (
@@ -118,6 +659,14 @@ export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps)
         .map((view) => (
           <EcoThing key={view.id} store={store} view={view} />
         ))}
+      {layer === 'front' ? (
+        <ControlHud
+          controlled={snapshot.controlled}
+          scene={snapshot.scene}
+          store={store}
+          toast={snapshot.toast}
+        />
+      ) : null}
     </div>
   )
 }

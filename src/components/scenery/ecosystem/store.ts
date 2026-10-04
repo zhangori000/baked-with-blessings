@@ -1,10 +1,18 @@
 import type { SceneTone } from '../menuHeroScenery'
 import { Ecosystem } from './engine'
 import { ecosystemSpecies } from './species'
-import type { EcoEntity, EcoLayer, EcoSnapshot } from './types'
+import type {
+  EcoControlAbilityKey,
+  EcoControlInput,
+  EcoEntity,
+  EcoLayer,
+  EcoSnapshot,
+} from './types'
 
 type NodeCache = {
   fx: string
+  healthUntil: number
+  hp: number
   pose: string
   root: HTMLElement
   poseElement: HTMLElement | null
@@ -14,9 +22,22 @@ type NodeCache = {
   z: string
 }
 
-const emptySnapshot: EcoSnapshot = { counts: {}, entities: [], scene: '', tallies: {} }
+const emptySnapshot: EcoSnapshot = {
+  controlled: null,
+  counts: {},
+  entities: [],
+  scene: '',
+  selected: null,
+  tallies: {},
+  toast: '',
+}
 const underseaDesktopBackdrop = { floorY: 520, height: 600, surfaceY: 95, width: 1200 }
 const underseaMobileBackdrop = { floorY: 760, height: 860, surfaceY: 150, width: 430 }
+const labelForSpecies = (species: string) =>
+  species
+    .split('-')
+    .map((part) => (part === 'trex' ? 'T. rex' : `${part.charAt(0).toUpperCase()}${part.slice(1)}`))
+    .join(' ')
 
 const underseaBackdropLines = (rect: DOMRect) => {
   const backdrop =
@@ -40,7 +61,11 @@ export class EcosystemStore {
   private observer: ResizeObserver | null = null
   private offset = { x: 0, y: 0 }
   private scene: SceneTone
+  private selectedId: number | null = null
   private snapshot: EcoSnapshot
+  private hudPublishAt = 0
+  private toast = ''
+  private toastUntil = 0
 
   constructor(scene: SceneTone) {
     this.scene = scene
@@ -82,6 +107,8 @@ export class EcosystemStore {
     this.scene = scene
     this.engine = this.build(scene)
     this.nodes.clear()
+    this.selectedId = null
+    this.toast = ''
     this.measure()
     this.publish()
   }
@@ -120,6 +147,8 @@ export class EcosystemStore {
 
     this.nodes.set(id, {
       fx: '',
+      healthUntil: 0,
+      hp: Number.NaN,
       pose: '',
       poseElement: element.querySelector<HTMLElement>('.ecoPose'),
       root: element,
@@ -183,7 +212,119 @@ export class EcosystemStore {
   }
 
   clear = () => {
+    this.releaseControl()
+    this.selectedId = null
     this.engine?.clear()
+    this.publish()
+  }
+
+  selectEntity = (id: number) => {
+    const entity = this.engine?.byId(id)
+
+    if (!entity || !this.engine?.species[entity.species]?.controls) {
+      return
+    }
+
+    this.selectedId = id
+    this.publish()
+  }
+
+  takeControl = (id: number) => {
+    const engine = this.engine
+    const entity = engine?.byId(id)
+    const controls = entity ? engine?.species[entity.species]?.controls : null
+
+    if (!engine || !entity || !controls) {
+      return
+    }
+
+    this.selectedId = null
+    engine.setControlled(id)
+    engine.setControlInput({
+      followCursor:
+        controls.move === 'swim' &&
+        typeof window !== 'undefined' &&
+        !window.matchMedia('(pointer: coarse)').matches,
+      x: 0,
+      y: 0,
+    })
+    entity.targetId = null
+    entity.controlResetAsset = entity.asset
+    this.publish()
+  }
+
+  releaseControl = () => {
+    const engine = this.engine
+
+    if (!engine || engine.controlledId === null) {
+      return
+    }
+
+    const entity = engine.byId(engine.controlledId)
+    const definition = entity ? engine.species[entity.species] : null
+
+    if (entity && definition?.controls) {
+      engine.setAsset(entity, entity.controlResetAsset)
+      engine.setState(entity, definition.controls.idleState ?? entity.state)
+    }
+
+    engine.setControlled(null)
+    engine.setControlInput({ followCursor: false, x: 0, y: 0 })
+    this.publish()
+  }
+
+  dismissSelection = () => {
+    this.selectedId = null
+    this.publish()
+  }
+
+  setControlInput = (input: Partial<EcoControlInput>) => {
+    this.engine?.setControlInput(input)
+  }
+
+  setControlCursorFromClient = (clientX: number, clientY: number, followCursor?: boolean) => {
+    const front = this.layers.front
+
+    if (!front) {
+      return
+    }
+
+    const rect = front.getBoundingClientRect()
+    const input: Partial<EcoControlInput> = {
+      cursorX: clientX - rect.left,
+      cursorY: clientY - rect.top,
+    }
+
+    if (followCursor !== undefined) {
+      input.followCursor = followCursor
+    }
+
+    this.engine?.setControlInput(input)
+  }
+
+  activateAbility = (key: EcoControlAbilityKey) => {
+    const engine = this.engine
+    const entity = engine?.byId(engine.controlledId)
+    const controls = entity ? engine?.species[entity.species]?.controls : null
+    const ability = controls?.abilities.find((entry) => entry.key === key)
+
+    if (
+      !engine ||
+      !entity ||
+      !ability ||
+      (entity.data[`controlCooldown-${key}`] ?? 0) > engine.time
+    ) {
+      return
+    }
+
+    entity.data[`controlCooldown-${key}`] = engine.time + ability.cooldown
+    ability.run(entity, engine)
+    engine.dirty = true
+    this.publish()
+  }
+
+  setFollowCursor = (followCursor: boolean) => {
+    this.engine?.setControlInput({ followCursor })
     this.publish()
   }
 
@@ -199,6 +340,30 @@ export class EcosystemStore {
 
     if (!this.frozen) {
       engine.step(dt)
+    }
+
+    const controlled = engine.byId(engine.controlledId)
+
+    if (engine.controlledId !== null && (!controlled || controlled.dying || controlled.hp <= 0)) {
+      const fallen =
+        controlled ?? engine.entities.find((entity) => entity.id === engine.controlledId)
+      const label = fallen ? labelForSpecies(fallen.species) : 'Your creature'
+
+      this.toast = `${label} fell`
+      this.toastUntil = performance.now() + 2600
+      engine.setControlled(null)
+      engine.setControlInput({ followCursor: false, x: 0, y: 0 })
+      engine.dirty = true
+    }
+
+    if (this.toast && performance.now() > this.toastUntil) {
+      this.toast = ''
+      engine.dirty = true
+    }
+
+    if (engine.controlledId !== null && engine.time >= this.hudPublishAt) {
+      this.hudPublishAt = engine.time + 0.12
+      engine.dirty = true
     }
 
     if (engine.dirty) {
@@ -258,6 +423,34 @@ export class EcosystemStore {
       node.root.dataset.fx = entity.fx
     }
 
+    if (node.hp !== entity.hp) {
+      node.hp = entity.hp
+      node.healthUntil = engine.time + 3.2
+    }
+
+    const health = Math.max(0, Math.min(1, entity.hp / Math.max(1, entity.maxHp)))
+    node.root.style.setProperty('--eco-health', health.toFixed(3))
+    const showHealth =
+      entity.maxHp > 1 &&
+      (engine.controlledId === entity.id ||
+        this.selectedId === entity.id ||
+        node.healthUntil > engine.time ||
+        entity.hp < entity.maxHp)
+
+    if (showHealth) {
+      node.root.dataset.health = ''
+    } else {
+      delete node.root.dataset.health
+    }
+
+    node.root.dataset.healthTone = health > 0.56 ? 'good' : health > 0.28 ? 'warn' : 'danger'
+
+    if (engine.controlledId === entity.id) {
+      node.root.dataset.controlled = ''
+    } else {
+      delete node.root.dataset.controlled
+    }
+
     const vars = definition?.style?.(entity, engine)
 
     if (vars) {
@@ -274,30 +467,87 @@ export class EcosystemStore {
     const engine = this.engine
 
     if (!engine) {
-      return { counts: {}, entities: [], scene: this.scene, tallies: {} }
+      return {
+        controlled: null,
+        counts: {},
+        entities: [],
+        scene: this.scene,
+        selected: null,
+        tallies: {},
+        toast: this.toast,
+      }
     }
 
+    const selected = engine.byId(this.selectedId)
+    const controlled = engine.byId(engine.controlledId)
+    const selectedDefinition = selected ? engine.species[selected.species] : null
+    const controlledDefinition = controlled ? engine.species[controlled.species] : null
+
     return {
+      controlled:
+        controlled && controlledDefinition?.controls
+          ? {
+              abilities: controlledDefinition.controls.abilities.map((ability) => ({
+                cooldown: ability.cooldown,
+                cooldownLeft: Math.max(
+                  0,
+                  (controlled.data[`controlCooldown-${ability.key}`] ?? 0) - engine.time,
+                ),
+                description: ability.description,
+                icon: ability.icon,
+                key: ability.key,
+                name: ability.name,
+              })),
+              followCursor: engine.controlInput.followCursor,
+              health: Math.max(0, controlled.hp),
+              healthMax: controlled.maxHp,
+              id: controlled.id,
+              label: labelForSpecies(controlled.species),
+              move: controlledDefinition.controls.move,
+              species: controlled.species,
+            }
+          : null,
       counts: engine.counts(),
       entities: engine.entities.map((entity) => {
         const definition = engine.species[entity.species]
 
         return {
           anchor: entity.anchor,
+          aspect: entity.aspect,
           asset: entity.asset,
+          controllable: Boolean(definition?.controls),
+          controlled: engine.controlledId === entity.id,
           dying: entity.dying,
           fuel: definition?.tags.includes('fuel') ?? false,
+          health: Math.max(0, entity.hp),
+          healthMax: entity.maxHp,
           id: entity.id,
           idle: entity.idle,
           layer: definition?.layer ?? 'front',
+          label: labelForSpecies(entity.species),
           particles: definition?.particles,
           rain: definition?.tags.includes('cloud') ?? false,
+          selected: this.selectedId === entity.id,
           size: entity.size,
           species: entity.species,
+          strong: definition?.strongVs ?? [],
+          weak: definition?.weakTo ?? [],
         }
       }),
       scene: this.scene,
+      selected:
+        selected && selectedDefinition?.controls
+          ? {
+              health: Math.max(0, selected.hp),
+              healthMax: selected.maxHp,
+              id: selected.id,
+              label: labelForSpecies(selected.species),
+              strong: selectedDefinition.strongVs ?? [],
+              weak: selectedDefinition.weakTo ?? [],
+            }
+          : null,
       tallies: engine.tallies,
+      toast: this.toast,
     }
   }
 
