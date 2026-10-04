@@ -35,6 +35,7 @@ export type EcoTag =
   | 'caterpillar'
   | 'cloud'
   | 'dragon'
+  | 'dark-lord'
   | 'fire'
   | 'fireball'
   | 'firefly'
