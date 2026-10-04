@@ -441,14 +441,17 @@
   object-position: center top;
 }
 
-.cateringScene-fairy-castle .cateringMenuHeroDisplay {
+.cateringScene-fairy-castle .cateringMenuHeroDisplay,
+.cateringScene-prehistoric .cateringMenuHeroDisplay {
   text-shadow:
     0 1px 0 rgba(255, 245, 210, 0.7),
     0 8px 22px rgba(11, 15, 24, 0.24);
 }
 
 .cateringScene-fairy-castle .cateringHeroSummary,
-.cateringScene-fairy-castle .cateringHeroEyebrow {
+.cateringScene-fairy-castle .cateringHeroEyebrow,
+.cateringScene-prehistoric .cateringHeroSummary,
+.cateringScene-prehistoric .cateringHeroEyebrow {
   text-shadow:
     0 1px 0 rgba(255, 245, 210, 0.82),
     0 5px 18px rgba(11, 15, 24, 0.22);
@@ -551,6 +554,10 @@
   }
 
   .cateringScene-fairy-castle .cateringHeroSky img {
+    object-position: center top;
+  }
+
+  .cateringScene-prehistoric .cateringHeroSky img {
     object-position: center top;
   }
 

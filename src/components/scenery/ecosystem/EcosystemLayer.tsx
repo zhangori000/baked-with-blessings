@@ -16,6 +16,7 @@ import './species/blossom.css'
 import './species/dawn.css'
 import './species/meadow.css'
 import './species/night.css'
+import './species/prehistoric.css'
 import './species/siege.css'
 
 const EcoThing = memo(function EcoThing({

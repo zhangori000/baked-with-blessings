@@ -47,6 +47,7 @@ export const asteroidStarCount = 25
 
 export const spawnMilestoneByScene: Partial<Record<SceneTone, SpawnMilestone>> = {
   moonlit: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
+  prehistoric: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
 }
 
 export type SceneSprite = {
@@ -107,6 +108,7 @@ const accentLabelByScene: Record<SceneTone, string> = {
   dawn: 'Flower',
   'fairy-castle': 'Cottage',
   moonlit: 'Flower',
+  prehistoric: 'Fern',
   'under-tree': 'Flower',
 }
 
@@ -162,7 +164,6 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('bunny', 'Bunny'),
     creature('hawk', 'Hawk'),
     creature('crow', 'Crow'),
-    creature('crow', 'Crow'),
     creature('balloon', 'Balloon'),
     butterflyCreature,
     creature('carrot', 'Carrot'),
@@ -217,6 +218,21 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('tanuki', 'Tanuki'),
     creature('crane', 'Crane'),
     creature('chochin', 'Lantern'),
+  ],
+  prehistoric: [
+    creatureCloud,
+    creature('fern', 'Fern', '/flowers/prehistoric-fern.svg'),
+    creature('trex', 'T. rex', spawnableAsset('trex')),
+    creature('triceratops', 'Triceratops'),
+    creature('brachiosaurus', 'Brachiosaurus'),
+    creature('stegosaurus', 'Stegosaurus'),
+    creature('raptor', 'Raptor'),
+    creature('pterodactyl', 'Pterodactyl'),
+    creature('compy', 'Compy'),
+    creature('meganeura', 'Dragonfly'),
+    creature('dino-nest', 'Egg'),
+    creature('shooting-star', 'Shooting star', spawnableAsset('shooting-star-icon')),
+    creature('volcano', 'Volcano'),
   ],
   'fairy-castle': [
     creatureCloud,

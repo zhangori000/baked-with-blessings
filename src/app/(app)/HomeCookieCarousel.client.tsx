@@ -2970,6 +2970,10 @@ export function HomeCookieCarousel({
             width: 116%;
           }
 
+          .homeCookieScene-prehistoric .homeCookieSceneSky {
+            object-position: center top;
+          }
+
           .homeCookieScene-moonlit .homeCookieSceneSky {
             object-position: center top;
           }

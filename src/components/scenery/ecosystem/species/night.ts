@@ -58,7 +58,8 @@ function starTilt(entity: EcoEntity) {
 }
 
 function triggerImpact(entity: EcoEntity, world: EcoWorld) {
-  const impact = world.spawn('impact', {
+  const dinoImpact = world.hasSpecies('dino-impact')
+  const impact = world.spawn(dinoImpact ? 'dino-impact' : 'impact', {
     countAs: null,
     data: { siteX: clamp(entity.x, 0, world.width) },
     x: clamp(entity.x, world.unit * 2, world.width - world.unit * 2),
@@ -71,6 +72,13 @@ function triggerImpact(entity: EcoEntity, world: EcoWorld) {
 
   for (const other of [...world.entities]) {
     if (other === impact || other === entity || other.dying || other.removed) {
+      continue
+    }
+
+    if (dinoImpact && other.species === 'dino-nest') {
+      other.data.warm = 1
+      other.data.hatchAt = Math.min(other.data.hatchAt ?? 36, 12)
+      other.fx = 'wobble'
       continue
     }
 
@@ -200,7 +208,7 @@ const lantern: EcoSpecies = {
   },
 }
 
-const shootingStar: EcoSpecies = {
+export const shootingStar: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('shooting-star'),
   countAs: 'shooting-star',

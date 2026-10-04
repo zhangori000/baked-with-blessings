@@ -1,0 +1,13 @@
+<svg width="54" height="54" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+  <path d="M8 31C8 17 20 5 34 7C47 15 50 32 40 44C27 55 10 47 8 31Z" fill="#ff8a3d" />
+  <path d="M19 34C18 24 25 16 35 14C43 22 42 35 34 42C27 47 21 43 19 34Z" fill="#ffd36b" />
+  <path d="M8 31C13 43 28 50 40 44C29 55 10 48 8 31Z" fill="#7a4e45" opacity="0.55" />
+  <path
+    d="M5 21C13 24 20 29 27 37"
+    fill="none"
+    stroke="#ffb547"
+    stroke-width="4"
+    stroke-linecap="round"
+    opacity="0.75"
+  />
+</svg>

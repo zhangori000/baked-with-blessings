@@ -250,6 +250,7 @@ const sceneLabelByTone: Record<SceneTone, string> = {
   dawn: 'Dawn',
   'fairy-castle': 'Fairy Castle',
   moonlit: 'Moonlit',
+  prehistoric: 'Dino Valley',
   'under-tree': 'Under Tree',
 }
 
@@ -357,6 +358,26 @@ const sceneColorByTone: Record<
     panelFill: 'rgba(23, 38, 75, 0.82)',
     text: 'rgba(248, 242, 214, 0.94)',
   },
+  prehistoric: {
+    flowerCenter: bakeryPrimitiveTokens.color.flowerCenterDeepGreen,
+    flowerGlow: 'rgba(255, 181, 71, 0.4)',
+    flowerPetal: bakeryPrimitiveTokens.color.flowerPetalEmber,
+    footerBg: '#e4efe0',
+    footerBorder: 'rgba(47, 68, 36, 0.16)',
+    footerFg: '#2f4424',
+    footerLinkBg: 'rgba(252, 246, 228, 0.58)',
+    footerMuted: 'rgba(47, 68, 36, 0.72)',
+    footerPanelBg: 'rgba(252, 246, 228, 0.22)',
+    heroMuted: 'rgba(36, 54, 27, 0.82)',
+    heroText: '#1f2e17',
+    heroTitle: '#1a2713',
+    meadow: '#8cbb4e',
+    meadowShadow: '#4f7a33',
+    mutedText: 'rgba(47, 68, 36, 0.74)',
+    panelBorder: 'rgba(47, 68, 36, 0.15)',
+    panelFill: 'rgba(252, 246, 228, 0.9)',
+    text: '#2f4424',
+  },
   'under-tree': {
     flowerCenter: bakeryPrimitiveTokens.color.flowerCenterDeepGreen,
     flowerGlow: 'rgba(197, 228, 142, 0.38)',
@@ -425,6 +446,7 @@ export const bakerySceneThemes: Record<SceneTone, BakerySceneTheme> = {
   dawn: createSceneTheme('dawn'),
   'fairy-castle': createSceneTheme('fairy-castle'),
   moonlit: createSceneTheme('moonlit'),
+  prehistoric: createSceneTheme('prehistoric'),
   'under-tree': createSceneTheme('under-tree'),
 }
 

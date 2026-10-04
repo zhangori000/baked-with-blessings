@@ -48,6 +48,15 @@ export const menuSceneLoadingTokens = {
     sky: "url('/sceneries/moonlit-purple-sky.svg')",
     skyMobile: "url('/sceneries/moonlit-purple-sky-mobile-experimental.svg')",
   },
+  prehistoric: {
+    background: '#e4efe0',
+    bannerBackground: 'rgba(252, 246, 228, 0.9)',
+    bannerColor: '#2f4424',
+    meadow: "url('/sceneries/transparent-meadow.svg')",
+    overlay: 'linear-gradient(180deg, rgba(232, 246, 236, 0.04) 0%, rgba(166, 201, 92, 0.16) 100%)',
+    sky: "url('/sceneries/prehistoric-valley.svg')",
+    skyMobile: "url('/sceneries/prehistoric-valley-mobile.svg')",
+  },
   'under-tree': {
     background: '#e7f0d8',
     bannerBackground: 'rgba(250, 255, 241, 0.9)',
