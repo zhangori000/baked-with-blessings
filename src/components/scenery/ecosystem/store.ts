@@ -375,6 +375,32 @@ export class EcosystemStore {
     }
   }
 
+  private placePopover(root: HTMLElement, x: number, y: number, width: number) {
+    const popover = root.querySelector<HTMLElement>('.ecoControlPopover')
+
+    if (!popover) {
+      return
+    }
+
+    const half = popover.offsetWidth / 2
+    const pad = 8
+    const shift = Math.round(Math.min(Math.max(x, half + pad), width - half - pad) - x)
+    const below = y - popover.offsetHeight - 24 < pad
+    const shiftValue = `${shift}px`
+
+    if (root.style.getPropertyValue('--eco-pop-shift') !== shiftValue) {
+      root.style.setProperty('--eco-pop-shift', shiftValue)
+    }
+
+    if (below !== (root.dataset.popBelow !== undefined)) {
+      if (below) {
+        root.dataset.popBelow = ''
+      } else {
+        delete root.dataset.popBelow
+      }
+    }
+  }
+
   private apply(entity: EcoEntity) {
     const node = this.nodes.get(entity.id)
     const engine = this.engine
@@ -392,6 +418,10 @@ export class EcosystemStore {
     if (node.transform !== transform) {
       node.transform = transform
       node.root.style.transform = transform
+    }
+
+    if (node.root.dataset.selected !== undefined) {
+      this.placePopover(node.root, x, y, engine.width)
     }
 
     const pose = `scaleX(${entity.facing}) rotate(${entity.tilt.toFixed(1)}deg) scale(${entity.scale.toFixed(3)})`

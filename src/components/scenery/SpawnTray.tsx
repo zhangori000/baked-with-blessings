@@ -2,6 +2,7 @@
 
 import {
   Blend,
+  Gamepad2,
   GalleryHorizontal,
   GripHorizontal,
   LayoutGrid,
@@ -319,6 +320,7 @@ export function SpawnTray({
   const [edges, setEdges] = useState({ end: false, start: false })
   const [showMatchups, setShowMatchups] = useState(false)
   const [selectedMatchupId, setSelectedMatchupId] = useState<string | null>(null)
+  const [playMode, setPlayMode] = useState(false)
   const focusFirstTileRef = useRef(false)
   const items = sceneSpawnablesByScene[sceneTone] ?? sceneSpawnablesByScene.classic
   const matchupData = useMemo(() => buildTrayMatchups(sceneTone, items), [items, sceneTone])
@@ -469,6 +471,20 @@ export function SpawnTray({
 
     return () => window.cancelAnimationFrame(frame)
   }, [matchupsVisible, open, selectedMatchup])
+
+  useEffect(() => {
+    if (!playMode) {
+      return
+    }
+
+    const root = document.documentElement
+
+    root.dataset.ecoPlay = ''
+
+    return () => {
+      delete root.dataset.ecoPlay
+    }
+  }, [playMode])
 
   useEffect(() => {
     if (!open || !focusFirstTileRef.current || panelStyle.visibility === 'hidden') {
@@ -971,6 +987,17 @@ export function SpawnTray({
                         ? 'Swipe for more'
                         : 'Tap anything to add it'}
                 </span>
+                <button
+                  aria-pressed={playMode}
+                  className="spawnTrayPlay"
+                  onClick={() => setPlayMode((current) => !current)}
+                  title="Hide the cookie and page text so the creatures have the whole scene"
+                  type="button"
+                >
+                  <Gamepad2 aria-hidden="true" size={14} strokeWidth={2.3} />
+                  Play mode
+                  <span aria-hidden="true" className="spawnTrayPlaySwitch" />
+                </button>
                 <button
                   className="spawnTrayClear"
                   disabled={total === 0}

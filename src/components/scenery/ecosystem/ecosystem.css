@@ -222,8 +222,13 @@
   pointer-events: auto;
   position: absolute;
   top: -1rem;
-  transform: translate(-50%, -100%);
+  transform: translate(calc(-50% + var(--eco-pop-shift, 0px)), -100%);
   z-index: 40;
+}
+
+.ecoThing[data-pop-below] .ecoControlPopover {
+  top: 1rem;
+  transform: translate(calc(-50% + var(--eco-pop-shift, 0px)), 0);
 }
 
 .ecoControlPopoverTitle {
@@ -939,9 +944,19 @@
   transition: opacity 0.2s ease;
 }
 
-:root[data-eco-controlling] .homeCookieCopy {
+:root[data-eco-controlling] .homeCookieCopy,
+:root[data-eco-play] .homeCookieCopy,
+:root[data-eco-play] .homeCookieRigShell,
+:root[data-eco-play] .cateringHeroEyebrow,
+:root[data-eco-play] .cateringMenuHeroDisplay,
+:root[data-eco-play] .cateringHeroSummary {
   opacity: 0;
   pointer-events: none;
+}
+
+.ecoLayer:has(.ecoThing[data-selected]),
+.ecoLayer:has(.ecoThing[data-controlled]) {
+  z-index: 40;
 }
 
 @media (max-width: 639px) {
