@@ -161,6 +161,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('dandelion', 'Dandelion', spawnableAsset('dandelion-bloom')),
     creature('bunny', 'Bunny'),
     creature('hawk', 'Hawk'),
+    creature('crow', 'Crow'),
     creature('balloon', 'Balloon'),
     butterflyCreature,
     creature('carrot', 'Carrot'),

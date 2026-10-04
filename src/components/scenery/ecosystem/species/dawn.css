@@ -77,6 +77,35 @@
   filter: brightness(1.05) saturate(0.9);
 }
 
+.ecoThing[data-species='hawk'][data-fx='hurt'] .ecoArt {
+  filter: brightness(1.42) saturate(0.72);
+}
+
+.ecoThing[data-species='crow'] .ecoArt {
+  transform-origin: center center;
+}
+
+.ecoThing[data-species='crow'][data-state='fly'] .ecoArt {
+  animation: dawnCrowFlap 0.42s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='crow'][data-state='mob'] .ecoArt {
+  animation: dawnCrowMob 0.28s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='crow'][data-state='peck'] .ecoArt {
+  animation: dawnCrowPeck 0.34s ease-in-out infinite alternate;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='crow'][data-state='flee'] .ecoArt {
+  animation: dawnCrowFlee 0.2s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='crow'][data-fx='peck'] .ecoArt {
+  filter: brightness(1.28) saturate(1.12);
+}
+
 @keyframes dawnCarrotSprout {
   0%,
   100% {
@@ -220,11 +249,53 @@
   }
 }
 
+@keyframes dawnCrowFlap {
+  from {
+    transform: translateY(0) rotate(-2deg) scale(1.02, 0.98);
+  }
+
+  to {
+    transform: translateY(-0.1rem) rotate(2deg) scale(0.98, 1.02);
+  }
+}
+
+@keyframes dawnCrowMob {
+  from {
+    transform: translateX(-0.1rem) translateY(0.04rem) rotate(-11deg) scale(1.04, 0.96);
+  }
+
+  to {
+    transform: translateX(0.14rem) translateY(-0.08rem) rotate(10deg) scale(0.98, 1.03);
+  }
+}
+
+@keyframes dawnCrowPeck {
+  from {
+    transform: translateY(0.02rem) rotate(-3deg) scale(1.02, 0.98);
+  }
+
+  to {
+    transform: translateY(-0.09rem) rotate(4deg) scale(0.98, 1.03);
+  }
+}
+
+@keyframes dawnCrowFlee {
+  from {
+    transform: translateX(-0.08rem) rotate(-7deg) scale(1.02, 0.98);
+  }
+
+  to {
+    transform: translateX(0.08rem) rotate(7deg) scale(0.98, 1.03);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ecoThing[data-species='carrot'] .ecoArt,
+  .ecoThing[data-species='crow'] .ecoArt,
   .ecoThing[data-species='fox'] .ecoArt,
   .ecoThing[data-species='hedgehog'] .ecoArt,
   .ecoThing[data-species='scarecrow'] .ecoArt,
+  .ecoThing[data-species='hawk'][data-fx='hurt'] .ecoArt,
   .ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {
     animation: none;
   }

@@ -13,6 +13,7 @@ import {
   tiltToVelocity,
   walk,
   walkToward,
+  wander,
 } from '../behaviors'
 import type { EcoEntity, EcoSpecies, EcoWorld } from '../types'
 
@@ -20,6 +21,9 @@ registerViewBoxes({
   carrot: [70, 88],
   'carrot-pulled': [72, 116],
   'carrot-sprout': [62, 74],
+  crow: [112, 76],
+  'crow-mob': [108, 82],
+  'crow-peck': [94, 66],
   fox: [132, 72],
   'fox-crouch': [132, 60],
   'fox-pounce': [142, 78],
@@ -40,6 +44,9 @@ const foxPounceAsset = ecoAsset('fox-pounce')
 const hedgehogAsset = ecoAsset('hedgehog')
 const hedgehogBallAsset = ecoAsset('hedgehog-ball')
 const scarecrowAsset = ecoAsset('scarecrow')
+const crowAsset = ecoAsset('crow')
+const crowMobAsset = ecoAsset('crow-mob')
+const crowPeckAsset = ecoAsset('crow-peck')
 
 const isPlant = (world: EcoWorld) => (other: EcoEntity) => world.has(other, 'plant')
 
@@ -511,6 +518,75 @@ function releaseCarry(hawk: EcoEntity, world: EcoWorld) {
   world.setState(hawk, 'climb')
 }
 
+function crowMobCount(world: EcoWorld, hawk: EcoEntity) {
+  const radius = Math.max(world.unit * 16, 132)
+
+  return world.count(
+    (other) =>
+      other.species === 'crow' &&
+      Math.hypot(other.x - hawk.x, other.y - hawk.y) < radius &&
+      (other.targetId === hawk.id || other.state === 'mob'),
+  )
+}
+
+function crowReadyMobCount(world: EcoWorld, hawk: EcoEntity) {
+  const radius = Math.max(world.unit * 15, 124)
+
+  return world.count(
+    (other) =>
+      other.species === 'crow' &&
+      other.state === 'mob' &&
+      other.targetId === hawk.id &&
+      (other.data.mobReadyAt ?? Number.POSITIVE_INFINITY) <= world.time &&
+      Math.hypot(other.x - hawk.x, other.y - hawk.y) < radius,
+  )
+}
+
+function startHawkFlee(hawk: EcoEntity, world: EcoWorld, fromX: number) {
+  hawk.targetId = null
+  hawk.data.fleeDir = hawk.x >= fromX ? 1 : -1
+  hawk.data.zBoost = 0
+  hawk.fx = 'hurt'
+  world.setAsset(hawk, hawkSoar)
+  world.setState(hawk, 'flee')
+}
+
+function peckHawk(crow: EcoEntity, hawk: EcoEntity, world: EcoWorld) {
+  const mobbers = crowReadyMobCount(world, hawk)
+
+  crow.fx = 'peck'
+  crow.data.fxUntil = world.time + 0.22
+  crow.data.peckAt = world.time + between(1.6, 2.45)
+  hawk.fx = 'hurt'
+  hawk.data.harriedUntil = world.time + (mobbers >= 2 ? 1.2 : 0.55)
+
+  if (mobbers < 2) {
+    if ((hawk.state === 'dive' || hawk.state === 'swoop') && Math.random() < 0.35) {
+      hawk.targetId = null
+      world.setAsset(hawk, hawkSoar)
+      world.setState(hawk, 'climb')
+    }
+
+    return
+  }
+
+  if (Math.random() < (mobbers >= 4 ? 1 : mobbers >= 3 ? 0.9 : 0.65)) {
+    hawk.data.crowHits = (hawk.data.crowHits ?? 0) + 1
+  }
+
+  hawk.data.crowHitDecayAt = world.time + between(3.2, 5.2)
+
+  if (hawk.state === 'carry' && hawk.t > 1.55 && Math.random() < 0.78) {
+    hawk.targetId = null
+    world.setAsset(hawk, hawkSoar)
+    world.setState(hawk, 'climb')
+  }
+
+  if ((hawk.data.crowHits ?? 0) >= 3) {
+    startHawkFlee(hawk, world, crow.x)
+  }
+}
+
 const hawk: EcoSpecies = {
   anchor: 'center',
   asset: hawkSoar,
@@ -529,6 +605,41 @@ const hawk: EcoSpecies = {
   tick(entity, world, dt) {
     const unit = world.unit
     const guard = scarecrowAirGuard(world, entity)
+
+    if (entity.fx === 'hurt' && (entity.data.harriedUntil ?? 0) < world.time) {
+      entity.fx = ''
+    }
+
+    if ((entity.data.crowHits ?? 0) > 0) {
+      const readyMobbers = crowReadyMobCount(world, entity)
+
+      if (readyMobbers >= 2) {
+        entity.data.crowHitDecayAt = world.time + 4
+      } else if ((entity.data.crowHitDecayAt ?? 0) < world.time) {
+        entity.data.crowHits = Math.max(0, (entity.data.crowHits ?? 0) - 1)
+        entity.data.crowHitDecayAt = world.time + 1.8
+      }
+    }
+
+    if (entity.state === 'flee') {
+      const direction = entity.data.fleeDir ?? (entity.x < world.width / 2 ? -1 : 1)
+
+      entity.vx += (direction * unit * 7 - entity.vx) * Math.min(1, dt * 2.2)
+      entity.vy += (-unit * 7.5 - entity.vy) * Math.min(1, dt * 2.8)
+      integrate(entity, dt)
+      faceTravel(entity)
+      tiltToVelocity(entity, 28)
+
+      if (
+        entity.y < world.skyTop - unit * 4 ||
+        entity.x < -unit * 5 ||
+        entity.x > world.width + unit * 5 ||
+        entity.t > 4.5
+      ) {
+        world.kill(entity)
+      }
+      return
+    }
 
     if (entity.state === 'carry') {
       const prey = world.byId(entity.targetId)
@@ -563,6 +674,12 @@ const hawk: EcoSpecies = {
     if (entity.state === 'dive' || entity.state === 'swoop') {
       world.setAsset(entity, entity.state === 'dive' ? hawkDive : hawkSoar)
       const prey = world.byId(entity.targetId)
+      const preyY = prey
+        ? prey.anchor === 'bottom'
+          ? prey.y - world.heightOf(prey) * 0.4 - prey.lift
+          : prey.y
+        : entity.y
+      const committed = prey ? Math.hypot(prey.x - entity.x, preyY - entity.y) < unit * 7 : false
 
       if (
         guard ||
@@ -570,6 +687,8 @@ const hawk: EcoSpecies = {
         prey.state === 'carried' ||
         prey.state === 'drop' ||
         (world.has(prey, 'bunny') && bunnySafeFromHawk(world, prey)) ||
+        (prey.species === 'crow' && crowReadyMobCount(world, entity) >= 2) ||
+        ((entity.data.harriedUntil ?? 0) > world.time && !committed) ||
         entity.t > 6
       ) {
         entity.targetId = null
@@ -577,8 +696,6 @@ const hawk: EcoSpecies = {
         return
       }
 
-      const preyY =
-        prey.anchor === 'bottom' ? prey.y - world.heightOf(prey) * 0.4 - prey.lift : prey.y
       const gap = steer(entity, prey.x, preyY, unit * (entity.state === 'dive' ? 9 : 6.5), dt, 4)
       integrate(entity, dt)
       faceTravel(entity)
@@ -589,6 +706,9 @@ const hawk: EcoSpecies = {
 
         if (world.has(prey, 'balloon')) {
           world.setState(prey, 'popped')
+        } else if (prey.species === 'crow') {
+          world.kill(prey)
+          entity.data.hunger = 0
         } else if (!(prey.state === 'flee' && Math.random() < 0.3)) {
           entity.targetId = prey.id
           entity.data.zBoost = 4000
@@ -671,7 +791,40 @@ const hawk: EcoSpecies = {
       return
     }
 
-    if ((entity.data.hunger ?? 0) > 1 && chance(0.8, dt)) {
+    if (
+      (entity.data.hunger ?? 0) > 1.18 &&
+      crowReadyMobCount(world, entity) < 2 &&
+      chance(0.22, dt)
+    ) {
+      const stragglerCrow = world.nearest(
+        entity,
+        (other) =>
+          other.species === 'crow' &&
+          !['flee', 'dead'].includes(other.state) &&
+          (other.state !== 'mob' ||
+            crowMobCount(world, entity) < 2 ||
+            (other.data.mobReadyAt ?? Number.POSITIVE_INFINITY) > world.time) &&
+          !world.nearest(
+            other,
+            (flockmate) =>
+              flockmate.species === 'crow' &&
+              flockmate.id !== other.id &&
+              flockmate.state === 'mob' &&
+              flockmate.targetId === entity.id &&
+              (flockmate.data.mobReadyAt ?? Number.POSITIVE_INFINITY) <= world.time,
+            unit * 10,
+          ),
+        Math.max(unit * 34, world.height * 0.7),
+      )
+
+      if (stragglerCrow) {
+        entity.targetId = stragglerCrow.id
+        world.setState(entity, 'dive')
+        return
+      }
+    }
+
+    if ((entity.data.hunger ?? 0) > 1.12 && chance(0.72, dt)) {
       const prey = world.nearest(
         entity,
         (other) =>
@@ -685,6 +838,241 @@ const hawk: EcoSpecies = {
       if (prey) {
         entity.targetId = prey.id
         world.setState(entity, 'dive')
+        return
+      }
+    }
+  },
+}
+
+function crowGroundY(crow: EcoEntity, world: EcoWorld) {
+  return world.groundY - world.heightOf(crow) * 0.42 + (crow.data.depth ?? 0) * 0.16
+}
+
+function crowFoodTarget(crow: EcoEntity, world: EcoWorld) {
+  const unit = world.unit
+
+  return (
+    world.nearest(
+      { x: crow.x, y: world.groundY },
+      (other) => other.species === 'seed' && other.y > world.groundY - unit * 4,
+      unit * 18,
+    ) ??
+    world.nearest(
+      { x: crow.x, y: world.groundY },
+      (other) =>
+        world.has(other, 'carrot') && other.state === 'grow' && (other.data.burn ?? 0) <= 0,
+      unit * 15,
+    )
+  )
+}
+
+const crow: EcoSpecies = {
+  anchor: 'center',
+  asset: crowAsset,
+  idle: 'flap',
+  init(entity, world) {
+    entity.data.angle = between(0, Math.PI * 2)
+    entity.data.goalAt = 0
+    entity.data.hunger = between(0.15, 0.7)
+    entity.y = between(
+      world.skyTop + world.unit * 2,
+      Math.min(world.skyBottom, world.height * 0.48),
+    )
+  },
+  layer: 'front',
+  size: [2.15, 2.75],
+  state: 'fly',
+  tags: ['prey', 'burnable'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+
+    if (entity.fx === 'peck' && (entity.data.fxUntil ?? 0) < world.time) {
+      entity.fx = ''
+    }
+
+    const scarecrow = scarecrowNear(world, entity, Math.max(unit * 10, 92))
+    const foxThreat = world.nearest(
+      entity,
+      (other) => world.has(other, 'fox') && ['stalk', 'pounce'].includes(other.state),
+      entity.state === 'peck' ? unit * 9 : unit * 4,
+    )
+
+    if ((scarecrow || foxThreat) && entity.state !== 'flee') {
+      entity.targetId = null
+      entity.data.avoidX = (scarecrow ?? foxThreat)?.x ?? entity.x
+      world.setAsset(entity, crowAsset)
+      world.setState(entity, 'flee')
+    }
+
+    if (entity.state === 'flee') {
+      const fromX = entity.data.avoidX ?? entity.x
+      const direction = entity.x >= fromX ? 1 : -1
+      const goalX = clamp(entity.x + direction * unit * 9, unit, world.width - unit)
+      const goalY = clamp(entity.y - unit * 4, world.skyTop + unit * 1.2, world.skyBottom)
+
+      world.setAsset(entity, crowAsset)
+      steer(entity, goalX, goalY, unit * 7.4, dt, 5)
+      integrate(entity, dt)
+      faceTravel(entity)
+      tiltToVelocity(entity, 28)
+      keepInSky(entity, world, world.skyTop + unit, world.skyBottom)
+
+      if (entity.t > 1.5 && !scarecrow && !foxThreat) {
+        entity.data.goalAt = 0
+        entity.lift = 0
+        world.setState(entity, 'fly')
+      }
+      return
+    }
+
+    const hawkTarget = world.byId(entity.targetId)
+    const hawk =
+      hawkTarget?.species === 'hawk' && hawkTarget.state !== 'flee' && hawkTarget.state !== 'dead'
+        ? hawkTarget
+        : world.nearest(
+            entity,
+            (other) =>
+              world.has(other, 'hawk') &&
+              !['flee', 'dead'].includes(other.state) &&
+              (['dive', 'swoop', 'carry'].includes(other.state) ||
+                Math.hypot(other.x - entity.x, other.y - entity.y) < unit * 15),
+            Math.max(unit * 25, world.height * 0.65),
+          )
+
+    if (hawk && entity.state !== 'mob' && (entity.data.scatterUntil ?? 0) < world.time) {
+      entity.targetId = hawk.id
+      entity.data.mobReadyAt = world.time + between(1, 1.8)
+      entity.data.peckAt = world.time + between(1.6, 2.5)
+      world.setAsset(entity, crowMobAsset)
+      world.setState(entity, 'mob')
+    }
+
+    if (entity.state === 'mob') {
+      const target = world.byId(entity.targetId)
+
+      if (!target || target.species !== 'hawk' || ['flee', 'dead'].includes(target.state)) {
+        entity.targetId = null
+        world.setAsset(entity, crowAsset)
+        world.setState(entity, 'fly')
+        return
+      }
+
+      const readyMobbers = crowReadyMobCount(world, target)
+      const angle = world.time * 5.4 + entity.id * 1.7
+      const goalX =
+        target.x -
+        target.facing * unit * (readyMobbers >= 2 ? 1.1 : 1.9) +
+        Math.sin(angle) * unit * 1.7
+      const goalY = target.y + Math.cos(angle) * unit * 1.25
+      const gap = steer(entity, goalX, goalY, unit * (readyMobbers >= 2 ? 8.2 : 6.1), dt, 5.4)
+
+      world.setAsset(entity, crowMobAsset)
+      integrate(entity, dt)
+      faceTravel(entity)
+      entity.tilt = Math.sin(world.time * 13 + entity.id) * (readyMobbers >= 2 ? 16 : 9)
+      keepInSky(entity, world, world.skyTop + unit * 0.8, world.skyBottom)
+
+      if (
+        (entity.data.mobReadyAt ?? Number.POSITIVE_INFINITY) <= world.time &&
+        gap < unit * 2.25 &&
+        (entity.data.peckAt ?? 0) < world.time
+      ) {
+        peckHawk(entity, target, world)
+      }
+
+      if (
+        (readyMobbers < 2 &&
+          !['dive', 'swoop', 'carry'].includes(target.state) &&
+          entity.t > 2.2) ||
+        (entity.t > 1.8 && chance(readyMobbers >= 2 ? 0.28 : 0.5, dt))
+      ) {
+        entity.targetId = null
+        entity.data.mobReadyAt = 0
+        entity.data.scatterUntil = world.time + between(1.2, 2.4)
+        world.setAsset(entity, crowAsset)
+        world.setState(entity, 'fly')
+      }
+      return
+    }
+
+    if (entity.state === 'peck') {
+      const target = world.byId(entity.targetId)
+      const groundY = crowGroundY(entity, world)
+      const dy = groundY - entity.y
+      const grounded = Math.abs(dy) < unit * 0.8
+
+      world.setAsset(entity, crowPeckAsset)
+      entity.y += Math.sign(dy) * Math.min(Math.abs(dy), unit * 5.8 * dt)
+      entity.vx *= 0.82
+      entity.vy *= 0.82
+      entity.lift = Math.abs(Math.sin(entity.t * 9)) * unit * 0.22
+      entity.tilt = Math.sin(entity.t * 12) * 4
+
+      if (!target || (target.species !== 'seed' && !world.has(target, 'carrot'))) {
+        if ((entity.data.peckUntil ?? 0) > world.time) {
+          return
+        }
+
+        entity.targetId = null
+        entity.data.peckUntil = 0
+        world.setState(entity, 'fly')
+        return
+      }
+
+      const dx = target.x - entity.x
+      entity.facing = dx >= 0 ? 1 : -1
+      entity.x += Math.sign(dx) * Math.min(Math.abs(dx), unit * 2.2 * dt)
+      entity.x = clamp(entity.x, unit, world.width - unit)
+
+      if (grounded && Math.abs(dx) < unit * 0.8 && entity.t > 0.32) {
+        if (target.species === 'seed') {
+          world.remove(target)
+        } else if (target.state === 'grow') {
+          world.kill(target)
+        }
+
+        entity.data.hunger = 0
+        entity.targetId = null
+        entity.data.peckUntil = world.time + between(1.1, 2.2)
+      } else if (entity.t > 8) {
+        entity.targetId = null
+        entity.data.peckUntil = 0
+        world.setState(entity, 'fly')
+      }
+      return
+    }
+
+    world.setAsset(entity, crowAsset)
+    entity.data.hunger = (entity.data.hunger ?? 0) + dt / 7.5
+    entity.lift = 0
+    entity.data.angle = (entity.data.angle ?? 0) + dt * 1.8
+
+    const flockmate = world.nearest(
+      entity,
+      (other) => other.species === 'crow' && other.state === 'fly',
+      unit * 16,
+    )
+
+    if (flockmate) {
+      entity.vx += (flockmate.vx - entity.vx) * Math.min(1, dt * 0.35)
+      entity.vy += (flockmate.vy - entity.vy) * Math.min(1, dt * 0.3)
+    }
+
+    wander(entity, world, dt, unit * 3.6, world.skyTop + unit * 1.2, world.skyBottom, 2.2)
+    integrate(entity, dt)
+    faceTravel(entity)
+    entity.tilt = Math.sin(world.time * 2.3 + entity.id) * 6 + (entity.vy * 0.08) / unit
+    keepInSky(entity, world, world.skyTop + unit, world.skyBottom)
+
+    if ((entity.data.hunger ?? 0) > 0.85 && chance(0.38, dt)) {
+      const food = crowFoodTarget(entity, world)
+
+      if (food) {
+        entity.targetId = food.id
+        entity.vx = 0
+        entity.vy = unit * 1.2
+        world.setAsset(entity, crowPeckAsset)
+        world.setState(entity, 'peck')
       }
     }
   },
@@ -783,6 +1171,29 @@ const fox: EcoSpecies = {
           return
         }
 
+        const target = world.byId(entity.targetId)
+        const crowTarget =
+          target?.species === 'crow' &&
+          ['peck', 'flee'].includes(target.state) &&
+          target.y > world.groundY - unit * 6
+            ? target
+            : world.nearest(
+                entity,
+                (other) =>
+                  other.species === 'crow' &&
+                  ['peck', 'flee'].includes(other.state) &&
+                  other.y > world.groundY - unit * 6,
+                unit * 1.65,
+              )
+
+        if (crowTarget && Math.abs(crowTarget.x - entity.x) < unit * 3.4) {
+          entity.data.resolved = 1
+          world.kill(crowTarget)
+          entity.fx = ''
+          entity.data.caught = 1
+          return
+        }
+
         const bunnyTarget = world.nearest(
           entity,
           (other) => world.has(other, 'bunny') && foxTargetStates.includes(other.state),
@@ -843,13 +1254,16 @@ const fox: EcoSpecies = {
     if (entity.state === 'stalk') {
       world.setAsset(entity, foxCrouchAsset)
       const prey = world.byId(entity.targetId)
+      const stalkingBunny = Boolean(
+        prey && world.has(prey, 'bunny') && foxTargetStates.includes(prey.state),
+      )
+      const stalkingCrow = Boolean(
+        prey?.species === 'crow' &&
+        ['peck', 'flee'].includes(prey.state) &&
+        prey.y > world.groundY - unit * 6,
+      )
 
-      if (
-        !prey ||
-        !world.has(prey, 'bunny') ||
-        !foxTargetStates.includes(prey.state) ||
-        entity.t > 8
-      ) {
+      if (!prey || (!stalkingBunny && !stalkingCrow) || entity.t > 8) {
         entity.targetId = null
         world.setAsset(entity, foxAsset)
         world.setState(entity, 'trot')
@@ -858,7 +1272,10 @@ const fox: EcoSpecies = {
 
       const gap = walkToward(entity, world, prey.x, unit * 0.95, dt)
 
-      if (gap < unit * 4.4 || entity.t > (entity.data.patience ?? 1.2) + 1.6) {
+      if (
+        gap < unit * (stalkingCrow ? 3.2 : 4.4) ||
+        entity.t > (entity.data.patience ?? 1.2) + 1.6
+      ) {
         entity.data.startX = entity.x
         entity.data.endX = clamp(prey.x + prey.vx * 0.25, unit, world.width - unit)
         entity.data.jump = unit * between(1.7, 2.9)
@@ -870,6 +1287,22 @@ const fox: EcoSpecies = {
       return
     }
 
+    if ((entity.data.hunger ?? 0) > 0.5) {
+      const groundedCrow = world.nearest(
+        entity,
+        (other) =>
+          other.species === 'crow' && other.state === 'peck' && other.y > world.groundY - unit * 6,
+        unit * 14,
+      )
+
+      if (groundedCrow) {
+        entity.targetId = groundedCrow.id
+        entity.data.patience = between(0.2, 0.55)
+        world.setState(entity, 'stalk')
+        return
+      }
+    }
+
     world.setAsset(entity, foxAsset)
     entity.data.hunger = (entity.data.hunger ?? 0) + dt / 8
     walk(entity, world, dt, unit * 1.35)
@@ -879,6 +1312,20 @@ const fox: EcoSpecies = {
     }
 
     if ((entity.data.hunger ?? 0) > 0.62 && chance(1.25, dt)) {
+      const crowTarget = world.nearest(
+        entity,
+        (other) =>
+          other.species === 'crow' && other.state === 'peck' && other.y > world.groundY - unit * 6,
+        Math.max(unit * 28, world.height * 0.45),
+      )
+
+      if (crowTarget) {
+        entity.targetId = crowTarget.id
+        entity.data.patience = between(0.2, 0.55)
+        world.setState(entity, 'stalk')
+        return
+      }
+
       const bunnyTarget = world.nearest(
         entity,
         (other) => world.has(other, 'bunny') && foxTargetStates.includes(other.state),
@@ -975,7 +1422,7 @@ const hedgehog: EcoSpecies = {
 
     if (
       seedTarget &&
-      !(seedTarget.species === 'seed' && seedTarget.y > world.groundY - unit * 3.5)
+      !(seedTarget.species === 'seed' && seedTarget.y > world.groundY - unit * 6.5)
     ) {
       seedTarget = null
       entity.targetId = null
@@ -1093,6 +1540,7 @@ export const dawnSpecies = {
   balloon,
   bunny,
   carrot,
+  crow,
   dandelion,
   fox,
   hawk,
