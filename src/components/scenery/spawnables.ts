@@ -204,6 +204,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('cat', 'Cat'),
     creature('beehive', 'Beehive'),
     creature('frog', 'Frog'),
+    creature('heron', 'Heron'),
     creature('mouse', 'Mouse'),
     creature('bear', 'Bear'),
   ],

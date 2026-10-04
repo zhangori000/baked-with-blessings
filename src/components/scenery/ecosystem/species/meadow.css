@@ -26,9 +26,29 @@
   animation: meadowBearScoop 0.65s ease-in-out infinite;
 }
 
+.ecoThing[data-species='bear'][data-state='nap'] .ecoArt {
+  animation: meadowBearNap 2.8s ease-in-out infinite;
+  filter: saturate(0.96) brightness(0.98);
+}
+
 .ecoThing[data-species='bear'][data-fx='stung'] .ecoArt,
 .ecoThing[data-species='bear'][data-state='flee'] .ecoArt {
   animation: meadowBearStung 0.2s steps(2, end) infinite;
+}
+
+.ecoThing[data-species='heron'][data-state='hunt'] .ecoArt {
+  animation: meadowHeronStalk 0.55s ease-in-out infinite alternate;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='heron'][data-fx='strike'] .ecoArt {
+  animation: meadowHeronStrike 0.62s ease-out both;
+  transform-origin: 74% 28%;
+}
+
+.ecoThing[data-species='heron'][data-fx='startled'] .ecoArt,
+.ecoThing[data-species='heron'][data-state='flee'] .ecoArt {
+  animation: meadowHeronFlee 0.2s ease-in-out infinite alternate;
 }
 
 .ecoThing[data-species='cat'][data-fx='puffed'] .ecoArt {
@@ -46,6 +66,7 @@
   border-radius: 999px;
   background: #ef8aa0;
   box-shadow: calc(var(--frog-tongue, 42px) - 0.15rem) 0 0 0.11rem #f3bfd0;
+  transform: rotate(var(--frog-tongue-angle, 0deg));
   transform-origin: 0 50%;
   animation: meadowFrogTongue 0.42s ease-out both;
 }
@@ -102,6 +123,46 @@
   }
 }
 
+@keyframes meadowBearNap {
+  0%,
+  100% {
+    transform: scale(1, 1) translateY(0);
+  }
+  50% {
+    transform: scale(1.02, 0.96) translateY(0.08rem);
+  }
+}
+
+@keyframes meadowHeronStalk {
+  from {
+    transform: translateY(0) rotate(-1deg);
+  }
+  to {
+    transform: translateY(-0.1rem) rotate(1deg);
+  }
+}
+
+@keyframes meadowHeronStrike {
+  0% {
+    transform: rotate(0deg) translateX(0);
+  }
+  38% {
+    transform: rotate(15deg) translateX(0.38rem);
+  }
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+}
+
+@keyframes meadowHeronFlee {
+  from {
+    transform: rotate(-4deg) translateY(0);
+  }
+  to {
+    transform: rotate(5deg) translateY(-0.16rem);
+  }
+}
+
 @keyframes meadowCatPuffed {
   from {
     transform: scale(1.03);
@@ -114,15 +175,15 @@
 @keyframes meadowFrogTongue {
   0% {
     opacity: 0;
-    transform: scaleX(0.08);
+    transform: rotate(var(--frog-tongue-angle, 0deg)) scaleX(0.08);
   }
   38% {
     opacity: 1;
-    transform: scaleX(1);
+    transform: rotate(var(--frog-tongue-angle, 0deg)) scaleX(1);
   }
   100% {
     opacity: 0;
-    transform: scaleX(0.2);
+    transform: rotate(var(--frog-tongue-angle, 0deg)) scaleX(0.2);
   }
 }
 
@@ -168,6 +229,7 @@
   .ecoThing[data-species='cat'] .ecoArt,
   .ecoThing[data-species='frog'] .ecoArt,
   .ecoThing[data-species='frog'] .ecoPose::after,
+  .ecoThing[data-species='heron'] .ecoArt,
   .ecoThing[data-species='mouse'] .ecoArt {
     animation: none;
   }

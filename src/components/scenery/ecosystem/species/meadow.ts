@@ -23,6 +23,8 @@ registerViewBoxes({
   beehive: [96, 92],
   'beehive-honey': [96, 92],
   frog: [90, 68],
+  heron: [132, 104],
+  'heron-strike': [154, 104],
   mouse: [96, 54],
 })
 
@@ -30,6 +32,8 @@ const bearAsset = ecoAsset('bear')
 const bearStungAsset = ecoAsset('bear-stung')
 const beehiveAsset = ecoAsset('beehive')
 const beehiveHoneyAsset = ecoAsset('beehive-honey')
+const heronAsset = ecoAsset('heron')
+const heronStrikeAsset = ecoAsset('heron-strike')
 
 const hiveCapacity = 4
 
@@ -74,8 +78,30 @@ function findFullestHive(
 }
 
 const isFrogPrey = (world: EcoWorld) => (other: EcoEntity) =>
-  (world.has(other, 'bee') || world.has(other, 'butterfly') || world.has(other, 'caterpillar')) &&
-  other.state !== 'cocoon'
+  world.has(other, 'insect') && other.state !== 'cocoon'
+
+const frogMouth = (entity: EcoEntity, world: EcoWorld) => ({
+  x: entity.x + entity.facing * clamp(world.unit * 1.15, 12, 24),
+  y: entity.y - world.heightOf(entity) * 0.55,
+})
+
+function aimTongue(entity: EcoEntity, target: EcoEntity, world: EcoWorld, maxUnits: number) {
+  const mouth = frogMouth(entity, world)
+  const targetY = target.anchor === 'bottom' ? target.y - world.heightOf(target) * 0.45 : target.y
+  const dx = target.x - mouth.x
+  const dy = targetY - mouth.y
+  const reach = Math.hypot(dx, dy)
+
+  entity.facing = dx >= 0 ? 1 : -1
+  entity.data.tongueReach = clamp(
+    reach + world.widthOf(target) * 0.28,
+    world.unit * 1.8,
+    world.unit * maxUnits,
+  )
+  entity.data.tongueAngle = clamp((Math.atan2(dy, Math.abs(dx)) * 180) / Math.PI, -58, 36)
+
+  return { mouth, reach, targetY }
+}
 
 const isMouseFood = (world: EcoWorld) => (other: EcoEntity) =>
   (isEdiblePlant(world)(other) || other.species === 'seed') && other.state !== 'dead'
@@ -665,10 +691,11 @@ const frog: EcoSpecies = {
   state: 'sit',
   style: (entity) => ({
     '--frog-tongue': `${Math.max(18, entity.data.tongueReach ?? 42).toFixed(1)}px`,
+    '--frog-tongue-angle': `${(entity.data.tongueAngle ?? 0).toFixed(1)}deg`,
   }),
   strongVs: ['insect'],
   tags: ['frog', 'predator', 'prey', 'burnable'],
-  weakTo: ['cat', 'bird'],
+  weakTo: ['cat', 'bird', 'heron'],
   tick(entity, world, dt) {
     const unit = world.unit
     const raining = Boolean(
@@ -715,40 +742,38 @@ const frog: EcoSpecies = {
       const prey = world.byId(entity.targetId)
 
       if (prey) {
-        entity.facing = prey.x >= entity.x ? 1 : -1
-        entity.data.tongueReach = clamp(Math.abs(prey.x - entity.x), unit * 2, unit * 10)
+        aimTongue(entity, prey, world, 13.5)
       }
 
-      if (entity.t > 0.16 && (entity.data.ate ?? 0) <= 0) {
+      if (entity.t > 0.12 && (entity.data.ate ?? 0) <= 0) {
         entity.data.ate = 1
 
-        if (
-          prey &&
-          isFrogPrey(world)(prey) &&
-          Math.random() < Math.min(0.96, 0.68 * world.edge(entity, prey))
-        ) {
-          world.kill(prey)
+        if (prey && isFrogPrey(world)(prey)) {
+          const aim = aimTongue(entity, prey, world, 13.5)
+          const gap = Math.hypot(prey.x - aim.mouth.x, aim.targetY - aim.mouth.y)
+
+          if (gap <= (entity.data.tongueReach ?? unit * 12) + world.widthOf(prey) * 0.22) {
+            world.kill(prey)
+            entity.data.meals = (entity.data.meals ?? 0) + 1
+          }
         }
       }
 
       if (entity.t > 0.42) {
         entity.targetId = null
         entity.data.ate = 0
+        entity.data.tongueReach = unit * 2
         world.setState(entity, 'sit')
       }
       return
     }
 
-    const mouth = {
-      x: entity.x + entity.facing * unit * 1.2,
-      y: entity.y - world.heightOf(entity) * 0.55,
-    }
-    const nearbyPrey = world.nearest(mouth, isFrogPrey(world), unit * 11.5)
+    const mouth = frogMouth(entity, world)
+    const nearbyPrey = world.nearest(mouth, isFrogPrey(world), unit * 13.5)
 
     if (nearbyPrey) {
       entity.targetId = nearbyPrey.id
-      entity.facing = nearbyPrey.x >= entity.x ? 1 : -1
-      entity.data.tongueReach = clamp(Math.abs(nearbyPrey.x - entity.x), unit * 2, unit * 10)
+      aimTongue(entity, nearbyPrey, world, 13.5)
       world.setState(entity, 'lash')
       return
     }
@@ -774,10 +799,10 @@ const frog: EcoSpecies = {
     settle(entity, dt)
 
     if (entity.t > (entity.data.sitFor ?? 1) || (raining && chance(1.7, dt))) {
-      const prey = world.nearest(entity, isFrogPrey(world), unit * 38)
+      const prey = world.nearest(entity, isFrogPrey(world), unit * 44)
       const goalX = prey
         ? clamp(
-            entity.x + clamp(prey.x - entity.x, -unit * 6.4, unit * 6.4),
+            entity.x + clamp(prey.x - entity.x, -unit * 8.2, unit * 8.2),
             unit,
             world.width - unit,
           )
@@ -946,6 +971,152 @@ const mouse: EcoSpecies = {
   },
 }
 
+const heron: EcoSpecies = {
+  anchor: 'bottom',
+  asset: heronAsset,
+  burnTime: 2.8,
+  init(entity) {
+    entity.data.hunger = between(0.45, 0.9)
+  },
+  layer: 'front',
+  rest(entity, world) {
+    entity.y = world.groundY + (entity.data.depth ?? 0)
+    world.setState(entity, 'wade')
+  },
+  size: [3.4, 4.3],
+  state: 'wade',
+  strongVs: ['frog'],
+  tags: ['bird', 'predator', 'prey', 'burnable'],
+  weakTo: ['bear', 'cat'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    const bearThreat = world.nearest(
+      entity,
+      (other) => world.has(other, 'bear') && other.state !== 'flee',
+      unit * 16,
+    )
+    const catThreat = world.nearest(
+      entity,
+      (other) => world.has(other, 'cat') && other.state !== 'nap',
+      unit * 9,
+    )
+    const threat = bearThreat ?? catThreat
+
+    if (threat && entity.state !== 'flee') {
+      entity.targetId = null
+      entity.data.threatX = threat.x
+      world.setState(entity, 'flee')
+    }
+
+    if (entity.state === 'flee') {
+      world.setAsset(entity, heronAsset)
+      entity.fx = 'startled'
+      entity.facing = (entity.data.threatX ?? entity.x + 1) > entity.x ? -1 : 1
+      walk(entity, world, dt, unit * 4.4)
+      entity.lift = Math.abs(Math.sin(entity.t * 11)) * unit * 0.46
+
+      if (entity.t > 2.1 && !threat) {
+        entity.fx = ''
+        entity.lift = 0
+        world.setState(entity, 'wade')
+      }
+      return
+    }
+
+    if (entity.state === 'rest') {
+      world.setAsset(entity, heronAsset)
+      entity.fx = ''
+      entity.lift = Math.sin(entity.t * 2.4) * unit * 0.04
+
+      if (entity.t > 2.6) {
+        entity.lift = 0
+        world.setState(entity, 'wade')
+      }
+      return
+    }
+
+    if (entity.state === 'strike') {
+      const frogEntity = world.byId(entity.targetId)
+
+      world.setAsset(entity, heronStrikeAsset)
+      entity.fx = 'strike'
+
+      if (!frogEntity || !world.has(frogEntity, 'frog')) {
+        entity.targetId = null
+        entity.fx = ''
+        world.setAsset(entity, heronAsset)
+        world.setState(entity, 'wade')
+        return
+      }
+
+      entity.facing = frogEntity.x >= entity.x ? 1 : -1
+
+      if (entity.t > 0.22 && (entity.data.struck ?? 0) <= 0) {
+        entity.data.struck = 1
+
+        if (Math.abs(frogEntity.x - entity.x) < unit * 2.6) {
+          world.kill(frogEntity)
+          entity.data.hunger = 0
+          entity.data.meals = (entity.data.meals ?? 0) + 1
+        }
+      }
+
+      if (entity.t > 0.62) {
+        entity.targetId = null
+        entity.data.struck = 0
+        entity.fx = ''
+        world.setAsset(entity, heronAsset)
+        world.setState(entity, (entity.data.meals ?? 0) % 2 === 0 ? 'rest' : 'wade')
+      }
+      return
+    }
+
+    if (entity.state === 'hunt') {
+      world.setAsset(entity, heronAsset)
+      const frogEntity = world.byId(entity.targetId)
+
+      if (!frogEntity || !world.has(frogEntity, 'frog')) {
+        entity.targetId = null
+        world.setState(entity, 'wade')
+        return
+      }
+
+      if (walkToward(entity, world, frogEntity.x, unit * 1.45, dt) < unit * 2.3) {
+        world.setState(entity, 'strike')
+      }
+      return
+    }
+
+    world.setAsset(entity, heronAsset)
+    entity.fx = ''
+    entity.data.hunger = (entity.data.hunger ?? 0) + dt / 8
+    walk(entity, world, dt, unit * 0.58)
+    entity.lift = Math.abs(Math.sin(world.time * 4 + entity.id)) * unit * 0.08
+
+    if (chance(0.08, dt)) {
+      entity.facing = entity.facing === 1 ? -1 : 1
+    }
+
+    if ((entity.data.hunger ?? 0) > 0.65) {
+      const frogEntity = world.nearest(
+        entity,
+        (other) => world.has(other, 'frog') && other.state !== 'dead',
+        unit * 42,
+      )
+
+      if (frogEntity) {
+        entity.targetId = frogEntity.id
+        world.setState(entity, 'hunt')
+        return
+      }
+    }
+
+    if (!entity.user && (entity.data.hunger ?? 0) > 4.8) {
+      world.remove(entity)
+    }
+  },
+}
+
 const bear: EcoSpecies = {
   anchor: 'bottom',
   asset: bearAsset,
@@ -961,7 +1132,7 @@ const bear: EcoSpecies = {
   },
   size: [3.8, 4.7],
   state: 'wander',
-  strongVs: ['cat', 'beehive'],
+  strongVs: ['cat', 'beehive', 'heron'],
   tags: ['bear', 'predator', 'burnable'],
   weakTo: ['bee'],
   tick(entity, world, dt) {
@@ -979,6 +1150,20 @@ const bear: EcoSpecies = {
         entity.lift = 0
         entity.data.stings = 0
         world.setAsset(entity, bearAsset)
+        world.setState(entity, 'wander')
+      }
+      return
+    }
+
+    if (entity.state === 'nap') {
+      world.setAsset(entity, bearAsset)
+      entity.fx = ''
+      entity.vx = 0
+      entity.lift = Math.sin(entity.t * 2) * unit * 0.035
+
+      if (entity.t > (entity.data.napFor ?? 5.5)) {
+        entity.lift = 0
+        entity.data.sniff = between(1, 2.4)
         world.setState(entity, 'wander')
       }
       return
@@ -1027,6 +1212,14 @@ const bear: EcoSpecies = {
       entity.lift = Math.sin(entity.t * 6) * unit * 0.12
       hive.fx = 'honey'
       hive.data.honey = Math.max(0, (hive.data.honey ?? 0) - dt * 0.55)
+
+      if ((hive.data.honey ?? 0) <= 0.25 && entity.t > 2.1) {
+        entity.targetId = null
+        entity.data.napFor = between(4.5, 7)
+        entity.lift = 0
+        world.setState(entity, 'nap')
+        return
+      }
 
       if ((entity.data.stings ?? 0) > 0.5 || entity.t > 7) {
         entity.data.threatX = hive.x
@@ -1250,5 +1443,6 @@ export const meadowSpecies = {
   caterpillar,
   egg,
   frog,
+  heron,
   mouse,
 }
