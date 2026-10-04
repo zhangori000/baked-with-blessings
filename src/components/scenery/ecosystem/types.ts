@@ -87,6 +87,8 @@ export type EcoEntity = {
   dying: boolean
   facing: 1 | -1
   fx: string
+  controlBuffs?: EcoControlBuff[]
+  controlCast?: EcoControlCast
   hp: number
   id: number
   idle: EcoIdle
@@ -103,6 +105,19 @@ export type EcoEntity = {
   user: boolean
   vx: number
   vy: number
+  x: number
+  y: number
+}
+
+export type EcoEffect = {
+  amount?: number
+  id?: number
+  key?: EcoControlAbilityKey
+  name?: string
+  text?: string
+  tone?: 'heal' | 'heavy' | 'normal' | 'resist' | 'strong'
+  type: 'banner' | 'damage' | 'heal' | 'shake' | 'vfx'
+  vfx?: EcoControlAbility['vfx']
   x: number
   y: number
 }
@@ -124,13 +139,57 @@ export type EcoControlMove = 'fly' | 'ground' | 'swim'
 
 export type EcoControlAbilityKey = 'q' | 'w' | 'e' | 'r'
 
+export type EcoTelegraph = {
+  angle?: number
+  range: number
+  shape: 'circle' | 'cone' | 'line' | 'self'
+  width?: number
+}
+
+export type EcoControlCastPhase = 'active' | 'recovery' | 'windup'
+
+export type EcoControlCast = {
+  activeStarted: boolean
+  elapsed: number
+  endX: number
+  endY: number
+  hitIds: Set<number>
+  key: EcoControlAbilityKey
+  phase: EcoControlCastPhase
+  phaseElapsed: number
+  queuedKey: EcoControlAbilityKey | null
+  startX: number
+  startY: number
+}
+
+export type EcoControlBuff = {
+  expiresAt: number
+  icon: string
+  name: string
+  startedAt: number
+}
+
+export type EcoControlAbilityContext = {
+  activeProgress: number
+  cast: EcoControlCast
+  phaseProgress: number
+}
+
 export type EcoControlAbility = {
+  active?: number
   cooldown: number
   description: string
+  dash?: number
   icon?: string
   key: EcoControlAbilityKey
   name: string
-  run(entity: EcoEntity, world: EcoWorld): void
+  recovery?: number
+  run?(entity: EcoEntity, world: EcoWorld, context: EcoControlAbilityContext): void
+  telegraph?: EcoTelegraph
+  tick?: (entity: EcoEntity, world: EcoWorld, context: EcoControlAbilityContext, dt: number) => void
+  ultimate?: boolean
+  vfx?: 'bite' | 'buff' | 'charge' | 'heal' | 'ink' | 'shockwave' | 'slash' | 'water'
+  windup?: number
 }
 
 export type EcoControls = {
@@ -162,6 +221,11 @@ export type EcoWorld = {
   readonly wind: number
   byId(id: number | null): EcoEntity | null
   canBreed(): boolean
+  damage(attacker: EcoEntity | null, target: EcoEntity, amount: number, fromX?: number): number
+  effect(effect: EcoEffect): void
+  gainControlResource(entity: EcoEntity, amount: number): void
+  heal(entity: EcoEntity, amount: number): number
+  addControlBuff(entity: EcoEntity, name: string, icon: string, seconds: number): void
   count(test: (entity: EcoEntity) => boolean): number
   has(entity: EcoEntity, tag: EcoTag): boolean
   hasSpecies(species: string): boolean
@@ -177,6 +241,7 @@ export type EcoWorld = {
   remove(entity: EcoEntity): void
   resetTally(key: string): void
   setAsset(entity: EcoEntity, asset: string): void
+  shake(amount?: number): void
   setState(entity: EcoEntity, state: string): void
   spawn(species: string, options?: EcoSpawnOptions): EcoEntity | null
   tally(key: string, delta?: number): number
@@ -212,6 +277,7 @@ export type EcoEntityView = {
   aspect: number
   asset: string
   controllable: boolean
+  buffs: readonly EcoControlBuffView[]
   controlled: boolean
   dying: boolean
   fuel: boolean
@@ -230,23 +296,37 @@ export type EcoEntityView = {
   weak: readonly string[]
 }
 
+export type EcoControlBuffView = {
+  icon: string
+  name: string
+  progress: number
+}
+
 export type EcoControlAbilityView = {
   cooldown: number
   cooldownLeft: number
   description: string
   icon?: string
+  locked: boolean
   key: EcoControlAbilityKey
   name: string
+  readyFlash: boolean
+  resourceFill: number
+  ultimate: boolean
 }
 
 export type EcoControlEntityView = {
   abilities: readonly EcoControlAbilityView[]
+  buffs: readonly EcoControlBuffView[]
+  castKey: EcoControlAbilityKey | null
+  castPhase: EcoControlCastPhase | null
   followCursor: boolean
   health: number
   healthMax: number
   id: number
   label: string
   move: EcoControlMove
+  resource: number
   species: string
 }
 

@@ -86,8 +86,24 @@ const EcoThing = memo(function EcoThing({
       {view.healthMax > 1 ? (
         <span className="ecoHealth" style={{ ['--eco-health' as string]: health.toFixed(3) }}>
           <span className="ecoHealthFill" />
+          {view.controlled ? <span className="ecoResourceFill" /> : null}
         </span>
       ) : null}
+      {view.buffs.length ? (
+        <span className="ecoBuffRack">
+          {view.buffs.map((buff) => (
+            <span
+              className="ecoBuffIcon"
+              key={buff.name}
+              style={{ ['--eco-buff' as string]: buff.progress.toFixed(3) }}
+              title={buff.name}
+            >
+              {buff.icon}
+            </span>
+          ))}
+        </span>
+      ) : null}
+      <span className="ecoTelegraph" />
       {view.controlled ? (
         <span className="ecoControlledMarker">
           <span className="ecoControlledArrow">⌄</span>
@@ -364,7 +380,27 @@ function ControlHud({
             <div>
               <p className="ecoControlEyebrow">Controlling</p>
               <p className="ecoControlName">{controlled.label}</p>
+              <span
+                className="ecoControlResource"
+                style={{ ['--eco-resource' as string]: (controlled.resource / 100).toFixed(3) }}
+              >
+                <span className="ecoControlResourceFill" />
+              </span>
             </div>
+            {controlled.buffs.length ? (
+              <div className="ecoControlBuffs" aria-label="Active buffs">
+                {controlled.buffs.map((buff) => (
+                  <span
+                    className="ecoBuffIcon"
+                    key={buff.name}
+                    style={{ ['--eco-buff' as string]: buff.progress.toFixed(3) }}
+                    title={buff.name}
+                  >
+                    {buff.icon}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             {controlled.move === 'swim' ? (
               <button
                 aria-pressed={followCursor}
@@ -427,6 +463,7 @@ function ControlHud({
             {controlled.abilities.map((ability) => {
               const cooling = ability.cooldownLeft > 0
               const cooldown = Math.max(0, Math.min(1, ability.cooldownLeft / ability.cooldown))
+              const unavailable = cooling || (ability.ultimate && ability.resourceFill < 1)
 
               return (
                 <button
@@ -434,10 +471,18 @@ function ControlHud({
                   className="ecoAbilityButton"
                   data-active={castKey === ability.key ? '' : undefined}
                   data-cooling={cooling || undefined}
-                  disabled={cooling}
+                  data-locked={ability.locked && !unavailable ? '' : undefined}
+                  data-ready={ability.readyFlash ? '' : undefined}
+                  data-ultimate={ability.ultimate ? '' : undefined}
+                  disabled={unavailable}
                   key={ability.key}
                   onClick={abilityHandler(ability.key)}
-                  style={{ ['--eco-cooldown' as string]: cooldown.toFixed(3) }}
+                  style={
+                    {
+                      ['--eco-cooldown' as string]: cooldown.toFixed(3),
+                      ['--eco-resource' as string]: ability.resourceFill.toFixed(3),
+                    } as CSSProperties
+                  }
                   title={`${ability.name}: ${ability.description}`}
                   type="button"
                 >
@@ -700,6 +745,7 @@ export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps)
         .map((view) => (
           <EcoThing key={view.id} store={store} view={view} />
         ))}
+      {layer === 'front' ? <span aria-hidden="true" className="ecoEffectOverlay" /> : null}
       {layer === 'front' && hudHost
         ? createPortal(
             <ControlHud

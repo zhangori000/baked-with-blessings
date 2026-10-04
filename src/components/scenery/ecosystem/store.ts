@@ -5,12 +5,14 @@ import type {
   EcoControlAbilityKey,
   EcoControlInput,
   EcoEntity,
+  EcoEffect,
   EcoLayer,
   EcoSnapshot,
 } from './types'
 
 type NodeCache = {
   fx: string
+  hitFlash: number
   healthUntil: number
   hp: number
   pose: string
@@ -39,6 +41,13 @@ const labelForSpecies = (species: string) =>
     .map((part) => (part === 'trex' ? 'T. rex' : `${part.charAt(0).toUpperCase()}${part.slice(1)}`))
     .join(' ')
 
+const buffViews = (entity: EcoEntity, time: number) =>
+  (entity.controlBuffs ?? []).map((buff) => ({
+    icon: buff.icon,
+    name: buff.name,
+    progress: Math.max(0, Math.min(1, (buff.expiresAt - time) / (buff.expiresAt - buff.startedAt))),
+  }))
+
 const underseaBackdropLines = (rect: DOMRect) => {
   const backdrop =
     typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
@@ -64,6 +73,7 @@ export class EcosystemStore {
   private selectedId: number | null = null
   private snapshot: EcoSnapshot
   private hudPublishAt = 0
+  private effectHost: HTMLElement | null = null
   private toast = ''
   private toastUntil = 0
 
@@ -124,6 +134,7 @@ export class EcosystemStore {
     this.observer = null
 
     const front = this.layers.front
+    this.effectHost = front?.querySelector<HTMLElement>('.ecoEffectOverlay') ?? front ?? null
 
     if (front && typeof ResizeObserver !== 'undefined') {
       this.observer = new ResizeObserver(() => this.measure())
@@ -147,6 +158,7 @@ export class EcosystemStore {
 
     this.nodes.set(id, {
       fx: '',
+      hitFlash: 0,
       healthUntil: 0,
       hp: Number.NaN,
       pose: '',
@@ -264,6 +276,7 @@ export class EcosystemStore {
     const definition = entity ? engine.species[entity.species] : null
 
     if (entity && definition?.controls) {
+      entity.controlCast = undefined
       engine.setAsset(entity, entity.controlResetAsset)
       engine.setState(entity, definition.controls.idleState ?? entity.state)
     }
@@ -304,23 +317,10 @@ export class EcosystemStore {
 
   activateAbility = (key: EcoControlAbilityKey) => {
     const engine = this.engine
-    const entity = engine?.byId(engine.controlledId)
-    const controls = entity ? engine?.species[entity.species]?.controls : null
-    const ability = controls?.abilities.find((entry) => entry.key === key)
 
-    if (
-      !engine ||
-      !entity ||
-      !ability ||
-      (entity.data[`controlCooldown-${key}`] ?? 0) > engine.time
-    ) {
-      return
+    if (engine?.startControlAbility(key)) {
+      this.publish()
     }
-
-    entity.data[`controlCooldown-${key}`] = engine.time + ability.cooldown
-    ability.run(entity, engine)
-    engine.dirty = true
-    this.publish()
   }
 
   setFollowCursor = (followCursor: boolean) => {
@@ -370,9 +370,57 @@ export class EcosystemStore {
       this.publish()
     }
 
+    for (const effect of engine.drainEffects()) {
+      this.showEffect(effect)
+    }
+
     for (const entity of engine.entities) {
       this.apply(entity)
     }
+  }
+
+  private showEffect(effect: EcoEffect) {
+    const host =
+      this.layers.front?.querySelector<HTMLElement>('.ecoEffectOverlay') ?? this.effectHost
+
+    if (!host) {
+      return
+    }
+
+    if (effect.type === 'shake') {
+      host.dataset.shake = ''
+      window.setTimeout(() => {
+        delete host.dataset.shake
+      }, 220)
+      return
+    }
+
+    const element = document.createElement('span')
+    const width = host.clientWidth || this.layers.front?.clientWidth || 0
+    const height = host.clientHeight || this.layers.front?.clientHeight || 0
+    const pad = effect.type === 'banner' ? 88 : 36
+    const rawX = effect.x - (effect.type === 'banner' ? 0 : this.offset.x)
+    const rawY = effect.y - (effect.type === 'banner' ? 0 : this.offset.y)
+    const x = width ? Math.min(Math.max(rawX, pad), width - pad) : rawX
+    const y = height ? Math.min(Math.max(rawY, 26), height - 28) : rawY
+
+    element.className = `ecoFloat ecoFloat--${effect.type} ecoFloat--${effect.tone ?? 'normal'}`
+    element.textContent =
+      effect.type === 'vfx'
+        ? ''
+        : (effect.text ??
+          (effect.amount !== undefined
+            ? String(Math.max(1, Math.round(effect.amount)))
+            : (effect.name ?? '')))
+    element.style.left = `${x.toFixed(1)}px`
+    element.style.top = `${y.toFixed(1)}px`
+
+    if (effect.vfx) {
+      element.dataset.vfx = effect.vfx
+    }
+
+    host.append(element)
+    window.setTimeout(() => element.remove(), effect.type === 'banner' ? 1100 : 900)
   }
 
   private placePopover(root: HTMLElement, x: number, y: number, width: number) {
@@ -453,6 +501,59 @@ export class EcosystemStore {
       node.root.dataset.fx = entity.fx
     }
 
+    node.root.dataset.facing = String(entity.facing)
+    node.root.style.setProperty(
+      '--eco-overlay-shift',
+      `${Math.round(Math.min(Math.max(x, 54), Math.max(54, engine.width - 54)) - x)}px`,
+    )
+
+    const hitFlash = entity.data.hitFlash ?? 0
+
+    if (node.hitFlash !== hitFlash) {
+      node.hitFlash = hitFlash
+      node.root.dataset.hit = hitFlash > 0 ? String(Math.round(hitFlash * 1000)) : ''
+      const art = node.root.querySelector<HTMLElement>('.ecoArt')
+
+      if (art && hitFlash > 0) {
+        art.style.animation = 'none'
+        void art.offsetWidth
+        art.style.animation = ''
+      }
+    }
+
+    const cast = entity.controlCast
+    const ability = cast
+      ? engine.species[entity.species]?.controls?.abilities.find((entry) => entry.key === cast.key)
+      : null
+
+    if (cast && ability) {
+      node.root.dataset.castPhase = cast.phase
+      node.root.dataset.castShape = ability.telegraph?.shape ?? 'self'
+      node.root.dataset.castVfx = ability.vfx ?? 'buff'
+      node.root.style.setProperty(
+        '--eco-cast-progress',
+        String(entity.data.controlCastProgress ?? 0),
+      )
+      node.root.style.setProperty(
+        '--eco-cast-range',
+        `${(ability.telegraph?.range ?? 2) * engine.unit}px`,
+      )
+      node.root.style.setProperty(
+        '--eco-cast-width',
+        `${(ability.telegraph?.width ?? 2) * engine.unit}px`,
+      )
+      node.root.style.setProperty('--eco-cast-angle', `${ability.telegraph?.angle ?? 60}deg`)
+    } else {
+      delete node.root.dataset.castPhase
+      delete node.root.dataset.castShape
+      delete node.root.dataset.castVfx
+    }
+
+    node.root.style.setProperty(
+      '--eco-resource',
+      Math.max(0, Math.min(1, (entity.data.controlResource ?? 0) / 100)).toFixed(3),
+    )
+
     if (node.hp !== entity.hp) {
       node.hp = entity.hp
       node.healthUntil = engine.time + 3.2
@@ -512,6 +613,9 @@ export class EcosystemStore {
     const controlled = engine.byId(engine.controlledId)
     const selectedDefinition = selected ? engine.species[selected.species] : null
     const controlledDefinition = controlled ? engine.species[controlled.species] : null
+    const castKey = controlled?.controlCast?.key ?? null
+    const castPhase = controlled?.controlCast?.phase ?? null
+    const resource = Math.max(0, Math.min(100, controlled?.data.controlResource ?? 0))
 
     return {
       controlled:
@@ -525,15 +629,29 @@ export class EcosystemStore {
                 ),
                 description: ability.description,
                 icon: ability.icon,
+                locked: Boolean(
+                  Boolean(controlled.controlCast) ||
+                  (ability.ultimate && (controlled.data.controlResource ?? 0) < 100),
+                ),
                 key: ability.key,
                 name: ability.name,
+                readyFlash:
+                  (controlled.data[`controlReadyAt-${ability.key}`] ?? 0) > 0 &&
+                  Math.abs((controlled.data[`controlReadyAt-${ability.key}`] ?? 0) - engine.time) <
+                    0.36,
+                resourceFill: ability.ultimate ? resource / 100 : 0,
+                ultimate: Boolean(ability.ultimate),
               })),
+              buffs: buffViews(controlled, engine.time),
+              castKey,
+              castPhase,
               followCursor: engine.controlInput.followCursor,
               health: Math.max(0, controlled.hp),
               healthMax: controlled.maxHp,
               id: controlled.id,
               label: labelForSpecies(controlled.species),
               move: controlledDefinition.controls.move,
+              resource,
               species: controlled.species,
             }
           : null,
@@ -545,6 +663,7 @@ export class EcosystemStore {
           anchor: entity.anchor,
           aspect: entity.aspect,
           asset: entity.asset,
+          buffs: buffViews(entity, engine.time),
           controllable: Boolean(definition?.controls),
           controlled: engine.controlledId === entity.id,
           dying: entity.dying,

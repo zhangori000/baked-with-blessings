@@ -14,6 +14,15 @@
   z-index: 4;
 }
 
+.ecoEffectOverlay {
+  display: block;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  z-index: 100000;
+}
+
 .ecoProbe {
   height: 0;
   left: 0;
@@ -75,12 +84,16 @@
   display: grid;
   gap: 0.1rem;
   justify-items: center;
-  left: 50%;
+  left: 0;
   pointer-events: none;
   position: absolute;
-  top: -2.9rem;
-  transform: translateX(-50%);
-  z-index: 8;
+  top: calc(-1 * var(--eco-size, 2) * var(--eco-aspect, 1) * 1rem * var(--eco-scale) - 3rem);
+  transform: translateX(calc(-50% + var(--eco-overlay-shift, 0px)));
+  z-index: 12;
+}
+
+.ecoThing--center .ecoControlledMarker {
+  top: calc(-0.5 * var(--eco-size, 2) * var(--eco-aspect, 1) * 1rem * var(--eco-scale) - 3rem);
 }
 
 .ecoControlledArrow {
@@ -150,7 +163,7 @@
   box-shadow: 0 0.08rem 0.28rem color-mix(in srgb, var(--scene-text) 14%, transparent);
   display: block;
   height: 0.36rem;
-  left: 50%;
+  left: 0;
   opacity: 0;
   overflow: hidden;
   pointer-events: none;
@@ -198,6 +211,150 @@
   transform-origin: left center;
   transition: transform 180ms ease;
   width: 100%;
+}
+
+.ecoResourceFill,
+.ecoControlResourceFill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--warning) 80%, var(--scene-panel-fill)),
+    color-mix(in srgb, var(--accent) 85%, var(--warning))
+  );
+  border-radius: 999rem;
+  bottom: -0.32rem;
+  display: block;
+  height: 0.14rem;
+  left: 0;
+  position: absolute;
+  transform: scaleX(var(--eco-resource, 0));
+  transform-origin: left center;
+  width: 100%;
+}
+
+.ecoBuffRack {
+  display: flex;
+  gap: 0.12rem;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: calc(-1 * var(--eco-size, 2) * var(--eco-aspect, 1) * 1rem * var(--eco-scale) - 2rem);
+  transform: translateX(-50%);
+  z-index: 11;
+}
+
+.ecoThing[data-controlled] .ecoBuffRack {
+  transform: translateX(calc(-50% + var(--eco-overlay-shift, 0px)));
+}
+
+.ecoThing[data-controlled] .ecoBuffIcon {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+.ecoThing--center .ecoBuffRack {
+  top: calc(-0.5 * var(--eco-size, 2) * var(--eco-aspect, 1) * 1rem * var(--eco-scale) - 2rem);
+}
+
+.ecoBuffIcon {
+  --eco-buff: 1;
+  align-items: center;
+  background:
+    conic-gradient(
+      color-mix(in srgb, var(--warning) 76%, var(--scene-text)) calc(var(--eco-buff) * 1turn),
+      color-mix(in srgb, var(--scene-text) 18%, transparent) 0
+    ),
+    var(--scene-panel-fill);
+  border: 0.1rem solid color-mix(in srgb, var(--scene-text) 32%, transparent);
+  border-radius: 999rem;
+  box-shadow: var(--bakery-shadow-raisedSoft);
+  color: var(--scene-text);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  height: 1.35rem;
+  justify-content: center;
+  line-height: 1;
+  width: 1.35rem;
+}
+
+.ecoTelegraph {
+  background: color-mix(in srgb, var(--warning) 30%, transparent);
+  border: 0.125rem solid color-mix(in srgb, var(--warning) 86%, var(--scene-text));
+  border-radius: 999rem;
+  box-shadow:
+    inset 0 0 0 999rem color-mix(in srgb, var(--warning) 24%, transparent),
+    0 0 0.55rem color-mix(in srgb, var(--scene-text) 18%, transparent);
+  display: none;
+  height: var(--eco-cast-width, 2rem);
+  left: 0;
+  opacity: 0.96;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: -0.35rem;
+  transform-origin: left center;
+  width: var(--eco-cast-range, 4rem);
+  z-index: 1;
+}
+
+.ecoTelegraph::after {
+  background: color-mix(in srgb, var(--accent) 46%, transparent);
+  content: '';
+  inset: 0;
+  position: absolute;
+  transform: scaleX(var(--eco-cast-progress, 0));
+  transform-origin: left center;
+}
+
+.ecoThing--center .ecoTelegraph {
+  top: 50%;
+}
+
+.ecoAnchor {
+  z-index: 2;
+}
+
+.ecoThing[data-cast-phase='windup'] .ecoTelegraph,
+.ecoThing[data-cast-phase='active'] .ecoTelegraph {
+  display: block;
+}
+
+.ecoThing[data-cast-shape='line'] .ecoTelegraph {
+  border-radius: 999rem;
+  transform: translateY(-50%);
+}
+
+.ecoThing[data-facing='-1'][data-cast-shape='line'] .ecoTelegraph {
+  transform: translate(-100%, -50%);
+}
+
+.ecoThing[data-cast-shape='circle'] .ecoTelegraph,
+.ecoThing[data-cast-shape='self'] .ecoTelegraph {
+  aspect-ratio: 1;
+  border-radius: 999rem;
+  height: var(--eco-cast-range, 5rem);
+  transform: translate(-50%, -50%);
+  width: var(--eco-cast-range, 5rem);
+}
+
+.ecoThing[data-cast-shape='cone'] .ecoTelegraph {
+  border-radius: 0 999rem 999rem 0;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  transform: translateY(-50%);
+}
+
+.ecoThing[data-facing='-1'][data-cast-shape='cone'] .ecoTelegraph {
+  border-radius: 999rem 0 0 999rem;
+  clip-path: polygon(100% 50%, 0 0, 0 100%);
+  transform: translate(-100%, -50%);
+}
+
+.ecoThing[data-cast-phase='windup'] .ecoPose {
+  filter: drop-shadow(0 0 0.45rem color-mix(in srgb, var(--warning) 42%, transparent));
+}
+
+.ecoThing[data-cast-phase='active'] .ecoPose {
+  filter: brightness(1.16) saturate(1.1);
 }
 
 .ecoThing[data-health-tone='warn'] .ecoHealthFill {
@@ -326,6 +483,33 @@
   line-height: 1.1;
 }
 
+.ecoControlResource {
+  background: color-mix(in srgb, var(--scene-text) 16%, transparent);
+  border-radius: 999rem;
+  display: block;
+  height: 0.18rem;
+  margin-top: 0.22rem;
+  overflow: hidden;
+  position: relative;
+  width: min(7rem, 30vw);
+}
+
+.ecoControlResourceFill {
+  bottom: auto;
+  height: 100%;
+  position: static;
+}
+
+.ecoControlBuffs {
+  display: flex;
+  gap: 0.22rem;
+}
+
+.ecoControlBuffs .ecoBuffIcon {
+  height: 1.48rem;
+  width: 1.48rem;
+}
+
 .ecoControlToggle {
   background: color-mix(in srgb, var(--scene-text) 9%, var(--scene-panel-fill));
   color: var(--scene-text);
@@ -372,25 +556,55 @@
   border-color: color-mix(in srgb, var(--warning) 58%, var(--scene-text));
 }
 
-.ecoAbilityButton::after {
-  background: color-mix(in srgb, var(--scene-text) 42%, transparent);
-  bottom: 0;
+.ecoAbilityButton::before {
+  background: conic-gradient(
+    color-mix(in srgb, var(--scene-text) 46%, transparent) calc(var(--eco-cooldown, 0) * 1turn),
+    transparent 0
+  );
   content: '';
-  left: 0;
+  inset: 0;
+  opacity: 0;
   pointer-events: none;
   position: absolute;
-  right: 0;
-  top: calc((1 - var(--eco-cooldown, 0)) * 100%);
-  transition: top 120ms linear;
-  opacity: 0;
+  transition: opacity 120ms linear;
+  z-index: 2;
 }
 
-.ecoAbilityButton[data-cooling]::after {
+.ecoAbilityButton[data-cooling]::before {
   opacity: 1;
+}
+
+.ecoAbilityButton[data-locked] {
+  filter: saturate(0.7) brightness(0.9);
+}
+
+.ecoAbilityButton[data-ready] {
+  animation: ecoAbilityReady 0.42s ease-out;
+}
+
+.ecoAbilityButton[data-ultimate] {
+  border-color: color-mix(
+    in srgb,
+    var(--warning) calc(35% + var(--eco-resource, 0) * 45%),
+    var(--scene-text)
+  );
+}
+
+.ecoAbilityButton[data-ultimate] .ecoAbilityIcon::after {
+  background: conic-gradient(
+    color-mix(in srgb, var(--warning) 82%, var(--accent)) calc(var(--eco-resource, 0) * 1turn),
+    color-mix(in srgb, var(--scene-text) 16%, transparent) 0
+  );
+  border-radius: 999rem;
+  content: '';
+  inset: -0.22rem;
+  position: absolute;
+  z-index: -1;
 }
 
 .ecoAbilityButton:disabled {
   cursor: wait;
+  filter: grayscale(0.35) opacity(0.72);
 }
 
 .ecoAbilityIcon {
@@ -398,6 +612,7 @@
   height: 1.9rem;
   line-height: 1;
   place-items: center;
+  position: relative;
   width: 2rem;
   z-index: 1;
 }
@@ -628,6 +843,106 @@
   animation: ecoHurt 0.45s ease-out;
 }
 
+.ecoThing[data-hit] .ecoArt {
+  animation: ecoHurt 0.45s ease-out;
+}
+
+.ecoLayer[data-shake] {
+  animation: ecoLayerShake 0.22s ease-out;
+}
+
+.ecoFloat {
+  animation: ecoFloatRise 0.9s ease-out forwards;
+  color: color-mix(in srgb, var(--warning) 76%, white);
+  font-family: var(--font-rounded-display);
+  font-size: 1.6rem;
+  font-weight: 950;
+  left: 0;
+  line-height: 1;
+  pointer-events: none;
+  position: absolute;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 0.16rem color-mix(in srgb, var(--scene-text) 88%, black);
+  text-shadow:
+    0.08rem 0.08rem 0 color-mix(in srgb, var(--scene-text) 85%, black),
+    -0.08rem 0.08rem 0 color-mix(in srgb, var(--scene-text) 85%, black),
+    0.08rem -0.08rem 0 color-mix(in srgb, var(--scene-text) 85%, black),
+    -0.08rem -0.08rem 0 color-mix(in srgb, var(--scene-text) 85%, black),
+    0 0.24rem 0.55rem color-mix(in srgb, var(--scene-text) 46%, transparent);
+  top: 0;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.ecoFloat--strong,
+.ecoFloat--heavy {
+  color: color-mix(in srgb, var(--warning) 88%, white);
+  font-size: 2.1rem;
+}
+
+.ecoFloat--resist {
+  color: color-mix(in srgb, var(--scene-panel-fill) 70%, var(--scene-text));
+  font-size: 1.22rem;
+}
+
+.ecoFloat--heal {
+  color: color-mix(in srgb, var(--success) 86%, white);
+}
+
+.ecoFloat--banner {
+  animation: ecoSkillBanner 1.05s ease-out forwards;
+  background: var(--scene-panel-fill);
+  border: 0.12rem solid color-mix(in srgb, var(--warning) 64%, var(--scene-text));
+  border-radius: 999rem;
+  box-shadow: var(--bakery-shadow-panelFloat);
+  color: var(--scene-text);
+  font-size: clamp(1rem, 2.2vw, 1.42rem);
+  padding: 0.42rem 0.84rem;
+  -webkit-text-stroke: 0;
+  white-space: nowrap;
+}
+
+.ecoFloat--vfx {
+  animation: ecoVfxBurst 0.72s ease-out forwards;
+  border: 0.12rem solid color-mix(in srgb, var(--warning) 72%, transparent);
+  border-radius: 999rem;
+  color: transparent;
+  height: 3rem;
+  text-shadow: none;
+  width: 3rem;
+  -webkit-text-stroke: 0;
+}
+
+.ecoFloat--vfx[data-vfx='slash'] {
+  border-color: transparent;
+  border-top-color: color-mix(in srgb, var(--warning) 78%, var(--scene-text));
+  border-radius: 50%;
+  rotate: -28deg;
+}
+
+.ecoFloat--vfx[data-vfx='bite'] {
+  border-color: color-mix(in srgb, var(--error) 62%, var(--scene-text));
+  clip-path: polygon(0 0, 100% 50%, 0 100%, 34% 50%);
+}
+
+.ecoFloat--vfx[data-vfx='charge'],
+.ecoFloat--vfx[data-vfx='water'] {
+  border-radius: 999rem;
+  height: 1.25rem;
+  width: 5rem;
+}
+
+.ecoFloat--vfx[data-vfx='ink'] {
+  background: color-mix(in srgb, var(--scene-text) 42%, transparent);
+  border-color: color-mix(in srgb, var(--scene-text) 18%, transparent);
+}
+
+.ecoFloat--vfx[data-vfx='buff'],
+.ecoFloat--vfx[data-vfx='heal'] {
+  border-color: color-mix(in srgb, var(--success) 72%, var(--scene-text));
+}
+
 .ecoThing[data-state='falling'] .ecoArt {
   filter: grayscale(0.5) brightness(0.8);
 }
@@ -837,9 +1152,14 @@
 }
 
 @keyframes ecoHurt {
-  0%,
-  60% {
-    filter: brightness(1.8) saturate(0.3);
+  0% {
+    filter: brightness(2.6) saturate(0.15) contrast(1.25)
+      drop-shadow(0 0 0.32rem color-mix(in srgb, white 90%, transparent));
+  }
+
+  38% {
+    filter: brightness(1.18) sepia(0.42) saturate(2.2) hue-rotate(322deg)
+      drop-shadow(0 0 0.25rem color-mix(in srgb, var(--error) 70%, transparent));
   }
 
   100% {
@@ -916,6 +1236,101 @@
   100% {
     box-shadow: var(--bakery-shadow-raisedSoft);
     transform: scale(1);
+  }
+}
+
+@keyframes ecoAbilityReady {
+  0% {
+    box-shadow:
+      var(--bakery-shadow-raisedSoft),
+      0 0 0 0 color-mix(in srgb, var(--success) 45%, transparent);
+  }
+
+  45% {
+    box-shadow:
+      var(--bakery-shadow-raisedSoft),
+      0 0 0 0.34rem color-mix(in srgb, var(--success) 34%, transparent);
+  }
+
+  100% {
+    box-shadow:
+      var(--bakery-shadow-raisedSoft),
+      0 0 0 0 color-mix(in srgb, var(--success) 0%, transparent);
+  }
+}
+
+@keyframes ecoFloatRise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0.38rem) scale(0.6);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -0.16rem) scale(1.25);
+  }
+
+  34% {
+    opacity: 1;
+    transform: translate(-50%, -0.52rem) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -2.5rem) scale(0.96);
+  }
+}
+
+@keyframes ecoSkillBanner {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0.8rem) scale(0.82);
+  }
+
+  18%,
+  72% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -0.8rem) scale(0.96);
+  }
+}
+
+@keyframes ecoVfxBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+
+  28% {
+    opacity: 0.92;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.7);
+  }
+}
+
+@keyframes ecoLayerShake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  22% {
+    translate: -0.18rem 0.08rem;
+  }
+
+  46% {
+    translate: 0.16rem -0.06rem;
+  }
+
+  68% {
+    translate: -0.1rem 0;
   }
 }
 
@@ -1005,12 +1420,12 @@
 
   .ecoAbilityBar {
     display: grid;
-    gap: 0.32rem;
+    gap: 0.22rem;
     grid-template-columns: repeat(2, 1fr);
-    opacity: 0.9;
+    opacity: 0.68;
     position: absolute;
-    right: max(0.6rem, env(safe-area-inset-right));
-    bottom: max(3.1rem, calc(env(safe-area-inset-bottom) + 2.4rem));
+    right: max(0.42rem, env(safe-area-inset-right));
+    bottom: max(2.1rem, calc(env(safe-area-inset-bottom) + 1.45rem));
   }
 
   .ecoDpadButton {
@@ -1025,8 +1440,14 @@
       color-mix(in srgb, var(--scene-panel-fill) 88%, transparent),
       color-mix(in srgb, var(--scene-panel-fill) 70%, var(--scene-text) 18%)
     );
-    height: 3.08rem;
-    width: 3.08rem;
+    height: 2.88rem;
+    width: 2.88rem;
+  }
+
+  .ecoAbilityBar:has(.ecoAbilityButton[data-active]),
+  .ecoAbilityBar:focus-within,
+  .ecoAbilityBar:hover {
+    opacity: 0.96;
   }
 
   .ecoHealth {
@@ -1074,7 +1495,25 @@
   }
 
   .ecoControlledMarker {
-    top: -3.4rem;
+    max-width: 7.5rem;
+  }
+
+  .ecoFloat {
+    font-size: 1.25rem;
+    -webkit-text-stroke-width: 0.12rem;
+  }
+
+  .ecoFloat--strong,
+  .ecoFloat--heavy {
+    font-size: 1.55rem;
+  }
+
+  .ecoFloat--banner {
+    font-size: 0.9rem;
+    max-width: 72vw;
+    overflow: hidden;
+    padding: 0.34rem 0.58rem;
+    text-overflow: ellipsis;
   }
 }
 
@@ -1092,6 +1531,11 @@
   .ecoThing[data-dying] .ecoPose {
     animation: none;
     opacity: 0;
+  }
+
+  .ecoFloat,
+  .ecoLayer[data-shake] {
+    animation: none;
   }
 
   .ecoControlHint {

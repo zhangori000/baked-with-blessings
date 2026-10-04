@@ -1,8 +1,10 @@
 import { aspectOf } from './assets'
 import { between } from './behaviors'
 import type {
+  EcoControlAbility,
   EcoControlInput,
   EcoEntity,
+  EcoEffect,
   EcoMatchup,
   EcoSpawnOptions,
   EcoSpecies,
@@ -13,6 +15,10 @@ import type {
 
 const dyingSeconds = 0.7
 const naturalLimit = 170
+const maxControlResource = 100
+
+const clampValue = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3)
 
 export class Ecosystem implements EcoWorld {
   entities: EcoEntity[] = []
@@ -23,7 +29,9 @@ export class Ecosystem implements EcoWorld {
   waterY = 0
   width = 0
   dirty = true
+  effects: EcoEffect[] = []
   tallies: Record<string, number> = {}
+  private effectSequence = 0
   private sequence = 0
   private readonly windDirection = Math.random() < 0.5 ? -1 : 1
   controlledId: number | null = null
@@ -122,6 +130,131 @@ export class Ecosystem implements EcoWorld {
     const found = this.entities.find((entity) => entity.id === id)
 
     return found && !found.dying && !found.removed ? found : null
+  }
+
+  effect(effect: EcoEffect) {
+    this.effects.push({ ...effect, id: ++this.effectSequence })
+    this.dirty = true
+  }
+
+  drainEffects() {
+    const effects = this.effects
+
+    this.effects = []
+
+    return effects
+  }
+
+  shake(amount = 1) {
+    this.effect({ amount, type: 'shake', x: 0, y: 0 })
+  }
+
+  gainControlResource(entity: EcoEntity, amount: number) {
+    if (!this.species[entity.species]?.controls) {
+      return
+    }
+
+    entity.data.controlResource = clampValue(
+      (entity.data.controlResource ?? 0) + amount,
+      0,
+      maxControlResource,
+    )
+    this.dirty = true
+  }
+
+  heal(entity: EcoEntity, amount: number) {
+    if (entity.dying || entity.removed || amount <= 0) {
+      return 0
+    }
+
+    const before = entity.hp
+
+    entity.hp = Math.min(entity.maxHp, entity.hp + amount)
+
+    const healed = entity.hp - before
+
+    if (healed > 0) {
+      this.effect({
+        amount: healed,
+        text: `+${Math.max(1, Math.round(healed))}`,
+        tone: 'heal',
+        type: 'heal',
+        x: entity.x,
+        y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.36 : 0.72),
+      })
+    }
+
+    return healed
+  }
+
+  damage(
+    attacker: EcoEntity | null,
+    target: EcoEntity,
+    amount: number,
+    fromX = attacker?.x ?? target.x,
+  ) {
+    if (target.dying || target.removed || amount <= 0) {
+      return 0
+    }
+
+    const edge = attacker ? this.edge(attacker, target) : 1
+    const block =
+      (target.data.controlBlockUntil ?? 0) > this.time ? (target.data.controlBlock ?? 0.5) : 1
+    const adjusted = Math.max(0.1, amount * edge * block)
+
+    target.hp -= adjusted
+    target.fx = 'hurt'
+    target.data.fx = 0.38
+    target.data.hitFlash = this.time
+    target.vx += (target.x >= fromX ? 1 : -1) * this.unit * Math.min(4.8, 1.5 + adjusted * 0.7)
+    target.data.hitStopUntil = this.time + 0.07
+
+    if (attacker) {
+      attacker.data.hitStopUntil = this.time + 0.05
+      this.gainControlResource(attacker, adjusted * 8)
+    }
+
+    this.gainControlResource(target, adjusted * 5)
+
+    if (adjusted >= 1.8 || edge > 1) {
+      this.shake(edge > 1 ? 0.75 : 0.45)
+    }
+
+    this.effect({
+      amount: adjusted,
+      text: `${Math.max(1, Math.round(adjusted))}${edge > 1 ? '!' : ''}`,
+      tone: edge > 1 ? 'strong' : edge < 1 ? 'resist' : adjusted >= 2 ? 'heavy' : 'normal',
+      type: 'damage',
+      x: target.x,
+      y: target.y - this.heightOf(target) * (target.anchor === 'center' ? 0.32 : 0.66),
+    })
+
+    if (target.hp <= 0) {
+      this.kill(target)
+    }
+
+    this.dirty = true
+
+    return adjusted
+  }
+
+  addControlBuff(entity: EcoEntity, name: string, icon: string, seconds: number) {
+    const startedAt = this.time
+    const expiresAt = startedAt + seconds
+    const existing = entity.controlBuffs?.filter((buff) => buff.name !== name) ?? []
+
+    entity.controlBuffs = [...existing, { expiresAt, icon, name, startedAt }]
+    this.effect({
+      key: 'w',
+      name,
+      text: name,
+      tone: 'heal',
+      type: 'vfx',
+      vfx: 'buff',
+      x: entity.x,
+      y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.34 : 0.7),
+    })
+    this.dirty = true
   }
 
   spawn(speciesId: string, options: EcoSpawnOptions = {}) {
@@ -266,6 +399,223 @@ export class Ecosystem implements EcoWorld {
     this.controlInput = { ...this.controlInput, ...input }
   }
 
+  private abilityFor(entity: EcoEntity, key: string | null): EcoControlAbility | null {
+    const controls = this.species[entity.species]?.controls
+
+    return controls?.abilities.find((ability) => ability.key === key) ?? null
+  }
+
+  startControlAbility(key: string) {
+    if (key !== 'q' && key !== 'w' && key !== 'e' && key !== 'r') {
+      return false
+    }
+
+    const entity = this.byId(this.controlledId)
+    const ability = entity ? this.abilityFor(entity, key) : null
+
+    if (!entity || !ability) {
+      return false
+    }
+
+    if (entity.controlCast) {
+      const remaining = this.castRemaining(entity, ability)
+
+      if (remaining <= 0.3) {
+        entity.controlCast.queuedKey = key
+        this.dirty = true
+        return true
+      }
+
+      return false
+    }
+
+    if ((entity.data[`controlCooldown-${key}`] ?? 0) > this.time) {
+      return false
+    }
+
+    if (ability.ultimate && (entity.data.controlResource ?? 0) < maxControlResource) {
+      return false
+    }
+
+    if (ability.ultimate) {
+      entity.data.controlResource = 0
+      this.effect({
+        key,
+        name: ability.name,
+        text: ability.name,
+        tone: 'heavy',
+        type: 'banner',
+        vfx: ability.vfx,
+        x: entity.x,
+        y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.45 : 0.9),
+      })
+      this.shake(0.85)
+    }
+
+    entity.data[`controlCooldown-${key}`] = this.time + ability.cooldown
+    entity.data[`controlReadyAt-${key}`] = this.time + ability.cooldown
+    entity.controlCast = {
+      activeStarted: false,
+      elapsed: 0,
+      endX: entity.x,
+      endY: entity.y,
+      hitIds: new Set<number>(),
+      key,
+      phase: 'windup',
+      phaseElapsed: 0,
+      queuedKey: null,
+      startX: entity.x,
+      startY: entity.y,
+    }
+    entity.fx = ability.vfx ?? 'aim'
+    entity.data.controlCastStarted = this.time
+    entity.data.controlCastProgress = 0
+    this.dirty = true
+
+    return true
+  }
+
+  private castDuration(ability: EcoControlAbility, phase: 'active' | 'recovery' | 'windup') {
+    if (phase === 'windup') {
+      return ability.windup ?? 0.18
+    }
+
+    if (phase === 'active') {
+      return ability.active ?? 0.22
+    }
+
+    return ability.recovery ?? 0.24
+  }
+
+  private castRemaining(entity: EcoEntity, nextAbility?: EcoControlAbility | null) {
+    const cast = entity.controlCast
+
+    if (!cast) {
+      return 0
+    }
+
+    const ability = this.abilityFor(entity, cast.key) ?? nextAbility
+
+    if (!ability) {
+      return 0
+    }
+
+    const phases: readonly ('active' | 'recovery' | 'windup')[] = ['windup', 'active', 'recovery']
+    const index = phases.indexOf(cast.phase)
+    let remaining = Math.max(0, this.castDuration(ability, cast.phase) - cast.phaseElapsed)
+
+    for (let phaseIndex = index + 1; phaseIndex < phases.length; phaseIndex += 1) {
+      remaining += this.castDuration(ability, phases[phaseIndex]!)
+    }
+
+    return remaining
+  }
+
+  private advanceCastPhase(entity: EcoEntity, ability: EcoControlAbility) {
+    const cast = entity.controlCast
+
+    if (!cast) {
+      return
+    }
+
+    if (cast.phase === 'windup') {
+      cast.phase = 'active'
+      cast.phaseElapsed = 0
+      cast.activeStarted = false
+      cast.startX = entity.x
+      cast.startY = entity.y
+      cast.endX = clampValue(
+        entity.x + entity.facing * (ability.dash ?? 0) * this.unit,
+        this.unit,
+        this.width - this.unit,
+      )
+      cast.endY = entity.y
+      return
+    }
+
+    if (cast.phase === 'active') {
+      cast.phase = 'recovery'
+      cast.phaseElapsed = 0
+      return
+    }
+
+    const queuedKey = cast.queuedKey
+
+    entity.controlCast = undefined
+    entity.fx = ''
+    entity.data.controlCastProgress = 0
+
+    if (queuedKey) {
+      this.startControlAbility(queuedKey)
+    }
+  }
+
+  private tickCast(entity: EcoEntity, ability: EcoControlAbility, dt: number) {
+    const cast = entity.controlCast
+
+    if (!cast) {
+      return
+    }
+
+    const duration = Math.max(0.01, this.castDuration(ability, cast.phase))
+
+    cast.phaseElapsed += dt
+    cast.elapsed += dt
+
+    const phaseProgress = clampValue(cast.phaseElapsed / duration, 0, 1)
+    const activeDuration = Math.max(0.01, this.castDuration(ability, 'active'))
+    const activeProgress =
+      cast.phase === 'active' ? clampValue(cast.phaseElapsed / activeDuration, 0, 1) : 0
+
+    entity.data.controlCastProgress = phaseProgress
+
+    if (cast.phase === 'active') {
+      if (!cast.activeStarted) {
+        cast.activeStarted = true
+        ability.run?.(entity, this, { activeProgress, cast, phaseProgress })
+
+        if (!ability.ultimate) {
+          this.effect({
+            key: ability.key,
+            name: ability.name,
+            text: ability.name,
+            tone: 'heavy',
+            type: 'banner',
+            vfx: ability.vfx,
+            x: entity.x,
+            y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.55 : 1.06),
+          })
+        }
+
+        if (ability.vfx) {
+          this.effect({
+            key: ability.key,
+            name: ability.name,
+            tone: ability.ultimate ? 'heavy' : 'normal',
+            type: 'vfx',
+            vfx: ability.vfx,
+            x: entity.x,
+            y: entity.y - this.heightOf(entity) * (entity.anchor === 'center' ? 0.2 : 0.55),
+          })
+        }
+      }
+
+      if (ability.dash) {
+        const eased = easeOutCubic(activeProgress)
+
+        entity.x = cast.startX + (cast.endX - cast.startX) * eased
+        entity.y = cast.startY + (cast.endY - cast.startY) * eased
+        entity.vx = ((cast.endX - cast.startX) / activeDuration) * (1 - activeProgress)
+      }
+
+      ability.tick?.(entity, this, { activeProgress, cast, phaseProgress }, dt)
+    }
+
+    if (cast.phaseElapsed >= duration) {
+      this.advanceCastPhase(entity, ability)
+    }
+  }
+
   private controlEntity(entity: EcoEntity, definition: EcoSpecies, dt: number) {
     const controls = definition.controls
 
@@ -275,6 +625,14 @@ export class Ecosystem implements EcoWorld {
 
     const unit = this.unit
     const input = this.controlInput
+    const cast = entity.controlCast
+    const castAbility = cast ? this.abilityFor(entity, cast.key) : null
+
+    if (cast?.phase === 'active' && castAbility) {
+      this.tickCast(entity, castAbility, dt)
+      return true
+    }
+
     let moveX = input.x
     let moveY = input.y
 
@@ -301,7 +659,8 @@ export class Ecosystem implements EcoWorld {
     const length = Math.max(1, Math.hypot(moveX, moveY))
     const speedBoost =
       (entity.data.controlSpeedUntil ?? 0) > this.time ? (entity.data.controlSpeed ?? 1) : 1
-    const speed = controls.speed * unit * speedBoost
+    const castSpeed = cast?.phase === 'recovery' ? 0.45 : cast?.phase === 'windup' ? 0.35 : 1
+    const speed = controls.speed * unit * speedBoost * castSpeed
     const vx = (moveX / length) * speed
     const vy = (moveY / length) * speed
 
@@ -359,6 +718,10 @@ export class Ecosystem implements EcoWorld {
         entity.data.controlFxUntil && entity.data.controlFxUntil > this.time ? entity.fx : ''
     }
 
+    if (cast && castAbility && cast.phase !== 'active') {
+      this.tickCast(entity, castAbility, dt)
+    }
+
     return true
   }
 
@@ -406,6 +769,15 @@ export class Ecosystem implements EcoWorld {
       }
 
       entity.age += dt
+
+      if ((entity.data.hitStopUntil ?? 0) > this.time) {
+        continue
+      }
+
+      if (entity.controlBuffs?.length) {
+        entity.controlBuffs = entity.controlBuffs.filter((buff) => buff.expiresAt > this.time)
+      }
+
       this.burn(entity, dt)
 
       if (!entity.dying) {
