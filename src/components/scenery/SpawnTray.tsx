@@ -346,7 +346,9 @@ export function SpawnTray({
   const layout: TrayLayout = prefs.layout ?? (narrow ? 'bar' : 'float')
   const milestone = spawnMilestoneByScene[sceneTone]
   const milestoneProgress = milestone ? Math.min(milestone.at, tallies?.[milestone.tally] ?? 0) : 0
-  const milestoneNear = milestone ? milestoneProgress >= milestone.at - 5 : false
+  const milestoneNear = milestone
+    ? milestoneProgress >= milestone.at - Math.min(5, Math.ceil(milestone.at * 0.4))
+    : false
 
   const updatePrefs = useCallback((next: Partial<TrayPrefs>) => writePrefs(next), [])
 

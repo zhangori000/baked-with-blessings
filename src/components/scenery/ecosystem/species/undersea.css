@@ -49,6 +49,74 @@
   filter: drop-shadow(0 0 0.75rem rgba(195, 122, 220, 0.58));
 }
 
+.ecoThing[data-species='kraken'][data-state='rise'] .ecoAnchor::before {
+  animation: underseaKrakenGloom 3.2s ease-out both;
+  background:
+    radial-gradient(
+      circle at 50% 86%,
+      rgba(61, 17, 80, 0.5),
+      rgba(5, 15, 40, 0.26) 32%,
+      rgba(3, 12, 31, 0.58) 70%
+    ),
+    linear-gradient(rgba(1, 9, 29, 0.48), rgba(1, 9, 29, 0.24));
+  content: '';
+  height: 180vh;
+  left: -120vw;
+  pointer-events: none;
+  position: absolute;
+  top: -130vh;
+  width: 240vw;
+  z-index: -2;
+}
+
+.ecoThing[data-species='kraken'][data-state='rise'] .ecoPose::before,
+.ecoThing[data-species='kraken'][data-state='rise'] .ecoPose::after {
+  border: 0.38rem solid rgba(132, 70, 168, 0.82);
+  border-bottom: 0;
+  border-radius: 999rem 999rem 0 0;
+  content: '';
+  height: min(62vh, 28rem);
+  pointer-events: none;
+  position: absolute;
+  top: max(-54vh, -26rem);
+  width: min(28vw, 12rem);
+  z-index: -1;
+}
+
+.ecoThing[data-species='kraken'][data-state='rise'] .ecoPose::before {
+  animation: underseaKrakenTentacleLeft 2.8s ease-out both;
+  left: -32%;
+  transform: rotate(-16deg);
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='kraken'][data-state='rise'] .ecoPose::after {
+  animation: underseaKrakenTentacleRight 2.8s ease-out both;
+  right: -32%;
+  transform: rotate(16deg);
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='kraken'][data-state='rise'] .ecoPop::after {
+  animation: underseaKrakenToast 3s ease-out both;
+  background: rgba(8, 18, 45, 0.82);
+  border: 1px solid rgba(184, 232, 255, 0.55);
+  border-radius: 999rem;
+  box-shadow: 0 0.8rem 2rem rgba(1, 8, 25, 0.38);
+  color: #f4fbff;
+  content: 'The kraken rises!';
+  font: 700 clamp(0.78rem, 1.6vw, 1rem) / 1.1 var(--font-display, inherit);
+  left: 50%;
+  letter-spacing: 0.08em;
+  padding: 0.42rem 0.78rem;
+  pointer-events: none;
+  position: absolute;
+  text-transform: uppercase;
+  top: max(-28vh, -7rem);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
 .ecoThing[data-species='whale'][data-state='breach'] .ecoArt {
   filter: drop-shadow(0 0 0.72rem rgba(186, 240, 255, 0.55));
 }
@@ -100,11 +168,84 @@
   }
 }
 
+@keyframes underseaKrakenGloom {
+  0% {
+    opacity: 0;
+  }
+
+  18%,
+  72% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes underseaKrakenTentacleLeft {
+  0% {
+    opacity: 0;
+    transform: translateY(35%) rotate(-38deg) scaleY(0.3);
+  }
+
+  32%,
+  76% {
+    opacity: 1;
+    transform: translateY(0) rotate(-16deg) scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(22%) rotate(-8deg) scaleY(0.72);
+  }
+}
+
+@keyframes underseaKrakenTentacleRight {
+  0% {
+    opacity: 0;
+    transform: translateY(35%) rotate(38deg) scaleY(0.3);
+  }
+
+  32%,
+  76% {
+    opacity: 1;
+    transform: translateY(0) rotate(16deg) scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(22%) rotate(8deg) scaleY(0.72);
+  }
+}
+
+@keyframes underseaKrakenToast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0.8rem) scale(0.92);
+  }
+
+  16%,
+  78% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -0.35rem) scale(0.98);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ecoThing[data-species='sea-bubble-ring'] .ecoArt,
   .ecoThing[data-species='boat'][data-state='sinking'] .ecoArt,
   .ecoThing[data-species='fish-school'][data-state='scatter'] .ecoArt,
-  .ecoThing[data-species='pufferfish'][data-state='puffed'] .ecoArt {
+  .ecoThing[data-species='pufferfish'][data-state='puffed'] .ecoArt,
+  .ecoThing[data-species='kraken'][data-state='rise'] .ecoAnchor::before,
+  .ecoThing[data-species='kraken'][data-state='rise'] .ecoPose::before,
+  .ecoThing[data-species='kraken'][data-state='rise'] .ecoPose::after,
+  .ecoThing[data-species='kraken'][data-state='rise'] .ecoPop::after {
     animation: none;
   }
 }

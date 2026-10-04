@@ -20,6 +20,7 @@ registerViewBoxes({
   'boat-pirate': [204, 138],
   'boat-rowboat': [158, 80],
   'boat-sailboat': [166, 124],
+  'boat-speedboat': [176, 74],
   'boat-submarine': [188, 80],
   'boat-surfboard': [150, 70],
   'boat-trawler': [188, 108],
@@ -83,40 +84,40 @@ const boatVariants = [
     hp: 2,
     id: 'rowboat',
     size: [4.2, 4.7],
-    speed: [0.35, 0.52],
+    speed: [0.95, 1.35],
     strongVs: ['fish-school'],
     waterline: 42 / 80,
     weakTo: ['shark', 'whale', 'kraken'],
-    weight: 28,
+    weight: 25,
   },
   {
     asset: ecoAsset('boat-dinghy'),
     hp: 2,
     id: 'dinghy',
     size: [4.8, 5.3],
-    speed: [0.4, 0.6],
+    speed: [1.25, 1.85],
     strongVs: ['jellyfish'],
     waterline: 34 / 70,
     weakTo: ['shark', 'octopus', 'kraken'],
-    weight: 20,
+    weight: 17,
   },
   {
     asset: ecoAsset('boat-sailboat'),
     hp: 2,
     id: 'sailboat',
     size: [6.6, 7.2],
-    speed: [0.28, 0.46],
+    speed: [1.1, 1.75],
     strongVs: ['pufferfish', 'fish-school'],
     waterline: 84 / 124,
     weakTo: ['whale', 'kraken', 'octopus'],
-    weight: 18,
+    weight: 16,
   },
   {
     asset: ecoAsset('boat-trawler'),
     hp: 3,
     id: 'trawler',
     size: [10.2, 11],
-    speed: [0.22, 0.34],
+    speed: [0.85, 1.25],
     strongVs: ['fish-school', 'jellyfish', 'sea-turtle'],
     waterline: 60 / 108,
     weakTo: ['octopus', 'kraken', 'whale'],
@@ -127,29 +128,40 @@ const boatVariants = [
     hp: 1,
     id: 'surfboard',
     size: [2.4, 2.8],
-    speed: [0.55, 0.78],
+    speed: [2.5, 3.7],
     strongVs: ['fish-school'],
     waterline: 50 / 70,
     weakTo: ['shark', 'whale', 'jellyfish'],
-    weight: 11,
+    weight: 10,
+  },
+  {
+    asset: ecoAsset('boat-speedboat'),
+    hp: 2,
+    id: 'speedboat',
+    size: [5.5, 6.2],
+    speed: [2.25, 3.25],
+    strongVs: ['fish-school', 'jellyfish'],
+    waterline: 44 / 74,
+    weakTo: ['shark', 'whale', 'kraken'],
+    weight: 10,
   },
   {
     asset: ecoAsset('boat-battleship'),
     hp: 5,
     id: 'battleship',
     size: [16.8, 18],
-    speed: [0.18, 0.28],
+    speed: [0.75, 1.1],
     strongVs: ['shark', 'orca', 'kraken'],
     waterline: 50 / 92,
     weakTo: ['whale', 'octopus'],
-    weight: 6,
+    weight: 5,
   },
   {
     asset: ecoAsset('boat-pirate'),
     hp: 4,
     id: 'pirate-ship',
     size: [11.4, 12.3],
-    speed: [0.24, 0.38],
+    speed: [0.95, 1.45],
     strongVs: ['boat', 'shark'],
     waterline: 88 / 138,
     weakTo: ['kraken', 'orca', 'whale'],
@@ -160,7 +172,7 @@ const boatVariants = [
     hp: 4,
     id: 'submarine',
     size: [12, 12.9],
-    speed: [0.2, 0.34],
+    speed: [1.15, 1.75],
     strongVs: ['kraken', 'orca', 'anglerfish'],
     waterline: 14 / 80,
     weakTo: ['whale', 'octopus', 'crab'],
@@ -271,6 +283,29 @@ function capWidth(entity: EcoEntity, world: EcoWorld, fraction = 0.9) {
   entity.size = Math.min(entity.size, (world.width * fraction) / Math.max(world.unit, 1))
 }
 
+const paceProfiles = {
+  anglerfish: { burst: [1.35, 2.2, 8], cruise: [0.35, 0.8, 3.2] },
+  crab: { burst: [2.8, 4.5, 9], cruise: [1.45, 2.4, 5.6] },
+  fish: { burst: [4.6, 12, 24], cruise: [1.15, 4.5, 9] },
+  jellyfish: { burst: [0.45, 0.8, 2.8], cruise: [0.16, 0.3, 1.3] },
+  kraken: { burst: [0.72, 8, 20], cruise: [0.22, 3, 8] },
+  octopus: { burst: [1.85, 4, 13], cruise: [0.28, 1.2, 3.8] },
+  orca: { burst: [0.92, 9, 19], cruise: [0.28, 3.4, 7] },
+  pufferfish: { burst: [1.55, 2.2, 8], cruise: [0.46, 0.85, 3] },
+  shark: { burst: [1.75, 8, 22], cruise: [0.58, 4, 10] },
+  swordfish: { burst: [3.6, 12, 30], cruise: [0.82, 5, 12] },
+  turtle: { burst: [1.55, 3.4, 11], cruise: [0.42, 1.3, 3.8] },
+  whale: { burst: [0.68, 8, 17], cruise: [0.18, 3.2, 7] },
+} as const
+
+type PaceKind = keyof typeof paceProfiles
+
+function pace(entity: EcoEntity, world: EcoWorld, kind: PaceKind, mode: 'burst' | 'cruise') {
+  const [bodyLengths, minUnits, maxUnits] = paceProfiles[kind][mode]
+
+  return clamp(world.widthOf(entity) * bodyLengths, world.unit * minUnits, world.unit * maxUnits)
+}
+
 function matchesKey(entity: EcoEntity, world: EcoWorld, key: string) {
   return (
     entity.species === key || (key === 'boat' && isBoat(entity)) || world.has(entity, key as never)
@@ -364,13 +399,16 @@ function spawnSwimmers(world: EcoWorld, boat: EcoEntity, count = 1) {
 function callKraken(world: EcoWorld, x: number) {
   const kraken = world.spawn('kraken', {
     state: 'rise',
+    size: between(35, 42),
     x: clamp(x, world.unit * 4, world.width - world.unit * 4),
     y: floorY(world) + world.unit * 2,
   })
 
   if (kraken) {
     kraken.data.called = 1
+    kraken.data.dragAt = 0
     kraken.data.zBoost = world.height * 3
+    spawnBurst(world, kraken.x, surfaceY(world) + world.unit * 2, 6.5)
   }
 
   world.resetTally('boats-sunk')
@@ -384,8 +422,15 @@ function markBoatSunk(boat: EcoEntity, world: EcoWorld, cause?: EcoEntity) {
   boat.data.sunk = 1
   boat.countAs = null
   const sunk = world.tally('boats-sunk')
+  const callActive = world.nearest(
+    boat,
+    (other) => isKraken(other) && other.state === 'rise' && (other.data.called ?? 0) > 0,
+    world.width,
+  )
 
-  if (sunk >= 5) {
+  if (sunk >= 5 && callActive) {
+    world.resetTally('boats-sunk')
+  } else if (sunk >= 5) {
     callKraken(world, cause?.x ?? boat.x)
   }
 }
@@ -474,6 +519,26 @@ function targetOrNearest(
   return next
 }
 
+function hungerDrift(entity: EcoEntity, world: EcoWorld, dt: number, fed: boolean, seconds = 42) {
+  if (fed) {
+    entity.data.hunger = 0
+    return
+  }
+
+  const hunger = (entity.data.hunger ?? 0) + dt
+  entity.data.hunger = hunger
+
+  if (hunger > seconds) {
+    entity.fx = 'dazed'
+    entity.data.fx = 0.4
+    entity.hp -= dt * 0.1
+
+    if (entity.hp <= 0) {
+      world.kill(entity)
+    }
+  }
+}
+
 function grazeKelp(fish: EcoEntity, kelp: EcoEntity, world: EcoWorld) {
   if (
     Math.hypot(fish.x - kelp.x, fish.y - (kelp.y - world.heightOf(kelp) * 0.52)) >
@@ -486,7 +551,7 @@ function grazeKelp(fish: EcoEntity, kelp: EcoEntity, world: EcoWorld) {
   kelp.data.nibbled = 0.55
   kelp.fx = 'wobble'
 
-  if (fish.data.fed > 3.5 && world.canBreed() && chance(0.35, 0.12)) {
+  if (fish.data.fed > 4.8 && world.canBreed() && world.count(isFish) < 24 && chance(0.2, 0.12)) {
     fish.data.fed = 0
     world.spawn('fish-school', {
       countAs: 'fish-school',
@@ -543,6 +608,19 @@ const kelpCoral: EcoSpecies = {
 
     entity.fx = shelterSeeker ? 'shelter' : entity.fx
 
+    if (world.canBreed() && world.count(isFish) < 3 && chance(0.08, dt)) {
+      world.spawn('fish-school', {
+        countAs: 'fish-school',
+        size: between(4.2, 5.2),
+        x: clamp(entity.x + between(-2.4, 2.4) * world.unit, world.unit, world.width - world.unit),
+        y: clamp(
+          entity.y - world.heightOf(entity) * 0.52 + between(-1.4, 1.4) * world.unit,
+          waterTop(world),
+          waterBottom(world),
+        ),
+      })
+    }
+
     if (!world.canBreed() || !chance(0.035, dt)) {
       return
     }
@@ -569,7 +647,7 @@ const fishSchool: EcoSpecies = {
     entity.data.goalAt = 0
     entity.facing = 1
     entity.y = clamp(entity.y, waterTop(world), waterBottom(world))
-    entity.vx = world.unit * between(0.8, 1.4)
+    entity.vx = pace(entity, world, 'fish', 'cruise') * between(0.85, 1.15)
   },
   layer: 'front',
   size: [4.8, 5.8],
@@ -587,7 +665,7 @@ const fishSchool: EcoSpecies = {
 
     if (predator) {
       world.setState(entity, 'scatter')
-      flee(entity, predator, unit * (6.2 + world.edge(predator, entity)), dt, 5.5)
+      flee(entity, predator, pace(entity, world, 'fish', 'burst'), dt, 5.5)
     } else {
       world.setState(entity, 'school')
       const kelp = targetOrNearest(
@@ -598,13 +676,28 @@ const fishSchool: EcoSpecies = {
       )
 
       if (kelp) {
-        steer(entity, kelp.x, kelp.y - world.heightOf(kelp) * 0.55, unit * 2.8, dt, 2.2)
+        steer(
+          entity,
+          kelp.x,
+          kelp.y - world.heightOf(kelp) * 0.55,
+          pace(entity, world, 'fish', 'cruise'),
+          dt,
+          2.2,
+        )
         grazeKelp(entity, kelp, world)
       } else {
-        wander(entity, world, dt, unit * 2.2, waterTop(world), waterBottom(world), 1.8)
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'fish', 'cruise'),
+          waterTop(world),
+          waterBottom(world),
+          1.8,
+        )
       }
 
-      entity.vx += (unit * 1.15 - entity.vx) * dt * 0.85
+      entity.vx += (pace(entity, world, 'fish', 'cruise') - entity.vx) * dt * 0.85
     }
 
     const neighbors = world
@@ -631,6 +724,16 @@ const fishSchool: EcoSpecies = {
       }
     }
 
+    hungerDrift(
+      entity,
+      world,
+      dt,
+      world.count(
+        (other) =>
+          isCrab(other) || isFish(other) || isBoat(other) || isPuffer(other) || isSwordfish(other),
+      ) > 0,
+      62,
+    )
     integrate(entity, dt)
     if (predator) {
       keepInWater(entity, world)
@@ -665,10 +768,18 @@ const jellyfish: EcoSpecies = {
     const turtle = world.nearest(entity, isTurtle, unit * 8)
 
     if (turtle && world.edge(turtle, entity) > 1) {
-      flee(entity, turtle, unit * 2.8, dt, 2.8)
+      flee(entity, turtle, pace(entity, world, 'jellyfish', 'burst'), dt, 2.8)
     } else {
-      entity.vx += (Math.sin(world.time * 0.42 + entity.id) * unit * 0.55 - entity.vx) * dt * 0.6
-      entity.vy += (Math.sin(world.time * 0.7 + entity.id) * unit * 0.36 - entity.vy) * dt * 0.8
+      entity.vx +=
+        (Math.sin(world.time * 0.42 + entity.id) * pace(entity, world, 'jellyfish', 'cruise') -
+          entity.vx) *
+        dt *
+        0.6
+      entity.vy +=
+        (Math.sin(world.time * 0.7 + entity.id) * pace(entity, world, 'jellyfish', 'cruise') * 0.7 -
+          entity.vy) *
+        dt *
+        0.8
     }
 
     const target = world.nearest(entity, (other) => isFish(other) || isShark(other), unit * 2.8)
@@ -708,7 +819,7 @@ const seaTurtle: EcoSpecies = {
     let cruising = false
 
     if (threat && world.edge(threat, entity) > 1) {
-      flee(entity, threat, unit * 3.3, dt, 3.2)
+      flee(entity, threat, pace(entity, world, 'turtle', 'burst'), dt, 3.2)
     } else {
       const target = targetOrNearest(
         entity,
@@ -718,15 +829,24 @@ const seaTurtle: EcoSpecies = {
       )
 
       if (target) {
-        steer(entity, target.x, target.y, unit * 3, dt, 2.6)
+        steer(entity, target.x, target.y, pace(entity, world, 'turtle', 'burst'), dt, 2.6)
         consume(entity, target, world, 1.8)
       } else {
-        wander(entity, world, dt, unit * 1.9, waterTop(world) + unit * 2, waterBottom(world), 1.6)
-        entity.vx += (unit * 0.9 - entity.vx) * dt * 0.55
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'turtle', 'cruise'),
+          waterTop(world) + unit * 2,
+          waterBottom(world),
+          1.6,
+        )
+        entity.vx += (pace(entity, world, 'turtle', 'cruise') - entity.vx) * dt * 0.55
         cruising = true
       }
     }
 
+    hungerDrift(entity, world, dt, world.count((other) => isFish(other) || isJelly(other)) > 0, 50)
     integrate(entity, dt)
     if (cruising) {
       keepWaterDepth(entity, world, waterTop(world) + unit, waterBottom(world))
@@ -762,13 +882,13 @@ const crab: EcoSpecies = {
 
     if (octopus && world.edge(octopus, entity) > 1) {
       entity.facing = entity.x < octopus.x ? -1 : 1
-      entity.x += entity.facing * unit * 3.2 * dt
+      entity.x += entity.facing * pace(entity, world, 'crab', 'burst') * dt
     } else {
       if (world.time > (entity.data.turnAt ?? 0)) {
         entity.facing = Math.random() < 0.5 ? -1 : 1
         entity.data.turnAt = world.time + between(2, 5)
       }
-      walk(entity, world, dt, unit * 1.1)
+      walk(entity, world, dt, pace(entity, world, 'crab', 'cruise'))
     }
 
     const jelly = world.nearest(entity, isJelly, unit * 3.2)
@@ -819,7 +939,7 @@ const pufferfish: EcoSpecies = {
       world.setAsset(entity, pufferPuffedAsset)
       world.setState(entity, 'puffed')
       entity.scale = Math.min(1.22, entity.scale + dt * 1.4)
-      flee(entity, threat, unit * 2.2, dt, 2.4)
+      flee(entity, threat, pace(entity, world, 'pufferfish', 'burst'), dt, 2.4)
 
       if (
         Math.hypot(entity.x - threat.x, entity.y - threat.y) <
@@ -834,8 +954,16 @@ const pufferfish: EcoSpecies = {
       world.setAsset(entity, pufferAsset)
       world.setState(entity, 'drift')
       entity.scale = Math.max(1, entity.scale - dt * 0.8)
-      wander(entity, world, dt, unit * 1.7, waterTop(world), waterBottom(world), 1.8)
-      entity.vx += (unit * 0.75 - entity.vx) * dt * 0.65
+      wander(
+        entity,
+        world,
+        dt,
+        pace(entity, world, 'pufferfish', 'cruise'),
+        waterTop(world),
+        waterBottom(world),
+        1.8,
+      )
+      entity.vx += (pace(entity, world, 'pufferfish', 'cruise') - entity.vx) * dt * 0.65
     }
 
     integrate(entity, dt)
@@ -859,7 +987,7 @@ const shark: EcoSpecies = {
   idle: 'none',
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 2, waterBottom(world))
-    entity.vx = entity.facing * world.unit * between(1.4, 2.4)
+    entity.vx = entity.facing * pace(entity, world, 'shark', 'cruise') * between(0.8, 1.15)
   },
   layer: 'front',
   size: [10.6, 11.8],
@@ -884,7 +1012,7 @@ const shark: EcoSpecies = {
     if (danger) {
       world.setAsset(entity, sharkAsset)
       world.setState(entity, 'flee')
-      flee(entity, danger, unit * 4.8, dt, 4.2)
+      flee(entity, danger, pace(entity, world, 'shark', 'burst'), dt, 4.2)
     } else {
       const target = targetOrNearest(
         entity,
@@ -896,15 +1024,31 @@ const shark: EcoSpecies = {
       if (target) {
         world.setAsset(entity, sharkBiteAsset)
         world.setState(entity, 'hunt')
-        steer(entity, target.x, target.y, unit * (3.4 + world.edge(entity, target)), dt, 2.8)
+        steer(entity, target.x, target.y, pace(entity, world, 'shark', 'burst'), dt, 2.8)
         consume(entity, target, world, isBoat(target) ? 2.3 : 1.8)
       } else {
         world.setAsset(entity, sharkAsset)
         world.setState(entity, 'prowl')
-        wander(entity, world, dt, unit * 2.4, waterTop(world), waterBottom(world), 1.4)
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'shark', 'cruise'),
+          waterTop(world),
+          waterBottom(world),
+          1.4,
+        )
       }
     }
 
+    hungerDrift(
+      entity,
+      world,
+      dt,
+      world.count((other) => isFish(other) || isTurtle(other) || isCrab(other) || isBoat(other)) >
+        0,
+      58,
+    )
     integrate(entity, dt)
     keepInWater(entity, world)
     faceTravel(entity)
@@ -920,7 +1064,7 @@ const swordfish: EcoSpecies = {
   hp: 3,
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 2, waterBottom(world))
-    entity.vx = entity.facing * world.unit * between(1.6, 2.4)
+    entity.vx = entity.facing * pace(entity, world, 'swordfish', 'cruise') * between(0.8, 1.15)
   },
   layer: 'front',
   size: [7.6, 8.8],
@@ -939,7 +1083,7 @@ const swordfish: EcoSpecies = {
 
     if (danger) {
       world.setState(entity, 'evade')
-      flee(entity, danger, unit * 4.6, dt, 4.2)
+      flee(entity, danger, pace(entity, world, 'swordfish', 'burst'), dt, 4.2)
     } else {
       const target = targetOrNearest(
         entity,
@@ -950,7 +1094,7 @@ const swordfish: EcoSpecies = {
 
       if (target && world.edge(entity, target) > 1) {
         world.setState(entity, 'strike')
-        steer(entity, target.x, target.y, unit * 5.2, dt, 3.4)
+        steer(entity, target.x, target.y, pace(entity, world, 'swordfish', 'burst'), dt, 3.4)
 
         if (
           Math.hypot(entity.x - target.x, entity.y - target.y) <
@@ -964,10 +1108,27 @@ const swordfish: EcoSpecies = {
         }
       } else {
         world.setState(entity, 'lance')
-        wander(entity, world, dt, unit * 2.4, waterTop(world), waterBottom(world), 1.3)
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'swordfish', 'cruise'),
+          waterTop(world),
+          waterBottom(world),
+          1.3,
+        )
       }
     }
 
+    hungerDrift(
+      entity,
+      world,
+      dt,
+      world.count(
+        (other) => isFish(other) || isShark(other) || isKraken(other) || isAngler(other),
+      ) > 0,
+      54,
+    )
     integrate(entity, dt)
     keepInWater(entity, world)
     faceTravel(entity)
@@ -1007,7 +1168,7 @@ const octopus: EcoSpecies = {
       world.setState(entity, 'ink')
       entity.fx = 'ink'
       entity.data.fx = 0.7
-      flee(entity, danger, unit * 3.2, dt, 3.5)
+      flee(entity, danger, pace(entity, world, 'octopus', 'burst'), dt, 3.5)
     } else if (shark && (entity.data.inkCool ?? 0) <= 0 && world.edge(entity, shark) > 1) {
       world.setAsset(entity, octopusInkAsset)
       world.setState(entity, 'ink')
@@ -1016,7 +1177,7 @@ const octopus: EcoSpecies = {
       entity.data.inkCool = between(6, 10)
       hurt(shark, world, 0.55)
       shark.targetId = null
-      flee(shark, entity, unit * 5, dt, 5)
+      flee(shark, entity, pace(shark, world, 'shark', 'burst'), dt, 5)
       spawnBurst(world, entity.x, entity.y, 2.1)
     } else {
       const target = targetOrNearest(
@@ -1030,7 +1191,7 @@ const octopus: EcoSpecies = {
       if (target) {
         world.setAsset(entity, octopusAsset)
         world.setState(entity, 'grab')
-        steer(entity, target.x, target.y, unit * 2.8, dt, 2.5)
+        steer(entity, target.x, target.y, pace(entity, world, 'octopus', 'burst'), dt, 2.5)
         consume(entity, target, world, isBoat(target) ? 2.2 : 1.6)
       } else {
         world.setAsset(entity, octopusAsset)
@@ -1038,9 +1199,24 @@ const octopus: EcoSpecies = {
         const kelp = world.nearest(entity, isKelp, unit * 8)
 
         if (kelp) {
-          steer(entity, kelp.x, kelp.y - world.heightOf(kelp) * 0.4, unit * 1.4, dt, 1.5)
+          steer(
+            entity,
+            kelp.x,
+            kelp.y - world.heightOf(kelp) * 0.4,
+            pace(entity, world, 'octopus', 'cruise'),
+            dt,
+            1.5,
+          )
         } else {
-          wander(entity, world, dt, unit * 1.7, deepTop(world), deepBottom(world), 1.5)
+          wander(
+            entity,
+            world,
+            dt,
+            pace(entity, world, 'octopus', 'cruise'),
+            deepTop(world),
+            deepBottom(world),
+            1.5,
+          )
         }
       }
     }
@@ -1064,7 +1240,7 @@ const whale: EcoSpecies = {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 4, waterBottom(world))
     entity.data.breachAt = world.time + between(5, 10)
     entity.facing = 1
-    entity.vx = world.unit * between(0.8, 1.2)
+    entity.vx = pace(entity, world, 'whale', 'cruise') * between(0.85, 1.15)
   },
   layer: 'front',
   size: [23.8, 26.3],
@@ -1082,14 +1258,21 @@ const whale: EcoSpecies = {
     let cruising = false
 
     if (orca && world.edge(orca, entity) > 1) {
-      flee(entity, orca, unit * 3, dt, 1.6)
+      flee(entity, orca, pace(entity, world, 'whale', 'burst'), dt, 1.6)
     } else if (world.time > (entity.data.breachAt ?? 0)) {
       world.setAsset(entity, whaleBreachAsset)
       world.setState(entity, 'breach')
       const boat = world.nearest({ x: entity.x, y: surfaceY(world) }, isBoat, unit * 7)
       const breachX = boat?.x ?? entity.x + entity.facing * unit * 2
 
-      steer(entity, breachX, surfaceY(world) + unit * 1.4, unit * 7, dt, 2.2)
+      steer(
+        entity,
+        breachX,
+        surfaceY(world) + unit * 1.4,
+        pace(entity, world, 'whale', 'burst'),
+        dt,
+        2.2,
+      )
 
       if (
         boat &&
@@ -1106,11 +1289,18 @@ const whale: EcoSpecies = {
     } else {
       world.setAsset(entity, whaleAsset)
       world.setState(entity, entity.state === 'dive' && entity.t < 1.4 ? 'dive' : 'cruise')
-      entity.vx += (entity.facing * unit * 1.1 - entity.vx) * dt * 0.5
+      entity.vx += (entity.facing * pace(entity, world, 'whale', 'cruise') - entity.vx) * dt * 0.5
       entity.vy += (Math.sin(world.time * 0.35 + entity.id) * unit * 0.25 - entity.vy) * dt * 0.6
       cruising = entity.state === 'cruise'
     }
 
+    hungerDrift(
+      entity,
+      world,
+      dt,
+      world.count((other) => isBoat(other) || isOctopus(other) || isKraken(other)) > 0,
+      72,
+    )
     integrate(entity, dt)
     if (cruising) {
       keepWaterDepth(entity, world, surfaceY(world) + unit * 0.8, waterBottom(world))
@@ -1147,7 +1337,7 @@ const orca: EcoSpecies = {
     )
 
     if (kraken && world.edge(kraken, entity) > 1) {
-      flee(entity, kraken, unit * 4.2, dt, 3.5)
+      flee(entity, kraken, pace(entity, world, 'orca', 'burst'), dt, 3.5)
     } else {
       const target = targetOrNearest(
         entity,
@@ -1162,13 +1352,35 @@ const orca: EcoSpecies = {
       )
 
       if (target) {
-        steer(entity, target.x, target.y, unit * 3.6, dt, 2.4)
+        steer(entity, target.x, target.y, pace(entity, world, 'orca', 'burst'), dt, 2.4)
         consume(entity, target, world, isWhale(target) ? 2.2 : 1.8)
       } else {
-        wander(entity, world, dt, unit * 2.5, waterTop(world), waterBottom(world), 1.5)
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'orca', 'cruise'),
+          waterTop(world),
+          waterBottom(world),
+          1.5,
+        )
       }
     }
 
+    hungerDrift(
+      entity,
+      world,
+      dt,
+      world.count(
+        (other) =>
+          isShark(other) ||
+          isTurtle(other) ||
+          isWhale(other) ||
+          isOctopus(other) ||
+          isSwordfish(other),
+      ) > 0,
+      62,
+    )
     integrate(entity, dt)
     keepInWater(entity, world)
     faceTravel(entity)
@@ -1207,7 +1419,7 @@ const anglerfish: EcoSpecies = {
 
     if (shark && world.edge(shark, entity) > 1) {
       world.setState(entity, 'hide')
-      flee(entity, shark, unit * 2.6, dt, 3)
+      flee(entity, shark, pace(entity, world, 'anglerfish', 'burst'), dt, 3)
     } else {
       const target = targetOrNearest(
         entity,
@@ -1218,12 +1430,20 @@ const anglerfish: EcoSpecies = {
 
       if (target) {
         world.setState(entity, 'strike')
-        steer(entity, target.x, target.y, unit * 2.7, dt, 2.6)
+        steer(entity, target.x, target.y, pace(entity, world, 'anglerfish', 'burst'), dt, 2.6)
         consume(entity, target, world, 1.6)
       } else {
         world.setState(entity, 'lure')
-        wander(entity, world, dt, unit * 1.4, deepTop(world), deepBottom(world), 1.4)
-        entity.vx += (unit * 0.55 - entity.vx) * dt * 0.5
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'anglerfish', 'cruise'),
+          deepTop(world),
+          deepBottom(world),
+          1.4,
+        )
+        entity.vx += (pace(entity, world, 'anglerfish', 'cruise') - entity.vx) * dt * 0.5
         cruising = true
       }
     }
@@ -1267,10 +1487,39 @@ const kraken: EcoSpecies = {
 
     if (entity.state === 'rise') {
       world.setAsset(entity, krakenGrabAsset)
-      steer(entity, entity.x, deepBottom(world) - unit * 8, unit * 4.5, dt, 1.8)
+      steer(
+        entity,
+        entity.x,
+        surfaceY(world) + unit * 7,
+        pace(entity, world, 'kraken', 'burst'),
+        dt,
+        1.8,
+      )
       integrate(entity, dt)
+      entity.data.dragAt = Math.max(0, (entity.data.dragAt ?? 0) - dt)
 
-      if (entity.y <= deepBottom(world) - unit * 6 || entity.t > 2.2) {
+      if ((entity.data.dragAt ?? 0) <= 0) {
+        entity.data.dragAt = 0.28
+        spawnBurst(
+          world,
+          clamp(entity.x + between(-5, 5) * unit, unit * 2, world.width - unit * 2),
+          surfaceY(world) + unit * between(1.2, 5.6),
+          between(3.4, 5.8),
+        )
+      }
+
+      for (const boatTarget of world.within(
+        entity.x,
+        surfaceY(world) + unit * 1.8,
+        Math.max(unit * 24, world.width * 0.42),
+        isBoat,
+      )) {
+        capsizeBoat(boatTarget, world, entity)
+        boatTarget.x += (entity.x - boatTarget.x) * dt * 1.6
+        boatTarget.y += unit * dt * 3.4
+      }
+
+      if (entity.y <= surfaceY(world) + unit * 8 || entity.t > 3.2) {
         world.setState(entity, 'prowl')
       }
       return
@@ -1286,7 +1535,7 @@ const kraken: EcoSpecies = {
 
     if (puffer && world.edge(puffer, entity) > 1) {
       world.setAsset(entity, krakenAsset)
-      flee(entity, puffer, unit * 2.5, dt, 2.4)
+      flee(entity, puffer, pace(entity, world, 'kraken', 'burst'), dt, 2.4)
     } else {
       const target = targetOrNearest(
         entity,
@@ -1298,15 +1547,30 @@ const kraken: EcoSpecies = {
       if (target) {
         world.setAsset(entity, krakenGrabAsset)
         world.setState(entity, 'grab')
-        steer(entity, target.x, target.y, unit * (2.4 + world.edge(entity, target)), dt, 2.1)
+        steer(entity, target.x, target.y, pace(entity, world, 'kraken', 'burst'), dt, 2.1)
         consume(entity, target, world, isBoat(target) ? 3.4 : 2.1)
       } else {
         world.setAsset(entity, krakenAsset)
         world.setState(entity, 'prowl')
-        wander(entity, world, dt, unit * 1.5, deepTop(world), deepBottom(world), 1.2)
+        wander(
+          entity,
+          world,
+          dt,
+          pace(entity, world, 'kraken', 'cruise'),
+          deepTop(world),
+          deepBottom(world),
+          1.2,
+        )
       }
     }
 
+    hungerDrift(
+      entity,
+      world,
+      dt,
+      world.count((other) => isBoat(other) || isOrca(other) || isAngler(other)) > 0,
+      78,
+    )
     integrate(entity, dt)
     keepInWater(entity, world, surfaceY(world) + unit * 3, deepBottom(world))
     faceTravel(entity)
@@ -1343,6 +1607,7 @@ const boat: EcoSpecies = {
     clearFx(entity, dt)
     const unit = world.unit
     const kind = entity.data.kind ?? 0
+    const variantId = boatVariants[kind]?.id ?? 'rowboat'
 
     if (entity.state === 'capsized') {
       entity.data.sinkDelay = (entity.data.sinkDelay ?? 2) - dt
@@ -1388,20 +1653,12 @@ const boat: EcoSpecies = {
     entity.lift = 0
     entity.tilt = Math.sin(world.time * 1.2 + entity.id) * (kind === 4 ? 5 : 2.2)
 
-    if (entity.x < unit * 2) {
-      entity.x = unit * 2
-      entity.facing = 1
-      entity.vx = Math.abs(entity.vx)
-    } else if (entity.x > world.width - unit * 2) {
-      entity.x = world.width - unit * 2
-      entity.facing = -1
-      entity.vx = -Math.abs(entity.vx)
-    }
+    wrapRight(entity, world, world.widthOf(entity) * 0.55)
 
     entity.data.actionAt = (entity.data.actionAt ?? world.time + 4) - dt
 
     if ((entity.data.actionAt ?? 0) <= 0) {
-      if (kind === 3) {
+      if (variantId === 'trawler') {
         entity.data.actionAt = between(6, 10)
         world.spawn('sea-net', {
           countAs: null,
@@ -1409,14 +1666,14 @@ const boat: EcoSpecies = {
           x: entity.x - entity.facing * world.widthOf(entity) * 0.15,
           y: entity.y + unit * 0.8,
         })
-      } else if (kind === 5) {
+      } else if (variantId === 'battleship') {
         entity.data.actionAt = between(4, 7)
         world.spawn('sea-depth-charge', {
           countAs: null,
           x: entity.x - entity.facing * world.widthOf(entity) * 0.2,
           y: entity.y + unit * 1.1,
         })
-      } else if (kind === 4 && chance(0.75, 1)) {
+      } else if (variantId === 'surfboard' && chance(0.75, 1)) {
         entity.data.actionAt = between(8, 13)
         capsizeBoat(entity, world)
       } else {
@@ -1490,7 +1747,7 @@ const depthCharge: EcoSpecies = {
   layer: 'front',
   size: [1.4, 1.9],
   state: 'fall',
-  strongVs: ['shark', 'orca', 'kraken'],
+  strongVs: ['boat', 'shark', 'orca', 'kraken'],
   tags: ['projectile'],
   tick(entity, world, dt) {
     entity.vy += world.unit * 1.8 * dt
@@ -1508,8 +1765,18 @@ const depthCharge: EcoSpecies = {
       entity.y,
       world.unit * 8,
       (other) =>
-        isFish(other) || isShark(other) || isOrca(other) || isKraken(other) || isTurtle(other),
+        isBoat(other) ||
+        isFish(other) ||
+        isShark(other) ||
+        isOrca(other) ||
+        isKraken(other) ||
+        isTurtle(other),
     )) {
+      if (isBoat(target)) {
+        capsizeBoat(target, world, entity)
+        continue
+      }
+
       const edge = world.edge(entity, target)
 
       if (edge > 1 || Math.random() < 0.35) {
