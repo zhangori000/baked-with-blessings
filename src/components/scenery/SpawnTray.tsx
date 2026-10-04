@@ -1,12 +1,21 @@
 'use client'
 
-import { Blend, GalleryHorizontal, GripHorizontal, LayoutGrid, PanelRight, X } from 'lucide-react'
+import {
+  Blend,
+  GalleryHorizontal,
+  GripHorizontal,
+  LayoutGrid,
+  PanelRight,
+  Swords,
+  X,
+} from 'lucide-react'
 import Image from 'next/image'
 import {
   useCallback,
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -21,6 +30,7 @@ import { createPortal } from 'react-dom'
 
 import { cn } from '@/utilities/cn'
 
+import { ecosystemSpecies } from './ecosystem/species'
 import type { SceneTone } from './menuHeroScenery'
 import { sceneSpawnablesByScene, spawnMilestoneByScene, type SceneSpawnable } from './spawnables'
 
@@ -85,6 +95,139 @@ const layoutOptions: readonly { icon: typeof LayoutGrid; label: string; value: T
   { icon: GalleryHorizontal, label: 'One row', value: 'bar' },
   { icon: PanelRight, label: 'Side panel', value: 'side' },
 ]
+
+type MatchupChip = {
+  icon?: string
+  key: string
+  label: string
+}
+
+type SpawnTrayMatchups = {
+  strong: readonly MatchupChip[]
+  weak: readonly MatchupChip[]
+}
+
+type TileMatchKeys = {
+  id: string
+  keys: ReadonlySet<string>
+}
+
+const matchupLabelByKey: Record<string, string> = {
+  asteroid: 'Asteroids',
+  archer: 'Archers',
+  balloon: 'Balloons',
+  bee: 'Bees',
+  boulder: 'Boulders',
+  bird: 'Birds',
+  burnable: 'Burnables',
+  building: 'Buildings',
+  cloud: 'Clouds',
+  'dark-lord': 'Dark lords',
+  dragon: 'Dragons',
+  fire: 'Fire',
+  fireball: 'Fireballs',
+  flower: 'Flowers',
+  fuel: 'Kindling',
+  insect: 'Insects',
+  knight: 'Knights',
+  predator: 'Predators',
+  prey: 'Prey',
+  plant: 'Plants',
+  projectile: 'Projectiles',
+  spirit: 'Spirits',
+  target: 'Targets',
+  villager: 'Villagers',
+  wizard: 'Wizards',
+}
+
+const labelFromKey = (key: string) =>
+  matchupLabelByKey[key] ??
+  key
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+
+const uniqueMatchupChips = (chips: readonly MatchupChip[]) => {
+  const seen = new Set<string>()
+  const unique: MatchupChip[] = []
+
+  for (const chip of chips) {
+    if (seen.has(chip.key)) {
+      continue
+    }
+
+    seen.add(chip.key)
+    unique.push(chip)
+  }
+
+  return unique
+}
+
+const buildTrayMatchups = (
+  sceneTone: SceneTone,
+  items: readonly SceneSpawnable[],
+): {
+  itemKeys: readonly TileMatchKeys[]
+  matchups: Map<string, SpawnTrayMatchups>
+} => {
+  const species = ecosystemSpecies(sceneTone)
+  const itemByKey = new Map<string, SceneSpawnable>()
+  const itemKeys: TileMatchKeys[] = []
+
+  for (const item of items) {
+    itemByKey.set(item.id, item)
+
+    if (item.species) {
+      itemByKey.set(item.species, item)
+    }
+  }
+
+  if (species) {
+    for (const item of items) {
+      const speciesId = item.species ?? item.id
+      const definition = species[speciesId]
+      const keys = new Set<string>([item.id, speciesId])
+
+      for (const tag of definition?.tags ?? []) {
+        keys.add(tag)
+      }
+
+      itemKeys.push({ id: item.id, keys })
+    }
+  }
+
+  const chipFor = (key: string): MatchupChip => {
+    const item = itemByKey.get(key)
+
+    return {
+      icon: item?.icon,
+      key,
+      label: item?.label ?? labelFromKey(key),
+    }
+  }
+
+  const matchups = new Map<string, SpawnTrayMatchups>()
+
+  if (!species) {
+    return { itemKeys, matchups }
+  }
+
+  for (const item of items) {
+    const speciesId = item.species ?? item.id
+    const definition = species[speciesId]
+    const strong = uniqueMatchupChips((definition?.strongVs ?? []).map(chipFor))
+    const weak = uniqueMatchupChips((definition?.weakTo ?? []).map(chipFor))
+
+    if (strong.length > 0 || weak.length > 0) {
+      matchups.set(item.id, { strong, weak })
+    }
+  }
+
+  return { itemKeys, matchups }
+}
+
+const matchupSummary = (chips: readonly MatchupChip[]) =>
+  chips.length > 0 ? chips.map((chip) => chip.label).join(', ') : 'nothing yet'
 
 const rememberedPositions: Partial<Record<TrayLayout, TrayPosition>> = {}
 
@@ -174,8 +317,31 @@ export function SpawnTray({
   const narrow = useSyncExternalStore(subscribeNarrow, readNarrow, () => false)
   const [dragging, setDragging] = useState(false)
   const [edges, setEdges] = useState({ end: false, start: false })
+  const [showMatchups, setShowMatchups] = useState(false)
+  const [selectedMatchupId, setSelectedMatchupId] = useState<string | null>(null)
   const focusFirstTileRef = useRef(false)
   const items = sceneSpawnablesByScene[sceneTone] ?? sceneSpawnablesByScene.classic
+  const matchupData = useMemo(() => buildTrayMatchups(sceneTone, items), [items, sceneTone])
+  const tileMatchups = matchupData.matchups
+  const tileKeysById = useMemo(
+    () => new Map(matchupData.itemKeys.map((entry) => [entry.id, entry.keys])),
+    [matchupData.itemKeys],
+  )
+  const hasMatchups = tileMatchups.size > 0
+  const matchupsVisible = hasMatchups && showMatchups
+  const firstMatchupId = tileMatchups.keys().next().value as string | undefined
+  const selectedMatchup =
+    matchupsVisible && selectedMatchupId && tileMatchups.has(selectedMatchupId)
+      ? selectedMatchupId
+      : matchupsVisible
+        ? (firstMatchupId ?? null)
+        : null
+  const selectedMatchupItem = selectedMatchup
+    ? items.find((item) => item.id === selectedMatchup)
+    : null
+  const selectedMatchups = selectedMatchup ? tileMatchups.get(selectedMatchup) : null
+  const selectedStrongKeys = new Set(selectedMatchups?.strong.map((chip) => chip.key) ?? [])
+  const selectedWeakKeys = new Set(selectedMatchups?.weak.map((chip) => chip.key) ?? [])
   const total = items.reduce((sum, item) => sum + (counts[item.id] ?? 0), 0)
   const layout: TrayLayout = prefs.layout ?? (narrow ? 'bar' : 'float')
   const milestone = spawnMilestoneByScene[sceneTone]
@@ -183,6 +349,13 @@ export function SpawnTray({
   const milestoneNear = milestone ? milestoneProgress >= milestone.at - 5 : false
 
   const updatePrefs = useCallback((next: Partial<TrayPrefs>) => writePrefs(next), [])
+
+  const selectMatchup = useCallback((item: SceneSpawnable, matchups: SpawnTrayMatchups) => {
+    setSelectedMatchupId(item.id)
+    setAnnouncement(
+      `${item.label} matchups. Beats ${matchupSummary(matchups.strong)}. Weak to ${matchupSummary(matchups.weak)}.`,
+    )
+  }, [])
 
   const close = useCallback(
     (returnFocus: boolean) => {
@@ -284,6 +457,16 @@ export function SpawnTray({
       setPanelStyle({ visibility: 'hidden' })
     }
   }, [align, layout, open, prefs.side, sceneTone])
+
+  useLayoutEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const frame = window.requestAnimationFrame(() => placeRef.current())
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [matchupsVisible, open, selectedMatchup])
 
   useEffect(() => {
     if (!open || !focusFirstTileRef.current || panelStyle.visibility === 'hidden') {
@@ -498,6 +681,7 @@ export function SpawnTray({
               className="spawnTray"
               data-dragging={dragging || undefined}
               data-layout={layout}
+              data-matchups={matchupsVisible || undefined}
               data-see-through={prefs.seeThrough || undefined}
               data-side={layout === 'side' ? prefs.side : undefined}
               id={panelId}
@@ -527,6 +711,36 @@ export function SpawnTray({
                 </button>
                 <p className="spawnTrayTitle">Spawn stuff</p>
                 <div className="spawnTrayTools">
+                  {hasMatchups ? (
+                    <button
+                      aria-label={matchupsVisible ? 'Hide matchups' : 'Show matchups'}
+                      aria-pressed={matchupsVisible}
+                      className="spawnTrayTool"
+                      onClick={() => {
+                        const next = !showMatchups
+
+                        setShowMatchups(next)
+
+                        if (next && firstMatchupId) {
+                          setSelectedMatchupId(firstMatchupId)
+                          const item = items.find((entry) => entry.id === firstMatchupId)
+                          const matchups = tileMatchups.get(firstMatchupId)
+
+                          if (item && matchups) {
+                            setAnnouncement(
+                              `Matchups on. ${item.label} selected. Beats ${matchupSummary(matchups.strong)}. Weak to ${matchupSummary(matchups.weak)}.`,
+                            )
+                          }
+                        } else if (!next) {
+                          setAnnouncement('Matchups off. Tap creatures to spawn them.')
+                        }
+                      }}
+                      title={matchupsVisible ? 'Hide matchups' : 'Show matchups'}
+                      type="button"
+                    >
+                      <Swords aria-hidden="true" size={15} strokeWidth={2.2} />
+                    </button>
+                  ) : null}
                   <div aria-label="Tray layout" className="spawnTrayLayouts" role="group">
                     {layoutOptions.map((option) => {
                       const Icon = option.icon
@@ -569,6 +783,12 @@ export function SpawnTray({
                   </button>
                 </div>
               </div>
+              {matchupsVisible ? (
+                <div className="spawnTrayMatchupBanner">
+                  <strong>Matchups</strong>
+                  <span>Tap a creature to inspect.</span>
+                </div>
+              ) : null}
               <div
                 className="spawnTrayGrid"
                 data-edge-end={edges.end || undefined}
@@ -580,13 +800,45 @@ export function SpawnTray({
                 {items.map((item) => {
                   const count = counts[item.id] ?? 0
                   const pulseKey = pulse?.id === item.id ? pulse.n : 0
+                  const matchups = tileMatchups.get(item.id)
+                  const itemKeys =
+                    tileKeysById.get(item.id) ?? new Set([item.id, item.species ?? item.id])
+                  const relation = selectedMatchup
+                    ? [...itemKeys].some((key) => selectedStrongKeys.has(key))
+                      ? 'strong'
+                      : [...itemKeys].some((key) => selectedWeakKeys.has(key))
+                        ? 'weak'
+                        : item.id === selectedMatchup
+                          ? 'selected'
+                          : undefined
+                    : undefined
 
                   return (
                     <button
-                      aria-label={`Spawn ${item.label.toLowerCase()}${count ? `, ${count} on the scene` : ''}`}
+                      aria-label={
+                        matchupsVisible
+                          ? `Inspect ${item.label.toLowerCase()} matchups`
+                          : `Spawn ${item.label.toLowerCase()}${count ? `, ${count} on the scene` : ''}`
+                      }
+                      aria-pressed={matchupsVisible ? item.id === selectedMatchup : undefined}
                       className="spawnTrayTile"
+                      data-matchup-relation={relation}
+                      data-selected={
+                        matchupsVisible && item.id === selectedMatchup ? '' : undefined
+                      }
                       key={item.id}
                       onClick={() => {
+                        if (matchupsVisible) {
+                          if (matchups) {
+                            selectMatchup(item, matchups)
+                          } else {
+                            setSelectedMatchupId(null)
+                            setAnnouncement(`${item.label} has no matchup data yet.`)
+                          }
+
+                          return
+                        }
+
                         onSpawn(item)
                         setAnnouncement(
                           `${item.label} added, ${count + (item.burst ?? 1)} on the scene`,
@@ -617,6 +869,11 @@ export function SpawnTray({
                           {count}
                         </span>
                       ) : null}
+                      {relation === 'strong' || relation === 'weak' ? (
+                        <span aria-hidden="true" className="spawnTrayRelationBadge">
+                          {relation === 'strong' ? '▲' : '▼'}
+                        </span>
+                      ) : null}
                     </button>
                   )
                 })}
@@ -642,13 +899,75 @@ export function SpawnTray({
                   </span>
                 </div>
               ) : null}
+              {matchupsVisible ? (
+                selectedMatchupItem && selectedMatchups ? (
+                  <section
+                    aria-label={`${selectedMatchupItem.label} matchups`}
+                    className="spawnTrayMatchupDetail"
+                  >
+                    <div className="spawnTrayMatchupDetailHeader">
+                      <span className="spawnTrayMatchupDetailIcon">
+                        <Image
+                          alt=""
+                          aria-hidden="true"
+                          height={40}
+                          src={selectedMatchupItem.icon}
+                          unoptimized
+                          width={40}
+                        />
+                      </span>
+                      <div className="spawnTrayMatchupDetailTitle">
+                        <span>Inspecting</span>
+                        <strong>{selectedMatchupItem.label}</strong>
+                      </div>
+                    </div>
+                    {[
+                      { chips: selectedMatchups.strong, label: 'Beats', tone: 'strong' },
+                      { chips: selectedMatchups.weak, label: 'Weak to', tone: 'weak' },
+                    ].map(({ chips, label, tone }) => (
+                      <div className="spawnTrayMatchupDetailRow" data-tone={tone} key={label}>
+                        <span className="spawnTrayMatchupDetailLabel">{label}</span>
+                        <span className="spawnTrayMatchupDetailList">
+                          {chips.length > 0 ? (
+                            chips.map((chip) => (
+                              <span className="spawnTrayMatchupPill" key={chip.key}>
+                                {chip.icon ? (
+                                  <Image
+                                    alt=""
+                                    aria-hidden="true"
+                                    height={18}
+                                    src={chip.icon}
+                                    unoptimized
+                                    width={18}
+                                  />
+                                ) : null}
+                                <span>{chip.label}</span>
+                              </span>
+                            ))
+                          ) : (
+                            <span className="spawnTrayMatchupEmpty">None listed</span>
+                          )}
+                        </span>
+                      </div>
+                    ))}
+                  </section>
+                ) : (
+                  <div className="spawnTrayMatchupEmptyCard">
+                    Tap a creature to see its matchups.
+                  </div>
+                )
+              ) : null}
               <div className="spawnTrayFooter">
                 <span className="spawnTrayHint">
-                  {total > 0
-                    ? `${total} on the scene`
-                    : layout === 'bar' && edges.end
-                      ? 'Swipe for more'
-                      : 'Tap anything to add it'}
+                  {matchupsVisible
+                    ? selectedMatchupItem
+                      ? `${selectedMatchupItem.label} selected`
+                      : 'Tap a creature to inspect'
+                    : total > 0
+                      ? `${total} on the scene`
+                      : layout === 'bar' && edges.end
+                        ? 'Swipe for more'
+                        : 'Tap anything to add it'}
                 </span>
                 <button
                   className="spawnTrayClear"

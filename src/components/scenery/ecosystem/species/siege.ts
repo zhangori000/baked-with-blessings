@@ -124,8 +124,8 @@ function leadTarget(foe: EcoEntity, originX: number, originY: number, speed: num
   return { aimX, aimY, seconds: Math.hypot(aimX - originX, aimY - originY) / speed }
 }
 
-function hurt(dragon: EcoEntity, world: EcoWorld, amount = 1, wake = false) {
-  dragon.hp -= amount
+function hurt(dragon: EcoEntity, world: EcoWorld, amount = 1, wake = false, attacker?: EcoEntity) {
+  dragon.hp -= amount * (attacker ? world.edge(attacker, dragon) : 1)
   dragon.data.hurt = 0.45
   dragon.fx = 'hurt'
 
@@ -150,7 +150,9 @@ const cottageSpecies = (assets: readonly string[]): EcoSpecies => ({
     '--siege-fizzle': (entity.data.fizzleUntil ?? 0) > world.time ? '1' : '0',
     '--siege-shield': shielded(entity, world) ? '1' : '0',
   }),
+  strongVs: ['princess'],
   tags: ['building', 'fuel', 'target'],
+  weakTo: ['dragon', 'dark-lord', 'fireball'],
   tick() {},
 })
 
@@ -162,7 +164,9 @@ const pennant: EcoSpecies = {
   layer: 'front',
   size: [3, 3.8],
   state: 'stand',
+  strongVs: ['knight'],
   tags: ['fuel', 'target'],
+  weakTo: ['dragon', 'fireball'],
   tick() {},
 }
 
@@ -190,7 +194,9 @@ const dragon: EcoSpecies = {
   layer: 'front',
   size: [5, 6.4],
   state: 'patrol',
+  strongVs: ['knight', 'building'],
   tags: ['dragon'],
+  weakTo: ['archer', 'ballista', 'wizard', 'projectile', 'treasure'],
   tick(entity, world, dt) {
     const unit = world.unit
     entity.data.angry = Math.max(0, (entity.data.angry ?? 0) - dt)
@@ -445,7 +451,9 @@ const fireball: EcoSpecies = {
   layer: 'front',
   size: [1.8, 2.2],
   state: 'fly',
-  tags: ['fireball'],
+  strongVs: ['archer', 'building', 'burnable', 'princess'],
+  tags: ['fireball', 'projectile', 'fire'],
+  weakTo: ['knight', 'wizard'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -494,7 +502,7 @@ const fireball: EcoSpecies = {
       unit * 2.6,
     )
 
-    if (blocker && Math.random() < 0.75) {
+    if (blocker && Math.random() < Math.min(0.95, 0.75 * world.edge(blocker, entity))) {
       blocker.fx = 'block'
       blocker.data.block = 0.5
       world.kill(entity)
@@ -502,7 +510,9 @@ const fireball: EcoSpecies = {
     }
 
     for (const other of world.within(entity.x, world.groundY, unit * 1.9, isHazardTarget(world))) {
-      if (other.species === 'wizard' && Math.random() < 0.9) {
+      const edge = world.edge(entity, other)
+
+      if (other.species === 'wizard' && Math.random() < 0.9 / edge) {
         const direction = entity.x >= other.x ? -1 : 1
 
         spawnCast(world, other.x, other.y - world.heightOf(other) * 0.55, 2.4, 'blink', 0.55)
@@ -518,11 +528,13 @@ const fireball: EcoSpecies = {
       } else if (world.has(other, 'fuel')) {
         other.data.burn = Math.max(other.data.burn ?? 0, 0.01)
       } else if (world.has(other, 'knight') && other.hp > 1) {
-        other.hp -= 1
+        other.hp -= world.edge(entity, other)
         other.fx = 'hurt'
         other.data.block = 0.45
-      } else {
+      } else if (Math.random() < Math.min(0.96, 0.72 * edge)) {
         world.kill(other)
+      } else {
+        other.fx = 'hurt'
       }
     }
 
@@ -545,7 +557,9 @@ const knight: EcoSpecies = {
   layer: 'front',
   size: [2.8, 3.4],
   state: 'march',
+  strongVs: ['archer', 'dark-lord', 'fireball'],
   tags: ['knight', 'target'],
+  weakTo: ['dragon', 'wizard'],
   tick(entity, world, dt) {
     const unit = world.unit
     entity.data.cool = (entity.data.cool ?? 0) - dt
@@ -571,7 +585,7 @@ const knight: EcoSpecies = {
         )
 
         if (foe) {
-          hurt(foe, world, foe.state === 'sleep' ? 2 : 1, foe.state === 'sleep')
+          hurt(foe, world, foe.state === 'sleep' ? 2 : 1, foe.state === 'sleep', entity)
         } else {
           const lord = world.nearest(
             { x: entity.x, y: entity.y - entity.lift - world.heightOf(entity) },
@@ -580,7 +594,7 @@ const knight: EcoSpecies = {
           )
 
           if (lord) {
-            hitDarkLord(lord, world, 1, entity.x)
+            hitDarkLord(lord, world, 1, entity.x, entity)
           }
         }
       }
@@ -721,7 +735,9 @@ const prince: EcoSpecies = {
   asset: ecoAsset('prince'),
   countAs: 'frog-prince',
   size: [2.7, 3.3],
+  strongVs: ['dark-lord'],
   tags: ['knight', 'prince', 'target'],
+  weakTo: ['dragon', 'wizard'],
   tick(entity, world, dt) {
     if (entity.fx === 'sparkle' && entity.age > 1.4) {
       entity.fx = ''
@@ -740,7 +756,9 @@ const archer: EcoSpecies = {
   layer: 'front',
   size: [2.6, 3.2],
   state: 'patrol',
+  strongVs: ['dragon'],
   tags: ['burnable', 'target'],
+  weakTo: ['knight', 'dark-lord', 'fireball'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -808,7 +826,9 @@ const arrow: EcoSpecies = {
   layer: 'front',
   size: [2, 2.4],
   state: 'fly',
-  tags: [],
+  strongVs: ['dragon'],
+  tags: ['projectile'],
+  weakTo: ['knight'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -827,7 +847,7 @@ const arrow: EcoSpecies = {
     const foe = world.nearest(entity, isDragonOrLord(world), unit * 5)
 
     if (foe && Math.hypot(foe.x - entity.x, foe.y - entity.y) < world.widthOf(foe) * 0.46) {
-      hurtDragonOrLord(foe, world, 1, false, entity.x)
+      hurtDragonOrLord(foe, world, 1, false, entity.x, entity)
       world.remove(entity)
       return
     }
@@ -857,7 +877,9 @@ const bolt: EcoSpecies = {
   layer: 'front',
   size: [2.8, 3.5],
   state: 'fly',
+  strongVs: ['dragon'],
   tags: ['projectile'],
+  weakTo: ['wizard'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -887,6 +909,7 @@ const bolt: EcoSpecies = {
         1,
         foe.state === 'sleep' && (entity.data.magic ?? 0) <= 0,
         entity.x,
+        entity,
       )
 
       if ((entity.data.knock ?? 0) > 0) {
@@ -937,7 +960,9 @@ const unicorn: EcoSpecies = {
   particles: sparkleTrail,
   size: [4.2, 5.2],
   state: 'gallop',
+  strongVs: ['fire'],
   tags: ['unicorn', 'target'],
+  weakTo: ['dragon'],
   tick(entity, world, dt) {
     const unit = world.unit
     const incoming = incomingFireball(entity, world, 5)
@@ -976,7 +1001,9 @@ const frogPrince: EcoSpecies = {
   layer: 'front',
   size: [2, 2.6],
   state: 'sit',
-  tags: ['burnable', 'target'],
+  strongVs: ['fireball'],
+  tags: ['frog', 'prince', 'burnable', 'target'],
+  weakTo: ['princess', 'dragon'],
   tick(entity, world) {
     const unit = world.unit
 
@@ -1029,7 +1056,9 @@ const princess: EcoSpecies = {
   layer: 'front',
   size: [2.5, 3.1],
   state: 'stroll',
+  strongVs: ['frog-prince'],
   tags: ['princess', 'target', 'burnable'],
+  weakTo: ['dragon'],
   tick(entity, world, dt) {
     const unit = world.unit
     const lowDragon = world.nearest(
@@ -1295,12 +1324,18 @@ function spawnBeam(
   return beam
 }
 
-function hitDarkLord(entity: EcoEntity, world: EcoWorld, amount = 1, sourceX = entity.x) {
+function hitDarkLord(
+  entity: EcoEntity,
+  world: EcoWorld,
+  amount = 1,
+  sourceX = entity.x,
+  attacker?: EcoEntity,
+) {
   if (entity.dying || entity.removed || entity.species !== 'dark-lord') {
     return
   }
 
-  entity.hp -= amount
+  entity.hp -= amount * (attacker ? world.edge(attacker, entity) : 1)
   entity.data.hurt = 0.55
   entity.fx = 'hurt'
   spawnImpact(world, entity.x, entity.y - world.heightOf(entity) * 0.6, 2.8, 'curse-hit', 0.58)
@@ -1333,11 +1368,12 @@ function hurtDragonOrLord(
   amount = 1,
   wake = false,
   sourceX = foe.x,
+  attacker?: EcoEntity,
 ) {
   if (world.has(foe, 'dragon')) {
-    hurt(foe, world, amount, wake)
+    hurt(foe, world, amount, wake, attacker)
   } else if (foe.species === 'dark-lord') {
-    hitDarkLord(foe, world, amount, sourceX)
+    hitDarkLord(foe, world, amount, sourceX, attacker)
   }
 }
 
@@ -1372,7 +1408,10 @@ function duelSnapshot(world: EcoWorld, lord: EcoEntity) {
       !other.dying &&
       !other.removed,
   )
-  const good = challengers.reduce((sum, other) => sum + wizardTypeFor(other).strength, 0)
+  const good = challengers.reduce(
+    (sum, other) => sum + wizardTypeFor(other).strength * world.edge(other, lord),
+    0,
+  )
   const dark = 2.25 + Math.max(0, lord.hp - 1) * 0.13
   const average = challengers.reduce(
     (point, other) => {
@@ -1507,7 +1546,7 @@ function releaseWizardSpell(entity: EcoEntity, world: EcoWorld) {
     for (const foe of foes) {
       spawnBeam(world, 'duel-beam-good', origin, bodyPoint(foe, world), 0.22)
       spawnImpact(world, foe.x, foe.y - world.heightOf(foe) * 0.2, 2.7, 'lightning', 0.5)
-      hurtDragonOrLord(foe, world, 1, foe.state === 'sleep', entity.x)
+      hurtDragonOrLord(foe, world, 1, foe.state === 'sleep', entity.x, entity)
     }
   } else if (entity.state === 'fire-lance') {
     const foe = world.byId(entity.targetId)
@@ -1522,6 +1561,7 @@ function releaseWizardSpell(entity: EcoEntity, world: EcoWorld) {
         foe.species === 'dark-lord' ? 1 : 0.85,
         foe.state === 'sleep',
         entity.x,
+        entity,
       )
       foe.vx += Math.sign(foe.x - entity.x || entity.facing) * unit * 4.6
       foe.vy -= unit * 1.2
@@ -1616,7 +1656,9 @@ const wizard: EcoSpecies = {
       '--wizard-rune': type.rune,
     }
   },
+  strongVs: ['dragon', 'dark-lord', 'fireball'],
   tags: ['wizard', 'target', 'burnable'],
+  weakTo: ['archer'],
   tick(entity, world, dt) {
     const unit = world.unit
     const type = wizardTypeFor(entity)
@@ -1821,7 +1863,9 @@ const darkLord: EcoSpecies = {
   layer: 'front',
   size: [3, 3.7],
   state: 'stalk',
+  strongVs: ['princess', 'unicorn'],
   tags: ['dark-lord', 'burnable'],
+  weakTo: ['wizard', 'archer', 'knight'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -1909,7 +1953,10 @@ const darkLord: EcoSpecies = {
           spawnBeam(world, 'duel-beam-dark', origin, targetPoint, 0.24)
           spawnImpact(world, targetPoint.x, targetPoint.y, 2.8, 'curse', 0.58)
 
-          if (entity.state === 'curse') {
+          if (
+            entity.state === 'curse' &&
+            Math.random() < Math.min(0.96, 0.68 * world.edge(entity, target))
+          ) {
             world.kill(target)
           } else if (world.has(target, 'fuel')) {
             target.data.burn = Math.max(target.data.burn ?? 0, 0.01)
@@ -1988,7 +2035,9 @@ const ballista: EcoSpecies = {
   layer: 'front',
   size: [3.8, 4.6],
   state: 'ready',
+  strongVs: ['dragon'],
   tags: ['fuel', 'target'],
+  weakTo: ['dark-lord', 'fireball'],
   tick(entity, world, dt) {
     const unit = world.unit
     entity.data.cool = (entity.data.cool ?? 0) - dt
@@ -2049,7 +2098,9 @@ const treasure: EcoSpecies = {
   layer: 'front',
   size: [2.7, 3.4],
   state: 'gleam',
+  strongVs: ['dragon'],
   tags: ['treasure', 'fuel', 'target'],
+  weakTo: ['dark-lord', 'fireball'],
   tick(entity, world) {
     const looted = world.nearest(
       entity,

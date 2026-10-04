@@ -34,9 +34,11 @@ Code lives in `src/components/scenery/ecosystem/`:
 
 Tags decide who interacts with whom: `fuel` catches fire and burns down, `burnable` dies on touching fire, and `target` can be picked and hit by dragons. Tray tiles use `kind: 'creature'` with a `species` id, and the counts come from the engine.
 
+Every creature also has strengths and weaknesses, like a gentle Pokémon-style triangle. A species lists `strongVs` and `weakTo` (species ids or tags), and `world.matchup(attacker, defender)` returns `strong`, `weak` or `even`; `world.edge()` turns that into a multiplier (1.6, 1 or 0.5). A strong matchup hits harder or catches more often; a weak one is more likely to miss, flee, get blocked or lose a duel. For example, in Dawn a lone hawk beats bunnies, but a crow flock beats the hawk.
+
 ## The tray
 
-The tray can be dragged by its header (or moved with the arrow keys on the grip; Home puts it back). Visitors can pick a layout: a grid, one scrollable row (the default on phones), or a side panel that docks to either edge. A see-through toggle lets them watch the scene behind it. The layout, the side and see-through are saved in the browser (`baked-with-blessings-spawn-tray`); the dragged position lasts until the page reloads.
+The tray can be dragged by its header (or moved with the arrow keys on the grip; Home puts it back). Visitors can pick a layout: a grid, one scrollable row (the default on phones), or a side panel that docks to either edge. A see-through toggle lets them watch the scene behind it. The swords toggle switches the tray to Matchups mode: tapping a tile inspects that creature instead of spawning it, a card shows what it beats and what it is weak to, and the other tiles are marked ▲ (it beats them) or ▼ (they beat it). The layout, the side and see-through are saved in the browser (`baked-with-blessings-spawn-tray`); the dragged position lasts until the page reloads.
 
 A scenery can tease a milestone in the tray (`spawnMilestoneByScene` in `spawnables.ts`). Species bump a running count with `world.tally(key)` and clear it with `world.resetTally(key)`; the tray shows the progress bar and switches to "Something big is coming…" for the last five. Moonlit and Dino valley use it for the 25th-star asteroid.
 

@@ -116,7 +116,9 @@ const dandelion: EcoSpecies = {
   },
   size: [2.2, 2.9],
   state: 'grow',
+  strongVs: ['carrot'],
   tags: ['plant', 'fuel'],
+  weakTo: ['crow', 'hedgehog', 'fire'],
   tick(entity, world, dt) {
     entity.data.water = Math.max(0, (entity.data.water ?? 0) - dt)
     const watered = (entity.data.water ?? 0) > 0
@@ -243,7 +245,9 @@ const carrot: EcoSpecies = {
   },
   size: [1.8, 2.3],
   state: 'grow',
+  strongVs: ['dandelion'],
   tags: ['plant', 'carrot', 'fuel'],
+  weakTo: ['bunny', 'crow'],
   tick(entity, world, dt) {
     entity.data.water = Math.max(0, (entity.data.water ?? 0) - dt)
     const watered = (entity.data.water ?? 0) > 0
@@ -296,7 +300,9 @@ const bunny: EcoSpecies = {
   layer: 'front',
   size: [2.4, 3],
   state: 'graze',
+  strongVs: ['carrot', 'plant'],
   tags: ['bunny', 'prey', 'burnable'],
+  weakTo: ['hawk', 'fox'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -601,7 +607,9 @@ const hawk: EcoSpecies = {
   layer: 'front',
   size: [3.6, 4.4],
   state: 'soar',
+  strongVs: ['bunny', 'balloon'],
   tags: ['hawk', 'predator'],
+  weakTo: ['crow', 'scarecrow'],
   tick(entity, world, dt) {
     const unit = world.unit
     const guard = scarecrowAirGuard(world, entity)
@@ -704,12 +712,14 @@ const hawk: EcoSpecies = {
       if (gap < unit * 1.3) {
         entity.targetId = null
 
+        const edge = world.edge(entity, prey)
+
         if (world.has(prey, 'balloon')) {
           world.setState(prey, 'popped')
-        } else if (prey.species === 'crow') {
+        } else if (prey.species === 'crow' && Math.random() < Math.min(0.92, 0.64 * edge)) {
           world.kill(prey)
           entity.data.hunger = 0
-        } else if (!(prey.state === 'flee' && Math.random() < 0.3)) {
+        } else if (!(prey.state === 'flee' && Math.random() < Math.min(0.88, 1.1 / edge))) {
           entity.targetId = prey.id
           entity.data.zBoost = 4000
           entity.vy = -unit * 1.5
@@ -882,7 +892,9 @@ const crow: EcoSpecies = {
   layer: 'front',
   size: [2.15, 2.75],
   state: 'fly',
+  strongVs: ['hawk', 'carrot'],
   tags: ['prey', 'burnable'],
+  weakTo: ['fox', 'scarecrow'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -1091,7 +1103,9 @@ const fox: EcoSpecies = {
   layer: 'front',
   size: [3.2, 3.9],
   state: 'trot',
+  strongVs: ['crow', 'bunny'],
   tags: ['fox', 'predator', 'burnable'],
+  weakTo: ['hedgehog'],
   tick(entity, world, dt) {
     const unit = world.unit
     const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 6)
@@ -1186,7 +1200,11 @@ const fox: EcoSpecies = {
                 unit * 1.65,
               )
 
-        if (crowTarget && Math.abs(crowTarget.x - entity.x) < unit * 3.4) {
+        if (
+          crowTarget &&
+          Math.abs(crowTarget.x - entity.x) < unit * 3.4 &&
+          Math.random() < Math.min(0.96, 0.72 * world.edge(entity, crowTarget))
+        ) {
           entity.data.resolved = 1
           world.kill(crowTarget)
           entity.fx = ''
@@ -1203,12 +1221,16 @@ const fox: EcoSpecies = {
         if (bunnyTarget) {
           entity.data.resolved = 1
 
-          if (bunnyTarget.state === 'flee' && Math.random() < 0.52) {
+          const edge = world.edge(entity, bunnyTarget)
+
+          if (bunnyTarget.state === 'flee' && Math.random() < 0.52 / edge) {
             entity.fx = 'miss'
-          } else {
+          } else if (Math.random() < Math.min(0.95, 0.76 * edge)) {
             world.kill(bunnyTarget)
             entity.fx = ''
             entity.data.caught = 1
+          } else {
+            entity.fx = 'miss'
           }
         }
       }
@@ -1365,7 +1387,9 @@ const hedgehog: EcoSpecies = {
   layer: 'front',
   size: [2.2, 2.8],
   state: 'waddle',
+  strongVs: ['fox', 'seed'],
   tags: ['hedgehog', 'prey', 'burnable'],
+  weakTo: ['hawk', 'fire'],
   tick(entity, world, dt) {
     const unit = world.unit
     const threat = world.nearest(
@@ -1478,7 +1502,9 @@ const scarecrow: EcoSpecies = {
   style: (entity, world) => ({
     '--dawn-scarecrow-lean': `${(Math.sin(world.time * 0.9 + entity.id) * (entity.data.sway ?? 1.0)).toFixed(2)}deg`,
   }),
+  strongVs: ['crow', 'hawk'],
   tags: ['scarecrow', 'fuel'],
+  weakTo: ['fire', 'balloon'],
   tick(entity) {
     entity.tilt = Math.sin(entity.age * 0.7 + entity.id) * 1.8
   },
@@ -1497,7 +1523,9 @@ const balloon: EcoSpecies = {
   layer: 'front',
   size: [3.8, 5],
   state: 'float',
+  strongVs: ['scarecrow', 'plant', 'burnable'],
   tags: ['balloon'],
+  weakTo: ['hawk', 'crow'],
   tick(entity, world, dt) {
     const unit = world.unit
 

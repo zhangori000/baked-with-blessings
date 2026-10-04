@@ -74,6 +74,8 @@ export type EcoTag =
   | 'villager'
   | 'wizard'
 
+export type EcoMatchup = 'even' | 'strong' | 'weak'
+
 export type EcoEntity = {
   age: number
   anchor: EcoAnchor
@@ -134,6 +136,8 @@ export type EcoWorld = {
   hasSpecies(species: string): boolean
   heightOf(entity: EcoEntity): number
   kill(entity: EcoEntity): void
+  matchup(attacker: EcoEntity, defender: EcoEntity): EcoMatchup
+  edge(attacker: EcoEntity, defender: EcoEntity): number
   nearest(
     from: { x: number; y: number },
     test: (entity: EcoEntity) => boolean,
@@ -162,6 +166,8 @@ export type EcoSpecies = {
   rest?: (entity: EcoEntity, world: EcoWorld) => void
   size: readonly [number, number]
   state?: string
+  strongVs?: readonly string[]
+  weakTo?: readonly string[]
   style?: (entity: EcoEntity, world: EcoWorld) => Record<string, string>
   tags: readonly EcoTag[]
   tick: (entity: EcoEntity, world: EcoWorld, dt: number) => void

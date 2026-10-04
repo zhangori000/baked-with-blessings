@@ -39,8 +39,12 @@ const isLowPrey = (world: EcoWorld) => (other: EcoEntity) =>
 
 function eatIfClose(hunter: EcoEntity, prey: EcoEntity, world: EcoWorld, reach = 1.7) {
   const gap = Math.hypot(prey.x - hunter.x, prey.y - hunter.y)
+  const edge = world.edge(hunter, prey)
 
-  if (gap < world.unit * reach + world.widthOf(prey) * 0.35) {
+  if (
+    gap < world.unit * reach * Math.max(0.72, Math.min(1.18, edge)) + world.widthOf(prey) * 0.35 &&
+    Math.random() < Math.min(0.96, 0.7 * edge)
+  ) {
     world.kill(prey)
     hunter.targetId = null
     return true
@@ -129,7 +133,9 @@ const boat: EcoSpecies = {
   layer: 'front',
   size: [5.6, 6.8],
   state: 'row',
+  strongVs: ['lantern', 'swan'],
   tags: [],
+  weakTo: ['shooting-star', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
     const margin = world.width * 0.1
@@ -184,7 +190,9 @@ const lantern: EcoSpecies = {
   },
   size: [2.2, 2.8],
   state: 'rise',
+  strongVs: ['moth'],
   tags: ['lantern'],
+  weakTo: ['bat', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
     const sway = Math.sin(world.time * 0.7 + entity.id) * unit * 0.3
@@ -233,7 +241,9 @@ export const shootingStar: EcoSpecies = {
   style: (entity) => ({
     '--night-star-opacity': `${entity.data.opacity ?? 1}`,
   }),
+  strongVs: ['lantern', 'boat', 'swan', 'frog', 'bat', 'owl', 'insect'],
   tags: ['star'],
+  weakTo: ['cloud'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -346,7 +356,9 @@ const moth: EcoSpecies = {
   layer: 'front',
   size: [1.9, 2.4],
   state: 'orbit',
+  strongVs: ['lantern'],
   tags: ['insect', 'prey'],
+  weakTo: ['bat', 'owl', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
     let light = world.byId(entity.targetId)
@@ -397,7 +409,9 @@ const firefly: EcoSpecies = {
   style: (entity) => ({
     '--eco-glow': Math.pow(Math.max(0, Math.cos(entity.data.phase ?? 0)), 3).toFixed(2),
   }),
+  strongVs: ['moth', 'lantern'],
   tags: ['firefly', 'insect', 'prey'],
+  weakTo: ['bat', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
     const phase = entity.data.phase ?? 0
@@ -441,7 +455,9 @@ const owl: EcoSpecies = {
   layer: 'front',
   size: [3.4, 4.4],
   state: 'glide',
+  strongVs: ['bat', 'moth'],
   tags: ['owl', 'predator'],
+  weakTo: ['swan', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -533,7 +549,9 @@ const bat: EcoSpecies = {
   layer: 'front',
   size: [2.2, 3],
   state: 'flutter',
+  strongVs: ['moth', 'firefly', 'lantern'],
   tags: ['bat', 'predator'],
+  weakTo: ['owl', 'swan'],
   tick(entity, world, dt) {
     const unit = world.unit
     const owlThreat = world.nearest(entity, isOwl, unit * 20)
@@ -591,7 +609,9 @@ const swan: EcoSpecies = {
   layer: 'front',
   size: [4.2, 5.3],
   state: 'glide',
+  strongVs: ['bat', 'owl', 'frog'],
   tags: ['swan'],
+  weakTo: ['boat', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
     const margin = unit * 2
@@ -747,7 +767,9 @@ const lilyFrog: EcoSpecies = {
     '--frog-tongue': `${entity.data.tongue ?? 0}rem`,
     '--frog-tongue-angle': `${entity.data.tongueAngle ?? 0}deg`,
   }),
+  strongVs: ['moth', 'firefly', 'boat'],
   tags: ['frog', 'predator'],
+  weakTo: ['swan', 'owl'],
   tick(entity, world, dt) {
     const unit = world.unit
     entity.y = waterLine(entity, world) - unit * 0.1

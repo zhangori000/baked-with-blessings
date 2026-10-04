@@ -87,13 +87,23 @@ function clearTimedFx(entity: EcoEntity, dt: number) {
   }
 }
 
-function hurt(entity: EcoEntity, world: EcoWorld, amount = 1) {
+function hurt(entity: EcoEntity, world: EcoWorld, amount = 1, attacker?: EcoEntity) {
   if (!living(entity)) {
     return
   }
 
   if (world.has(entity, 'torii')) {
-    breakGate(entity, world)
+    if (attacker && world.edge(attacker, entity) < 1) {
+      entity.hp -= amount * world.edge(attacker, entity)
+      entity.fx = 'hurt'
+      entity.data.hurt = 0.35
+
+      if (entity.hp <= 0) {
+        breakGate(entity, world)
+      }
+    } else {
+      breakGate(entity, world)
+    }
     return
   }
 
@@ -102,7 +112,7 @@ function hurt(entity: EcoEntity, world: EcoWorld, amount = 1) {
     return
   }
 
-  entity.hp -= amount
+  entity.hp -= amount * (attacker ? world.edge(attacker, entity) : 1)
   entity.fx = 'hurt'
   entity.data.hurt = 0.35
 
@@ -279,7 +289,9 @@ const sakura: EcoSpecies = {
   },
   size: [3.7, 4.8],
   state: 'grow',
+  strongVs: ['tanuki'],
   tags: ['sakura', 'plant', 'fuel'],
+  weakTo: ['sheep', 'oni', 'fire'],
   tick(entity, world, dt) {
     entity.data.water = Math.max(0, (entity.data.water ?? 0) - dt)
     const watered = (entity.data.water ?? 0) > 0
@@ -347,7 +359,9 @@ const torii: EcoSpecies = {
   layer: 'front',
   size: [4.6, 5.6],
   state: 'stand',
+  strongVs: ['spirit'],
   tags: ['torii', 'building', 'target'],
+  weakTo: ['oni', 'monk'],
   tick(entity, world) {
     if (entity.state === 'collapse' && entity.t > 0.58) {
       world.kill(entity)
@@ -380,7 +394,9 @@ const monk: EcoSpecies = {
   layer: 'front',
   size: [3.7, 4.4],
   state: 'meditate',
+  strongVs: ['oni', 'torii'],
   tags: ['monk', 'target'],
+  weakTo: ['ninja'],
   tick(entity, world, dt) {
     clearTimedFx(entity, dt)
 
@@ -454,7 +470,9 @@ const kiBeam: EcoSpecies = {
   style: (entity) => ({
     '--blossom-beam-alpha': `${clamp(1 - Math.max(0, entity.t - 0.78) / 0.22, 0, 1)}`,
   }),
+  strongVs: ['oni', 'torii'],
   tags: ['beam', 'projectile'],
+  weakTo: ['tanuki'],
   tick(entity, world) {
     entity.tilt = entity.data.angle ?? 0
 
@@ -466,7 +484,7 @@ const kiBeam: EcoSpecies = {
         if (world.has(target, 'torii')) {
           breakGate(target, world)
         } else {
-          hurt(target, world, 4)
+          hurt(target, world, 4, entity)
         }
       }
     }
@@ -492,7 +510,9 @@ const oni: EcoSpecies = {
   layer: 'front',
   size: [4.8, 5.8],
   state: 'lumber',
+  strongVs: ['torii', 'sheep', 'tanuki'],
   tags: ['oni', 'predator', 'target'],
+  weakTo: ['monk', 'samurai', 'lantern', 'fox'],
   tick(entity, world, dt) {
     clearTimedFx(entity, dt)
 
@@ -532,7 +552,7 @@ const oni: EcoSpecies = {
         } else if (world.has(target, 'sheep')) {
           world.kill(target)
         } else {
-          hurt(target, world, 2)
+          hurt(target, world, 2, entity)
         }
       }
 
@@ -585,7 +605,9 @@ const samurai: EcoSpecies = {
   layer: 'front',
   size: [3.8, 4.6],
   state: 'patrol',
+  strongVs: ['ninja', 'oni'],
   tags: ['samurai', 'target'],
+  weakTo: ['monk'],
   tick(entity, world, dt) {
     clearTimedFx(entity, dt)
 
@@ -632,7 +654,7 @@ const samurai: EcoSpecies = {
 
       if (target && entity.t > 0.18 && !entity.data.hit) {
         entity.data.hit = 1
-        hurt(target, world, world.has(target, 'oni') ? 1 : 2)
+        hurt(target, world, world.has(target, 'oni') ? 1 : 2, entity)
       }
 
       if (entity.t > 0.52) {
@@ -710,7 +732,9 @@ const ninja: EcoSpecies = {
   layer: 'front',
   size: [3.1, 3.8],
   state: 'hidden',
+  strongVs: ['monk'],
   tags: ['ninja', 'target'],
+  weakTo: ['samurai', 'lantern'],
   tick(entity, world, dt) {
     clearTimedFx(entity, dt)
 
@@ -826,7 +850,9 @@ const shuriken: EcoSpecies = {
   layer: 'front',
   size: [0.9, 1.15],
   state: 'fly',
+  strongVs: ['monk', 'lantern', 'tanuki'],
   tags: ['projectile', 'shuriken'],
+  weakTo: ['samurai'],
   tick(entity, world, dt) {
     integrate(entity, dt)
     entity.tilt += dt * 720
@@ -866,7 +892,7 @@ const shuriken: EcoSpecies = {
     if (world.has(hit, 'lantern')) {
       world.kill(hit)
     } else {
-      hurt(hit, world, 1)
+      hurt(hit, world, 1, entity)
     }
 
     world.remove(entity)
@@ -884,7 +910,9 @@ const kitsune: EcoSpecies = {
   particles: { asset: foxfireAsset, count: 3, effect: 'sparkles' },
   size: [3.5, 4.5],
   state: 'trot',
+  strongVs: ['oni', 'torii', 'spirit'],
   tags: ['fox', 'spirit'],
+  weakTo: ['monk', 'samurai'],
   tick(entity, world, dt) {
     const unit = world.unit
     const ruin = world.nearest(entity, (other) => other.species === 'gate-ruin', unit * 56)
@@ -972,7 +1000,9 @@ const tanuki: EcoSpecies = {
   layer: 'front',
   size: [3.2, 4],
   state: 'wander',
+  strongVs: ['shuriken', 'beam'],
   tags: ['tanuki', 'prey', 'target'],
+  weakTo: ['lantern', 'oni'],
   tick(entity, world, dt) {
     clearTimedFx(entity, dt)
 
@@ -1043,7 +1073,9 @@ const crane: EcoSpecies = {
   layer: 'front',
   size: [3.8, 4.8],
   state: 'fly',
+  strongVs: ['torii'],
   tags: ['bird'],
+  weakTo: ['ninja', 'oni'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -1154,7 +1186,9 @@ const chochin: EcoSpecies = {
   layer: 'front',
   size: [2.3, 3.1],
   state: 'float',
+  strongVs: ['oni', 'ninja', 'tanuki'],
   tags: ['lantern'],
+  weakTo: ['shuriken'],
   tick(entity, world, dt) {
     wander(
       entity,
@@ -1179,7 +1213,9 @@ const sheep: EcoSpecies = {
   layer: 'front',
   size: [3.2, 4],
   state: 'graze',
+  strongVs: ['sakura'],
   tags: ['sheep', 'prey', 'burnable', 'target'],
+  weakTo: ['oni', 'ninja'],
   tick(entity, world, dt) {
     const unit = world.unit
     const threat = world.nearest(entity, (other) => world.has(other, 'oni'), unit * 12)

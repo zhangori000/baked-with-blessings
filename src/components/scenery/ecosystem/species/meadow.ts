@@ -155,7 +155,9 @@ const bee: EcoSpecies = {
   layer: 'front',
   size: [1.4, 1.8],
   state: 'seek',
+  strongVs: ['bear'],
   tags: ['insect', 'bee'],
+  weakTo: ['bird', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -182,7 +184,7 @@ const bee: EcoSpecies = {
       keepInSky(entity, world, world.skyTop, world.groundY - unit * 0.5)
 
       if (gap < unit * 1.2 && (bear.state === 'scoop' || bear.state === 'raid')) {
-        bear.data.stings = (bear.data.stings ?? 0) + dt
+        bear.data.stings = (bear.data.stings ?? 0) + dt * world.edge(entity, bear)
         bear.data.threatX = entity.x
         bear.fx = 'stung'
 
@@ -271,7 +273,9 @@ const butterfly: EcoSpecies = {
   layer: 'front',
   size: [2, 2.6],
   state: 'seek',
+  strongVs: ['plant'],
   tags: ['insect', 'butterfly'],
+  weakTo: ['bird', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -323,7 +327,9 @@ const caterpillar: EcoSpecies = {
   layer: 'front',
   size: [1.8, 2.2],
   state: 'crawl',
+  strongVs: ['plant'],
   tags: ['insect', 'caterpillar', 'burnable'],
+  weakTo: ['bird', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -405,7 +411,9 @@ const bird: EcoSpecies = {
   layer: 'front',
   size: [2, 2.5],
   state: 'fly',
+  strongVs: ['butterfly', 'caterpillar', 'frog'],
   tags: ['bird'],
+  weakTo: ['cat', 'bee'],
   tick(entity, world, dt) {
     const unit = world.unit
     const perchY = world.groundY + (entity.data.depth ?? 0) - world.heightOf(entity) * 0.4
@@ -484,23 +492,29 @@ const bird: EcoSpecies = {
       if (gap < unit * 0.9) {
         entity.targetId = null
 
-        if (world.has(prey, 'frog') && Math.random() > 0.42) {
+        const edge = world.edge(entity, prey)
+
+        if (world.has(prey, 'frog') && Math.random() > 0.42 * edge) {
           prey.fx = 'startled'
           entity.targetId = null
           world.setState(entity, 'fly')
           return
         }
 
-        if (world.has(prey, 'bee') && Math.random() < 0.35) {
+        if (world.has(prey, 'bee') && Math.random() < 0.35 / edge) {
           prey.data.rest = 3
           world.setState(entity, 'dazed')
           return
         }
 
-        world.kill(prey)
+        const caught = Math.random() < Math.min(0.96, 0.72 * edge)
+
+        if (caught) {
+          world.kill(prey)
+        }
         entity.tilt = 0
-        entity.data.hunger = 0
-        entity.data.meals = (entity.data.meals ?? 0) + 1
+        entity.data.hunger = caught ? 0 : 0.55
+        entity.data.meals = (entity.data.meals ?? 0) + (caught ? 1 : 0)
 
         if (
           (entity.data.meals ?? 0) >= 3 &&
@@ -592,7 +606,9 @@ const beehive: EcoSpecies = {
   style: (entity) => ({
     '--hive-honey': `${clamp((entity.data.honey ?? 0) / hiveCapacity, 0, 1).toFixed(2)}`,
   }),
+  strongVs: ['plant'],
   tags: ['beehive', 'fuel', 'burnable'],
+  weakTo: ['bear'],
   tick(entity, world) {
     const honey = clamp(entity.data.honey ?? 0, 0, hiveCapacity)
 
@@ -650,7 +666,9 @@ const frog: EcoSpecies = {
   style: (entity) => ({
     '--frog-tongue': `${Math.max(18, entity.data.tongueReach ?? 42).toFixed(1)}px`,
   }),
+  strongVs: ['insect'],
   tags: ['frog', 'predator', 'prey', 'burnable'],
+  weakTo: ['cat', 'bird'],
   tick(entity, world, dt) {
     const unit = world.unit
     const raining = Boolean(
@@ -704,7 +722,11 @@ const frog: EcoSpecies = {
       if (entity.t > 0.16 && (entity.data.ate ?? 0) <= 0) {
         entity.data.ate = 1
 
-        if (prey && isFrogPrey(world)(prey)) {
+        if (
+          prey &&
+          isFrogPrey(world)(prey) &&
+          Math.random() < Math.min(0.96, 0.68 * world.edge(entity, prey))
+        ) {
           world.kill(prey)
         }
       }
@@ -788,7 +810,9 @@ const mouse: EcoSpecies = {
   },
   size: [1.55, 1.95],
   state: 'scurry',
+  strongVs: ['plant'],
   tags: ['mouse', 'prey', 'burnable'],
+  weakTo: ['cat', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
     const cat = world.nearest(
@@ -937,7 +961,9 @@ const bear: EcoSpecies = {
   },
   size: [3.8, 4.7],
   state: 'wander',
+  strongVs: ['cat', 'beehive'],
   tags: ['bear', 'predator', 'burnable'],
+  weakTo: ['bee'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -1058,7 +1084,9 @@ const cat: EcoSpecies = {
   layer: 'front',
   size: [3, 3.6],
   state: 'prowl',
+  strongVs: ['mouse', 'frog', 'bird'],
   tags: ['cat', 'burnable'],
+  weakTo: ['bear'],
   tick(entity, world, dt) {
     const unit = world.unit
     const bearThreat = world.hasSpecies('bear')
@@ -1131,9 +1159,10 @@ const cat: EcoSpecies = {
         if (prey) {
           const preyY = prey.anchor === 'bottom' ? prey.y - world.heightOf(prey) * 0.35 : prey.y
           const close = Math.hypot(entity.x - prey.x, entity.y - entity.lift - preyY) < unit * 2.1
-          const slipperyFrog = world.has(prey, 'frog') && Math.random() > 0.52
+          const edge = world.edge(entity, prey)
+          const slipperyFrog = world.has(prey, 'frog') && Math.random() > 0.52 * edge
 
-          if (close && !slipperyFrog) {
+          if (close && !slipperyFrog && Math.random() < Math.min(0.96, 0.72 * edge)) {
             world.kill(prey)
             entity.data.caught = 1
             entity.data.meals = (entity.data.meals ?? 0) + 1

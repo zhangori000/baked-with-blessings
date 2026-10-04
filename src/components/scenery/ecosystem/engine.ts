@@ -2,6 +2,7 @@ import { aspectOf } from './assets'
 import { between } from './behaviors'
 import type {
   EcoEntity,
+  EcoMatchup,
   EcoSpawnOptions,
   EcoSpecies,
   EcoSpeciesMap,
@@ -60,6 +61,38 @@ export class Ecosystem implements EcoWorld {
 
   has(entity: EcoEntity, tag: EcoTag) {
     return this.species[entity.species]?.tags.includes(tag) ?? false
+  }
+
+  private listed(list: readonly string[] | undefined, entity: EcoEntity) {
+    return (
+      list?.some(
+        (key) =>
+          key === entity.species || this.species[entity.species]?.tags.includes(key as EcoTag),
+      ) ?? false
+    )
+  }
+
+  matchup(attacker: EcoEntity, defender: EcoEntity): EcoMatchup {
+    const mine = this.species[attacker.species]
+    const theirs = this.species[defender.species]
+    const strong = this.listed(mine?.strongVs, defender) || this.listed(theirs?.weakTo, attacker)
+    const weak = this.listed(mine?.weakTo, defender) || this.listed(theirs?.strongVs, attacker)
+
+    if (strong && !weak) {
+      return 'strong'
+    }
+
+    if (weak && !strong) {
+      return 'weak'
+    }
+
+    return 'even'
+  }
+
+  edge(attacker: EcoEntity, defender: EcoEntity) {
+    const matchup = this.matchup(attacker, defender)
+
+    return matchup === 'strong' ? 1.6 : matchup === 'weak' ? 0.5 : 1
   }
 
   hasSpecies(species: string) {
