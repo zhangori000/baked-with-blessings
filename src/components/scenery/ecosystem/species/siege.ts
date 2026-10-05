@@ -606,6 +606,26 @@ function dragonFlameTarget(entity: EcoEntity, world: EcoWorld) {
   }
 }
 
+function dragonMouth(entity: EcoEntity, world: EcoWorld) {
+  const localX = world.widthOf(entity) * 0.46
+  const localY = -world.heightOf(entity) * 0.1
+  const angle = (entity.tilt * Math.PI) / 180
+  const turnedX = localX * Math.cos(angle) - localY * Math.sin(angle)
+  const turnedY = localX * Math.sin(angle) + localY * Math.cos(angle)
+
+  return {
+    x: entity.x + entity.facing * turnedX,
+    y: entity.y - entity.lift + turnedY,
+  }
+}
+
+function dragonBreathTilt(entity: EcoEntity, target: ReturnType<typeof dragonFlameTarget>) {
+  const dx = Math.abs(target.targetX - entity.x)
+  const dy = target.targetY - entity.y
+
+  return clamp((Math.atan2(dy, Math.max(1, dx)) * 180) / Math.PI - 18, 0, 34)
+}
+
 function tickDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, dt: number) {
   const unit = world.unit
   const target = dragonFlameTarget(entity, world)
@@ -616,14 +636,14 @@ function tickDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, dt: number) {
     const startX = entity.data.flameStartX ?? entity.x
     const startY = entity.data.flameStartY ?? entity.y
     const distance = Math.max(unit, Math.hypot(target.hoverX - startX, target.hoverY - startY))
-    const duration = clamp(distance / (unit * 13.5), 0.72, 1.55)
+    const duration = clamp(distance / (unit * 5.5), 1.7, 3.2)
     const progress = clamp((world.time - (entity.data.flameSwoopAt ?? world.time)) / duration, 0, 1)
     const eased = smoothStep(progress)
     const desiredX = startX + (target.hoverX - startX) * eased
     const desiredY =
       startY + (target.hoverY - startY) * eased - Math.sin(progress * Math.PI) * unit * 2.7
     const remaining = moveTowardPoint(entity, world, dt, desiredX, desiredY, 1.45)
-    tiltToVelocity(entity, 28)
+    tiltToVelocity(entity, 16)
 
     if (chance(4, dt)) {
       spawnImpact(
@@ -656,22 +676,7 @@ function tickDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, dt: number) {
     )
     moveTowardPoint(entity, world, dt, target.hoverX, target.hoverY, 0.72)
     entity.lift = Math.sin(world.time * 22 + entity.id) * clamp(unit * 0.38, 4, 6)
-    entity.tilt = -entity.facing * (8 + Math.sin(world.time * 13 + entity.id) * 4)
-    entity.data.flameTick = (entity.data.flameTick ?? 0) - dt
-
-    if ((entity.data.flameTick ?? 0) <= 0) {
-      entity.data.flameTick = 0.12
-      const mouthX = entity.x + entity.facing * world.widthOf(entity) * 0.36
-      const mouthY = entity.y + entity.lift - world.heightOf(entity) * 0.18
-      spawnImpact(
-        world,
-        mouthX - entity.facing * between(1.2, 3.2) * unit,
-        mouthY + between(-1.2, 1.2) * unit,
-        between(0.8, 1.3),
-        'fire',
-        0.26,
-      )
-    }
+    entity.tilt = -10 + Math.sin(world.time * 13 + entity.id) * 3
 
     if (
       world.time - (entity.data.flameStartedAt ?? world.time) >
@@ -689,39 +694,25 @@ function tickDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, dt: number) {
     entity.fx = (entity.data.dousedUntil ?? 0) > world.time ? 'flame-doused' : 'flame-hover'
     moveTowardPoint(entity, world, dt, target.hoverX, target.hoverY, 0.85)
     entity.lift = Math.sin(world.time * 18 + entity.id) * clamp(unit * 0.38, 4, 6)
-    entity.tilt = Math.sin(world.time * 11 + entity.id) * 5
-    entity.data.flameTick = (entity.data.flameTick ?? 0) - dt
+    entity.tilt = dragonBreathTilt(entity, target) + Math.sin(world.time * 11 + entity.id) * 2
+    const liveStream = world.byId(entity.data.flameStreamId)
 
-    if ((entity.data.flameTick ?? 0) <= 0) {
-      entity.data.flameTick = 0.055
-      const mouthX = entity.x + entity.facing * world.widthOf(entity) * 0.38
-      const mouthY = entity.y + entity.lift - world.heightOf(entity) * 0.15
-      const burnX = target.target?.x ?? target.targetX
-      const burnY = target.target
-        ? target.target.y - target.target.lift - unit * 0.35
-        : target.targetY
-      const dx = burnX - mouthX
-      const dy = burnY - mouthY
-      const length = Math.max(unit * 5.8, Math.hypot(dx, dy))
+    if (!liveStream || liveStream.species !== 'flame-stream') {
+      const mouth = dragonMouth(entity, world)
       const stream = world.spawn('flame-stream', {
         data: {
-          life: 0.28,
-          originX: mouthX,
-          originY: mouthY,
           ownerId: entity.id,
           ownerTeam: teamOf(entity),
           targetId: target.target?.id ?? -1,
-          targetX: burnX,
-          targetY: burnY,
+          targetX: target.targetX,
+          targetY: target.targetY,
         },
-        facing: entity.facing,
-        size: Math.max(entity.data.flameSize ?? 10.5, (length / unit) * 1.36),
-        x: mouthX + dx * 0.5,
-        y: mouthY + dy * 0.5,
+        facing: 1,
+        size: 6,
+        x: mouth.x,
+        y: mouth.y,
       })
-      if (stream) {
-        stream.tilt = (Math.atan2(dy, dx) * 180) / Math.PI
-      }
+      entity.data.flameStreamId = stream?.id ?? -1
     }
 
     if (target.target && isEnemy(entity, target.target)) {
@@ -753,7 +744,7 @@ function tickDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, dt: number) {
 
   if ((entity.data.flameStage ?? 0) === 3) {
     entity.fx = (entity.data.flameStaggerUntil ?? 0) > world.time ? 'flame-stagger' : 'flame-climb'
-    const progress = clamp((world.time - (entity.data.flameClimbAt ?? world.time)) / 1.18, 0, 1)
+    const progress = clamp((world.time - (entity.data.flameClimbAt ?? world.time)) / 2, 0, 1)
     const eased = smoothStep(progress)
     const startX = entity.data.flameStartX ?? entity.x
     const startY = entity.data.flameStartY ?? entity.y
@@ -845,8 +836,10 @@ function startDragonMove(
   world: EcoWorld,
   state: string,
   target: EcoEntity | null,
+  approach = false,
 ) {
   entity.targetId = target?.id ?? null
+  entity.data.moveApproach = approach ? 1 : 0
   entity.data.moveStartAt = world.time
   entity.data.moveStartX = entity.x
   entity.data.moveStartY = entity.y
@@ -883,9 +876,27 @@ function tickDragonMove(entity: EcoEntity, world: EcoWorld, dt: number) {
   const elapsed = world.time - (entity.data.moveStartAt ?? world.time)
   entity.facing = move.targetX >= entity.x ? 1 : -1
 
+  if ((entity.data.moveApproach ?? 0) > 0) {
+    const stageX = clamp(move.targetX - entity.facing * unit * 7, unit * 3, world.width - unit * 3)
+    const stageY = Math.max(world.skyTop + unit * 3, world.groundY - unit * 9)
+    const remaining = moveTowardPoint(entity, world, dt, stageX, stageY, 8.5 * dt)
+    entity.fx = ''
+    tiltToVelocity(entity, 14)
+
+    if (remaining < unit * 1.2 || elapsed > 4.5) {
+      entity.data.moveApproach = 0
+      entity.data.moveStartAt = world.time
+      entity.data.moveStartX = entity.x
+      entity.data.moveStartY = entity.y
+      entity.vx = 0
+      entity.vy = 0
+    }
+    return true
+  }
+
   if (entity.state === 'talon-snatch') {
     entity.fx = 'talon-snatch'
-    const progress = clamp(elapsed / 1.25, 0, 1)
+    const progress = clamp(elapsed / 1.7, 0, 1)
     const startX = entity.data.moveStartX ?? entity.x
     const startY = entity.data.moveStartY ?? entity.y
     const dive = smoothStep(Math.min(progress / 0.55, 1))
@@ -1700,7 +1711,7 @@ const dragon: EcoSpecies = {
 
         if (entity.species === 'ember-dragon') {
           if (Math.random() < 0.46) {
-            startDragonMove(entity, world, 'talon-snatch', target)
+            startDragonMove(entity, world, 'talon-snatch', target, true)
           } else {
             startDragonFlameStrafe(entity, world, target)
           }
@@ -1710,6 +1721,7 @@ const dragon: EcoSpecies = {
             world,
             Math.random() < 0.36 ? 'antler-plow' : Math.random() < 0.62 ? 'body-roll' : 'rootstep',
             target,
+            true,
           )
         } else if (entity.species === 'frost-dragon') {
           startDragonMove(
@@ -1717,6 +1729,7 @@ const dragon: EcoSpecies = {
             world,
             Math.random() < 0.38 ? 'wing-pinion' : Math.random() < 0.72 ? 'ice-skid' : 'whiteout',
             target,
+            true,
           )
         } else if (entity.species === 'eastern-dragon') {
           startDragonMove(
@@ -1728,6 +1741,7 @@ const dragon: EcoSpecies = {
                 ? 'pagoda-coil'
                 : 'cloud-step',
             target,
+            true,
           )
         } else {
           startDragonFlameStrafe(entity, world, target)
@@ -4648,33 +4662,57 @@ const flameStream: EcoSpecies = {
   weakTo: ['wizard'],
   tick(entity, world, dt) {
     const unit = world.unit
-    const life = entity.data.life ?? 0.28
+    const owner = world.byId(entity.data.ownerId)
+    const breathing =
+      owner &&
+      owner.state === 'flame-strafe' &&
+      (owner.data.flameStage ?? 0) === 2 &&
+      owner.data.flameStreamId === entity.id
+
+    if (!breathing) {
+      entity.data.fadeAt = entity.data.fadeAt ?? world.time
+      entity.fx = 'fade'
+      if (world.time - entity.data.fadeAt > 0.2) {
+        world.remove(entity)
+      }
+      return
+    }
+
+    const mouth = dragonMouth(owner, world)
     const liveTarget = world.byId(entity.data.targetId)
-    const originX = entity.data.originX ?? entity.x - entity.facing * unit * 2.8
-    const originY = entity.data.originY ?? entity.y
-    const targetX = liveTarget?.x ?? entity.data.targetX ?? entity.x + entity.facing * unit * 6
-    const targetY = liveTarget
+    const aimX = liveTarget?.x ?? entity.data.targetX ?? mouth.x + owner.facing * unit * 8
+    const aimY = liveTarget
       ? liveTarget.y - liveTarget.lift - unit * 0.35
-      : (entity.data.targetY ?? entity.y)
-    const sweep = Math.sin((entity.t / life) * Math.PI * 2.2 + entity.id)
+      : (entity.data.targetY ?? world.groundY)
+    const follow = Math.min(1, dt * 3.2)
+    entity.data.aimX = (entity.data.aimX ?? aimX) + (aimX - (entity.data.aimX ?? aimX)) * follow
+    entity.data.aimY = (entity.data.aimY ?? aimY) + (aimY - (entity.data.aimY ?? aimY)) * follow
+    const sweep = Math.sin(entity.t * 3.1 + entity.id) * unit * 1.1
+    const originX = mouth.x
+    const originY = mouth.y
+    const targetX = entity.data.aimX + sweep
+    const targetY = Math.min(entity.data.aimY, world.groundY - unit * 0.2)
     const dx = targetX - originX
     const dy = targetY - originY
-    const length = Math.max(unit * 4.8, Math.hypot(dx, dy))
-    entity.x = originX + dx * 0.5
-    entity.y = originY + dy * 0.5 + sweep * unit * 0.08
-    entity.tilt = (Math.atan2(dy, dx) * 180) / Math.PI
-    entity.facing = dx >= 0 ? 1 : -1
-    entity.scale = 1.04 + Math.sin(world.time * 24 + entity.id) * 0.06
-    entity.size = Math.max(entity.size, (length / unit) * 1.16)
+    const length = Math.max(unit * 4.8, Math.hypot(dx, dy) + unit * 1.2)
+    const angle = Math.atan2(dy, dx)
+    const reach = Math.max(1, Math.hypot(dx, dy))
+    entity.fx = owner.fx === 'flame-doused' ? 'doused' : ''
+    entity.facing = 1
+    entity.scale = 1
+    entity.tilt = (angle * 180) / Math.PI
+    entity.size = length / unit
+    entity.x = originX + Math.cos(angle) * length * 0.5
+    entity.y = originY + Math.sin(angle) * length * 0.5
 
-    if (chance(18, dt)) {
+    if (chance(5, dt)) {
       spawnImpact(
         world,
-        targetX + between(-0.7, 0.7) * unit,
+        targetX + between(-0.9, 0.9) * unit,
         world.groundY - unit * 0.35,
-        between(1.4, 2.2),
+        between(1.2, 1.8),
         'fire',
-        0.32,
+        0.3,
       )
     }
 
@@ -4686,7 +4724,7 @@ const flameStream: EcoSpecies = {
 
     if (slab) {
       const along =
-        ((slab.x - originX) * dx + (bodyPoint(slab, world).y - originY) * dy) / (length * length)
+        ((slab.x - originX) * dx + (bodyPoint(slab, world).y - originY) * dy) / (reach * reach)
       const clamped = clamp(along, 0, 1)
       const lineX = originX + dx * clamped
       const lineY = originY + dy * clamped
@@ -4698,6 +4736,7 @@ const flameStream: EcoSpecies = {
       ) {
         slab.data.flash = 0.34
         spawnImpact(world, slab.x, bodyPoint(slab, world).y, 3.2, 'steam', 0.48)
+        owner.data.flameDuration = 0
         world.remove(entity)
         return
       }
@@ -4710,21 +4749,17 @@ const flameStream: EcoSpecies = {
       (other) => isTargetableFoe(entity, other),
     )) {
       const along =
-        ((foe.x - originX) * dx + (bodyPoint(foe, world).y - originY) * dy) / (length * length)
+        ((foe.x - originX) * dx + (bodyPoint(foe, world).y - originY) * dy) / (reach * reach)
       const clamped = clamp(along, 0, 1)
       const lineX = originX + dx * clamped
       const lineY = originY + dy * clamped
       const distance = Math.hypot(foe.x - lineX, bodyPoint(foe, world).y - lineY)
 
-      if (along >= 0 && along <= 1 && distance < unit * (1.5 + clamped * 1.9)) {
+      if (along >= 0 && along <= 1 && distance < unit * (0.4 + clamped * 3.2)) {
         foe.fx = 'burn'
         foe.data.burn = Math.max(foe.data.burn ?? 0, 0.01)
-        damageGroundTarget(foe, world, 0.08 * dt, entity, 0.5)
+        damageGroundTarget(foe, world, 0.4 * dt, entity, 0.5)
       }
-    }
-
-    if (entity.t > life) {
-      world.remove(entity)
     }
   },
 }
