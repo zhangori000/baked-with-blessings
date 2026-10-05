@@ -390,6 +390,37 @@
   transform: translate(calc(-50% + var(--eco-pop-shift, 0px)), 0);
 }
 
+.ecoControlPopoverHeader {
+  align-items: start;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.ecoControlPopoverClose {
+  align-items: center;
+  background: color-mix(in srgb, var(--scene-text) 10%, transparent);
+  border: 0;
+  border-radius: 999rem;
+  color: var(--scene-text);
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  font-size: 1rem;
+  font-weight: 700;
+  height: 1.6rem;
+  justify-content: center;
+  line-height: 1;
+  margin: -0.3rem -0.3rem 0 0;
+  padding: 0;
+  width: 1.6rem;
+}
+
+.ecoControlPopoverClose:hover,
+.ecoControlPopoverClose:focus-visible {
+  background: color-mix(in srgb, var(--scene-text) 18%, transparent);
+}
+
 .ecoControlPopoverTitle {
   font-family: var(--font-rounded-display);
   font-size: 0.9rem;

@@ -158,7 +158,20 @@ const EcoThing = memo(function EcoThing({
       </span>
       {view.selected ? (
         <span className="ecoControlPopover" onClick={(event) => event.stopPropagation()}>
-          <span className="ecoControlPopoverTitle">{view.label}</span>
+          <span className="ecoControlPopoverHeader">
+            <span className="ecoControlPopoverTitle">{view.label}</span>
+            <button
+              aria-label="Close"
+              className="ecoControlPopoverClose"
+              onClick={(event) => {
+                event.stopPropagation()
+                store.dismissSelection()
+              }}
+              type="button"
+            >
+              ×
+            </button>
+          </span>
           <span className="ecoControlPopoverHealth">
             <span
               className="ecoControlPopoverHealthFill"
@@ -968,6 +981,36 @@ export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps)
     },
     [layer, store],
   )
+  const hasSelection = layer === 'front' && snapshot.entities.some((view) => view.selected)
+
+  useEffect(() => {
+    if (!hasSelection) {
+      return
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null
+
+      if (target?.closest('.ecoControlPopover, .ecoThing[data-controllable]')) {
+        return
+      }
+
+      store.dismissSelection()
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        store.dismissSelection()
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [hasSelection, store])
 
   if (!store.active) {
     return null
