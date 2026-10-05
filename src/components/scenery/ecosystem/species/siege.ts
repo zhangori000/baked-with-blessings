@@ -3796,7 +3796,7 @@ const knight: EcoSpecies = {
     if (Math.random() < 0.35) {
       entity.data.mounted = 1
       entity.hp = 3
-      entity.size = between(7.1, 8.4)
+      entity.size = between(5.1, 6)
       world.setAsset(entity, mountedKnightAsset)
     }
 
@@ -3804,7 +3804,7 @@ const knight: EcoSpecies = {
       (entity.data.mounted ?? 0) > 0 ? between(0.15, 0.45) : between(0.8, 1.6)
   },
   layer: 'front',
-  size: [3.85, 4.7],
+  size: [2.8, 3.4],
   state: 'march',
   style: siegeTeamStyle,
   strongVs: ['archer', 'dark-lord', 'fireball'],
@@ -4135,7 +4135,7 @@ const prince: EcoSpecies = {
   ...knight,
   asset: ecoAsset('prince'),
   countAs: 'frog-prince',
-  size: [3.6, 4.5],
+  size: [2.6, 3.25],
   strongVs: ['dark-lord'],
   tags: ['knight', 'prince', 'target'],
   weakTo: ['dragon', 'wizard'],
@@ -4156,7 +4156,7 @@ const archer: EcoSpecies = {
     entity.data.cool = between(0.5, 1.5)
   },
   layer: 'front',
-  size: [3.6, 4.35],
+  size: [2.6, 3.15],
   state: 'patrol',
   style: siegeTeamStyle,
   strongVs: ['dragon', 'wizard'],
@@ -5294,7 +5294,7 @@ const frogPrince: EcoSpecies = {
     entity.data.sitFor = between(1.5, 4)
   },
   layer: 'front',
-  size: [2, 2.6],
+  size: [1.5, 1.9],
   state: 'sit',
   strongVs: ['fireball'],
   tags: ['frog', 'prince', 'burnable', 'target'],
@@ -5349,7 +5349,7 @@ const princess: EcoSpecies = {
     entity.data.seekCool = between(0.2, 1)
   },
   layer: 'front',
-  size: [2, 2.45],
+  size: [1.45, 1.75],
   state: 'stroll',
   style: siegeTeamStyle,
   strongVs: ['frog-prince'],
@@ -6480,7 +6480,7 @@ const wizard: EcoSpecies = {
     entity.data.spellCool = between(0.4, 1)
   },
   layer: 'front',
-  size: [3.6, 4.35],
+  size: [2.6, 3.15],
   state: 'wander',
   style: (entity) => {
     const type = wizardTypeFor(entity)
@@ -6846,7 +6846,7 @@ const darkLord: EcoSpecies = {
     entity.data.spellCool = between(0.7, 1.4)
   },
   layer: 'front',
-  size: [2.35, 2.9],
+  size: [1.7, 2.1],
   state: 'stalk',
   style: siegeTeamStyle,
   strongVs: ['princess', 'archer'],
@@ -7020,7 +7020,7 @@ const ballista: EcoSpecies = {
     entity.data.cool = between(0.8, 1.6)
   },
   layer: 'front',
-  size: [3.8, 4.6],
+  size: [2.9, 3.4],
   state: 'ready',
   style: siegeTeamStyle,
   strongVs: ['dragon'],
