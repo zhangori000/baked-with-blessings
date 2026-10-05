@@ -23,10 +23,6 @@
       .legR {
         transform-origin: 98px 102px;
       }
-      .legLift {
-        transform-origin: 96px 104px;
-        animation: liftLeg 1.15s cubic-bezier(0.32, 0, 0.16, 1.18) infinite;
-      }
       .skin {
         fill: #efb184;
       }
@@ -90,77 +86,40 @@
         transform-origin: 108px 138px;
         opacity: 0;
       }
-      .sumoRaised .legR {
-        animation: shikoLeg 1.15s cubic-bezier(0.32, 0, 0.16, 1.18) infinite;
+      .armL {
+        animation: thrustL 0.7s ease-in-out infinite;
       }
-      .sumoRaised .torso {
-        animation: shikoBody 1.15s cubic-bezier(0.32, 0, 0.16, 1.18) infinite;
+      .armR {
+        animation: thrustR 0.7s ease-in-out infinite;
       }
-      .sumoRaised .dust {
-        animation: sumoDust 1.15s ease-out infinite;
+      .torso {
+        animation: thrustBody 0.7s ease-in-out infinite;
       }
-      @keyframes shikoLeg {
+      @keyframes thrustL {
         0%,
         100% {
-          transform: rotate(-52deg) translate(-15px, -36px);
+          transform: translateX(0) rotate(0);
         }
-        42% {
-          transform: rotate(-60deg) translate(-18px, -42px);
-        }
-        63% {
-          transform: rotate(0) translate(0, 0);
-        }
-        74% {
-          transform: scale(1.08, 0.86) translateY(7px);
+        45% {
+          transform: translateX(-17px) rotate(-5deg);
         }
       }
-      @keyframes liftLeg {
+      @keyframes thrustR {
         0%,
-        52% {
-          opacity: 1;
-          transform: rotate(0) translate(0, 0);
-        }
-        63% {
-          opacity: 0;
-          transform: rotate(42deg) translate(18px, 34px) scale(0.9);
-        }
-        76% {
-          opacity: 0;
-          transform: rotate(42deg) translate(18px, 34px) scale(0.9);
-        }
         100% {
-          opacity: 1;
-          transform: rotate(0) translate(0, 0);
+          transform: translateX(0) rotate(0);
+        }
+        45% {
+          transform: translateX(9px) rotate(8deg);
         }
       }
-      @keyframes shikoBody {
+      @keyframes thrustBody {
         0%,
         100% {
-          transform: translateY(0) scale(1);
+          transform: translateX(0) scale(1);
         }
-        56% {
-          transform: translateY(-8px) rotate(-2deg);
-        }
-        70% {
-          transform: translateY(8px) scale(1.08, 0.9);
-        }
-        82% {
-          transform: translateY(-2px) scale(0.98, 1.02);
-        }
-      }
-      @keyframes sumoDust {
-        0%,
-        58% {
-          opacity: 0;
-          transform: scale(0.3);
-        }
-        72% {
-          opacity: 0.6;
-          transform: scale(1);
-        }
-        100% {
-          opacity: 0;
-          transform: scale(1.35);
+        45% {
+          transform: translateX(-3px) scale(1.04, 0.98);
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -171,7 +130,6 @@
         .armR,
         .legL,
         .legR,
-        .legLift,
         .dust {
           animation: none;
         }
@@ -180,7 +138,7 @@
   </defs>
   <ellipse cx="78" cy="148" rx="58" ry="6" fill="#2d2433" opacity=".1" />
   <ellipse class="dust" cx="108" cy="138" rx="28" ry="6" fill="#d8ae95" />
-  <g class="rig sumoRaised" transform="">
+  <g class="rig" transform="">
     <g class="part legL">
       <path
         d="M57 100C43 107 30 120 14 128C28 132 47 126 65 112C67 106 64 101 57 100Z"
@@ -188,28 +146,21 @@
       />
       <path d="M17 128C31 130 48 123 62 112" class="foot" />
     </g>
-    <g class="part legR" transform="rotate(-52 98 102) translate(-15 -36)">
+    <g class="part legR">
       <path
         d="M96 100C111 108 126 120 142 128C128 132 108 126 90 112C87 106 89 101 96 100Z"
         class="skinDark"
       />
       <path d="M139 128C125 130 108 123 94 112" class="foot" />
     </g>
-
-    <g class="part legLift">
-      <path
-        d="M92 101C111 92 124 75 127 52C143 62 145 87 130 105C118 113 103 110 92 101Z"
-        class="skinDark"
-      />
-      <path d="M128 54C137 62 141 72 140 83" class="foot" />
-    </g>
     <g class="part armL">
-      <path d="M48 68C34 66 21 74 16 91C31 99 48 88 57 73Z" class="skin" />
-      <path d="M27 90C37 86 47 77 55 69" class="shadeLine" />
+      <path d="M49 69C31 61 15 65 5 79C14 91 36 86 53 75Z" class="skin" />
+      <ellipse cx="9" cy="79" rx="10" ry="12" class="palm" />
+      <path d="M7 72L9 86M2 77L13 77M2 83L12 82" class="palmLines" />
     </g>
     <g class="part armR">
-      <path d="M105 68C119 66 132 74 137 91C122 99 106 88 98 73Z" class="skin" />
-      <path d="M126 90C116 86 106 77 100 69" class="shadeLine" />
+      <path d="M104 69C115 64 127 70 135 83C124 94 109 88 98 75Z" class="skin" />
+      <ellipse cx="133" cy="83" rx="9" ry="11" class="palm" />
     </g>
     <g class="part torso">
       <path
@@ -241,7 +192,7 @@
       <path class="brows" d="M58 39Q64 36 69 39M81 39Q87 36 92 39" />
       <circle cx="66" cy="45" r="2.3" fill="#202033" />
       <circle cx="89" cy="45" r="2.3" fill="#202033" />
-      <path d="M67 54Q76 61 87 54" class="mouth proud" />
+      <path d="M68 56Q76 52 86 56" class="mouth" />
       <circle cx="61" cy="51" r="4" fill="#ee8f95" opacity=".52" />
       <circle cx="94" cy="51" r="4" fill="#ee8f95" opacity=".52" />
     </g>

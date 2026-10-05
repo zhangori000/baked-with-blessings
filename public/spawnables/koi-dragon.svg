@@ -1,24 +1,166 @@
-<svg width="192" height="96" viewBox="0 0 192 96" xmlns="http://www.w3.org/2000/svg">
-  <path d="M8 62C31 35 61 31 91 50C112 64 131 66 151 50C164 39 177 34 192 42C174 49 162 64 144 77C117 96 86 84 61 61C39 41 22 45 8 62Z" fill="#48a9a6" />
-  <path d="M19 66C42 50 61 49 82 63C108 81 133 82 157 62C166 55 176 49 188 44C175 53 166 66 151 77C124 96 92 86 65 64C48 50 32 52 19 66Z" fill="#2f7f8c" opacity="0.58" />
-  <path d="M37 51C54 46 71 51 90 65C109 78 131 81 151 67C126 68 108 62 89 48C69 34 50 35 37 51Z" fill="#fff4c7" opacity="0.9" />
-  <path d="M41 52C47 53 52 56 57 59M65 50C70 53 75 56 80 60M91 65C96 68 102 70 108 72M119 75C124 76 129 76 134 75" fill="none" stroke="#d79b52" stroke-width="1.25" stroke-linecap="round" opacity="0.8" />
-  <path d="M151 44C157 23 177 19 190 34C191 49 177 61 161 57C153 55 149 50 151 44Z" fill="#48a9a6" />
-  <path d="M158 39C166 31 179 32 187 40C180 50 165 50 158 39Z" fill="#fff4c7" />
-  <path d="M158 33L153 15L168 29Z" fill="#ffd966" />
-  <path d="M174 30L188 15L185 38Z" fill="#ffd966" />
-  <path d="M151 44C139 41 130 32 128 18C144 21 154 31 158 44Z" fill="#ff8f6b" />
-  <path d="M154 57C145 66 136 70 124 71C132 58 143 52 156 48Z" fill="#ff8f6b" />
-  <path d="M158 25C150 21 146 15 145 7C154 9 161 15 165 27Z" fill="#fff4c7" />
-  <path d="M164 60C155 69 144 76 134 77C141 66 153 58 166 53Z" fill="#fff4c7" />
-  <circle cx="178" cy="39" r="2" fill="#202033" />
-  <path d="M183 47Q188 49 192 45" fill="none" stroke="#5d4037" stroke-width="1.4" stroke-linecap="round" />
-  <path d="M171 54Q184 60 191 75" fill="none" stroke="#d79b52" stroke-width="1.8" stroke-linecap="round" />
-  <path d="M161 52Q149 62 145 82" fill="none" stroke="#d79b52" stroke-width="1.8" stroke-linecap="round" />
-  <path d="M62 64Q55 75 50 91" fill="none" stroke="#2f7f8c" stroke-width="2.8" stroke-linecap="round" />
-  <path d="M96 75Q91 86 83 94" fill="none" stroke="#2f7f8c" stroke-width="2.8" stroke-linecap="round" />
-  <path d="M130 74Q136 86 148 92" fill="none" stroke="#2f7f8c" stroke-width="2.8" stroke-linecap="round" />
-  <path d="M9 62L0 78L3 51Z" fill="#ffd966" />
-  <path d="M27 43C32 34 39 29 48 28C45 40 38 48 27 53Z" fill="#ff8f6b" />
-  <path d="M106 45C114 35 124 31 136 33C130 45 121 53 108 56Z" fill="#ff8f6b" />
+<svg width="260" height="140" viewBox="0 0 260 140" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="body" x1="17" y1="81" x2="228" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2d8fa0" />
+      <stop offset=".55" stop-color="#5fc9bd" />
+      <stop offset="1" stop-color="#2f97ad" />
+    </linearGradient>
+    <style>
+      .dragon {
+        transform-origin: 130px 74px;
+        animation: swim 2.4s ease-in-out infinite;
+      }
+      .finA {
+        transform-origin: center;
+        animation: finA 1.8s ease-in-out infinite;
+      }
+      .finB {
+        transform-origin: center;
+        animation: finB 2.2s ease-in-out infinite;
+      }
+      .whisker {
+        transform-origin: 214px 60px;
+        animation: whisk 2.2s ease-in-out infinite;
+      }
+      .glow {
+        transform-origin: 122px 75px;
+        animation: glow 1.9s ease-in-out infinite;
+      }
+      @keyframes swim {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-1deg);
+        }
+        50% {
+          transform: translateY(-7px) rotate(2deg);
+        }
+      }
+      @keyframes finA {
+        0%,
+        100% {
+          transform: rotate(-4deg);
+        }
+        50% {
+          transform: rotate(8deg);
+        }
+      }
+      @keyframes finB {
+        0%,
+        100% {
+          transform: rotate(6deg);
+        }
+        50% {
+          transform: rotate(-5deg);
+        }
+      }
+      @keyframes whisk {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(5px);
+        }
+      }
+      @keyframes glow {
+        0%,
+        100% {
+          opacity: 0.2;
+          transform: scale(0.88) rotate(0);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(1.08) rotate(18deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .dragon,
+        .finA,
+        .finB,
+        .whisker,
+        .glow {
+          animation: none;
+        }
+      }
+    </style>
+  </defs>
+  <ellipse cx="134" cy="129" rx="70" ry="5" fill="#2d2433" opacity=".08" />
+  <path
+    class="glow"
+    d="M75 101C102 72 136 55 181 49C153 73 129 99 105 121C104 99 91 94 75 101Z"
+    fill="#fff3aa"
+  />
+  <g class="dragon">
+    <path
+      d="M14 89C37 54 77 48 113 70C141 88 163 82 185 54C201 34 227 32 245 48C228 53 218 66 207 83C181 121 137 123 101 94C69 69 43 66 14 89Z"
+      fill="url(#body)"
+    />
+    <path
+      d="M27 90C54 72 77 72 101 88C134 109 167 102 191 72C177 105 135 119 96 92C66 72 46 73 27 90Z"
+      fill="#166b7e"
+      opacity=".42"
+    />
+    <path
+      d="M46 76C66 66 91 68 117 84C142 99 167 94 186 68C154 77 131 73 107 58C82 42 60 48 46 76Z"
+      fill="#fff4c7"
+    />
+    <path
+      d="M50 76C58 77 66 81 73 86M86 69C94 72 102 77 110 83M124 86C132 91 142 93 151 93M164 88C172 85 178 80 184 73"
+      stroke="#d97f3c"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      fill="none"
+      opacity=".8"
+    />
+    <path d="M28 89L3 108L15 72Z" fill="#ffd966" />
+    <path class="finA" d="M63 74C51 89 45 108 43 132C59 116 69 94 70 76Z" fill="#19839c" />
+    <path class="finB" d="M116 89C109 108 95 126 78 137C101 132 119 110 126 91Z" fill="#19839c" />
+    <path class="finA" d="M171 83C185 96 203 102 225 104C208 89 190 80 171 77Z" fill="#19839c" />
+    <path class="finB" d="M179 57C165 51 156 39 153 24C172 28 184 41 189 59Z" fill="#ff8f6b" />
+    <path class="finA" d="M181 80C169 93 155 99 139 98C148 82 164 74 184 69Z" fill="#ff8f6b" />
+    <path class="mane" d="M181 40C185 30 195 24 208 23C203 33 195 40 183 44Z" />
+    <path class="mane" d="M111 36C118 26 129 21 143 22C136 34 124 40 111 39Z" />
+    <path class="mane" d="M64 55C59 43 61 31 69 21C73 35 72 48 64 58Z" />
+    <g transform="translate(190 40)">
+      <path d="M0 15C3 -7 28 -14 48 3C53 20 36 37 15 35C5 32 -1 25 0 15Z" fill="#6bd3c7" />
+      <path d="M8 9C18 -1 35 0 45 10C35 21 17 20 8 9Z" fill="#fff4c7" />
+      <path d="M7 0L0 -22L20 -4Z" fill="#ffd966" />
+      <path d="M31 -3L51 -21L47 8Z" fill="#ffd966" />
+      <circle cx="36" cy="9" r="2.3" fill="#202033" />
+      <circle cx="36.6" cy="8.3" r=".8" fill="#fff4de" />
+      <path
+        d="M43 19Q49 23 56 18"
+        stroke="#5d4037"
+        stroke-width="2.1"
+        stroke-linecap="round"
+        fill="none"
+      />
+      <path
+        class="whisker"
+        d="M12 31Q2 51 -8 68"
+        stroke="#d79b52"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        fill="none"
+      />
+      <path
+        class="whisker"
+        d="M22 32Q45 44 57 67"
+        stroke="#d79b52"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        fill="none"
+      />
+    </g>
+    <g fill="none" stroke="#236f7d" stroke-width="6" stroke-linecap="round">
+      <path d="M74 93Q67 108 65 124" />
+      <path d="M70 121L61 130M70 121L78 132" />
+      <path d="M128 101Q122 116 113 128" />
+      <path d="M113 128L103 134M113 128L121 138" />
+      <path d="M169 91Q177 105 190 113" />
+      <path d="M190 113L199 122M190 113L181 121" />
+      <path d="M207 77Q221 85 235 87" />
+      <path d="M235 87L246 94M235 87L225 97" />
+    </g>
+  </g>
 </svg>

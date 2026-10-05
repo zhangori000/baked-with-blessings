@@ -1,24 +1,141 @@
-<svg width="88" height="104" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="43" cy="100" rx="27" ry="4" fill="#000000" opacity="0.1" />
-  <path d="M25 96C27 69 28 50 36 37H55C65 53 66 73 63 96Z" fill="#28365f" />
-  <path d="M42 40C34 53 31 70 31 96H24C25 68 26 50 35 37Z" fill="#1f2a4d" opacity="0.72" />
-  <path d="M25 62C12 63 7 75 15 83C25 82 32 73 33 63Z" fill="#28365f" />
-  <path d="M63 62C76 63 81 75 73 83C63 82 56 73 55 63Z" fill="#28365f" />
-  <path d="M31 55H59V64H31Z" fill="#fffdf7" />
-  <ellipse cx="46" cy="26" rx="17" ry="18" fill="#e8c49d" />
-  <ellipse cx="40" cy="20" rx="5" ry="3" fill="#f2d1ad" opacity="0.75" />
-  <circle cx="52" cy="27" r="1.7" fill="#2a2a2a" />
-  <ellipse cx="59" cy="33" rx="3" ry="2" fill="#efb5c4" opacity="0.72" />
-  <path d="M51 37Q55 40 60 37" fill="none" stroke="#7c6559" stroke-width="1.1" stroke-linecap="round" />
-  <g fill="#7c6559">
-    <circle cx="29" cy="48" r="2" />
-    <circle cx="32" cy="53" r="2" />
-    <circle cx="36" cy="56" r="2" />
-    <circle cx="41" cy="58" r="2" />
-    <circle cx="47" cy="58" r="2" />
-    <circle cx="53" cy="55" r="2" />
-    <circle cx="58" cy="50" r="2" />
+<svg width="130" height="140" viewBox="0 0 130 140" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .body {
+        transform-origin: 64px 116px;
+        animation: monkBreath 2.3s ease-in-out infinite;
+      }
+      .head {
+        transform-origin: 64px 41px;
+        animation: monkHead 2.3s ease-in-out infinite;
+      }
+      .beads {
+        transform-origin: 64px 70px;
+        animation: beads 2.3s ease-in-out infinite;
+      }
+      .aura {
+        transform-origin: 65px 70px;
+        animation: aura 1.8s ease-in-out infinite;
+      }
+      .ki {
+        transform-origin: 92px 54px;
+        animation: ki 1.1s ease-in-out infinite;
+      }
+      @keyframes monkBreath {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-4px);
+        }
+      }
+      @keyframes monkHead {
+        0%,
+        100% {
+          transform: rotate(-1deg);
+        }
+        50% {
+          transform: rotate(2deg);
+        }
+      }
+      @keyframes beads {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(3px);
+        }
+      }
+      @keyframes aura {
+        0%,
+        100% {
+          opacity: 0.18;
+          transform: scale(0.92);
+        }
+        50% {
+          opacity: 0.42;
+          transform: scale(1.08);
+        }
+      }
+      @keyframes ki {
+        0%,
+        100% {
+          transform: scale(0.92);
+          opacity: 0.55;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .body,
+        .head,
+        .beads,
+        .aura,
+        .ki {
+          animation: none;
+        }
+      }
+    </style>
+  </defs>
+  <ellipse cx="64" cy="132" rx="35" ry="5" fill="#2d2433" opacity=".1" />
+  <circle class="aura" cx="60" cy="73" r="44" fill="#ffd966" opacity=".16" />
+  <g class="body">
+    <path d="M38 67C46 52 80 52 91 68L96 126H31Z" fill="#d58a31" />
+    <path d="M38 70C51 80 73 83 94 70L96 126H31Z" fill="#b75f2a" opacity=".82" />
+    <path d="M54 60L38 126H27C29 98 32 78 38 67Z" fill="#f0b35b" />
+    <path d="M77 59L98 126H109C106 96 100 76 91 67Z" fill="#7c3f2a" />
+    <path d="M42 82C28 80 17 89 14 103C30 111 44 100 50 85Z" fill="#d58a31" />
+    <path d="M89 82C104 80 116 90 119 104C103 112 89 100 82 85Z" fill="#d58a31" />
+    <path
+      d="M16 104C29 104 42 98 51 86"
+      stroke="#4d2f28"
+      stroke-width="6"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M117 104C103 104 91 98 82 86"
+      stroke="#4d2f28"
+      stroke-width="6"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <g class="beads">
+      <circle cx="41" cy="66" r="2.5" fill="#3f3140" />
+      <circle cx="46" cy="69.76222157658236" r="2.5" fill="#3f3140" />
+      <circle cx="51" cy="73.07066370655193" r="2.5" fill="#3f3140" />
+      <circle cx="56" cy="75.52627944162883" r="2.5" fill="#3f3140" />
+      <circle cx="61" cy="76.83288528313429" r="2.5" fill="#3f3140" />
+      <circle cx="66" cy="76.83288528313429" r="2.5" fill="#3f3140" />
+      <circle cx="71" cy="75.52627944162883" r="2.5" fill="#3f3140" />
+      <circle cx="76" cy="73.07066370655194" r="2.5" fill="#3f3140" />
+      <circle cx="81" cy="69.76222157658236" r="2.5" fill="#3f3140" />
+      <circle cx="86" cy="66" r="2.5" fill="#3f3140" />
+      <circle cx="65" cy="80" r="4" fill="#ffd966" />
+    </g>
   </g>
-  <ellipse cx="28" cy="64" rx="5" ry="4" fill="#e8c49d" />
-  <ellipse cx="62" cy="64" rx="5" ry="4" fill="#e8c49d" />
+  <g class="head">
+    <circle cx="64" cy="38" r="21" fill="#e7b083" />
+    <path d="M47 35C52 21 72 16 84 26C76 21 58 24 49 39Z" fill="#cc8c67" opacity=".35" />
+    <path
+      d="M55 42Q61 39 66 42M72 42Q78 39 84 42"
+      stroke="#4b2631"
+      stroke-width="2.7"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path
+      d="M58 53Q65 57 73 53"
+      stroke="#8c3f2e"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <circle cx="52" cy="49" r="3" fill="#ee8f95" opacity=".42" />
+    <circle cx="79" cy="49" r="3" fill="#ee8f95" opacity=".42" />
+  </g>
 </svg>

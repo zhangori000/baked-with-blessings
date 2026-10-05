@@ -219,7 +219,6 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('koi-pond', 'Koi pond'),
     creature('kappa', 'Kappa'),
     creature('sumo', 'Sumo'),
-    creature('tanuki', 'Tanuki'),
     creature('chochin', 'Lantern'),
   ],
   prehistoric: [

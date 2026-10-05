@@ -66,7 +66,6 @@ export type EcoTag =
   | 'spirit'
   | 'star'
   | 'swan'
-  | 'tanuki'
   | 'target'
   | 'torii'
   | 'treasure'

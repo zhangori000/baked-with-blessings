@@ -20,29 +20,29 @@ import type { EcoEntity, EcoSpecies, EcoSpeciesMap, EcoWorld } from '../types'
 registerViewBoxes({
   beam: [300, 76],
   chochin: [66, 86],
-  'koi-pond': [142, 88],
-  'koi-dragon': [192, 96],
+  'koi-pond': [220, 90],
+  'koi-dragon': [260, 140],
   foxfire: [36, 44],
   kappa: [106, 94],
   'kappa-spilled': [106, 94],
-  monk: [88, 104],
-  'monk-charge': [112, 112],
-  ninja: [82, 88],
-  oni: [128, 112],
-  'oni-blue': [128, 112],
+  monk: [130, 140],
+  'monk-charge': [130, 140],
+  ninja: [130, 125],
+  oni: [160, 140],
+  'oni-blue': [160, 140],
   sakura: [128, 150],
   'sakura-petal': [30, 18],
   'sakura-sapling': [64, 92],
-  samurai: [112, 108],
+  samurai: [150, 140],
   sheep: [312, 310],
   'sheep-curious': [680, 480],
   'sheep-grin': [680, 480],
   'sheep-sleepy': [680, 480],
   shuriken: [48, 48],
-  tanuki: [112, 76],
-  sumo: [118, 108],
-  'sumo-shove': [118, 108],
-  'tanuki-teapot': [96, 72],
+  sumo: [156, 160],
+  'sumo-charge': [156, 160],
+  'sumo-shove': [156, 160],
+  'sumo-tsuppari': [156, 160],
   torii: [92, 96],
   'torii-broken': [104, 92],
 })
@@ -64,10 +64,10 @@ const koiDragonAsset = ecoAsset('koi-dragon')
 const kappaAsset = ecoAsset('kappa')
 const kappaSpilledAsset = ecoAsset('kappa-spilled')
 const foxfireAsset = ecoAsset('foxfire')
-const tanukiAsset = ecoAsset('tanuki')
-const tanukiTeapotAsset = ecoAsset('tanuki-teapot')
 const sumoAsset = ecoAsset('sumo')
+const sumoChargeAsset = ecoAsset('sumo-charge')
 const sumoShoveAsset = ecoAsset('sumo-shove')
+const sumoTsuppariAsset = ecoAsset('sumo-tsuppari')
 const chochinAsset = ecoAsset('chochin')
 const sheepAssets = [
   ecoAsset('sheep'),
@@ -112,11 +112,6 @@ function hurt(entity: EcoEntity, world: EcoWorld, amount = 1, attacker?: EcoEnti
     } else {
       breakGate(entity, world)
     }
-    return
-  }
-
-  if (world.has(entity, 'tanuki') && entity.state !== 'teapot') {
-    transformTanuki(entity, world)
     return
   }
 
@@ -177,17 +172,6 @@ function breakGate(gate: EcoEntity, world: EcoWorld) {
 
   leakSpirit(gate.x, world)
   leakSpirit(gate.x, world)
-}
-
-function transformTanuki(entity: EcoEntity, world: EcoWorld) {
-  entity.hp = Math.max(entity.hp, 2)
-  entity.fx = 'pop'
-  entity.data.pop = 0.7
-  entity.vx = 0
-  entity.vy = 0
-  entity.lift = 0
-  world.setAsset(entity, tanukiTeapotAsset)
-  world.setState(entity, 'teapot')
 }
 
 function isBeamTarget(entity: EcoEntity, world: EcoWorld) {
@@ -266,18 +250,6 @@ function nearestLight(entity: EcoEntity, world: EcoWorld, reach: number) {
   )
 }
 
-function nearestThreat(entity: EcoEntity, world: EcoWorld, reach: number) {
-  return world.nearest(
-    entity,
-    (other) =>
-      world.has(other, 'oni') ||
-      world.has(other, 'beam') ||
-      world.has(other, 'lantern') ||
-      world.has(other, 'shuriken'),
-    reach,
-  )
-}
-
 const sakura: EcoSpecies = {
   anchor: 'bottom',
   asset: sakuraSaplingAsset,
@@ -296,7 +268,7 @@ const sakura: EcoSpecies = {
   },
   size: [3.7, 4.8],
   state: 'grow',
-  strongVs: ['tanuki'],
+  strongVs: ['koi-pond'],
   tags: ['sakura', 'plant', 'fuel'],
   weakTo: ['sheep', 'oni', 'fire'],
   tick(entity, world, dt) {
@@ -399,7 +371,7 @@ const monk: EcoSpecies = {
     entity.data.cool = between(1, 2.5)
   },
   layer: 'front',
-  size: [3.7, 4.4],
+  size: [3.6, 4.4],
   state: 'meditate',
   strongVs: ['oni', 'torii'],
   tags: ['monk', 'target'],
@@ -479,7 +451,6 @@ const kiBeam: EcoSpecies = {
   }),
   strongVs: ['oni', 'torii'],
   tags: ['beam', 'projectile'],
-  weakTo: ['tanuki'],
   tick(entity, world) {
     entity.tilt = entity.data.angle ?? 0
 
@@ -515,9 +486,9 @@ const oni: EcoSpecies = {
     entity.data.cool = between(0.3, 1)
   },
   layer: 'front',
-  size: [4.8, 5.8],
+  size: [5.2, 6.2],
   state: 'lumber',
-  strongVs: ['torii', 'sheep', 'tanuki', 'koi-pond'],
+  strongVs: ['torii', 'sheep', 'koi-pond'],
   tags: ['oni', 'predator', 'target'],
   weakTo: ['monk', 'samurai', 'lantern', 'foxfire', 'koi-dragon', 'sumo'],
   tick(entity, world, dt) {
@@ -579,8 +550,7 @@ const oni: EcoSpecies = {
       (other) =>
         (world.has(other, 'torii') && other.state !== 'collapse') ||
         world.has(other, 'sheep') ||
-        other.species === 'koi-pond' ||
-        (world.has(other, 'tanuki') && other.state !== 'teapot'),
+        other.species === 'koi-pond',
       Math.max(world.width, unit * 45),
     )
 
@@ -614,7 +584,7 @@ const samurai: EcoSpecies = {
     entity.data.bowCool = between(2, 5)
   },
   layer: 'front',
-  size: [3.8, 4.6],
+  size: [4, 4.8],
   state: 'patrol',
   strongVs: ['ninja', 'oni'],
   tags: ['samurai', 'target'],
@@ -742,7 +712,7 @@ const ninja: EcoSpecies = {
     entity.data.cool = between(1, 2.2)
   },
   layer: 'front',
-  size: [3.1, 3.8],
+  size: [3.2, 4],
   state: 'hidden',
   strongVs: ['monk', 'sumo'],
   tags: ['ninja', 'target'],
@@ -867,7 +837,7 @@ const shuriken: EcoSpecies = {
   layer: 'front',
   size: [0.9, 1.15],
   state: 'fly',
-  strongVs: ['monk', 'lantern', 'tanuki', 'kappa', 'sumo', 'koi-dragon'],
+  strongVs: ['monk', 'lantern', 'kappa', 'sumo', 'koi-dragon'],
   tags: ['projectile', 'shuriken'],
   weakTo: ['samurai'],
   tick(entity, world, dt) {
@@ -900,8 +870,7 @@ const shuriken: EcoSpecies = {
         other.species === 'kappa' ||
         other.species === 'sumo' ||
         other.species === 'koi-dragon' ||
-        world.has(other, 'lantern') ||
-        world.has(other, 'tanuki'),
+        world.has(other, 'lantern'),
       world.unit * 1.5,
     )
 
@@ -954,10 +923,11 @@ function feedKoi(pond: EcoEntity, world: EcoWorld, amount = 1) {
     pond.data.fed = 0
     pond.data.fish = Math.max(2, (pond.data.fish ?? 5) - 1.5)
     world.spawn('koi-dragon', {
-      data: { gateId: gate?.id ?? 0, life: between(18, 26) },
+      data: { ascendFromY: pond.y, gateId: gate?.id ?? 0, life: between(18, 26) },
       facing: Math.random() < 0.5 ? -1 : 1,
+      state: 'ascend',
       x: pond.x,
-      y: pond.y - world.unit * 4.5,
+      y: pond.y - world.unit * 0.8,
     })
     world.setState(pond, 'ripen')
   }
@@ -1003,7 +973,7 @@ const koiPond: EcoSpecies = {
     entity.data.fed = 0
   },
   layer: 'front',
-  size: [5.1, 6.3],
+  size: [5.8, 6.8],
   state: 'ripple',
   strongVs: ['sakura', 'foxfire'],
   style: (entity) => ({
@@ -1073,10 +1043,20 @@ const koiDragon: EcoSpecies = {
   idle: 'undulate',
   init(entity, world) {
     entity.data.life = entity.data.life ?? between(18, 26)
-    entity.y = clamp(entity.y, world.skyTop + world.unit, world.groundY - world.unit * 5)
+    if (entity.data.ascendFromY) {
+      entity.data.ascendStartY = entity.data.ascendFromY
+      entity.data.ascendTargetY = clamp(
+        entity.data.ascendFromY - world.unit * 5.2,
+        world.skyTop + world.unit,
+        world.groundY - world.unit * 5,
+      )
+      entity.y = entity.data.ascendStartY
+    } else {
+      entity.y = clamp(entity.y, world.skyTop + world.unit, world.groundY - world.unit * 5)
+    }
   },
   layer: 'front',
-  size: [4.6, 5.8],
+  size: [5.4, 6.8],
   state: 'soar',
   strongVs: ['oni', 'kappa', 'torii', 'spirit'],
   tags: ['dragon', 'target'],
@@ -1090,6 +1070,26 @@ const koiDragon: EcoSpecies = {
     }
 
     const unit = world.unit
+
+    if (entity.data.ascendFromY && entity.t < 1.18) {
+      const progress = clamp(entity.t / 1.18, 0, 1)
+      const ease = 1 - (1 - progress) * (1 - progress)
+      const startY = entity.data.ascendStartY ?? entity.y
+      const targetY = entity.data.ascendTargetY ?? entity.y - unit * 4.5
+
+      entity.y = startY + (targetY - startY) * ease
+      entity.lift = Math.sin(progress * Math.PI) * unit * 0.9
+      entity.tilt = (entity.facing === 1 ? -1 : 1) * (18 - progress * 18)
+
+      if (progress >= 1) {
+        entity.data.ascendFromY = 0
+        entity.lift = 0
+        entity.tilt = 0
+        world.setState(entity, 'soar')
+      }
+      return
+    }
+
     const ruin = world.nearest(entity, (other) => other.species === 'gate-ruin', unit * 42)
 
     if (ruin) {
@@ -1293,7 +1293,7 @@ const sumo: EcoSpecies = {
     entity.data.cool = between(0.4, 1.5)
   },
   layer: 'front',
-  size: [4.2, 5.1],
+  size: [4.4, 5.2],
   state: 'patrol',
   strongVs: ['oni', 'samurai', 'kappa'],
   tags: ['target'],
@@ -1338,7 +1338,7 @@ const sumo: EcoSpecies = {
     }
 
     if (entity.state === 'shove') {
-      world.setAsset(entity, sumoShoveAsset)
+      world.setAsset(entity, entity.t < 0.38 ? sumoTsuppariAsset : sumoShoveAsset)
       const target = world.byId(entity.targetId)
       settle(entity, dt)
 
@@ -1362,7 +1362,7 @@ const sumo: EcoSpecies = {
     }
 
     if (entity.state === 'charge') {
-      world.setAsset(entity, sumoAsset)
+      world.setAsset(entity, sumoChargeAsset)
       const target = world.byId(entity.targetId)
 
       if (!target || entity.t > 2.4) {
@@ -1446,78 +1446,6 @@ const foxfire: EcoSpecies = {
   },
 }
 
-const tanuki: EcoSpecies = {
-  anchor: 'bottom',
-  asset: tanukiAsset,
-  hp: 2,
-  idle: 'trot',
-  init(entity) {
-    entity.data.rest = between(2, 5)
-  },
-  layer: 'front',
-  size: [3.2, 4],
-  state: 'wander',
-  strongVs: ['shuriken', 'beam', 'kappa'],
-  tags: ['tanuki', 'prey', 'target'],
-  weakTo: ['lantern', 'oni'],
-  tick(entity, world, dt) {
-    clearTimedFx(entity, dt)
-
-    if (entity.state === 'teapot') {
-      entity.hp = Math.max(entity.hp, 2)
-      settle(entity, dt)
-
-      if (entity.t > 2.3) {
-        world.setAsset(entity, tanukiAsset)
-        world.setState(entity, 'wander')
-      }
-      return
-    }
-
-    const threat = nearestThreat(entity, world, world.unit * 6.4)
-
-    if (threat) {
-      transformTanuki(entity, world)
-      return
-    }
-
-    const tree = world.nearest(
-      entity,
-      (other) =>
-        world.has(other, 'sakura') && other.state === 'bloom' && (other.data.burn ?? 0) <= 0,
-      world.unit * 18,
-    )
-
-    if (entity.state === 'nap') {
-      settle(entity, dt)
-
-      if (!tree || entity.t > 6) {
-        world.setState(entity, 'wander')
-      }
-      return
-    }
-
-    if (tree && (entity.data.rest ?? 0) <= 0) {
-      const targetX = tree.x + entity.facing * world.unit * 1.5
-      const gap = walkToward(entity, world, targetX, world.unit * 1.1, dt)
-
-      if (gap < world.unit * 0.8) {
-        entity.data.rest = between(6, 10)
-        world.setState(entity, 'nap')
-      }
-      return
-    }
-
-    entity.data.rest = (entity.data.rest ?? 0) - dt
-    walk(entity, world, dt, world.unit * 0.8)
-    hop(entity, dt, world.unit * 0.1, 3)
-
-    if (chance(0.08, dt)) {
-      entity.facing = entity.facing === 1 ? -1 : 1
-    }
-  },
-}
-
 const chochin: EcoSpecies = {
   anchor: 'center',
   asset: chochinAsset,
@@ -1529,7 +1457,7 @@ const chochin: EcoSpecies = {
   layer: 'front',
   size: [2.3, 3.1],
   state: 'float',
-  strongVs: ['oni', 'ninja', 'tanuki'],
+  strongVs: ['oni', 'ninja'],
   tags: ['lantern'],
   weakTo: ['shuriken'],
   tick(entity, world, dt) {
@@ -1627,6 +1555,5 @@ export const blossomSpecies: EcoSpeciesMap = {
   sheep,
   shuriken,
   sumo,
-  tanuki,
   torii,
 }
