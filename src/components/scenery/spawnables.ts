@@ -48,7 +48,6 @@ export const asteroidStarCount = 25
 export const spawnMilestoneByScene: Partial<Record<SceneTone, SpawnMilestone>> = {
   moonlit: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
   prehistoric: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
-  undersea: { at: 5, noun: 'sunken boats', tally: 'boats-sunk' },
 }
 
 export type SceneSprite = {
@@ -250,7 +249,6 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('whale', 'Whale', spawnableAsset('sea-whale')),
     creature('orca', 'Orca', spawnableAsset('sea-orca')),
     creature('anglerfish', 'Anglerfish', spawnableAsset('sea-anglerfish')),
-    creature('kraken', 'Kraken', spawnableAsset('sea-kraken')),
   ],
   'fairy-castle': [
     creatureCloud,
