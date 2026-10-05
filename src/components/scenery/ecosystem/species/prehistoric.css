@@ -60,17 +60,7 @@
 .ecoDinoPart--armFar {
   transform-origin: 211px 100px;
 }
-.ecoThing[data-species='spinosaurus'] .ecoDinoPart--body {
-  transform-origin: 148px 85px;
-}
-.ecoThing[data-species='spinosaurus'] .ecoDinoPart--head {
-  transform-origin: 237px 73px;
-}
-.ecoThing[data-species='spinosaurus'] .ecoDinoPart--legNear {
-  transform-origin: 140px 105px;
-}
-.ecoThing[data-species='triceratops'][data-state='charge'] .ecoDinoSvg,
-.ecoThing[data-species='spinosaurus'][data-state='display'] .ecoDinoSvg {
+.ecoThing[data-species='triceratops'][data-state='charge'] .ecoDinoSvg {
   animation: prehistoricCharge 0.24s ease-in-out infinite alternate;
 }
 .ecoThing[data-rig='dino'][data-state='prowl'] .ecoDinoRig,
@@ -108,12 +98,10 @@
   animation: prehistoricRigBiteHead 0.5s ease-out both;
 }
 .ecoThing[data-species='trex'][data-state='chomp'] .ecoDinoRig,
-.ecoThing[data-species='spinosaurus'][data-state='snap'] .ecoDinoRig,
 .ecoThing[data-rig='dino'][data-attack='bite'] .ecoDinoRig {
   animation: prehistoricRigBiteBody 0.5s ease-out both;
 }
 .ecoThing[data-species='trex'][data-state='chomp'] .ecoDinoRig::after,
-.ecoThing[data-species='spinosaurus'][data-state='snap'] .ecoDinoRig::after,
 .ecoThing[data-rig='dino'][data-attack='bite'] .ecoDinoRig::after {
   animation: prehistoricBiteFlash 0.5s ease-out both;
   background: color-mix(in srgb, var(--warning) 74%, white);
@@ -234,13 +222,6 @@
   top: 26%;
   width: 3rem;
 }
-.ecoThing[data-species='spinosaurus'][data-state='paddle'] .ecoDinoPart--tail1,
-.ecoThing[data-species='spinosaurus'][data-state='paddle'] .ecoDinoPart--tail2 {
-  animation: prehistoricRigPaddle 0.48s ease-out both;
-}
-.ecoThing[data-species='spinosaurus'][data-state='display'] .ecoDinoPart--sail {
-  animation: prehistoricRigSailFlash 0.8s ease-in-out infinite alternate;
-}
 .ecoThing[data-species='triceratops'][data-state='graze'] .ecoDinoPart--frill {
   filter: saturate(1.05);
 }
@@ -275,12 +256,39 @@
 .ecoThing[data-species='stegosaurus'][data-state='brace'] .ecoDinoRig {
   animation: prehistoricStegoBrace 0.7s ease-out both;
 }
-.ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoPart--neck,
-.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--neck {
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--body {
+  transform-origin: 112px 142px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--neckBase {
+  transform-origin: 144px 101px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--neckMid {
+  transform-origin: 166px 79px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--neckTip {
+  transform-origin: 199px 31px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--head {
+  transform-origin: 206px 26px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--jaw {
+  transform-origin: 20px 5px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--legNear,
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--legFar {
+  transform-origin: 100px 200px;
+}
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--legNear2,
+.ecoThing[data-species='brachiosaurus'] .ecoDinoPart--legFar2 {
+  transform-origin: 168px 200px;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoPart--neckBase,
+.ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoPart--neckMid,
+.ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoPart--neckTip {
   animation: prehistoricRigChargeHead 0.52s ease-out both;
 }
 .ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoPart--head,
-.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--head {
+.ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoPart--jaw {
   animation: prehistoricRigBiteHead 0.52s ease-out both;
 }
 .ecoThing[data-species='brachiosaurus'][data-state='neck'] .ecoDinoRig {
@@ -301,36 +309,75 @@
   width: 74%;
 }
 .ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoRig {
-  animation: prehistoricBrachioBrowseReach 0.72s ease-out both;
+  animation: prehistoricBrachioBrowseCycle 3.7s cubic-bezier(0.22, 1.18, 0.3, 1) infinite;
+  padding-top: 1.8rem;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--body {
+  animation: prehistoricBrachioBrowseBody 3.7s cubic-bezier(0.2, 1.12, 0.34, 1) infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--neckBase {
+  animation: prehistoricBrachioNeckBase 3.7s cubic-bezier(0.18, 1.2, 0.28, 1) infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--neckMid {
+  animation: prehistoricBrachioNeckMid 3.7s cubic-bezier(0.18, 1.2, 0.28, 1) infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--neckTip {
+  animation: prehistoricBrachioNeckTip 3.7s cubic-bezier(0.18, 1.2, 0.28, 1) infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--head {
+  animation: prehistoricBrachioBrowseHead 3.7s ease-in-out infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--jaw {
+  animation: prehistoricBrachioMunchJaw 3.7s ease-in-out infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--cheek ellipse {
+  animation: prehistoricBrachioCheekPuff 3.7s ease-in-out infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--gulpLump ellipse {
+  animation: prehistoricBrachioGulp 3.7s ease-in-out infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--legNear2,
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoPart--legFar2 {
+  animation: prehistoricBrachioTiptoe 3.7s ease-in-out infinite;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoRig::before {
+  animation: prehistoricBrachioBranchBoing 3.7s ease-in-out infinite;
+  background:
+    radial-gradient(ellipse at 70% 28%, #86ad4e 0 0.58rem, transparent 0.6rem),
+    radial-gradient(ellipse at 88% 50%, #a5c85e 0 0.52rem, transparent 0.54rem),
+    radial-gradient(ellipse at 56% 68%, #78a346 0 0.48rem, transparent 0.5rem),
+    linear-gradient(90deg, #5f774f, #6f983f 62%, transparent 63%);
+  border-radius: 999rem;
+  height: 1.7rem;
+  opacity: 1;
+  right: -13%;
+  top: 12%;
+  transform-origin: 0 50%;
+  width: 5.2rem;
+}
+.ecoThing[data-species='brachiosaurus'][data-state='tree-eat'] .ecoDinoRig::after {
+  animation: prehistoricBrachioLeafFlutter 3.7s ease-in-out infinite;
+  background:
+    radial-gradient(ellipse at 18% 20%, #85ad4e 0 0.34rem, transparent 0.36rem),
+    radial-gradient(ellipse at 52% 60%, #6f983f 0 0.28rem, transparent 0.3rem),
+    radial-gradient(ellipse at 78% 34%, #a5c85e 0 0.32rem, transparent 0.34rem),
+    radial-gradient(ellipse at 42% 14%, #9fbe57 0 0.24rem, transparent 0.26rem);
+  height: 4rem;
+  opacity: 0;
+  right: -7%;
+  top: 12%;
+  width: 4.4rem;
 }
 .ecoThing[data-species='brachiosaurus'][data-cast-key='r'] .ecoDinoRig {
   animation: prehistoricBrachioBodyBlock 0.72s ease-out both;
 }
-.ecoThing[data-species='spinosaurus'][data-state='claw'] .ecoDinoPart--armNear,
-.ecoThing[data-species='spinosaurus'][data-state='claw'] .ecoDinoPart--armFar {
-  animation: prehistoricRigTailSmash 0.42s ease-out both;
-}
-.ecoThing[data-species='spinosaurus'][data-state='claw'] .ecoDinoPart--head {
-  animation: prehistoricRigBiteHead 0.42s ease-out both;
-}
-.ecoThing[data-species='spinosaurus'][data-state='claw'] .ecoDinoRig {
-  animation: prehistoricSpinoClawBody 0.5s ease-out both;
-}
-.ecoThing[data-species='spinosaurus'][data-state='dive'] .ecoDinoRig {
-  animation: prehistoricSpinoRiverDive 0.72s ease-out both;
-}
-.ecoThing[data-species='spinosaurus'][data-state='display'] .ecoDinoRig {
-  animation: prehistoricSpinoSailDisplay 0.8s ease-out both;
-}
 .ecoThing[data-species='trex'] .ecoArt,
 .ecoThing[data-species='triceratops'] .ecoArt,
 .ecoThing[data-species='brachiosaurus'] .ecoArt,
-.ecoThing[data-species='spinosaurus'] .ecoArt,
 .ecoThing[data-species='stegosaurus'] .ecoArt {
   transform-origin: center bottom;
 }
 .ecoThing[data-species='trex'][data-state='prowl'] .ecoArt,
-.ecoThing[data-species='spinosaurus'][data-state='prowl'] .ecoArt,
 .ecoThing[data-species='triceratops'][data-state='graze'] .ecoArt,
 .ecoThing[data-species='stegosaurus'][data-state='graze'] .ecoArt {
   animation: prehistoricWalk 0.56s ease-in-out infinite alternate;
@@ -346,19 +393,8 @@
   animation: prehistoricStalk 0.72s ease-in-out infinite;
 }
 .ecoThing[data-species='trex'][data-state='charge'] .ecoArt,
-.ecoThing[data-species='spinosaurus'][data-state='display'] .ecoArt,
 .ecoThing[data-species='triceratops'][data-state='charge'] .ecoArt {
   animation: prehistoricCharge 0.24s ease-in-out infinite alternate;
-}
-.ecoThing[data-species='spinosaurus'][data-state='snap'] .ecoArt {
-  animation: prehistoricChomp 0.42s ease-out both;
-}
-.ecoThing[data-species='spinosaurus'][data-state='dive'] .ecoArt {
-  animation: prehistoricSpinoDive 0.36s ease-in-out infinite alternate;
-  filter: saturate(1.18) drop-shadow(0 0 0.38rem color-mix(in srgb, var(--accent) 52%, transparent));
-}
-.ecoThing[data-species='spinosaurus'][data-state='paddle'] .ecoArt {
-  animation: prehistoricStomp 0.52s ease-out both;
 }
 .ecoThing[data-species='trex'][data-state='chomp'] .ecoArt {
   animation: prehistoricChomp 0.48s ease-out both;
@@ -494,7 +530,6 @@
 .ecoThing[data-species='trex'][data-fx='hurt'] .ecoArt,
 .ecoThing[data-species='triceratops'][data-fx='hurt'] .ecoArt,
 .ecoThing[data-species='brachiosaurus'][data-fx='hurt'] .ecoArt,
-.ecoThing[data-species='spinosaurus'][data-fx='hurt'] .ecoArt,
 .ecoThing[data-species='stegosaurus'][data-fx='hurt'] .ecoArt,
 .ecoThing[data-species='pterodactyl'][data-fx='hurt'] .ecoArt,
 .ecoThing[data-species='meganeura'][data-fx='hurt'] .ecoArt,
@@ -604,6 +639,134 @@
 .ecoThing[data-fx='hurt'] .ecoArt,
 .ecoThing[data-fx='dazed'] .ecoArt {
   filter: brightness(1.35) saturate(0.75);
+}
+
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--body {
+  transform-origin: 118px 150px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--neck {
+  transform-origin: 120px 130px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--head {
+  transform-origin: 126px 50px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--jaw {
+  transform-origin: 151px 49px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--wingNear {
+  transform-origin: 110px 145px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--wingFar {
+  transform-origin: 98px 145px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--legNear {
+  transform-origin: 147px 160px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoPart--legFar {
+  transform-origin: 132px 164px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoRig--quetzFlight .ecoDinoPart--body {
+  transform-origin: 188px 91px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoRig--quetzFlight .ecoDinoPart--neck {
+  transform-origin: 197px 82px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoRig--quetzFlight .ecoDinoPart--head {
+  transform-origin: 210px 30px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoRig--quetzFlight .ecoDinoPart--jaw {
+  transform-origin: 236px 28px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoRig--quetzFlight .ecoDinoPart--wingNear {
+  transform-origin: 200px 84px;
+}
+.ecoThing[data-species='quetzalcoatlus'] .ecoDinoRig--quetzFlight .ecoDinoPart--wingFar {
+  transform-origin: 180px 84px;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='strut'] .ecoDinoRig {
+  animation: prehistoricQuetzStrut 1.15s ease-in-out infinite alternate;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='stab'] .ecoDinoRig,
+.ecoThing[data-species='quetzalcoatlus'][data-attack='bite'] .ecoDinoRig {
+  animation: prehistoricQuetzStabBody 0.48s ease-out both;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='stab'] .ecoDinoPart--neck,
+.ecoThing[data-species='quetzalcoatlus'][data-state='gulp'] .ecoDinoPart--neck,
+.ecoThing[data-species='quetzalcoatlus'][data-attack='bite'] .ecoDinoPart--neck {
+  animation: prehistoricQuetzNeckStab 0.48s ease-out both;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='stab'] .ecoDinoPart--head,
+.ecoThing[data-species='quetzalcoatlus'][data-state='gulp'] .ecoDinoPart--head,
+.ecoThing[data-species='quetzalcoatlus'][data-attack='bite'] .ecoDinoPart--head {
+  animation: prehistoricQuetzHeadStab 0.48s ease-out both;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='stab'] .ecoDinoPart--jaw,
+.ecoThing[data-species='quetzalcoatlus'][data-state='gulp'] .ecoDinoPart--jaw,
+.ecoThing[data-species='quetzalcoatlus'][data-attack='bite'] .ecoDinoPart--jaw {
+  animation: prehistoricQuetzJawSnap 0.48s ease-out both;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='stab'] .ecoDinoRig::after,
+.ecoThing[data-species='quetzalcoatlus'][data-state='gulp'] .ecoDinoRig::after,
+.ecoThing[data-species='quetzalcoatlus'][data-attack='bite'] .ecoDinoRig::after {
+  animation: prehistoricBiteFlash 0.5s ease-out both;
+  background: color-mix(in srgb, var(--warning) 74%, white);
+  border-radius: 999rem 20% 999rem 20%;
+  height: 0.55rem;
+  right: -2%;
+  top: 23%;
+  transform: rotate(6deg);
+  width: 1.35rem;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='gulp'] .ecoDinoRig::before {
+  animation: prehistoricQuetzGulpLump 0.82s ease-out both;
+  background: color-mix(in srgb, var(--warning) 48%, var(--scene-panel-fill));
+  border-radius: 999rem;
+  height: 0.78rem;
+  left: 49%;
+  top: 35%;
+  width: 0.78rem;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='launch'] .ecoDinoRig {
+  animation: prehistoricQuetzLaunchBody 0.78s ease-out both;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='launch'] .ecoDinoPart--wingNear,
+.ecoThing[data-species='quetzalcoatlus'][data-state='launch'] .ecoDinoPart--wingFar {
+  animation: prehistoricQuetzWingVault 0.78s ease-out both;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='launch'] .ecoDinoRig::after {
+  animation: prehistoricRigGroundCrack 0.78s ease-out both;
+  background: color-mix(in srgb, var(--scene-text) 22%, transparent);
+  border-radius: 999rem;
+  bottom: 2%;
+  height: 0.42rem;
+  left: 15%;
+  width: 74%;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='soar'] .ecoDinoRig,
+.ecoThing[data-species='quetzalcoatlus'][data-state='thermal-dive'] .ecoDinoRig {
+  animation: prehistoricQuetzSoar 1.35s ease-in-out infinite alternate;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='thermal-dive'] .ecoDinoRig::before {
+  animation: prehistoricQuetzThermal 0.86s ease-out infinite;
+  border: 0.18rem solid color-mix(in srgb, var(--accent) 48%, transparent);
+  border-left-color: transparent;
+  border-radius: 999rem;
+  height: 4.4rem;
+  left: 34%;
+  top: 18%;
+  width: 4.4rem;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-state='thermal-dive'] .ecoDinoRig::after {
+  animation: prehistoricQuetzDiveShadow 0.86s ease-out infinite;
+  background: color-mix(in srgb, var(--scene-text) 32%, transparent);
+  border-radius: 999rem;
+  bottom: 0;
+  height: 0.75rem;
+  left: 8%;
+  width: 88%;
+}
+.ecoThing[data-species='quetzalcoatlus'][data-fx='hurt'] .ecoDinoSvg {
+  animation: prehistoricScorch 0.5s ease-out;
 }
 @keyframes prehistoricFernGrow {
   0%,
@@ -1169,6 +1332,285 @@
     transform: translateY(0) rotate(0deg);
   }
 }
+@keyframes prehistoricBrachioBrowseCycle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  18% {
+    transform: translateY(-0.38rem) rotate(-2deg) scale(1.01, 1.03);
+  }
+  30%,
+  54% {
+    transform: translateY(-0.58rem) rotate(-3deg) scale(1.02, 1.05);
+  }
+  65% {
+    transform: translate(0.14rem, -0.84rem) rotate(-4deg) scale(1.01, 1.09);
+  }
+  71% {
+    transform: translate(-0.1rem, -0.44rem) rotate(2deg) scale(1.04, 0.98);
+  }
+  78% {
+    transform: translate(0.04rem, -0.54rem) rotate(-1deg) scale(1.02, 1.03);
+  }
+  92% {
+    transform: translateY(0.08rem) rotate(1deg) scale(1.02, 0.99);
+  }
+}
+@keyframes prehistoricBrachioBrowseBody {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  18%,
+  58% {
+    transform: rotate(-4deg) translateY(-0.24rem);
+  }
+  66% {
+    transform: rotate(-7deg) translateY(-0.36rem);
+  }
+  74% {
+    transform: rotate(3deg) translateY(0.12rem);
+  }
+  84% {
+    transform: rotate(-1deg) translateY(-0.08rem);
+  }
+}
+@keyframes prehistoricBrachioNeckBase {
+  0%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  18%,
+  54% {
+    transform: rotate(-7deg) scaleY(1.12);
+  }
+  64% {
+    transform: rotate(-12deg) scaleY(1.26);
+  }
+  70% {
+    transform: rotate(7deg) scaleY(0.96);
+  }
+  80% {
+    transform: rotate(-3deg) scaleY(1.06);
+  }
+}
+@keyframes prehistoricBrachioNeckMid {
+  0%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  18%,
+  54% {
+    transform: rotate(-13deg) scaleY(1.2);
+  }
+  64% {
+    transform: rotate(-20deg) scaleY(1.42);
+  }
+  70% {
+    transform: rotate(12deg) scaleY(0.94);
+  }
+  80% {
+    transform: rotate(-5deg) scaleY(1.08);
+  }
+}
+@keyframes prehistoricBrachioNeckTip {
+  0%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  18%,
+  54% {
+    transform: rotate(-10deg) scaleY(1.22);
+  }
+  28%,
+  34%,
+  42%,
+  50% {
+    transform: rotate(-14deg) scaleY(1.25) translateY(-0.12rem);
+  }
+  31%,
+  38%,
+  46% {
+    transform: rotate(-8deg) scaleY(1.18) translateY(0.08rem);
+  }
+  64% {
+    transform: rotate(-24deg) scaleY(1.5) translateY(-0.28rem);
+  }
+  70% {
+    transform: rotate(18deg) scaleY(0.9) translateY(0.18rem);
+  }
+  77% {
+    transform: rotate(-9deg) scaleY(1.12);
+  }
+  84% {
+    transform: rotate(4deg) scaleY(0.98);
+  }
+}
+@keyframes prehistoricBrachioBrowseHead {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-6deg);
+  }
+  18% {
+    transform: translate(0.65rem, -0.95rem) rotate(-13deg);
+  }
+  28%,
+  34%,
+  42%,
+  50% {
+    transform: translate(0.98rem, -1.18rem) rotate(-20deg);
+  }
+  31%,
+  38%,
+  46% {
+    transform: translate(0.9rem, -1rem) rotate(-11deg);
+  }
+  64% {
+    transform: translate(1.44rem, -1.62rem) rotate(-25deg);
+  }
+  70% {
+    transform: translate(0.36rem, -0.42rem) rotate(16deg);
+  }
+  74% {
+    transform: translate(0.72rem, -0.86rem) rotate(-14deg);
+  }
+  80% {
+    transform: translate(0.54rem, -0.7rem) rotate(7deg);
+  }
+  90% {
+    transform: translate(0.18rem, -0.18rem) rotate(-8deg);
+  }
+}
+@keyframes prehistoricBrachioMunchJaw {
+  0%,
+  24%,
+  33%,
+  41%,
+  49%,
+  58%,
+  100% {
+    transform: rotate(0deg);
+  }
+  28%,
+  37%,
+  45%,
+  53% {
+    transform: rotate(30deg);
+  }
+  66% {
+    transform: rotate(38deg);
+  }
+  71% {
+    transform: rotate(-8deg);
+  }
+}
+@keyframes prehistoricBrachioCheekPuff {
+  0%,
+  24%,
+  58%,
+  100% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  31%,
+  43%,
+  52% {
+    opacity: 0.9;
+    transform: scale(1.3);
+  }
+  66% {
+    opacity: 1;
+    transform: scale(1.55);
+  }
+  74% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+}
+@keyframes prehistoricBrachioGulp {
+  0%,
+  66%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  72% {
+    opacity: 0.95;
+    transform: translate(-0.1rem, 0.45rem) scale(2.1);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translate(-1.3rem, 2.4rem) scale(1.7);
+  }
+  88% {
+    opacity: 0;
+    transform: translate(-2.5rem, 4.6rem) scale(1);
+  }
+}
+@keyframes prehistoricBrachioTiptoe {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  18%,
+  66% {
+    transform: translateY(-0.4rem) rotate(-3deg);
+  }
+  72% {
+    transform: translateY(0.12rem) rotate(2deg);
+  }
+}
+@keyframes prehistoricBrachioBranchBoing {
+  0%,
+  20%,
+  100% {
+    opacity: 0;
+    transform: rotate(0deg) scaleX(0.7);
+  }
+  28%,
+  56% {
+    opacity: 1;
+    transform: rotate(3deg) scaleX(1);
+  }
+  64% {
+    opacity: 1;
+    transform: rotate(-18deg) scaleX(1.28);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(22deg) scaleX(0.82);
+  }
+  76% {
+    opacity: 0.7;
+    transform: rotate(-8deg) scaleX(0.92);
+  }
+  84% {
+    opacity: 0;
+    transform: rotate(0deg) scaleX(0.7);
+  }
+}
+@keyframes prehistoricBrachioLeafFlutter {
+  0%,
+  24%,
+  100% {
+    opacity: 0;
+    transform: translateY(-0.4rem) rotate(0deg);
+  }
+  31%,
+  54% {
+    opacity: 1;
+    transform: translate(-0.15rem, 0.8rem) rotate(16deg);
+  }
+  69% {
+    opacity: 1;
+    transform: translate(0.35rem, 2.2rem) rotate(-26deg);
+  }
+  86% {
+    opacity: 0;
+    transform: translate(-0.25rem, 3.3rem) rotate(34deg);
+  }
+}
 @keyframes prehistoricBrachioBodyBlock {
   0% {
     transform: translateX(0) scale(1);
@@ -1181,44 +1623,151 @@
     transform: translateX(0) scale(1);
   }
 }
-@keyframes prehistoricSpinoClawBody {
+
+@keyframes prehistoricQuetzStrut {
+  from {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  to {
+    transform: translateY(-0.08rem) rotate(1.5deg);
+  }
+}
+@keyframes prehistoricQuetzStabBody {
   0% {
     transform: translateX(0) rotate(0deg);
   }
   38% {
-    transform: translateX(0.75rem) rotate(8deg) scale(1.08, 0.94);
+    transform: translateX(-0.25rem) rotate(-3deg);
   }
-  68% {
-    transform: translateX(-0.22rem) rotate(-4deg) scale(1.02);
+  58%,
+  72% {
+    transform: translateX(0.95rem) rotate(4deg) scale(1.04, 0.98);
   }
   100% {
     transform: translateX(0) rotate(0deg);
   }
 }
-@keyframes prehistoricSpinoRiverDive {
+@keyframes prehistoricQuetzNeckStab {
   0% {
-    transform: translateY(0) scale(1);
+    transform: rotate(0deg) translateY(0);
   }
-  36% {
-    transform: translateY(0.62rem) scale(1.18, 0.58);
+  35% {
+    transform: rotate(-8deg) translateY(-0.18rem);
   }
-  68% {
-    transform: translate(1.1rem, -0.18rem) scale(1.16, 0.72);
+  58%,
+  72% {
+    transform: rotate(19deg) translate(0.95rem, 0.28rem) scaleY(1.08);
   }
   100% {
-    transform: translateY(0) scale(1);
+    transform: rotate(0deg) translateY(0);
   }
 }
-@keyframes prehistoricSpinoSailDisplay {
+@keyframes prehistoricQuetzHeadStab {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  35% {
+    transform: translateX(-0.22rem) rotate(-8deg);
+  }
+  58%,
+  72% {
+    transform: translateX(1.45rem) rotate(10deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+@keyframes prehistoricQuetzJawSnap {
+  0%,
+  36% {
+    transform: rotate(0deg);
+  }
+  54% {
+    transform: rotate(9deg) translateY(0.08rem);
+  }
+  70% {
+    transform: rotate(-3deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes prehistoricQuetzGulpLump {
+  0% {
+    opacity: 0;
+    transform: translate(2.2rem, -1.4rem) scale(0.6);
+  }
+  28% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-0.35rem, 2.7rem) scale(1.1);
+  }
+}
+@keyframes prehistoricQuetzLaunchBody {
   0% {
     transform: translateY(0) scale(1);
   }
-  36%,
-  74% {
-    transform: translateY(-0.38rem) scale(1.08, 1.16);
+  34% {
+    transform: translateY(0.42rem) scale(1.18, 0.78);
+  }
+  58%,
+  72% {
+    transform: translateY(-1.55rem) rotate(-6deg) scale(0.82, 1.22);
   }
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(-0.3rem) scale(1);
+  }
+}
+@keyframes prehistoricQuetzWingVault {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  34% {
+    transform: rotate(-16deg) translateY(0.4rem);
+  }
+  60% {
+    transform: rotate(34deg) translateY(-0.35rem);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+}
+@keyframes prehistoricQuetzSoar {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+  to {
+    transform: translateY(-0.25rem) rotate(2deg);
+  }
+}
+@keyframes prehistoricQuetzThermal {
+  0% {
+    opacity: 0.12;
+    transform: rotate(0deg) scale(0.55);
+  }
+  50% {
+    opacity: 0.78;
+    transform: rotate(210deg) scale(1.25);
+  }
+  100% {
+    opacity: 0.12;
+    transform: rotate(420deg) scale(0.55);
+  }
+}
+@keyframes prehistoricQuetzDiveShadow {
+  0% {
+    opacity: 0;
+    transform: translateX(-1.8rem) scaleX(0.35);
+  }
+  45% {
+    opacity: 0.55;
+    transform: translateX(0) scaleX(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(2rem) scaleX(0.35);
   }
 }
 @keyframes prehistoricChomp {
@@ -1285,14 +1834,6 @@
   }
   58% {
     transform: translateY(0.08rem) scale(0.98, 1.03);
-  }
-}
-@keyframes prehistoricSpinoDive {
-  from {
-    transform: translateY(0.1rem) rotate(-2deg) scale(1.04, 0.94);
-  }
-  to {
-    transform: translateY(-0.12rem) rotate(2deg) scale(0.98, 1.04);
   }
 }
 @keyframes prehistoricProjectileSpin {
@@ -1534,7 +2075,7 @@
   .ecoThing[data-species='trex'] .ecoArt,
   .ecoThing[data-species='triceratops'] .ecoArt,
   .ecoThing[data-species='brachiosaurus'] .ecoArt,
-  .ecoThing[data-species='spinosaurus'] .ecoArt,
+  .ecoThing[data-species='quetzalcoatlus'] .ecoDinoSvg,
   .ecoThing[data-species='stegosaurus'] .ecoArt,
   .ecoThing[data-species='pterodactyl'] .ecoArt,
   .ecoThing[data-species='dino-nest'] .ecoArt,
@@ -1549,6 +2090,7 @@
   .ecoThing[data-species='dino-bite-burst'] .ecoArt,
   .ecoThing[data-species='dino-boulder'] .ecoArt,
   .ecoThing[data-species='dino-feather-puff'] .ecoArt,
+  .ecoThing[data-species='dino-leaf-flutter'] .ecoArt,
   .ecoThing[data-species='dino-roar-wave'] .ecoArt,
   .ecoThing[data-species='dino-spike'] .ecoArt,
   .ecoThing[data-species='dino-tornado'] .ecoArt,
@@ -1561,6 +2103,8 @@
   .ecoThing[data-species='dino-impact'] .ecoArt,
   .ecoThing[data-species='dino-carcass'] .ecoArt,
   .ecoDinoRig,
+  .ecoDinoRig::before,
+  .ecoDinoRig::after,
   .ecoDinoPart {
     animation: none;
   }

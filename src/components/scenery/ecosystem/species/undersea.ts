@@ -672,7 +672,6 @@ type SeaAbilityConfig = {
   icon?: string
   key: 'q' | 'w' | 'e' | 'r'
   name: string
-  projectile?: { amount: number; life?: number; size?: number; species: string; speed: number }
   radius?: number
   recovery?: number
   shape: 'circle' | 'cone' | 'line' | 'self'
@@ -733,32 +732,6 @@ function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
 
       if (config.heal) {
         world.heal(entity, config.heal)
-      }
-
-      if (config.projectile) {
-        const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
-        const projectile = world.spawn(config.projectile.species, {
-          countAs: null,
-          data: {
-            amount: config.projectile.amount * (0.7 + charge * 0.65),
-            life: config.projectile.life ?? 1.2,
-            ownerId: entity.id,
-          },
-          facing: entity.facing,
-          size: (config.projectile.size ?? 1) * (0.8 + charge * 0.35),
-          vx: entity.facing * world.unit * config.projectile.speed * (0.75 + charge * 0.5),
-          vy: 0,
-          x: clamp(
-            entity.x + entity.facing * world.unit * 2.4,
-            world.unit,
-            world.width - world.unit,
-          ),
-          y: entity.y,
-        })
-
-        if (projectile) {
-          projectile.data.zBoost = 12000
-        }
       }
 
       if (config.ultimate || config.vfx === 'shockwave') {
@@ -1243,18 +1216,19 @@ const swordfishControls = {
     }),
     seaAbility({
       amount: 1.1,
-      archetype: 'Side-sweep slash',
+      archetype: 'Side-sweep bill slash',
       cooldown: 3.2,
-      description: 'Sweep the bill sideways and throw a cutting current.',
+      dash: 2.8,
+      description: 'Sweep the bill sideways through close prey.',
       icon: 'slash',
       key: 'w',
       name: 'Side sweep',
-      projectile: { amount: 1, life: 1.2, size: 1.4, species: 'sea-current-shot', speed: 14 },
-      radius: 4.8,
+      radius: 5.2,
       shape: 'cone',
       state: 'strike',
-      target: 'front',
+      target: 'area',
       vfx: 'slash',
+      width: 5.2,
     }),
     seaAbility({
       archetype: 'Hold sprint',
@@ -1294,13 +1268,12 @@ const swordfishControls = {
 const octopusControls = {
   abilities: [
     seaAbility({
-      archetype: 'Projectile ink',
+      archetype: 'Local ink cloud',
       cooldown: 3.2,
-      description: 'Launch an ink cloud projectile that dazes hunters.',
+      description: 'Release a close ink cloud that dazes hunters around the octopus.',
       icon: 'ink',
       key: 'q',
       name: 'Ink cloud',
-      projectile: { amount: 0.55, life: 1.1, size: 1.9, species: 'sea-current-shot', speed: 9 },
       radius: 5.5,
       shape: 'circle',
       state: 'ink',
@@ -2899,48 +2872,6 @@ const bubbleRing: EcoSpecies = {
   },
 }
 
-const seaCurrentShot: EcoSpecies = {
-  anchor: 'center',
-  asset: bubbleRingAsset,
-  countAs: null,
-  init(entity) {
-    entity.data.life ??= 1.1
-  },
-  layer: 'front',
-  size: [2, 4],
-  state: 'current',
-  tags: ['projectile'],
-  tick(entity, world, dt) {
-    entity.data.life = (entity.data.life ?? 1) - dt
-    integrate(entity, dt)
-    entity.tilt = entity.facing * 18
-
-    const owner = world.byId(entity.data.ownerId ?? null)
-
-    for (const target of world.within(entity.x, entity.y, world.unit * 2.5, (other) =>
-      owner ? isControlTarget(owner, other) : !world.has(other, 'projectile'),
-    )) {
-      if (owner) {
-        controlHit(owner, target, world, entity.data.amount ?? 1)
-        shove(owner, target, world, 2.8)
-      } else {
-        hurt(target, world, entity.data.amount ?? 1)
-      }
-      spawnBurst(world, target.x, target.y, 2.3)
-      world.remove(entity)
-      return
-    }
-
-    if (
-      (entity.data.life ?? 0) <= 0 ||
-      entity.x < -world.unit * 3 ||
-      entity.x > world.width + world.unit * 3
-    ) {
-      world.remove(entity)
-    }
-  },
-}
-
 const swimmer: EcoSpecies = {
   anchor: 'center',
   asset: swimmerAsset,
@@ -2989,7 +2920,6 @@ export const underseaSpecies: EcoSpeciesMap = {
   orca,
   pufferfish,
   'sea-bubble-ring': bubbleRing,
-  'sea-current-shot': seaCurrentShot,
   'sea-depth-charge': depthCharge,
   'sea-net': seaNet,
   'sea-swimmer': swimmer,
