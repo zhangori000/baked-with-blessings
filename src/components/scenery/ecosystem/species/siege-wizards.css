@@ -1,0 +1,232 @@
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard']
+  )
+  .ecoArt {
+  transform-box: view-box;
+  transform-origin: center bottom;
+}
+
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard']
+  ):is(
+    [data-state='shield'],
+    [data-state='lightning'],
+    [data-state='frost'],
+    [data-state='fireball'],
+    [data-state='tornado'],
+    [data-state='arcane'],
+    [data-state='ice-shard'],
+    [data-state='rain'],
+    [data-state='blink'],
+    [data-state='meteor'],
+    [data-state='summon'],
+    [data-state='polymorph'],
+    [data-state='fire-lance'],
+    [data-state='ice-wall'],
+    [data-state='vine'],
+    [data-state='heal'],
+    [data-state='storm'],
+    [data-state='plant'],
+    [data-state='light'],
+    [data-state='ward'],
+    [data-state='duel']
+  )
+  .ecoArt {
+  filter: drop-shadow(0 0 0.58rem var(--wizard-glow));
+}
+
+.ecoThing:is([data-species='ward-wizard'], [data-species='wizard'])[data-state='ward'] .ecoArt,
+.ecoThing:is([data-species='ward-wizard'], [data-species='wizard'])[data-state='shield'] .ecoArt,
+.ecoThing:is([data-species='ward-wizard'], [data-species='wizard'])[data-state='duel'] .ecoArt {
+  animation: wizardWardSpriteBeat 1.32s ease-in-out infinite;
+}
+
+.ecoThing[data-species='pyro-wizard']:is(
+    [data-state='fireball'],
+    [data-state='meteor'],
+    [data-state='fire-lance']
+  )
+  .ecoArt {
+  animation: wizardPyroSpriteBeat 1.2s ease-in-out infinite;
+}
+
+.ecoThing[data-species='frost-wizard']:is(
+    [data-state='frost'],
+    [data-state='ice-shard'],
+    [data-state='ice-wall']
+  )
+  .ecoArt {
+  animation: wizardFrostSpriteBeat 1.35s ease-in-out infinite;
+}
+
+.ecoThing[data-species='plant-wizard']:is(
+    [data-state='plant'],
+    [data-state='vine'],
+    [data-state='summon']
+  )
+  .ecoArt {
+  animation: wizardDruidSpriteBeat 1.32s ease-in-out infinite;
+}
+
+.ecoThing[data-species='storm-wizard']:is(
+    [data-state='storm'],
+    [data-state='lightning'],
+    [data-state='tornado']
+  )
+  .ecoArt {
+  animation: wizardStormSpriteBeat 1.05s ease-in-out infinite;
+}
+
+.ecoThing[data-species='light-wizard']:is(
+    [data-state='light'],
+    [data-state='heal'],
+    [data-state='blink']
+  )
+  .ecoArt {
+  animation: wizardLightSpriteBeat 1.42s ease-in-out infinite;
+}
+
+.ecoThing:is([data-species='wizard'], [data-species='ward-wizard']) .ecoPose::before {
+  transform-origin: center bottom;
+}
+
+@keyframes wizardPyroSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  24% {
+    transform: translateY(0.18rem) scale(1.08, 0.9);
+  }
+
+  52% {
+    transform: translate(0.12rem, -0.18rem) scale(0.96, 1.08);
+  }
+
+  76% {
+    transform: translateX(-0.1rem) rotate(-3deg);
+  }
+}
+
+@keyframes wizardFrostSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  26% {
+    transform: translateY(-0.08rem) scale(0.98, 1.02);
+  }
+
+  50% {
+    transform: translateY(0.14rem) scale(1.03, 0.96);
+  }
+
+  78% {
+    transform: translateY(-0.04rem);
+  }
+}
+
+@keyframes wizardDruidSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(0.22rem) scale(1.08, 0.88);
+  }
+
+  52% {
+    transform: translateY(-0.14rem) scale(0.98, 1.06);
+  }
+
+  78% {
+    transform: translateY(0.04rem);
+  }
+}
+
+@keyframes wizardStormSpriteBeat {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+
+  26% {
+    transform: translateX(-0.12rem) rotate(-12deg);
+  }
+
+  52% {
+    transform: translate(0.14rem, -0.18rem) rotate(11deg);
+  }
+
+  78% {
+    transform: translateX(-0.06rem) rotate(-2deg);
+  }
+}
+
+@keyframes wizardLightSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  26% {
+    transform: translateY(0.04rem) rotate(-1deg);
+  }
+
+  52% {
+    transform: translateY(-0.12rem) scale(0.98, 1.04);
+  }
+
+  78% {
+    transform: translateY(0.04rem);
+  }
+}
+
+@keyframes wizardWardSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  28% {
+    transform: rotate(-2deg);
+  }
+
+  52% {
+    transform: translateY(0.08rem) scale(1.04, 0.96);
+  }
+
+  78% {
+    transform: translateY(-0.04rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing:is(
+      [data-species='wizard'],
+      [data-species='ward-wizard'],
+      [data-species='pyro-wizard'],
+      [data-species='frost-wizard'],
+      [data-species='plant-wizard'],
+      [data-species='storm-wizard'],
+      [data-species='light-wizard']
+    )
+    .ecoArt {
+    animation: none;
+  }
+}

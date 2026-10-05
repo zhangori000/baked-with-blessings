@@ -1,8 +1,1 @@
-<svg width="110" height="70" viewBox="0 0 110 70" xmlns="http://www.w3.org/2000/svg">
-  <path d="M3 36C22 12 54 7 87 18C70 22 57 33 48 50C29 58 14 52 3 36Z" fill="#c84a2d"/>
-  <path d="M15 37C35 18 61 16 88 27C73 29 61 38 52 52C36 56 23 51 15 37Z" fill="#f9a825"/>
-  <path d="M34 36C50 25 70 25 91 35C75 36 65 43 55 52C45 50 38 45 34 36Z" fill="#fff6c8" opacity="0.9"/>
-  <circle cx="82" cy="36" r="21" fill="#ff8f3d" opacity="0.92"/>
-  <circle cx="88" cy="34" r="12" fill="#fff6c8" opacity="0.96"/>
-  <path d="M6 27C20 25 31 28 41 35C27 36 18 40 8 49Z" fill="#ffd966" opacity="0.42"/>
-</svg>
+<svg width="110" height="70" viewBox="0 0 110 70" xmlns="http://www.w3.org/2000/svg"><style>.flame{transform-box:view-box;transform-origin:66px 35px;animation:roll .2s linear infinite alternate}.tail{transform-box:view-box;transform-origin:35px 35px;animation:flicker .24s ease-in-out infinite alternate}@keyframes roll{from{transform:rotate(-5deg) scale(.98)}to{transform:rotate(6deg) scale(1.04)}}@keyframes flicker{from{transform:translateX(0) scaleX(.9)}to{transform:translateX(-4px) scaleX(1.08)}}@media (prefers-reduced-motion: reduce){.flame,.tail{animation:none}}</style><ellipse cx="58" cy="53" rx="38" ry="8" fill="#000000" opacity="0.1"/><g class="tail"><path d="M65 35C43 16 23 18 4 27C21 29 27 35 5 44C27 51 45 50 66 38Z" fill="#ff9c50" opacity="0.78"/><path d="M61 35C43 28 28 30 16 35C30 38 38 39 20 44C35 46 49 43 62 37Z" fill="#ffd966" opacity="0.88"/></g><g class="flame"><path d="M49 34C54 16 72 8 91 18C107 28 106 50 90 59C71 67 52 55 49 34Z" fill="#d7552d"/><path d="M59 35C62 22 75 17 88 24C99 31 96 47 85 53C72 59 60 50 59 35Z" fill="#ff9c50"/><path d="M70 35C72 29 80 27 87 32C92 37 88 46 80 48C73 47 69 42 70 35Z" fill="#fff6c8"/></g></svg>

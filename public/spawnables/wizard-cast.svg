@@ -1,7 +1,1 @@
-<svg width="86" height="86" viewBox="0 0 86 86" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="43" cy="43" r="26" fill="#d8f4ff" opacity="0.28"/>
-  <path d="M43 7L47 29L68 16L55 37L79 43L55 49L68 70L47 57L43 81L39 57L18 70L31 49L7 43L31 37L18 16L39 29Z" fill="#fff6c8" opacity="0.72"/>
-  <circle cx="43" cy="43" r="19" fill="none" stroke="#ffd966" stroke-width="4" opacity="0.76"/>
-  <path d="M19 43C27 33 34 28 43 28C52 28 60 34 67 43C59 53 52 58 43 58C34 58 27 53 19 43Z" fill="#d8bfd8" opacity="0.78"/>
-  <circle cx="43" cy="43" r="8" fill="#fff6c8"/>
-</svg>
+<svg width="86" height="86" viewBox="0 0 86 86" xmlns="http://www.w3.org/2000/svg"><style>.ring,.spark{transform-box:view-box;transform-origin:43px 43px}.ring{animation:ring 0.65s ease-out infinite}.spark{animation:spark 0.65s ease-in-out infinite}@keyframes ring{0%{opacity:.25;transform:scale(.35) rotate(0)}70%{opacity:.9;transform:scale(1) rotate(160deg)}100%{opacity:0;transform:scale(1.25) rotate(220deg)}}@keyframes spark{0%,100%{opacity:.35;transform:scale(.7)}50%{opacity:1;transform:scale(1.08)}}@media (prefers-reduced-motion: reduce){.ring,.spark{animation:none}}</style><circle cx="43" cy="43" r="26" fill="#fff6c8" opacity="0.18"/><g class="ring"><path d="M43 10C58 16 70 28 75 43C68 58 56 70 43 76C27 69 16 57 11 43C17 27 28 16 43 10Z" fill="none" stroke="#b8d9f0" stroke-width="4"/><path d="M43 17L47 34L64 31L51 43L64 55L47 52L43 69L39 52L22 55L35 43L22 31L39 34Z" fill="#ffd966" opacity="0.74"/></g><g class="spark"><circle cx="22" cy="30" r="4" fill="#ff9c50"/><circle cx="63" cy="25" r="3" fill="#d8f4ff"/><circle cx="65" cy="61" r="4" fill="#aa84da"/><circle cx="28" cy="64" r="3" fill="#9acb68"/></g></svg>
