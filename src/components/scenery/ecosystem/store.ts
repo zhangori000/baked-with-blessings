@@ -1,4 +1,5 @@
 import type { SceneTone } from '../menuHeroScenery'
+import { assetScaleOf } from './assets'
 import { Ecosystem } from './engine'
 import { ecosystemSpecies } from './species'
 import type {
@@ -733,7 +734,7 @@ export class EcosystemStore {
           particles: definition?.particles,
           rain: definition?.tags.includes('cloud') ?? false,
           selected: this.selectedId === entity.id,
-          size: entity.size,
+          size: entity.size * assetScaleOf(entity.asset),
           species: entity.species,
           strong: definition?.strongVs ?? [],
           weak: definition?.weakTo ?? [],

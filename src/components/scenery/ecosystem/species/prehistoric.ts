@@ -1,4 +1,4 @@
-import { ecoAsset, registerViewBoxes } from '../assets'
+import { ecoAsset, registerAssetScales, registerViewBoxes } from '../assets'
 import {
   ballistic,
   between,
@@ -76,6 +76,8 @@ registerViewBoxes({
     ),
   ),
 })
+
+registerAssetScales({ 'quetzalcoatlus-flight': 1.35 })
 
 const fernAssets = ['/flowers/prehistoric-fern.svg', '/flowers/prehistoric-horsetail.svg'] as const
 const trexVariants = ['trex', 'trex-russet', 'trex-moss'] as const
@@ -1810,7 +1812,7 @@ const trex: EcoSpecies = {
     entity.data.hunger = between(0.6, 1.1)
   },
   layer: 'front',
-  size: [9.2, 10.4],
+  size: [8, 8.8],
   state: 'prowl',
   strongVs: ['brachiosaurus', 'pterodactyl', 'quetzalcoatlus', 'dino-nest'],
   tags: ['predator', 'burnable'],
@@ -2087,7 +2089,7 @@ const triceratops: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [7.1, 7.9],
+  size: [5.6, 6.2],
   state: 'graze',
   strongVs: ['trex', 'quetzalcoatlus'],
   tags: ['prey', 'burnable'],
@@ -2174,7 +2176,7 @@ const brachiosaurus: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [12, 13.2],
+  size: [12.6, 13.8],
   state: 'browse',
   strongVs: ['triceratops', 'stegosaurus'],
   tags: ['prey'],
@@ -2386,7 +2388,7 @@ const stegosaurus: EcoSpecies = {
     }
   },
   layer: 'front',
-  size: [7.1, 7.9],
+  size: [5.8, 6.4],
   state: 'graze',
   strongVs: ['trex'],
   tags: ['prey', 'burnable'],
@@ -2454,17 +2456,39 @@ const stegosaurus: EcoSpecies = {
   },
 }
 
+function quetzTakeWing(entity: EcoEntity, world: EcoWorld) {
+  world.setAsset(entity, quetzalcoatlusFlightAsset)
+}
+
+function quetzLand(entity: EcoEntity, world: EcoWorld) {
+  entity.lift = 0
+  entity.tilt = 0
+  world.setAsset(entity, quetzalcoatlusAsset)
+}
+
+function quetzCruiseLift(entity: EcoEntity, world: EcoWorld) {
+  const span = Math.max(world.unit * 6, world.groundY - world.skyTop - world.unit * 4)
+  return span * (0.45 + ((entity.id * 37) % 30) / 100)
+}
+
 const quetzalcoatlus: EcoSpecies = {
   anchor: 'bottom',
   asset: quetzalcoatlusAsset,
   controls: quetzalcoatlusControls,
   hp: 5.8,
-  init(entity) {
+  init(entity, world) {
     entity.data.hunger = between(0.2, 0.75)
-    entity.data.soarAt = between(8, 16)
+    entity.data.soarAt = world.time + between(5, 10)
+
+    if (Math.random() < 0.5) {
+      quetzTakeWing(entity, world)
+      entity.lift = quetzCruiseLift(entity, world)
+      entity.data.soarUntil = world.time + between(8, 14)
+      world.setState(entity, 'soar')
+    }
   },
   layer: 'front',
-  size: [8.8, 14.2],
+  size: [5, 5.6],
   state: 'strut',
   strongVs: ['pterodactyl', 'meganeura', 'dino-nest'],
   tags: ['predator', 'burnable'],
@@ -2475,10 +2499,14 @@ const quetzalcoatlus: EcoSpecies = {
 
     const trexThreat = world.nearest(entity, (other) => other.species === 'trex', unit * 10)
 
-    if (trexThreat && entity.state !== 'launch' && entity.state !== 'soar') {
+    if (
+      trexThreat &&
+      entity.state !== 'launch' &&
+      entity.state !== 'soar' &&
+      entity.state !== 'glide-down'
+    ) {
       entity.data.avoidX = trexThreat.x
-      entity.data.flightPoseUntil = world.time + 2.4
-      world.setAsset(entity, quetzalcoatlusFlightAsset)
+      quetzTakeWing(entity, world)
       world.setState(entity, 'launch')
     }
 
@@ -2493,35 +2521,48 @@ const quetzalcoatlus: EcoSpecies = {
     }
 
     if (entity.state === 'launch') {
-      world.setAsset(entity, quetzalcoatlusFlightAsset)
-      entity.lift = Math.max(0, entity.lift + unit * dt * 1.8)
-      walk(entity, world, dt, unit * 2.6)
-      hop(entity, dt, unit * 2.2, 6)
-      if (entity.t > 1.2) {
+      quetzTakeWing(entity, world)
+      entity.lift += unit * dt * 6.5
+      walk(entity, world, dt, unit * 3.2)
+      if (entity.t > 1.1) {
+        entity.data.soarUntil = world.time + between(9, 15)
         world.setState(entity, 'soar')
       }
       return
     }
 
     if (entity.state === 'soar' || entity.state === 'thermal-dive') {
-      world.setAsset(entity, quetzalcoatlusFlightAsset)
-      const awayX = entity.data.avoidX ?? world.width / 2
-      steer(
-        entity,
-        clamp(entity.x + (entity.x >= awayX ? 1 : -1) * unit * 7, unit, world.width - unit),
-        world.groundY - unit * 10,
-        unit * 3.2,
-        dt,
-        3,
-      )
-      integrate(entity, dt)
-      faceTravel(entity)
-      tiltToVelocity(entity, 18)
-      keepInSky(entity, world)
-      entity.lift = Math.max(entity.lift, unit * 4.5)
-      if (entity.t > 3.2 && !trexThreat) {
-        entity.lift = 0
-        world.setAsset(entity, quetzalcoatlusAsset)
+      quetzTakeWing(entity, world)
+      const cruise = quetzCruiseLift(entity, world)
+      entity.lift += (cruise - entity.lift) * Math.min(1, dt * 0.8)
+      entity.lift += Math.sin(world.time * 0.9 + entity.id) * unit * dt * 0.6
+      const awayX = entity.data.avoidX
+      const goalX =
+        awayX !== undefined && trexThreat
+          ? entity.x + (entity.x >= awayX ? 1 : -1) * unit * 10
+          : (entity.data.glideGoalX ?? entity.x)
+      if (
+        entity.data.glideGoalX === undefined ||
+        Math.abs(entity.x - (entity.data.glideGoalX ?? entity.x)) < unit * 2
+      ) {
+        entity.data.glideGoalX = between(unit * 4, world.width - unit * 4)
+      }
+      walkToward(entity, world, clamp(goalX, unit * 2, world.width - unit * 2), unit * 4.2, dt)
+      entity.tilt = Math.sin(world.time * 0.7 + entity.id) * 4
+      if (world.time > (entity.data.soarUntil ?? 0) && !trexThreat) {
+        world.setState(entity, 'glide-down')
+      }
+      return
+    }
+
+    if (entity.state === 'glide-down') {
+      quetzTakeWing(entity, world)
+      entity.lift = Math.max(0, entity.lift - unit * dt * 3.4)
+      walk(entity, world, dt, unit * 3)
+      entity.tilt = 6
+      if (entity.lift <= 0) {
+        quetzLand(entity, world)
+        entity.data.soarAt = world.time + between(7, 13)
         world.setState(entity, 'strut')
       }
       return
@@ -2557,9 +2598,8 @@ const quetzalcoatlus: EcoSpecies = {
     walk(entity, world, dt, unit * 0.95)
     settle(entity, dt)
 
-    if ((entity.data.soarAt ?? 0) < world.time && chance(0.1, dt)) {
-      entity.data.soarAt = world.time + between(18, 28)
-      entity.data.flightPoseUntil = world.time + 2.8
+    if ((entity.data.soarAt ?? 0) < world.time && chance(0.5, dt)) {
+      quetzTakeWing(entity, world)
       world.setState(entity, 'launch')
       return
     }
@@ -2580,7 +2620,7 @@ const pterodactyl: EcoSpecies = {
     entity.data.hunger = between(0.2, 0.85)
   },
   layer: 'front',
-  size: [3.9, 5.1],
+  size: [3.6, 4.4],
   state: 'soar',
   strongVs: ['meganeura', 'dino-nest'],
   tags: ['predator', 'burnable'],
@@ -2724,7 +2764,7 @@ const meganeura: EcoSpecies = {
     entity.data.breedAt = world.time + between(20, 34)
   },
   layer: 'front',
-  size: [1.35, 1.55],
+  size: [1.05, 1.2],
   state: 'zip',
   strongVs: ['trex'],
   tags: ['insect', 'prey', 'burnable'],

@@ -61,3 +61,13 @@ export function registerViewBoxes(entries: Record<string, readonly [number, numb
 }
 
 export const aspectOf = (asset: string) => aspectByAsset[asset] ?? 1
+
+const scaleByAsset: Record<string, number> = {}
+
+export function registerAssetScales(entries: Record<string, number>) {
+  for (const [name, scale] of Object.entries(entries)) {
+    scaleByAsset[ecoAsset(name)] = scale
+  }
+}
+
+export const assetScaleOf = (asset: string) => scaleByAsset[asset] ?? 1

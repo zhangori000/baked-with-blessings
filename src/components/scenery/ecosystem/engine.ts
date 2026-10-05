@@ -1,4 +1,4 @@
-import { aspectOf } from './assets'
+import { aspectOf, assetScaleOf } from './assets'
 import { between } from './behaviors'
 import type {
   EcoControlAbility,
@@ -111,7 +111,7 @@ export class Ecosystem implements EcoWorld {
   }
 
   widthOf(entity: EcoEntity) {
-    return entity.size * this.unit * entity.scale
+    return entity.size * assetScaleOf(entity.asset) * this.unit * entity.scale
   }
 
   heightOf(entity: EcoEntity) {
