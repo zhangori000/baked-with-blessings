@@ -81,26 +81,57 @@ const isFrogPrey = (world: EcoWorld) => (other: EcoEntity) =>
   world.has(other, 'insect') && other.state !== 'cocoon'
 
 const frogMouth = (entity: EcoEntity, world: EcoWorld) => ({
-  x: entity.x + entity.facing * clamp(world.unit * 1.15, 12, 24),
-  y: entity.y - world.heightOf(entity) * 0.55,
+  x: entity.x + entity.facing * world.widthOf(entity) * 0.11,
+  y: entity.y - world.heightOf(entity) * 0.6,
 })
+
+const tongueAngleMin = -72
+const tongueAngleMax = 36
+const tongueExtendSeconds = 0.16
+const tongueLashSeconds = 0.42
+
+const preyAimY = (target: EcoEntity, world: EcoWorld) =>
+  target.anchor === 'bottom' ? target.y - world.heightOf(target) * 0.45 : target.y
+
+function tongueCanReach(entity: EcoEntity, target: EcoEntity, world: EcoWorld, maxUnits: number) {
+  const mouth = frogMouth(entity, world)
+  const dx = target.x - mouth.x
+  const dy = preyAimY(target, world) - mouth.y
+  const angle = (Math.atan2(dy, Math.abs(dx)) * 180) / Math.PI
+
+  return (
+    angle >= tongueAngleMin &&
+    angle <= tongueAngleMax &&
+    Math.hypot(dx, dy) <= world.unit * maxUnits
+  )
+}
 
 function aimTongue(entity: EcoEntity, target: EcoEntity, world: EcoWorld, maxUnits: number) {
   const mouth = frogMouth(entity, world)
-  const targetY = target.anchor === 'bottom' ? target.y - world.heightOf(target) * 0.45 : target.y
+  const targetY = preyAimY(target, world)
   const dx = target.x - mouth.x
   const dy = targetY - mouth.y
   const reach = Math.hypot(dx, dy)
 
   entity.facing = dx >= 0 ? 1 : -1
-  entity.data.tongueReach = clamp(
-    reach + world.widthOf(target) * 0.28,
-    world.unit * 1.8,
-    world.unit * maxUnits,
+  entity.data.tongueReach = clamp(reach, world.unit * 1.8, world.unit * maxUnits)
+  entity.data.tongueAngle = clamp(
+    (Math.atan2(dy, Math.abs(dx)) * 180) / Math.PI,
+    tongueAngleMin,
+    tongueAngleMax,
   )
-  entity.data.tongueAngle = clamp((Math.atan2(dy, Math.abs(dx)) * 180) / Math.PI, -58, 36)
 
   return { mouth, reach, targetY }
+}
+
+function tongueTip(entity: EcoEntity, world: EcoWorld, length: number) {
+  const mouth = frogMouth(entity, world)
+  const radians = ((entity.data.tongueAngle ?? 0) * Math.PI) / 180
+
+  return {
+    x: mouth.x + entity.facing * Math.cos(radians) * length,
+    y: mouth.y + Math.sin(radians) * length,
+  }
 }
 
 const isMouseFood = (world: EcoWorld) => (other: EcoEntity) =>
@@ -690,7 +721,7 @@ const frog: EcoSpecies = {
   size: [2.2, 2.8],
   state: 'sit',
   style: (entity) => ({
-    '--frog-tongue': `${Math.max(18, entity.data.tongueReach ?? 42).toFixed(1)}px`,
+    '--frog-tongue': `${((entity.data.tongueLength ?? 0) / Math.max(0.2, entity.scale)).toFixed(1)}px`,
     '--frog-tongue-angle': `${(entity.data.tongueAngle ?? 0).toFixed(1)}deg`,
   }),
   strongVs: ['insect'],
@@ -739,29 +770,66 @@ const frog: EcoSpecies = {
     }
 
     if (entity.state === 'lash') {
-      const prey = world.byId(entity.targetId)
+      const reach = entity.data.tongueReach ?? unit * 2
+      const caught = entity.data.caughtId
+        ? world.entities.find((other) => other.id === entity.data.caughtId)
+        : undefined
 
-      if (prey) {
-        aimTongue(entity, prey, world, 13.5)
+      if (entity.t < tongueExtendSeconds) {
+        const prey = world.byId(entity.targetId)
+
+        if (prey) {
+          aimTongue(entity, prey, world, 13.5)
+        }
+
+        entity.data.tongueLength =
+          (entity.data.tongueReach ?? reach) * (entity.t / tongueExtendSeconds)
+        return
       }
 
-      if (entity.t > 0.12 && (entity.data.ate ?? 0) <= 0) {
+      if ((entity.data.ate ?? 0) <= 0) {
         entity.data.ate = 1
+        entity.data.tongueLength = reach
+
+        const prey = world.byId(entity.targetId)
 
         if (prey && isFrogPrey(world)(prey)) {
-          const aim = aimTongue(entity, prey, world, 13.5)
-          const gap = Math.hypot(prey.x - aim.mouth.x, aim.targetY - aim.mouth.y)
+          const tip = tongueTip(entity, world, reach)
+          const gap = Math.hypot(prey.x - tip.x, preyAimY(prey, world) - tip.y)
 
-          if (gap <= (entity.data.tongueReach ?? unit * 12) + world.widthOf(prey) * 0.22) {
+          if (gap <= world.widthOf(prey) * 0.6 + unit * 0.7) {
             world.kill(prey)
+            entity.data.caughtId = prey.id
             entity.data.meals = (entity.data.meals ?? 0) + 1
           }
         }
+        return
       }
 
-      if (entity.t > 0.42) {
+      const retract = clamp(
+        (entity.t - tongueExtendSeconds) / (tongueLashSeconds - tongueExtendSeconds),
+        0,
+        1,
+      )
+
+      entity.data.tongueLength = reach * (1 - retract)
+
+      if (caught) {
+        const tip = tongueTip(entity, world, entity.data.tongueLength)
+
+        caught.x = tip.x
+        caught.y = caught.anchor === 'bottom' ? tip.y + world.heightOf(caught) * 0.45 : tip.y
+      }
+
+      if (entity.t > tongueLashSeconds) {
+        if (caught && !caught.removed) {
+          world.remove(caught)
+        }
+
         entity.targetId = null
         entity.data.ate = 0
+        entity.data.caughtId = 0
+        entity.data.tongueLength = 0
         entity.data.tongueReach = unit * 2
         world.setState(entity, 'sit')
       }
@@ -769,10 +837,17 @@ const frog: EcoSpecies = {
     }
 
     const mouth = frogMouth(entity, world)
-    const nearbyPrey = world.nearest(mouth, isFrogPrey(world), unit * 13.5)
+    const nearbyPrey = world.nearest(
+      mouth,
+      (other) => isFrogPrey(world)(other) && tongueCanReach(entity, other, world, 13.5),
+      unit * 13.5,
+    )
 
     if (nearbyPrey) {
       entity.targetId = nearbyPrey.id
+      entity.data.ate = 0
+      entity.data.caughtId = 0
+      entity.data.tongueLength = 0
       aimTongue(entity, nearbyPrey, world, 13.5)
       world.setState(entity, 'lash')
       return
