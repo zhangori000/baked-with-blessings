@@ -54,7 +54,6 @@ registerViewBoxes({
   'arrow-volley': [100, 72],
   'rally-banner': [72, 110],
   'sword-arc': [108, 82],
-  'sword-beam': [126, 30],
   'vine-snare': [116, 74],
   wizard: [92, 112],
   'wizard-archmage': [92, 112],
@@ -114,7 +113,18 @@ const worldlessSpecies = new Set([
   'arrow',
   'arrow-volley',
   'bolt',
+  'dragon-burn-zone',
+  'dragon-fog-bank',
+  'dragon-hedge-ridge',
+  'dragon-ice-pop',
+  'dragon-ice-slick',
+  'dragon-rain-puddle',
+  'dragon-root-bump',
   'dragon-shockwave',
+  'dragon-storm-pulse',
+  'dragon-trunk',
+  'dragon-updraft',
+  'dragon-vine-patch',
   'duel-beam-dark',
   'duel-beam-good',
   'fire-lance',
@@ -131,7 +141,6 @@ const worldlessSpecies = new Set([
   'spell-polymorph',
   'spell-tornado',
   'sword-arc',
-  'sword-beam',
   'vine-snare',
   'wizard-cast',
   'wizard-fireball',
@@ -212,6 +221,24 @@ const isHazardTarget = (world: EcoWorld) => (other: EcoEntity) =>
 const isDragon = (world: EcoWorld) => (other: EcoEntity) =>
   world.has(other, 'dragon') && other.state !== 'falling'
 
+function dragonMeleeVulnerable(entity: EcoEntity) {
+  return (
+    entity.state === 'sleep' ||
+    entity.state === 'falling' ||
+    entity.state === 'rooted' ||
+    entity.state === 'rootstep' ||
+    entity.state === 'canopy' ||
+    entity.state === 'antler-plow' ||
+    entity.state === 'orchard' ||
+    entity.state === 'ice-skid' ||
+    entity.state === 'pagoda-coil'
+  )
+}
+
+function canKnightHitTarget(target: EcoEntity, world: EcoWorld) {
+  return !world.has(target, 'dragon') || dragonMeleeVulnerable(target)
+}
+
 function landingX(projectile: EcoEntity, world: EcoWorld, gravity: number) {
   const drop = world.groundY - projectile.y
 
@@ -262,6 +289,39 @@ function leadTarget(foe: EcoEntity, originX: number, originY: number, speed: num
   return { aimX, aimY, seconds: Math.hypot(aimX - originX, aimY - originY) / speed }
 }
 
+function smoothStep(progress: number) {
+  const p = clamp(progress, 0, 1)
+
+  return p * p * (3 - p * 2)
+}
+
+function moveTowardPoint(
+  entity: EcoEntity,
+  world: EcoWorld,
+  dt: number,
+  x: number,
+  y: number,
+  maxUnits = 1.45,
+) {
+  const oldX = entity.x
+  const oldY = entity.y
+  const dx = x - oldX
+  const dy = y - oldY
+  const distance = Math.hypot(dx, dy)
+  const maxStep = world.unit * maxUnits
+  const scale = distance > maxStep && distance > 0 ? maxStep / distance : 1
+
+  entity.x = oldX + dx * scale
+  entity.y = oldY + dy * scale
+
+  if (dt > 0) {
+    entity.vx = (entity.x - oldX) / dt
+    entity.vy = (entity.y - oldY) / dt
+  }
+
+  return Math.hypot(x - entity.x, y - entity.y)
+}
+
 function hurt(dragon: EcoEntity, world: EcoWorld, amount = 1, wake = false, attacker?: EcoEntity) {
   const edge = attacker ? world.edge(attacker, dragon) : 1
   dragon.hp -= amount * edge
@@ -304,34 +364,806 @@ const dragonVariants = [
   {
     asset: ecoAsset('dragon-eastern-red'),
     idle: 'undulate',
-    size: [11.5, 14.8],
+    size: [14.5, 17.5],
     species: 'eastern-dragon',
   },
   {
     asset: ecoAsset('dragon-eastern-jade'),
     idle: 'undulate',
-    size: [11.5, 14.8],
+    size: [14.5, 17.5],
     species: 'eastern-dragon',
   },
   {
     asset: ecoAsset('dragon-western-ember'),
     idle: 'flap',
-    size: [9, 11.2],
+    size: [12.4, 14.2],
     species: 'ember-dragon',
   },
   {
     asset: ecoAsset('dragon-western-frost'),
     idle: 'flap',
-    size: [9, 11.2],
+    size: [12.2, 14],
     species: 'frost-dragon',
   },
   {
     asset: ecoAsset('dragon-western-emerald'),
     idle: 'flap',
-    size: [9, 11.2],
+    size: [12.2, 14],
     species: 'emerald-dragon',
   },
 ] as const
+
+function startDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, target: EcoEntity | null) {
+  entity.targetId = target?.id ?? null
+  entity.data.flameStage = 0
+  entity.data.flameStartedAt = world.time
+  entity.data.flameSwoopAt = world.time
+  entity.data.flameStartX = entity.x
+  entity.data.flameStartY = entity.y
+  entity.data.flameTargetX = target?.x ?? entity.x + entity.facing * world.unit * 9
+  entity.data.flameTargetY = target ? bodyPoint(target, world).y : world.groundY - world.unit * 3.6
+  entity.data.flameTick = 0
+  entity.data.flameRecharge = 0
+  entity.data.breathed = 0
+  world.setState(entity, 'flame-strafe')
+}
+
+function dragonFlameTarget(entity: EcoEntity, world: EcoWorld) {
+  const target = world.byId(entity.targetId)
+  const targetX = clamp(
+    target?.x ?? entity.data.flameTargetX ?? entity.x,
+    world.unit,
+    world.width - world.unit,
+  )
+  const targetY = target ? target.y - target.lift : (entity.data.flameTargetY ?? world.groundY)
+  const direction: 1 | -1 = targetX >= entity.x ? 1 : -1
+  const mouthSideOffset = clamp(world.unit * 6.2, 60, 110)
+  const bodySideOffset = mouthSideOffset + world.widthOf(entity) * 0.36
+  const targetClearance =
+    (target ? world.heightOf(target) : world.unit * 4.6) + clamp(world.unit * 5.4, 50, 70)
+  const hoverY = targetY - targetClearance - world.heightOf(entity) * 0.48
+
+  return {
+    direction,
+    hoverX: clamp(
+      targetX - direction * bodySideOffset,
+      world.unit * 1.8,
+      world.width - world.unit * 1.8,
+    ),
+    hoverY: clamp(hoverY, world.skyTop + world.unit * 1.4, world.groundY - world.unit * 9.2),
+    target,
+    targetX,
+    targetY,
+  }
+}
+
+function tickDragonFlameStrafe(entity: EcoEntity, world: EcoWorld, dt: number) {
+  const unit = world.unit
+  const target = dragonFlameTarget(entity, world)
+  entity.facing = target.direction
+
+  if ((entity.data.flameStage ?? 0) <= 0) {
+    entity.fx = 'flame-swoop'
+    const startX = entity.data.flameStartX ?? entity.x
+    const startY = entity.data.flameStartY ?? entity.y
+    const distance = Math.max(unit, Math.hypot(target.hoverX - startX, target.hoverY - startY))
+    const duration = clamp(distance / (unit * 13.5), 0.72, 1.55)
+    const progress = clamp((world.time - (entity.data.flameSwoopAt ?? world.time)) / duration, 0, 1)
+    const eased = smoothStep(progress)
+    const desiredX = startX + (target.hoverX - startX) * eased
+    const desiredY =
+      startY + (target.hoverY - startY) * eased - Math.sin(progress * Math.PI) * unit * 2.7
+    const remaining = moveTowardPoint(entity, world, dt, desiredX, desiredY, 1.45)
+    tiltToVelocity(entity, 28)
+
+    if (chance(4, dt)) {
+      spawnImpact(
+        world,
+        entity.x - entity.facing * unit * 2.2,
+        entity.y + unit * 0.35,
+        1.1,
+        'dust',
+        0.22,
+      )
+    }
+
+    if (progress >= 1 && remaining < unit * 0.75) {
+      entity.data.flameStage = 1
+      entity.data.flameStartedAt = world.time
+      entity.data.flameTick = 0
+      entity.vx = 0
+      entity.vy = 0
+    }
+    return
+  }
+
+  if ((entity.data.flameStage ?? 0) === 1) {
+    entity.fx = 'flame-hover'
+    moveTowardPoint(entity, world, dt, target.hoverX, target.hoverY, 0.85)
+    entity.lift = Math.sin(world.time * 18 + entity.id) * clamp(unit * 0.38, 4, 6)
+    entity.tilt = Math.sin(world.time * 11 + entity.id) * 5
+    entity.data.flameTick = (entity.data.flameTick ?? 0) - dt
+
+    if ((entity.data.flameTick ?? 0) <= 0) {
+      entity.data.flameTick = 0.075
+      const mouthX = entity.x + entity.facing * world.widthOf(entity) * 0.36
+      const mouthY = entity.y + entity.lift - world.heightOf(entity) * 0.18
+      const burnX = target.target?.x ?? target.targetX
+      const burnY = target.target
+        ? target.target.y - target.target.lift - unit * 0.35
+        : target.targetY
+      const dx = burnX - mouthX
+      const dy = burnY - mouthY
+      const length = Math.max(unit * 5.8, Math.hypot(dx, dy))
+      const stream = world.spawn('flame-stream', {
+        data: {
+          life: 0.28,
+          originX: mouthX,
+          originY: mouthY,
+          ownerId: entity.id,
+          ownerTeam: teamOf(entity),
+          targetId: target.target?.id ?? -1,
+          targetX: burnX,
+          targetY: burnY,
+        },
+        facing: entity.facing,
+        size: Math.max(entity.data.flameSize ?? 7.4, (length / unit) * 1.15),
+        x: mouthX + dx * 0.5,
+        y: mouthY + dy * 0.5,
+      })
+      if (stream) {
+        stream.tilt = (Math.atan2(dy, dx) * 180) / Math.PI
+      }
+    }
+
+    if (target.target && isEnemy(entity, target.target)) {
+      target.target.fx = 'burn'
+      target.target.data.burn = Math.max(target.target.data.burn ?? 0, 0.01)
+    }
+
+    if (
+      world.time - (entity.data.flameStartedAt ?? world.time) >
+      (entity.data.flameDuration ?? 1.9)
+    ) {
+      entity.data.flameStage = 2
+      entity.data.flameClimbAt = world.time
+      entity.data.flameStartX = entity.x
+      entity.data.flameStartY = entity.y
+      entity.data.flameClimbEndX = clamp(
+        entity.x - entity.facing * unit * 8.5,
+        unit * 2,
+        world.width - unit * 2,
+      )
+      entity.data.flameClimbEndY = clamp(
+        world.skyTop + unit * 2.4,
+        world.skyTop + unit,
+        world.height,
+      )
+    }
+    return
+  }
+
+  if ((entity.data.flameStage ?? 0) === 2) {
+    entity.fx = 'flame-climb'
+    const progress = clamp((world.time - (entity.data.flameClimbAt ?? world.time)) / 1.18, 0, 1)
+    const eased = smoothStep(progress)
+    const startX = entity.data.flameStartX ?? entity.x
+    const startY = entity.data.flameStartY ?? entity.y
+    const endX = entity.data.flameClimbEndX ?? entity.x
+    const endY = entity.data.flameClimbEndY ?? world.skyTop + unit * 2.4
+    const desiredX = startX + (endX - startX) * eased
+    const desiredY = startY + (endY - startY) * eased - Math.sin(progress * Math.PI) * unit * 1.8
+    const remaining = moveTowardPoint(entity, world, dt, desiredX, desiredY, 1.3)
+    tiltToVelocity(entity, 24)
+
+    if (progress >= 1 && remaining < unit * 0.9) {
+      entity.data.flameStage = 3
+      entity.data.flameRecharge = 0
+      entity.data.flameRechargeAt = world.time
+      entity.vx = 0
+      entity.vy = 0
+    }
+    return
+  }
+
+  entity.fx = 'flame-recharge'
+  entity.data.flameRecharge = clamp(
+    (world.time - (entity.data.flameRechargeAt ?? world.time)) / 1.55,
+    0,
+    1,
+  )
+  const rechargeAt = entity.data.flameRechargeAt ?? world.time
+  const cruise = world.time - rechargeAt
+  const centerX = clamp(entity.data.flameClimbEndX ?? entity.x, unit * 2, world.width - unit * 2)
+  const centerY = clamp(
+    entity.data.flameClimbEndY ?? entity.y,
+    world.skyTop + unit,
+    world.groundY - unit * 7,
+  )
+  moveTowardPoint(
+    entity,
+    world,
+    dt,
+    centerX + Math.sin(cruise * 2.8) * unit * 2.2,
+    centerY + Math.sin(cruise * 5.6) * unit * 0.65,
+    0.75,
+  )
+  entity.tilt = Math.sin(world.time * 2 + entity.id) * 3
+
+  if ((entity.data.flameRecharge ?? 0) >= 1) {
+    entity.fx = ''
+    entity.lift = 0
+    entity.data.flameStage = 0
+    entity.data.flameRecharge = 0
+    entity.data.cool = between(0.55, 1.15)
+    world.setState(entity, 'patrol')
+  }
+}
+
+function spawnDragonZone(
+  world: EcoWorld,
+  species: string,
+  entity: EcoEntity,
+  x: number,
+  y: number,
+  size: number,
+  life: number,
+) {
+  return world.spawn(species, {
+    data: { life, ownerId: entity.id, ownerTeam: teamOf(entity) },
+    facing: entity.facing,
+    size,
+    x: clamp(x, world.unit, world.width - world.unit),
+    y,
+  })
+}
+
+function dragonMoveTarget(entity: EcoEntity, world: EcoWorld) {
+  const target = world.byId(entity.targetId)
+  const targetX = clamp(
+    target?.x ?? entity.data.moveTargetX ?? entity.x + entity.facing * world.unit * 7,
+    world.unit,
+    world.width - world.unit,
+  )
+  const targetY = target
+    ? bodyPoint(target, world).y
+    : (entity.data.moveTargetY ?? world.groundY - world.unit * 2)
+
+  return { target, targetX, targetY }
+}
+
+function startDragonMove(
+  entity: EcoEntity,
+  world: EcoWorld,
+  state: string,
+  target: EcoEntity | null,
+) {
+  entity.targetId = target?.id ?? null
+  entity.data.moveStartAt = world.time
+  entity.data.moveStartX = entity.x
+  entity.data.moveStartY = entity.y
+  entity.data.moveTargetX = target?.x ?? entity.x + entity.facing * world.unit * 7
+  entity.data.moveTargetY = target ? bodyPoint(target, world).y : world.groundY - world.unit * 2
+  entity.data.moveStep = 0
+  entity.data.moveTick = 0
+  world.setState(entity, state)
+}
+
+function dragonAiRest(entity: EcoEntity, min = 1.2, max = 2.4) {
+  entity.data.cool = between(min, max)
+}
+
+function dragonControlledTarget(
+  entity: EcoEntity,
+  world: EcoWorld,
+  context: EcoControlAbilityContext,
+) {
+  const point = controlCastPoint(entity, world, context)
+  const target =
+    frontTarget(entity, world, world.unit * 18, 8) ??
+    world.nearest(entity, (other) => isTargetableFoe(entity, other), world.unit * 18)
+
+  entity.data.moveTargetX = point.x
+  entity.data.moveTargetY = point.y
+
+  return target
+}
+
+function tickDragonMove(entity: EcoEntity, world: EcoWorld, dt: number) {
+  const unit = world.unit
+  const move = dragonMoveTarget(entity, world)
+  const elapsed = world.time - (entity.data.moveStartAt ?? world.time)
+  entity.facing = move.targetX >= entity.x ? 1 : -1
+
+  if (entity.state === 'scale-run') {
+    entity.fx = 'scale-run'
+    const startX = entity.data.moveStartX ?? entity.x
+    const progress = clamp(elapsed / 1.05, 0, 1)
+    const desiredX = clamp(startX + entity.facing * unit * 8.5 * progress, unit, world.width - unit)
+    const desiredY = clamp(
+      world.groundY - unit * 3.4,
+      world.skyTop + unit,
+      world.groundY - unit * 2.4,
+    )
+    moveTowardPoint(entity, world, dt, desiredX, desiredY, 1.1)
+    entity.tilt = Math.sin(progress * Math.PI * 2) * 7
+    for (let index = 0; index < 5; index += 1) {
+      const threshold = 0.18 + index * 0.14
+      const key = `scale-${index}`
+      if (progress > threshold && (entity.data[key] ?? 0) <= 0) {
+        entity.data[key] = 1
+        spawnDragonZone(
+          world,
+          'dragon-burn-zone',
+          entity,
+          entity.x - entity.facing * unit * between(0.6, 1.8),
+          world.groundY - unit * 0.45,
+          between(2, 2.8),
+          2.2,
+        )
+      }
+    }
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'chimney') {
+    entity.fx = 'chimney'
+    entity.vy = -unit * 5.8
+    entity.vx *= 0.88
+    integrate(entity, dt)
+    keepInSky(entity, world, world.skyTop, world.groundY - unit * 3)
+    if ((entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      spawnDragonZone(
+        world,
+        'dragon-updraft',
+        entity,
+        entity.x,
+        world.groundY - unit * 1.4,
+        5.2,
+        0.9,
+      )
+    }
+    if (elapsed > 0.9) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.2, 2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'kiln-spiral') {
+    entity.fx = 'kiln-spiral'
+    const centerX = clamp(entity.data.moveTargetX ?? entity.x, unit * 3, world.width - unit * 3)
+    const centerY = world.groundY - unit * 4.2
+    const progress = clamp(elapsed / 2.2, 0, 1)
+    const angle = progress * Math.PI * 4.8
+    const radius = unit * (7 - progress * 3.2)
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      centerX + Math.cos(angle) * radius,
+      centerY + Math.sin(angle) * unit * 1.3,
+      1.35,
+    )
+    entity.tilt = Math.sin(angle) * 20
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.18
+      spawnDragonZone(
+        world,
+        'dragon-burn-zone',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.45,
+        3,
+        2.6,
+      )
+    }
+    if (progress >= 1) {
+      spawnDragonZone(world, 'dragon-updraft', entity, centerX, world.groundY - unit * 1.5, 7.6, 1)
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'rootstep') {
+    entity.fx = 'rootstep'
+    const progress = clamp(elapsed / 0.8, 0, 1)
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      entity.x + entity.facing * unit * 0.25,
+      world.groundY - unit * 2.3,
+      0.8,
+    )
+    entity.tilt = Math.sin(progress * Math.PI * 4) * 5
+    for (let index = 0; index < 4; index += 1) {
+      const key = `root-${index}`
+      if (progress > 0.18 + index * 0.14 && (entity.data[key] ?? 0) <= 0) {
+        entity.data[key] = 1
+        spawnDragonZone(
+          world,
+          'dragon-root-bump',
+          entity,
+          entity.x + entity.facing * unit * (2 + index * 1.6),
+          world.groundY - unit * 0.6,
+          2.4 + index * 0.2,
+          1.2,
+        )
+      }
+    }
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.2, 2.2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'canopy') {
+    entity.fx = 'canopy'
+    const progress = clamp(elapsed / 1.25, 0, 1)
+    moveTowardPoint(entity, world, dt, entity.x, world.groundY - unit * 2.8, 0.7)
+    entity.tilt = Math.sin(progress * Math.PI) * -8
+    if (progress > 0.38 && (entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+      spawnDragonZone(
+        world,
+        'dragon-vine-patch',
+        entity,
+        move.targetX,
+        world.groundY - unit * 0.9,
+        4.6 + charge * 3.2,
+        2 + charge * 2,
+      )
+    }
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.6, 2.8)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'antler-plow') {
+    entity.fx = 'antler-plow'
+    const startX = entity.data.moveStartX ?? entity.x
+    const progress = clamp(elapsed / 1, 0, 1)
+    const desiredX = clamp(startX + entity.facing * unit * 8.2 * progress, unit, world.width - unit)
+    const desiredY = world.groundY - unit * (2.2 + Math.sin(progress * Math.PI) * 0.5)
+    moveTowardPoint(entity, world, dt, desiredX, desiredY, 1.15)
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.18
+      spawnDragonZone(
+        world,
+        'dragon-hedge-ridge',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.8,
+        3.1,
+        2.1,
+      )
+    }
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.4)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'orchard') {
+    entity.fx = 'orchard'
+    const progress = clamp(elapsed / 1.5, 0, 1)
+    for (let index = 0; index < 3; index += 1) {
+      const key = `trunk-${index}`
+      if (progress > 0.18 + index * 0.22 && (entity.data[key] ?? 0) <= 0) {
+        entity.data[key] = 1
+        spawnDragonZone(
+          world,
+          'dragon-trunk',
+          entity,
+          move.targetX + (index - 1) * unit * 3.2,
+          world.groundY - unit * 2.1,
+          4.8,
+          1.1,
+        )
+      }
+    }
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.4)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'ice-skid') {
+    entity.fx = 'ice-skid'
+    const startX = entity.data.moveStartX ?? entity.x
+    const progress = clamp(elapsed / 1.05, 0, 1)
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      clamp(startX + entity.facing * unit * 9.2 * progress, unit, world.width - unit),
+      world.groundY - unit * 1.85,
+      1.25,
+    )
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.16
+      spawnDragonZone(
+        world,
+        'dragon-ice-slick',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.65,
+        2.8,
+        2.4,
+      )
+    }
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if (progress >= 1) {
+      spawnDragonZone(
+        world,
+        'dragon-ice-pop',
+        entity,
+        entity.x,
+        world.groundY - unit * 1.2,
+        4.4,
+        0.8,
+      )
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.4)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'whiteout') {
+    entity.fx = elapsed < 0.42 ? 'whiteout-wrap' : 'whiteout-burst'
+    const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+    if ((entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      spawnDragonZone(
+        world,
+        'dragon-fog-bank',
+        entity,
+        entity.x,
+        world.groundY - unit * 2.3,
+        4 + charge * 3,
+        2.6,
+      )
+    }
+    if (elapsed > 0.42) {
+      moveTowardPoint(
+        entity,
+        world,
+        dt,
+        clamp(
+          (entity.data.moveStartX ?? entity.x) + entity.facing * unit * (6 + charge * 5),
+          unit,
+          world.width - unit,
+        ),
+        world.groundY - unit * 2.2,
+        1.25,
+      )
+    }
+    if (elapsed > 1.15) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.6, 2.8)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'icicle-snap') {
+    entity.fx = 'icicle-snap'
+    const progress = clamp(elapsed / 0.95, 0, 1)
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      move.targetX - entity.facing * unit * 2,
+      world.groundY - unit * (4.5 - progress * 2),
+      1,
+    )
+    if (progress > 0.52 && (entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      spawnDragonZone(
+        world,
+        'dragon-ice-pop',
+        entity,
+        move.targetX,
+        world.groundY - unit * 1.6,
+        5.2,
+        1.2,
+      )
+    }
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.2, 2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'snowglobe') {
+    entity.fx = 'snowglobe'
+    const centerX = move.targetX
+    const progress = clamp(elapsed / 2.1, 0, 1)
+    const angle = progress * Math.PI * 3.6
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      centerX + Math.cos(angle) * unit * 6,
+      world.groundY - unit * (3.3 + Math.sin(angle) * 1.3),
+      1.25,
+    )
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.22
+      spawnDragonZone(
+        world,
+        'dragon-ice-slick',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.7,
+        4.3,
+        1.8,
+      )
+    }
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if (progress >= 1) {
+      spawnDragonZone(world, 'dragon-ice-pop', entity, centerX, world.groundY - unit * 1.5, 8, 1)
+      entity.fx = ''
+      dragonAiRest(entity, 1.6, 2.8)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'river-loop') {
+    entity.fx = 'river-loop'
+    const progress = clamp(elapsed / 0.95, 0, 1)
+    const angle = progress * Math.PI * 2
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      (entity.data.moveStartX ?? entity.x) + entity.facing * unit * 5.8 * progress,
+      (entity.data.moveStartY ?? entity.y) + Math.sin(angle) * unit * 3,
+      1.25,
+    )
+    if ((entity.data.moveStep ?? 0) <= 0 && progress > 0.48) {
+      entity.data.moveStep = 1
+      spawnDragonZone(
+        world,
+        'dragon-rain-puddle',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.6,
+        5,
+        2.2,
+      )
+    }
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1, 1.8)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'pagoda-coil') {
+    entity.fx = 'pagoda-coil'
+    const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
+    const progress = clamp(elapsed / (1.1 + charge * 0.45), 0, 1)
+    const wraps = 1.2 + charge * 1.6
+    const angle = progress * Math.PI * 2 * wraps
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      move.targetX + Math.cos(angle) * unit * 4,
+      move.targetY + Math.sin(angle) * unit * 2,
+      1.25,
+    )
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.2
+      spawnDragonZone(world, 'dragon-storm-pulse', entity, move.targetX, move.targetY, 4.4, 0.7)
+    }
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.2, 2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'cloud-step') {
+    entity.fx = 'cloud-step'
+    const progress = clamp(elapsed / 1.15, 0, 1)
+    const step = Math.floor(progress * 5)
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      (entity.data.moveStartX ?? entity.x) + entity.facing * unit * 9 * progress,
+      (entity.data.moveStartY ?? entity.y) +
+        Math.sin(progress * Math.PI * 4) * unit * 1.5 +
+        step * unit * 0.35,
+      1.25,
+    )
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.18
+      spawnDragonZone(
+        world,
+        'dragon-rain-puddle',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.6,
+        3.2,
+        2.1,
+      )
+    }
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.2, 2.2)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'deluge') {
+    entity.fx = 'deluge'
+    const progress = clamp(elapsed / 2.3, 0, 1)
+    const angle = progress * Math.PI * 4.4
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      move.targetX + Math.cos(angle) * unit * 7,
+      world.groundY - unit * (4 + Math.sin(angle) * 1.7),
+      1.35,
+    )
+    if ((entity.data.moveTick ?? 0) <= 0) {
+      entity.data.moveTick = 0.2
+      spawnDragonZone(
+        world,
+        progress < 0.55 ? 'dragon-rain-puddle' : 'dragon-storm-pulse',
+        entity,
+        entity.x,
+        world.groundY - unit * 0.7,
+        4.6,
+        1.8,
+      )
+    }
+    entity.data.moveTick = (entity.data.moveTick ?? 0) - dt
+    if (progress >= 1) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.4)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  return false
+}
 
 const dragon: EcoSpecies = {
   anchor: 'center',
@@ -346,18 +1178,23 @@ const dragon: EcoSpecies = {
     entity.idle = variant.idle
     entity.size = between(variant.size[0], variant.size[1])
     entity.data.team = Math.random() < 0.46 ? darkTeam : wildTeam
-    entity.data.dragonStyle = entity.asset.includes('eastern')
-      ? 0
-      : entity.asset.includes('ember')
-        ? 1
-        : 2
-    entity.data.cool = between(1.2, 2.5)
+    entity.hp = 24
+    entity.maxHp = 24
+    entity.data.cool =
+      variant.species === 'eastern-dragon' ? between(0.35, 0.85) : between(0.8, 1.8)
     entity.y = between(world.skyTop + world.unit * 2, world.height * 0.36)
+    if (variant.species === 'eastern-dragon') {
+      entity.x = clamp(entity.x, world.unit * 5, world.width - world.unit * 5)
+      entity.data.cruiseSeed = between(0, Math.PI * 2)
+    }
   },
   layer: 'front',
   size: [9, 11.2],
   state: 'patrol',
-  style: siegeTeamStyle,
+  style: (entity) => ({
+    ...siegeTeamStyle(entity),
+    '--eco-recharge': String(clamp(entity.data.flameRecharge ?? 0, 0, 1)),
+  }),
   strongVs: ['knight', 'building'],
   tags: ['dragon'],
   weakTo: ['archer', 'ballista', 'wizard', 'projectile'],
@@ -412,7 +1249,9 @@ const dragon: EcoSpecies = {
       entity.vy += unit * 1.8 * dt
       entity.vy = Math.min(entity.vy, unit * 1.6)
       integrate(entity, dt)
-      entity.y = Math.min(entity.y, world.groundY - unit * 3.8)
+      if (entity.y > world.groundY - unit * 3.8) {
+        moveTowardPoint(entity, world, dt, entity.x, world.groundY - unit * 3.8)
+      }
       entity.tilt = Math.sin(world.time * 1.8 + entity.id) * 4
       keepInSky(entity, world, world.skyTop, world.groundY - unit * 3.8)
 
@@ -431,7 +1270,9 @@ const dragon: EcoSpecies = {
       entity.vy += unit * 1.2 * dt
       entity.vy = Math.min(entity.vy, unit * 1.2)
       integrate(entity, dt)
-      entity.y = Math.min(entity.y, world.groundY - unit * 3.2)
+      if (entity.y > world.groundY - unit * 3.2) {
+        moveTowardPoint(entity, world, dt, entity.x, world.groundY - unit * 3.2)
+      }
       entity.tilt = Math.sin(world.time * 2 + entity.id) * 3
 
       if (entity.t > (entity.data.rootFor ?? 3.2)) {
@@ -442,198 +1283,38 @@ const dragon: EcoSpecies = {
       return
     }
 
-    if (entity.state === 'breath') {
-      const target = world.byId(entity.targetId)
-      entity.vx *= 0.86
-      entity.vy *= 0.86
-      integrate(entity, dt)
-
-      if (!target || !isEnemy(entity, target)) {
-        entity.targetId = null
-        world.setState(entity, 'patrol')
-        return
-      }
-
-      entity.facing = target.x >= entity.x ? 1 : -1
-      entity.fx = 'flame'
-
-      if (entity.t > 0.28 && !(entity.data.breathed ?? 0)) {
-        entity.data.breathed = 1
-        world.spawn('flame-stream', {
-          data: { life: 1.5, ownerId: entity.id, ownerTeam: teamOf(entity) },
-          facing: entity.facing,
-          size: 6.4,
-          x: entity.x + entity.facing * unit * 4.2,
-          y: entity.y - world.heightOf(entity) * 0.12,
-        })
-      }
-
-      if (entity.t > 1.75) {
-        entity.fx = ''
-        entity.data.breathed = 0
-        entity.data.cool = between(4.2, 6.4)
-        world.setState(entity, 'patrol')
-      }
+    if (entity.state === 'flame-strafe') {
+      tickDragonFlameStrafe(entity, world, dt)
       return
     }
 
-    if (entity.state === 'slam') {
-      const target = world.byId(entity.targetId)
-      const slamX = clamp(target?.x ?? entity.data.slamX ?? entity.x, unit, world.width - unit)
-      entity.data.slamX = slamX
-      entity.facing = slamX >= entity.x ? 1 : -1
-
-      if (entity.t < 0.42) {
-        entity.fx = 'slam-rise'
-        entity.vy -= unit * 9 * dt
-        entity.x += (slamX - entity.x) * Math.min(1, dt * 2.2)
-        integrate(entity, dt)
-        keepInSky(entity, world, world.skyTop, world.groundY - unit * 5)
-        if ((entity.data.slamTelegraph ?? 0) <= 0) {
-          entity.data.slamTelegraph = 1
-          spawnImpact(world, slamX, world.groundY - unit * 0.4, 4.4, 'dust', 0.75)
-        }
-      } else if (entity.t < 0.92) {
-        entity.fx = 'slam-dive'
-        steer(entity, slamX, world.groundY - unit * 1.15, unit * 28, dt, 8)
-        entity.vy += unit * 16 * dt
-        integrate(entity, dt)
-        tiltToVelocity(entity, 34)
-      } else if (!(entity.data.slamHit ?? 0)) {
-        entity.data.slamHit = 1
-        entity.fx = 'slam-impact'
-        entity.x = slamX
-        entity.y = world.groundY - unit * 1.15
-        entity.vx = 0
-        entity.vy = 0
-        entity.tilt = 0
-        world.spawn('dragon-shockwave', {
-          data: { ownerId: entity.id, ownerTeam: teamOf(entity) },
-          size: 6.4,
-          x: entity.x,
-          y: world.groundY - unit * 0.75,
-        })
-        spawnImpact(world, entity.x - unit * 1.8, world.groundY - unit * 0.5, 3.1, 'dust', 0.55)
-        spawnImpact(world, entity.x + unit * 1.8, world.groundY - unit * 0.5, 3.1, 'dust', 0.55)
-        for (const foe of world.within(entity.x, world.groundY, unit * 6.8, (other) =>
-          isTargetableFoe(entity, other),
-        )) {
-          damageGroundTarget(foe, world, 1.05, entity, 6.2)
-        }
-      } else {
-        entity.fx = 'slam-impact'
-        entity.y = world.groundY - unit * 1.15
-        if (entity.t > 1.28) {
-          entity.fx = ''
-          entity.data.slamHit = 0
-          entity.data.slamTelegraph = 0
-          entity.data.cool = between(5.2, 7.4)
-          entity.vy = -unit * 9
-          entity.vx = entity.facing * unit * 2.2
-          world.setState(entity, 'patrol')
-        }
-      }
+    if (tickDragonMove(entity, world, dt)) {
       return
     }
 
-    if (entity.state === 'claw' || entity.state === 'tail') {
-      const target = world.byId(entity.targetId)
-
-      if (!target || !isEnemy(entity, target)) {
-        world.setState(entity, 'patrol')
-        return
-      }
-
-      entity.facing = target.x >= entity.x ? 1 : -1
-      steer(entity, target.x, world.groundY - unit * 3.4, unit * 8, dt, 3.2)
-      integrate(entity, dt)
-
-      if (Math.abs(target.x - entity.x) < unit * 3.2 && entity.t > 0.35) {
-        spawnImpact(
-          world,
-          target.x,
-          bodyPoint(target, world).y,
-          2.6,
-          entity.state === 'tail' ? 'dust' : 'slash',
-          0.4,
-        )
-        damageGroundTarget(
-          target,
-          world,
-          entity.state === 'tail' ? 0.9 : 1.1,
-          entity,
-          entity.state === 'tail' ? 5 : 2.2,
-        )
-        entity.data.cool = between(3.8, 5.8)
-        world.setState(entity, 'patrol')
-      } else if (entity.t > 1.4) {
-        world.setState(entity, 'patrol')
-      }
-      return
+    if (entity.species === 'eastern-dragon') {
+      const cruise = world.time * 0.42 + (entity.data.cruiseSeed ?? 0)
+      const targetX = world.width * 0.5 + Math.sin(cruise) * world.width * 0.32
+      const targetY = world.skyTop + unit * 3.2 + Math.sin(cruise * 2.1) * unit * 2.1
+      const dx = clamp(targetX, unit * 4, world.width - unit * 4) - entity.x
+      const dy = clamp(targetY, world.skyTop + unit * 1.4, world.groundY - unit * 8) - entity.y
+      const distance = Math.max(unit, Math.hypot(dx, dy))
+      const speed = unit * 2.8
+      entity.vx += (dx / distance) * speed * dt
+      entity.vy += (dy / distance) * speed * dt
+      entity.vx *= 0.94
+      entity.vy *= 0.94
+    } else {
+      wander(
+        entity,
+        world,
+        dt,
+        unit * ((entity.data.angry ?? 0) > 0 ? 3.8 : 2.6),
+        world.skyTop + unit,
+        world.height * 0.4,
+        1.4,
+      )
     }
-
-    if (entity.state === 'aim') {
-      const target = world.byId(entity.targetId)
-      entity.vx *= 0.92
-      entity.vy *= 0.92
-      integrate(entity, dt)
-
-      if (!target) {
-        world.setState(entity, 'patrol')
-        return
-      }
-
-      entity.facing = target.x >= entity.x ? 1 : -1
-
-      if (entity.t > 0.7) {
-        const width = world.widthOf(entity)
-        const mouthX = entity.x + entity.facing * width * 0.44
-        const mouthY = entity.y - world.heightOf(entity) * 0.18
-        const seconds = clamp(Math.abs(target.x - mouthX) / (unit * 7), 0.9, 2)
-        const launch = ballistic(
-          mouthX,
-          mouthY,
-          target.x,
-          world.groundY,
-          seconds,
-          fireballGravity * unit,
-        )
-
-        world.spawn('fireball', {
-          ...launch,
-          data: { ownerId: entity.id, ownerTeam: teamOf(entity) },
-          x: mouthX,
-          y: mouthY,
-        })
-        entity.targetId = null
-        entity.data.cool = between(4, 7)
-        world.setState(entity, 'patrol')
-      }
-      return
-    }
-
-    if (entity.state === 'swoop') {
-      steer(entity, entity.data.swoopX ?? entity.x, world.groundY - unit * 4.5, unit * 6, dt, 2)
-      integrate(entity, dt)
-      faceTravel(entity)
-      tiltToVelocity(entity, 18)
-      keepInSky(entity, world, world.skyTop, world.groundY - unit * 3.5)
-
-      if (entity.t > 3.4) {
-        world.setState(entity, 'patrol')
-      }
-      return
-    }
-
-    wander(
-      entity,
-      world,
-      dt,
-      unit * ((entity.data.angry ?? 0) > 0 ? 3.8 : 2.6),
-      world.skyTop + unit,
-      world.height * 0.4,
-      1.4,
-    )
     integrate(entity, dt)
     faceTravel(entity)
     tiltToVelocity(entity, 12)
@@ -647,33 +1328,33 @@ const dragon: EcoSpecies = {
           !other.removed &&
           world.has(other, 'target') &&
           isEnemy(entity, other) &&
-          Math.abs(other.x - entity.x) < unit * 30,
+          (entity.species === 'eastern-dragon' || Math.abs(other.x - entity.x) < unit * 30),
       )
 
       if (targets.length > 0) {
         const target = pick(targets)
         entity.targetId = target.id
 
-        if ((entity.data.dragonStyle ?? 0) === 1 && Math.random() < 0.68) {
-          world.setState(entity, 'breath')
-        } else if ((entity.data.dragonStyle ?? 0) === 2 && Math.random() < 0.72) {
-          entity.data.slamX = target.x
-          world.setState(
+        if (entity.species === 'ember-dragon') {
+          startDragonFlameStrafe(entity, world, target)
+        } else if (entity.species === 'emerald-dragon') {
+          startDragonMove(entity, world, Math.random() < 0.5 ? 'canopy' : 'rootstep', target)
+        } else if (entity.species === 'frost-dragon') {
+          startDragonMove(entity, world, Math.random() < 0.55 ? 'whiteout' : 'ice-skid', target)
+        } else if (entity.species === 'eastern-dragon') {
+          startDragonMove(
             entity,
-            Math.random() < 0.58 ? 'slam' : Math.random() < 0.5 ? 'tail' : 'claw',
+            world,
+            Math.random() < 0.55 ? 'pagoda-coil' : 'cloud-step',
+            target,
           )
         } else {
-          world.setState(entity, 'aim')
+          startDragonFlameStrafe(entity, world, target)
         }
         return
       }
 
-      entity.data.cool = between(1, 2)
-    }
-
-    if (chance(0.05, dt)) {
-      entity.data.swoopX = between(world.width * 0.1, world.width * 0.9)
-      world.setState(entity, 'swoop')
+      entity.data.cool = entity.species === 'eastern-dragon' ? between(0.5, 1) : between(1, 2)
     }
   },
 }
@@ -750,7 +1431,7 @@ const fireball: EcoSpecies = {
         const direction = entity.x >= other.x ? -1 : 1
 
         spawnCast(world, other.x, other.y - world.heightOf(other) * 0.55, 2.4, 'blink', 0.55)
-        other.x = clamp(other.x + direction * unit * between(8, 12), unit, world.width - unit)
+        other.vx += direction * unit * between(7, 10)
         other.facing = direction === 1 ? -1 : 1
         other.fx = 'blink'
         other.lift = unit * 0.25
@@ -758,17 +1439,26 @@ const fireball: EcoSpecies = {
         other.data.blinkFx = 0.75
         world.setAsset(other, wizardTypeFor(other).asset)
         world.setState(other, 'wander')
-        spawnCast(world, other.x, other.y - world.heightOf(other) * 0.55, 2.6, 'blink', 0.65)
+        spawnCast(
+          world,
+          clamp(other.x + direction * unit * 3, unit, world.width - unit),
+          other.y - world.heightOf(other) * 0.55,
+          2.6,
+          'blink',
+          0.65,
+        )
       } else if (world.has(other, 'fuel')) {
         other.data.burn = Math.max(other.data.burn ?? 0, 0.01)
       } else if (world.has(other, 'knight') && other.hp > 1) {
         other.hp -= world.edge(entity, other)
-        other.fx = 'hurt'
+        other.fx = 'burn'
+        other.data.burn = Math.max(other.data.burn ?? 0, 0.01)
         other.data.block = 0.45
       } else if (Math.random() < Math.min(0.96, 0.72 * edge)) {
         world.kill(other)
       } else {
-        other.fx = 'hurt'
+        other.fx = 'burn'
+        other.data.burn = Math.max(other.data.burn ?? 0, 0.01)
       }
     }
 
@@ -790,7 +1480,7 @@ function dismountKnight(entity: EcoEntity, world: EcoWorld) {
 
   entity.data.mounted = 0
   entity.hp = Math.max(1, entity.hp + 1)
-  entity.size = clamp(entity.size * 0.72, 3.5, 4.25)
+  entity.size = clamp(entity.size * 0.72, 2.75, 3.35)
   entity.lift = Math.max(entity.lift, world.unit * 0.45)
   entity.vx *= 0.35
   entity.vy = 0
@@ -804,6 +1494,48 @@ function dismountKnight(entity: EcoEntity, world: EcoWorld) {
   return true
 }
 
+function elementalImpactFx(attacker: EcoEntity, world: EcoWorld) {
+  if (
+    world.has(attacker, 'fire') ||
+    attacker.species === 'flame-stream' ||
+    attacker.species === 'dragon-burn-zone'
+  ) {
+    return 'burn'
+  }
+
+  if (
+    attacker.species === 'dragon-ice-slick' ||
+    attacker.species === 'dragon-ice-pop' ||
+    attacker.species === 'dragon-fog-bank' ||
+    attacker.fx === 'frost'
+  ) {
+    return 'frozen'
+  }
+
+  if (
+    attacker.species === 'dragon-root-bump' ||
+    attacker.species === 'dragon-vine-patch' ||
+    attacker.species === 'dragon-hedge-ridge' ||
+    attacker.species === 'dragon-trunk' ||
+    attacker.fx === 'plant' ||
+    attacker.fx === 'vine'
+  ) {
+    return 'rooted'
+  }
+
+  if (
+    attacker.species === 'dragon-rain-puddle' ||
+    attacker.species === 'dragon-storm-pulse' ||
+    attacker.species === 'eastern-dragon' ||
+    attacker.fx === 'rain' ||
+    attacker.fx === 'storm'
+  ) {
+    return 'soaked'
+  }
+
+  return 'hurt'
+}
+
 function damageGroundTarget(
   target: EcoEntity,
   world: EcoWorld,
@@ -815,7 +1547,17 @@ function damageGroundTarget(
     return
   }
 
+  if (
+    world.has(attacker, 'knight') &&
+    world.has(target, 'dragon') &&
+    !dragonMeleeVulnerable(target)
+  ) {
+    spawnImpact(world, target.x, target.y, 1.8, 'sparkle', 0.22)
+    return
+  }
+
   const edge = world.edge(attacker, target)
+  const impactFx = elementalImpactFx(attacker, world)
   world.gainControlResource(attacker, amount * edge * 12)
   world.gainControlResource(target, amount * edge * 8)
 
@@ -823,7 +1565,7 @@ function damageGroundTarget(
     hurtDragonOrLord(target, world, amount, target.state === 'sleep', attacker.x, attacker)
   } else if (world.has(target, 'knight')) {
     target.hp -= amount * edge
-    target.fx = 'hurt'
+    target.fx = impactFx
     target.data.block = 0.45
 
     if (target.hp <= 1 && dismountKnight(target, world)) {
@@ -835,7 +1577,7 @@ function damageGroundTarget(
     }
   } else if (world.has(target, 'wizard')) {
     target.hp -= amount * edge
-    target.fx = 'hurt'
+    target.fx = impactFx
     target.data.blinkFx = 0.45
 
     if (target.hp <= 0) {
@@ -845,7 +1587,7 @@ function damageGroundTarget(
     if (amount >= 1 || Math.random() < Math.min(0.92, amount * world.edge(attacker, target))) {
       world.kill(target)
     } else {
-      target.fx = 'hurt'
+      target.fx = impactFx
     }
   }
 
@@ -895,6 +1637,13 @@ function controlAction(
   }
 
   world.setState(entity, state)
+}
+
+function wizardCastAssetForState(entity: EcoEntity, state: string) {
+  const wizardUnit =
+    entity.countAs === 'wizard' || entity.species === 'wizard' || entity.species.endsWith('-wizard')
+
+  return !wizardUnit || !isWizardCasting(state) ? undefined : wizardTypeFor(entity).castAsset
 }
 
 function siegeControlTarget(entity: EcoEntity, other: EcoEntity) {
@@ -968,6 +1717,12 @@ type SiegeAbilityConfig = {
   width?: number
   windup?: number
   onRun?: (entity: EcoEntity, world: EcoWorld, context: EcoControlAbilityContext) => void
+  onTick?: (
+    entity: EcoEntity,
+    world: EcoWorld,
+    context: EcoControlAbilityContext,
+    dt: number,
+  ) => void
   onHit?: (entity: EcoEntity, target: EcoEntity, world: EcoWorld) => void
 }
 
@@ -978,6 +1733,9 @@ function siegeAbility(config: SiegeAbilityConfig): EcoControlAbility {
   return {
     active: config.active ?? 0.28,
     archetype: config.archetype,
+    asset: (entity) =>
+      (typeof config.asset === 'function' ? config.asset(entity) : config.asset) ??
+      wizardCastAssetForState(entity, config.state ?? entity.state),
     charge: config.charge,
     cooldown: config.cooldown ?? 0,
     dash: config.dash,
@@ -991,12 +1749,15 @@ function siegeAbility(config: SiegeAbilityConfig): EcoControlAbility {
     vfx: config.vfx,
     windup: config.windup ?? (config.key === 'r' ? 0.55 : config.key === 'q' ? 0.18 : 0.28),
     run(entity, world, context) {
-      const asset = typeof config.asset === 'function' ? config.asset(entity) : config.asset
+      const state = config.state ?? entity.state
+      const asset =
+        (typeof config.asset === 'function' ? config.asset(entity) : config.asset) ??
+        wizardCastAssetForState(entity, state)
       controlAction(
         entity,
         world,
-        config.state ?? entity.state,
-        (config.active ?? 0.28) + 0.18,
+        state,
+        (config.active ?? 0.28) + (config.recovery ?? 0.25) + 0.04,
         asset,
         config.vfx,
       )
@@ -1021,7 +1782,9 @@ function siegeAbility(config: SiegeAbilityConfig): EcoControlAbility {
 
       config.onRun?.(entity, world, context)
     },
-    tick(entity, world, context) {
+    tick(entity, world, context, dt) {
+      config.onTick?.(entity, world, context, dt)
+
       if (config.amount === undefined) {
         return
       }
@@ -1279,6 +2042,7 @@ const knightControls = {
       },
     }),
     siegeAbility({
+      active: 0.95,
       amount: 0.55,
       cooldown: 0,
       description: 'Hold to charge, then rush with a lance.',
@@ -1400,6 +2164,7 @@ const archerControls = {
       },
     }),
     siegeAbility({
+      active: 0.46,
       buff: { icon: '↷', name: 'Dodge roll', seconds: 1.2, speed: 1.75 },
       cooldown: 0,
       dash: -3.4,
@@ -1455,88 +2220,98 @@ const archerControls = {
 const emberDragonControls = {
   abilities: [
     siegeAbility({
-      active: 0.22,
-      amount: 0.82,
-      archetype: 'Basic 3-bite combo',
+      active: 1.05,
       cooldown: 0,
-      description: 'Snap forward with a close bite combo.',
-      icon: 'bite',
+      dash: 8,
+      description: 'Skim low and drop burning belly scales in a line.',
+      icon: 'scale',
       key: 'q',
-      name: 'Bite',
-      radius: 4.1,
-      shape: 'cone',
-      state: 'claw',
-      target: 'front',
-      vfx: 'bite',
-      width: 3.1,
-      onHit(entity, target, world) {
-        spawnImpact(world, target.x, bodyPoint(target, world).y, 2.2, 'slash', 0.32)
-        target.vx += entity.facing * world.unit * 1.7
+      name: 'Molten scale run',
+      radius: 9,
+      shape: 'line',
+      state: 'scale-run',
+      vfx: 'shockwave',
+      width: 3,
+      windup: 0.22,
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'scale-run', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
       },
     }),
     siegeAbility({
+      active: 5.2,
+      charge: { max: 1.45, min: 0.25 },
       cooldown: 0,
-      description: 'Sweep a sustained cone of dragonfire.',
+      description:
+        'Swoop from the sky, hover in front of the target, breathe fire, then climb and recharge.',
       icon: 'flame',
       key: 'w',
-      name: 'Flamethrower',
-      radius: 9,
-      shape: 'cone',
-      state: 'breath',
+      name: 'Swoop breath',
+      radius: 13,
+      recovery: 0.1,
+      shape: 'line',
+      state: 'flame-strafe',
       vfx: 'shockwave',
-      width: 5.5,
-      onRun(entity, world) {
-        world.spawn('flame-stream', {
-          data: { life: 1.55, ownerId: entity.id, ownerTeam: teamOf(entity) },
-          facing: entity.facing,
-          size: 7.2,
-          x: entity.x + entity.facing * world.unit * 4.6,
-          y: entity.y - world.heightOf(entity) * 0.12,
-        })
+      width: 4.8,
+      windup: 0.35,
+      onRun(entity, world, context) {
+        const point = controlCastPoint(entity, world, context)
+        const charge = controlCharge(entity)
+        const target =
+          frontTarget(entity, world, world.unit * 18, 8) ??
+          world.nearest(entity, (other) => isTargetableFoe(entity, other), world.unit * 18)
+        startDragonFlameStrafe(entity, world, target)
+        entity.data.flameTargetX = point.x
+        entity.data.flameTargetY = point.y
+        entity.data.flameDuration = 1.25 + charge * 1.25
+        entity.data.flameSize = 5.8 + charge * 2.1
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonFlameStrafe(entity, world, dt)
       },
     }),
     siegeAbility({
-      active: 0.3,
-      amount: 0.46,
+      active: 0.9,
       cooldown: 0,
-      description: 'Beat the wings to shove enemies away.',
-      icon: 'gust',
+      description: 'Wing-brake upward and pop enemies with a hot chimney updraft.',
+      icon: 'chimney',
       key: 'e',
-      name: 'Wing gust',
-      radius: 7.5,
-      shape: 'cone',
-      state: 'swoop',
-      target: 'front',
+      name: 'Chimney stall',
+      radius: 6.5,
+      shape: 'ellipse',
+      state: 'chimney',
       vfx: 'shockwave',
-      width: 5.8,
-      onHit(entity, target, world) {
-        target.vx += entity.facing * world.unit * 6.2
-        target.vy -= world.unit * 1.5
-        spawnImpact(world, target.x, bodyPoint(target, world).y, 2.5, 'dust', 0.36)
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'chimney', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
       },
     }),
     siegeAbility({
+      active: 2.25,
       cooldown: 0,
-      description: 'Turn the whole lane into an inferno.',
-      icon: 'inferno',
+      description: 'Corkscrew around the lane, painting a spiral burn zone.',
+      icon: 'spiral',
       key: 'r',
-      name: 'Inferno',
-      radius: 11,
-      shape: 'cone',
-      state: 'breath',
+      name: 'Kiln spiral',
+      radius: 13,
+      shape: 'circle',
+      state: 'kiln-spiral',
       ultimate: true,
       vfx: 'shockwave',
-      width: 7,
-      onRun(entity, world) {
-        for (let index = 0; index < 3; index += 1) {
-          world.spawn('flame-stream', {
-            data: { life: 1.8, ownerId: entity.id, ownerTeam: teamOf(entity) },
-            facing: entity.facing,
-            size: 7.4 + index * 0.7,
-            x: entity.x + entity.facing * world.unit * (4.4 + index * 1.6),
-            y: entity.y - world.heightOf(entity) * (0.2 - index * 0.08),
-          })
-        }
+      onRun(entity, world, context) {
+        startDragonMove(
+          entity,
+          world,
+          'kiln-spiral',
+          dragonControlledTarget(entity, world, context),
+        )
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
       },
     }),
   ],
@@ -1549,90 +2324,274 @@ const emberDragonControls = {
 const emeraldDragonControls = {
   abilities: [
     siegeAbility({
-      active: 0.24,
-      amount: 0.78,
-      archetype: 'Basic 3-hit claw combo',
+      active: 0.8,
       cooldown: 0,
-      description: 'Fast claw jab; every third rake bites harder.',
-      icon: 'claw',
+      description: 'Double-stomp a cone of root bumps that trips enemies.',
+      icon: 'root',
       key: 'q',
-      name: 'Claw rake',
-      radius: 4.5,
+      name: 'Rootstep tremor',
+      radius: 8,
       shape: 'cone',
-      state: 'claw',
-      target: 'front',
-      vfx: 'slash',
-      width: 3.5,
-    }),
-    siegeAbility({
-      amount: 0.9,
-      cooldown: 0,
-      dash: 8.5,
-      description: 'Dive down and slam the battlefield.',
-      icon: 'slam',
-      key: 'w',
-      name: 'Dive slam',
-      radius: 7,
-      shape: 'circle',
-      state: 'slam',
-      target: 'area',
+      state: 'rootstep',
       vfx: 'shockwave',
+      width: 5,
       onRun(entity, world, context) {
-        entity.data.slamX = controlCastPoint(entity, world, context).x
-        entity.data.slamHit = 0
-        entity.data.slamTelegraph = 0
+        startDragonMove(entity, world, 'rootstep', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
       },
     }),
     siegeAbility({
-      active: 0.28,
-      amount: 0.7,
+      active: 1.25,
+      charge: { max: 1.5, min: 0.25 },
       cooldown: 0,
-      description: 'Whip the tail in a side sweep.',
-      icon: 'tail',
-      key: 'e',
-      name: 'Tail sweep',
-      radius: 6.8,
-      shape: 'circle',
-      state: 'tail',
-      target: 'area',
-      vfx: 'slash',
-      onHit(entity, target, world) {
-        target.vx += Math.sign(target.x - entity.x || entity.facing) * world.unit * 5.4
-      },
-    }),
-    siegeAbility({
-      cooldown: 0,
-      description: 'Stomp out an earthquake shockwave.',
-      icon: 'quake',
-      key: 'r',
-      name: 'Earthquake stomp',
+      description: 'Crouch under a wing canopy, then fling open a dragging vine patch.',
+      icon: 'canopy',
+      key: 'w',
+      name: 'Canopy germination',
       radius: 9,
       shape: 'circle',
-      state: 'slam',
+      state: 'canopy',
+      vfx: 'shockwave',
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'canopy', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 1,
+      cooldown: 0,
+      description: 'Bulldoze horn-first and leave a hedge ridge.',
+      icon: 'antler',
+      key: 'e',
+      name: 'Antler plow',
+      radius: 9,
+      shape: 'line',
+      state: 'antler-plow',
+      vfx: 'charge',
+      width: 4,
+      onRun(entity, world, context) {
+        startDragonMove(
+          entity,
+          world,
+          'antler-plow',
+          dragonControlledTarget(entity, world, context),
+        )
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 1.5,
+      cooldown: 0,
+      description: 'Raise three giant trunks under enemy clusters.',
+      icon: 'orchard',
+      key: 'r',
+      name: 'Orchard uprising',
+      radius: 14,
+      shape: 'ellipse',
+      state: 'orchard',
       ultimate: true,
       vfx: 'shockwave',
-      onRun(entity, world) {
-        world.spawn('dragon-shockwave', {
-          data: { ownerId: entity.id, ownerTeam: teamOf(entity) },
-          size: 8.4,
-          x: entity.x,
-          y: world.groundY - world.unit * 0.75,
-        })
-        for (const foe of world.within(entity.x, world.groundY, world.unit * 9, (other) =>
-          isTargetableFoe(entity, other),
-        )) {
-          damageGroundTarget(foe, world, 1.05, entity, 6.6)
-        }
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'orchard', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
       },
     }),
   ],
   idleState: 'patrol',
   move: 'fly',
   moveState: 'patrol',
-  speed: 20,
+  speed: 17,
 } as const
 
-const dragonControls = emeraldDragonControls
+const frostDragonControls = {
+  abilities: [
+    siegeAbility({
+      active: 1.05,
+      cooldown: 0,
+      dash: 8,
+      description: 'Belly-skid across the ground, dragging enemies over slick ice.',
+      icon: 'skid',
+      key: 'q',
+      name: 'Belly-ice skid',
+      radius: 9,
+      shape: 'line',
+      state: 'ice-skid',
+      vfx: 'charge',
+      width: 4,
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'ice-skid', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 1.15,
+      charge: { max: 1.45, min: 0.25 },
+      cooldown: 0,
+      description: 'Wrap in fog, then burst out in the aimed direction.',
+      icon: 'whiteout',
+      key: 'w',
+      name: 'Whiteout mantle',
+      radius: 10,
+      shape: 'line',
+      state: 'whiteout',
+      vfx: 'buff',
+      width: 5,
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'whiteout', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 0.95,
+      cooldown: 0,
+      description: 'Hook onto a high edge, then snap up an ice-pillar zone.',
+      icon: 'icicle',
+      key: 'e',
+      name: 'Perch-snap icicle',
+      radius: 10,
+      shape: 'ellipse',
+      state: 'icicle-snap',
+      vfx: 'shockwave',
+      onRun(entity, world, context) {
+        startDragonMove(
+          entity,
+          world,
+          'icicle-snap',
+          dragonControlledTarget(entity, world, context),
+        )
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 2.1,
+      cooldown: 0,
+      description: 'Orbit a lane inside a frost ring that collapses inward.',
+      icon: 'snowglobe',
+      key: 'r',
+      name: 'Snowglobe siege',
+      radius: 13,
+      shape: 'circle',
+      state: 'snowglobe',
+      ultimate: true,
+      vfx: 'shockwave',
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'snowglobe', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+  ],
+  idleState: 'patrol',
+  move: 'fly',
+  moveState: 'patrol',
+  speed: 17,
+} as const
+
+const easternDragonControls = {
+  abilities: [
+    siegeAbility({
+      active: 0.95,
+      cooldown: 0,
+      description: 'Draw a vertical river loop that pulls enemies to its centre.',
+      icon: 'loop',
+      key: 'q',
+      name: 'River gate loop',
+      radius: 8,
+      shape: 'circle',
+      state: 'river-loop',
+      vfx: 'water',
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'river-loop', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 1.45,
+      charge: { max: 1.5, min: 0.25 },
+      cooldown: 0,
+      description: 'Orbit the target, then tighten a crushing coil.',
+      icon: 'coil',
+      key: 'w',
+      name: 'Pagoda coil',
+      radius: 10,
+      shape: 'circle',
+      state: 'pagoda-coil',
+      vfx: 'shockwave',
+      onRun(entity, world, context) {
+        startDragonMove(
+          entity,
+          world,
+          'pagoda-coil',
+          dragonControlledTarget(entity, world, context),
+        )
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 1.15,
+      cooldown: 0,
+      description: 'Ride a cloud down a stair-step S path, leaving conductive rain puddles.',
+      icon: 'cloud',
+      key: 'e',
+      name: 'Cloud step cascade',
+      radius: 10,
+      shape: 'line',
+      state: 'cloud-step',
+      vfx: 'water',
+      width: 5,
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'cloud-step', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+    siegeAbility({
+      active: 2.3,
+      cooldown: 0,
+      description: 'Form a rain-court circle with lightning pulses travelling down the body.',
+      icon: 'deluge',
+      key: 'r',
+      name: 'Dragon court deluge',
+      radius: 14,
+      shape: 'circle',
+      state: 'deluge',
+      ultimate: true,
+      vfx: 'shockwave',
+      onRun(entity, world, context) {
+        startDragonMove(entity, world, 'deluge', dragonControlledTarget(entity, world, context))
+      },
+      onTick(entity, world, _context, dt) {
+        tickDragonMove(entity, world, dt)
+      },
+    }),
+  ],
+  idleState: 'patrol',
+  move: 'fly',
+  moveState: 'patrol',
+  speed: 22,
+} as const
+
+const dragonControls = emberDragonControls
 
 const wardWizardControls = {
   abilities: [
@@ -1780,6 +2739,7 @@ const pyroWizardControls = {
       },
     }),
     siegeAbility({
+      active: 0.72,
       cooldown: 0,
       dash: 5.4,
       description: 'Dash forward and leave a line of fire.',
@@ -2075,6 +3035,7 @@ const stormWizardControls = {
       },
     }),
     siegeAbility({
+      active: 0.64,
       buff: { icon: '⚡', name: 'Thunder blink', seconds: 1, speed: 1.35 },
       cooldown: 0,
       dash: -4.8,
@@ -2087,7 +3048,7 @@ const stormWizardControls = {
       state: 'blink',
       vfx: 'buff',
       onRun(entity, world, context) {
-        for (const x of [context.cast.startX, entity.x]) {
+        for (const x of [context.cast.startX, context.cast.endX]) {
           spawnImpact(world, x, world.groundY - world.unit * 2, 2.7, 'lightning', 0.42)
           for (const foe of world.within(x, world.groundY, world.unit * 4.2, (other) =>
             isTargetableFoe(entity, other),
@@ -2250,12 +3211,12 @@ const emeraldDragon = {
 const frostDragon = {
   ...dragon,
   asset: ecoAsset('dragon-western-frost'),
-  controls: emeraldDragonControls,
+  controls: frostDragonControls,
 }
 const easternDragon = {
   ...dragon,
   asset: ecoAsset('dragon-eastern-jade'),
-  controls: emeraldDragonControls,
+  controls: easternDragonControls,
 }
 
 const knight: EcoSpecies = {
@@ -2276,7 +3237,7 @@ const knight: EcoSpecies = {
       (entity.data.mounted ?? 0) > 0 ? between(0.15, 0.45) : between(0.8, 1.6)
   },
   layer: 'front',
-  size: [4.9, 5.95],
+  size: [3.85, 4.7],
   state: 'march',
   style: siegeTeamStyle,
   strongVs: ['archer', 'dark-lord', 'fireball'],
@@ -2338,7 +3299,7 @@ const knight: EcoSpecies = {
         })
         const foe = world.nearest(
           { x: entity.x, y: entity.y - entity.lift - world.heightOf(entity) },
-          isSpellDuelTarget(world, entity),
+          (other) => isSpellDuelTarget(world, entity)(other) && canKnightHitTarget(other, world),
           unit * 4.8,
         )
 
@@ -2397,37 +3358,6 @@ const knight: EcoSpecies = {
       }
 
       if (entity.t > 0.72) {
-        entity.fx = ''
-        entity.data.struck = 0
-        world.setState(entity, 'march')
-      }
-      return
-    }
-
-    if (entity.state === 'beam-slash') {
-      settle(entity, dt)
-      entity.fx = 'beam'
-
-      if (entity.t > 0.32 && !(entity.data.struck ?? 0)) {
-        entity.data.struck = 1
-        const originX = entity.x + entity.facing * world.widthOf(entity) * 0.42
-        const originY = entity.y - world.heightOf(entity) * 0.62
-        world.spawn('sword-beam', {
-          data: { ownerId: entity.id, ownerTeam: teamOf(entity) },
-          facing: entity.facing,
-          vx: entity.facing * unit * 16,
-          x: originX,
-          y: originY,
-        })
-        world.spawn('sword-arc', {
-          facing: entity.facing,
-          size: 2.5,
-          x: entity.x + entity.facing * unit * 1.2,
-          y: originY,
-        })
-      }
-
-      if (entity.t > 0.85) {
         entity.fx = ''
         entity.data.struck = 0
         world.setState(entity, 'march')
@@ -2569,7 +3499,7 @@ const knight: EcoSpecies = {
       entity.data.cool = 2.4
       entity.data.struck = 0
       entity.facing = lord.x >= entity.x ? 1 : -1
-      world.setState(entity, Math.random() < 0.45 ? 'beam-slash' : 'strike')
+      world.setState(entity, 'strike')
       return
     }
 
@@ -2578,7 +3508,7 @@ const knight: EcoSpecies = {
         entity.x,
         entity.y - unit * 1.5,
         unit * 4.2,
-        isSpellDuelTarget(world, entity),
+        (other) => isSpellDuelTarget(world, entity)(other) && canKnightHitTarget(other, world),
       )
 
       if (closeFoes.length >= 2) {
@@ -2599,7 +3529,7 @@ const knight: EcoSpecies = {
         entity.facing = wizardFoe.x >= entity.x ? 1 : -1
         entity.data.abilityCool = between(4.5, 6.5)
         entity.data.struck = 0
-        world.setState(entity, mounted ? 'charge' : 'beam-slash')
+        world.setState(entity, mounted ? 'charge' : 'leap')
         return
       }
     }
@@ -2620,7 +3550,7 @@ const knight: EcoSpecies = {
       entity,
       (other) =>
         world.has(other, 'dragon') &&
-        other.state !== 'falling' &&
+        dragonMeleeVulnerable(other) &&
         other.y > world.groundY - unit * 8 &&
         Math.abs(other.x - entity.x) < unit * 3.5,
     )
@@ -2638,7 +3568,7 @@ const prince: EcoSpecies = {
   ...knight,
   asset: ecoAsset('prince'),
   countAs: 'frog-prince',
-  size: [4.6, 5.75],
+  size: [3.6, 4.5],
   strongVs: ['dark-lord'],
   tags: ['knight', 'prince', 'target'],
   weakTo: ['dragon', 'wizard'],
@@ -2659,7 +3589,7 @@ const archer: EcoSpecies = {
     entity.data.cool = between(0.5, 1.5)
   },
   layer: 'front',
-  size: [4.55, 5.55],
+  size: [3.6, 4.35],
   state: 'patrol',
   style: siegeTeamStyle,
   strongVs: ['dragon', 'wizard'],
@@ -3131,34 +4061,53 @@ const flameStream: EcoSpecies = {
   weakTo: ['wizard'],
   tick(entity, world, dt) {
     const unit = world.unit
-    const life = entity.data.life ?? 1.5
-    const originX = entity.x - entity.facing * unit * 2.8
-    const sweep = Math.sin((entity.t / life) * Math.PI * 1.35 - Math.PI * 0.35)
-    entity.y += sweep * unit * 0.12
-    entity.tilt = sweep * 7 * entity.facing
-    entity.scale = 0.92 + Math.sin(world.time * 18 + entity.id) * 0.05
+    const life = entity.data.life ?? 0.28
+    const liveTarget = world.byId(entity.data.targetId)
+    const originX = entity.data.originX ?? entity.x - entity.facing * unit * 2.8
+    const originY = entity.data.originY ?? entity.y
+    const targetX = liveTarget?.x ?? entity.data.targetX ?? entity.x + entity.facing * unit * 6
+    const targetY = liveTarget
+      ? liveTarget.y - liveTarget.lift - unit * 0.35
+      : (entity.data.targetY ?? entity.y)
+    const sweep = Math.sin((entity.t / life) * Math.PI * 2.2 + entity.id)
+    const dx = targetX - originX
+    const dy = targetY - originY
+    const length = Math.max(unit * 4.8, Math.hypot(dx, dy))
+    entity.x = originX + dx * 0.5
+    entity.y = originY + dy * 0.5 + sweep * unit * 0.08
+    entity.tilt = (Math.atan2(dy, dx) * 180) / Math.PI
+    entity.facing = dx >= 0 ? 1 : -1
+    entity.scale = 1.04 + Math.sin(world.time * 24 + entity.id) * 0.06
+    entity.size = Math.max(entity.size, (length / unit) * 1.16)
 
-    if (chance(7, dt)) {
+    if (chance(18, dt)) {
       spawnImpact(
         world,
-        entity.x + entity.facing * unit * between(0.2, 3.6),
+        targetX + between(-0.7, 0.7) * unit,
         world.groundY - unit * 0.35,
-        between(1.2, 1.8),
+        between(1.4, 2.2),
         'fire',
         0.32,
       )
     }
 
-    for (const foe of world.within(entity.x, world.groundY, unit * 8.2, (other) =>
-      isTargetableFoe(entity, other),
+    for (const foe of world.within(
+      (originX + targetX) * 0.5,
+      world.groundY,
+      length * 0.7,
+      (other) => isTargetableFoe(entity, other),
     )) {
-      const dx = (foe.x - originX) * entity.facing
-      const dy = Math.abs(bodyPoint(foe, world).y - entity.y)
+      const along =
+        ((foe.x - originX) * dx + (bodyPoint(foe, world).y - originY) * dy) / (length * length)
+      const clamped = clamp(along, 0, 1)
+      const lineX = originX + dx * clamped
+      const lineY = originY + dy * clamped
+      const distance = Math.hypot(foe.x - lineX, bodyPoint(foe, world).y - lineY)
 
-      if (dx > 0 && dx < unit * 9.8 && dy < unit * (2.4 + (dx / unit) * 0.28)) {
+      if (along >= 0 && along <= 1 && distance < unit * (1.5 + clamped * 1.9)) {
         foe.fx = 'burn'
         foe.data.burn = Math.max(foe.data.burn ?? 0, 0.01)
-        damageGroundTarget(foe, world, 0.34 * dt, entity, 0.6)
+        damageGroundTarget(foe, world, 0.08 * dt, entity, 0.5)
       }
     }
 
@@ -3176,7 +4125,7 @@ const dragonShockwave: EcoSpecies = {
   size: [4.2, 6.2],
   state: 'burst',
   strongVs: ['knight', 'building', 'wizard'],
-  tags: ['projectile'],
+  tags: [],
   weakTo: ['archer', 'wizard'],
   tick(entity, world) {
     const unit = world.unit
@@ -3198,6 +4147,70 @@ const dragonShockwave: EcoSpecies = {
     }
   },
 }
+
+const dragonZone = (
+  asset: string,
+  fx: string,
+  amount: number,
+  knock: number,
+  pull = 0,
+): EcoSpecies => ({
+  anchor: 'center',
+  asset,
+  countAs: null,
+  layer: 'front',
+  size: [2.6, 4.4],
+  state: 'zone',
+  strongVs: ['knight', 'wizard', 'building'],
+  tags: fx === 'fire' ? ['fire'] : [],
+  weakTo: fx === 'vine' ? ['fire'] : ['wizard'],
+  tick(entity, world, dt) {
+    const unit = world.unit
+    entity.fx = fx
+    entity.scale = 0.78 + Math.min(0.55, entity.t * 0.45)
+    entity.data.life = (entity.data.life ?? 1.5) - dt
+
+    for (const foe of world.within(entity.x, world.groundY, unit * entity.size * 1.2, (other) =>
+      isTargetableFoe(entity, other),
+    )) {
+      if (pull !== 0) {
+        foe.vx += Math.sign(entity.x - foe.x || entity.facing) * unit * pull * dt
+      }
+
+      if (fx === 'fire') {
+        foe.fx = 'burn'
+        foe.data.burn = Math.max(foe.data.burn ?? 0, 0.01)
+      } else if (fx === 'frost' || fx === 'fog' || fx === 'rain' || fx === 'vine') {
+        foe.data.slowUntil = Math.max(foe.data.slowUntil ?? 0, world.time + 0.8)
+        foe.fx = fx === 'vine' ? 'rooted' : 'frozen'
+      }
+
+      if ((entity.data.hit ?? 0) <= 0 || entity.t < 0.18) {
+        damageGroundTarget(foe, world, amount * dt, entity, knock)
+      }
+    }
+
+    if (entity.t > 0.22) {
+      entity.data.hit = 1
+    }
+
+    if ((entity.data.life ?? 0) <= 0) {
+      world.remove(entity)
+    }
+  },
+})
+
+const dragonBurnZone = dragonZone(ecoAsset('spell-impact'), 'fire', 0.36, 1.4)
+const dragonUpdraft = dragonZone(dragonShockwaveAsset, 'fire', 0.62, 5.8)
+const dragonRootBump = dragonZone(siegePlantAsset, 'vine', 0.5, 2.8, 0.4)
+const dragonVinePatch = dragonZone(ecoAsset('vine-snare'), 'vine', 0.42, 1.2, 4.2)
+const dragonHedgeRidge = dragonZone(siegePlantAsset, 'vine', 0.34, 3.4, 0.8)
+const dragonTrunk = dragonZone(siegePlantAsset, 'vine', 0.9, 6.4)
+const dragonIceSlick = dragonZone(ecoAsset('frost-nova'), 'frost', 0.34, 1.2, 0.5)
+const dragonFogBank = dragonZone(ecoAsset('frost-nova'), 'fog', 0.18, 0.5, 1)
+const dragonIcePop = dragonZone(ecoAsset('ice-wall'), 'frost', 0.76, 5.2)
+const dragonRainPuddle = dragonZone(ecoAsset('spell-impact'), 'rain', 0.24, 0.8, 0.6)
+const dragonStormPulse = dragonZone(ecoAsset('lightning-strike'), 'lightning', 0.64, 2.2)
 
 const lightBall: EcoSpecies = {
   anchor: 'center',
@@ -3503,43 +4516,6 @@ const swordArc: EcoSpecies = {
   },
 }
 
-const swordBeam: EcoSpecies = {
-  anchor: 'center',
-  asset: ecoAsset('sword-beam'),
-  countAs: null,
-  layer: 'front',
-  size: [2.1, 2.8],
-  state: 'fly',
-  strongVs: ['wizard', 'dark-lord'],
-  tags: ['projectile'],
-  weakTo: ['dragon', 'fireball'],
-  tick(entity, world, dt) {
-    const unit = world.unit
-
-    integrate(entity, dt)
-    entity.facing = entity.vx >= 0 ? 1 : -1
-    entity.tilt = Math.sin(world.time * 8 + entity.id) * 4
-
-    const foe = world.nearest(
-      entity,
-      (other) =>
-        other.id !== (entity.data.ownerId ?? -1) && isSpellDuelTarget(world, entity)(other),
-      unit * 1.7,
-    )
-
-    if (foe) {
-      spawnImpact(world, entity.x, entity.y, 2, 'slash', 0.36)
-      damageGroundTarget(foe, world, 0.85, entity, 2.3)
-      world.remove(entity)
-      return
-    }
-
-    if (entity.t > 1.2 || entity.x < -unit * 4 || entity.x > world.width + unit * 4) {
-      world.remove(entity)
-    }
-  },
-}
-
 const frogPrince: EcoSpecies = {
   anchor: 'bottom',
   asset: ecoAsset('frog-prince'),
@@ -3602,7 +4578,7 @@ const princess: EcoSpecies = {
     entity.data.seekCool = between(0.2, 1)
   },
   layer: 'front',
-  size: [2.5, 3.1],
+  size: [2, 2.45],
   state: 'stroll',
   style: siegeTeamStyle,
   strongVs: ['frog-prince'],
@@ -3634,7 +4610,6 @@ const princess: EcoSpecies = {
 
       if (entity.state === 'hide') {
         if (walkToward(entity, world, cottage.x, unit * 2.2, dt) < unit * 0.5) {
-          entity.x = cottage.x
           entity.scale = 0.2
           entity.lift = unit * 0.35
           entity.fx = 'hidden'
@@ -3643,8 +4618,7 @@ const princess: EcoSpecies = {
         return
       }
 
-      entity.x = cottage.x
-      entity.y = cottage.y
+      moveTowardPoint(entity, world, dt, cottage.x, cottage.y, 0.8)
       entity.lift = unit * 0.35
 
       if (!lowDragon && entity.t > 1.2) {
@@ -3853,6 +4827,38 @@ const wizardTypeFor = (entity: EcoEntity) =>
 const wizardTypeFromAsset = (asset: string) =>
   wizardTypes.find((entry) => entry.asset === asset || entry.castAsset === asset) ?? wizardTypes[0]
 
+function wizardChargeFx(spell: string) {
+  if (spell === 'lightning' || spell === 'storm') {
+    return 'lightning'
+  }
+
+  if (spell === 'frost' || spell === 'ice-shard' || spell === 'ice-wall') {
+    return 'frost'
+  }
+
+  if (spell === 'plant' || spell === 'vine') {
+    return 'vine'
+  }
+
+  if (spell === 'shield' || spell === 'ward') {
+    return 'shield'
+  }
+
+  if (spell === 'rain' || spell === 'heal' || spell === 'light') {
+    return spell
+  }
+
+  if (spell === 'blink' || spell === 'polymorph') {
+    return 'blink'
+  }
+
+  if (spell === 'fireball' || spell === 'meteor' || spell === 'fire-lance') {
+    return 'fire'
+  }
+
+  return 'arcane'
+}
+
 const staffPoint = (entity: EcoEntity, world: EcoWorld) => ({
   x: entity.x + entity.facing * world.widthOf(entity) * 0.32,
   y: entity.y - entity.lift - world.heightOf(entity) * 0.82,
@@ -3935,13 +4941,16 @@ function hitDarkLord(
     entity.fx = 'smoke'
     spawnImpact(world, entity.x, entity.y - world.heightOf(entity) * 0.46, 3.2, 'smoke', 0.72)
     const direction = entity.x >= sourceX ? 1 : -1
-    entity.x = clamp(
-      entity.x + direction * world.unit * between(7, 12),
-      world.unit,
-      world.width - world.unit,
-    )
+    entity.vx += direction * world.unit * between(5, 8)
     entity.facing = direction === 1 ? -1 : 1
-    spawnImpact(world, entity.x, entity.y - world.heightOf(entity) * 0.46, 3.2, 'smoke', 0.72)
+    spawnImpact(
+      world,
+      clamp(entity.x + direction * world.unit * 2.4, world.unit, world.width - world.unit),
+      entity.y - world.heightOf(entity) * 0.46,
+      3.2,
+      'smoke',
+      0.72,
+    )
   }
 }
 
@@ -4035,6 +5044,16 @@ function startWizardSpell(
   entity.data.beamPulse = 0
   entity.data.spellCool = cooldown
   entity.fx = spell
+  world.setAsset(entity, wizardTypeFor(entity).castAsset)
+  const charge = staffPoint(entity, world)
+  spawnCast(
+    world,
+    charge.x,
+    charge.y,
+    spell === 'storm' || spell === 'light' ? 2.3 : 1.8,
+    wizardChargeFx(spell),
+    0.72,
+  )
   world.setState(entity, spell)
 }
 
@@ -4397,20 +5416,22 @@ function releaseWizardSpell(entity: EcoEntity, world: EcoWorld) {
     }
   } else if (entity.state === 'blink') {
     const threat = world.byId(entity.targetId)
-    const fromX = entity.x
     const landing =
       threat && world.has(threat, 'fireball') ? landingX(threat, world, fireballGravity) : entity.x
     const direction = landing >= entity.x ? -1 : 1
 
     spawnCast(world, entity.x, entity.y - world.heightOf(entity) * 0.55, 2.5, 'blink', 0.55)
-    entity.x = clamp(entity.x + direction * unit * between(9, 13), unit, world.width - unit)
+    entity.vx += direction * unit * between(7, 10)
     entity.facing = direction === 1 ? -1 : 1
     entity.lift = unit * 0.25
-    spawnCast(world, entity.x, entity.y - world.heightOf(entity) * 0.55, 2.7, 'blink', 0.65)
-
-    if (Math.abs(entity.x - fromX) < unit * 2) {
-      entity.x = clamp(entity.x - direction * unit * between(5, 8), unit, world.width - unit)
-    }
+    spawnCast(
+      world,
+      clamp(entity.x + direction * unit * 3.2, unit, world.width - unit),
+      entity.y - world.heightOf(entity) * 0.55,
+      2.7,
+      'blink',
+      0.65,
+    )
   }
 }
 
@@ -4439,7 +5460,7 @@ const wizard: EcoSpecies = {
     entity.data.spellCool = between(0.4, 1)
   },
   layer: 'front',
-  size: [4.55, 5.55],
+  size: [3.6, 4.35],
   state: 'wander',
   style: (entity) => {
     const type = wizardTypeFor(entity)
@@ -4770,7 +5791,7 @@ const darkLord: EcoSpecies = {
     entity.data.spellCool = between(0.7, 1.4)
   },
   layer: 'front',
-  size: [3, 3.7],
+  size: [2.35, 2.9],
   state: 'stalk',
   style: siegeTeamStyle,
   strongVs: ['princess', 'archer'],
@@ -5107,7 +6128,7 @@ const vineSnare: EcoSpecies = {
   countAs: null,
   idle: 'sway',
   layer: 'front',
-  size: [3, 4],
+  size: [2.35, 3.15],
   state: 'snare',
   strongVs: ['dragon', 'knight'],
   tags: [],
@@ -5188,7 +6209,18 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   'frost-dragon': frostDragon,
   'duel-beam-dark': beamEffect(ecoAsset('duel-beam-dark')),
   'duel-beam-good': beamEffect(ecoAsset('duel-beam-good')),
+  'dragon-burn-zone': dragonBurnZone,
+  'dragon-fog-bank': dragonFogBank,
+  'dragon-hedge-ridge': dragonHedgeRidge,
+  'dragon-ice-pop': dragonIcePop,
+  'dragon-ice-slick': dragonIceSlick,
+  'dragon-rain-puddle': dragonRainPuddle,
+  'dragon-root-bump': dragonRootBump,
   'dragon-shockwave': dragonShockwave,
+  'dragon-storm-pulse': dragonStormPulse,
+  'dragon-trunk': dragonTrunk,
+  'dragon-updraft': dragonUpdraft,
+  'dragon-vine-patch': dragonVinePatch,
   'fire-lance': beamEffect(ecoAsset('fire-lance')),
   'flame-stream': flameStream,
   fireball,
@@ -5210,7 +6242,6 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   'spell-polymorph': spellPolymorph,
   'spell-tornado': spellTornado,
   'sword-arc': swordArc,
-  'sword-beam': swordBeam,
   'vine-snare': vineSnare,
   wizard,
   'ward-wizard': wardWizard,

@@ -178,6 +178,7 @@ export type EcoControlAbilityContext = {
 export type EcoControlAbility = {
   active?: number
   archetype?: string
+  asset?: string | ((entity: EcoEntity) => string | undefined)
   charge?: { max: number; min?: number }
   cooldown: number
   description: string

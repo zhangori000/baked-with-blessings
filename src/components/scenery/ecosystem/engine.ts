@@ -470,6 +470,13 @@ export class Ecosystem implements EcoWorld {
       startX: entity.x,
       startY: entity.y,
     }
+    const castAsset = typeof ability.asset === 'function' ? ability.asset(entity) : ability.asset
+
+    if (castAsset) {
+      entity.controlResetAsset = entity.controlResetAsset || entity.asset
+      this.setAsset(entity, castAsset)
+    }
+
     entity.fx = ability.vfx ?? 'aim'
     entity.data.controlCastStarted = this.time
     entity.data.controlCastProgress = 0
@@ -574,6 +581,10 @@ export class Ecosystem implements EcoWorld {
     entity.fx = ''
     entity.data.controlCharge = 0
     entity.data.controlCastProgress = 0
+
+    if (ability.asset) {
+      this.setAsset(entity, entity.controlResetAsset)
+    }
 
     if (queuedKey) {
       this.startControlAbility(queuedKey)
