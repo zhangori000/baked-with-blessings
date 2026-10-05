@@ -47,21 +47,29 @@
   filter: saturate(0.92) brightness(1.08);
 }
 
-.ecoThing[data-species='hedgehog'] .ecoArt {
+.ecoThing[data-species='goose'] .ecoArt {
   transform-origin: center bottom;
 }
 
-.ecoThing[data-species='hedgehog'][data-state='waddle'] .ecoArt {
-  animation: dawnHedgehogWaddle 0.62s ease-in-out infinite alternate;
+.ecoThing[data-species='goose'][data-state='waddle'] .ecoArt,
+.ecoThing[data-species='goose'][data-state='seek'] .ecoArt {
+  animation: dawnGooseWaddle 0.58s ease-in-out infinite alternate;
 }
 
-.ecoThing[data-species='hedgehog'][data-state='eat'] .ecoArt,
-.ecoThing[data-species='hedgehog'][data-fx='snuffle'] .ecoArt {
-  animation: dawnHedgehogSnuffle 0.32s ease-in-out infinite alternate;
+.ecoThing[data-species='goose'][data-state='eat'] .ecoArt {
+  animation: dawnGooseGraze 0.42s ease-in-out infinite alternate;
 }
 
-.ecoThing[data-species='hedgehog'][data-state='curl'] .ecoArt {
-  animation: dawnHedgehogCurl 0.58s ease-out both;
+.ecoThing[data-species='goose'][data-state='honk'] .ecoArt {
+  animation: dawnGooseHonk 0.36s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='goose'][data-state='charge'] .ecoArt {
+  animation: dawnGooseCharge 0.25s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='goose'][data-state='flap'] .ecoArt {
+  animation: dawnGooseFlap 0.18s ease-in-out infinite alternate;
 }
 
 .ecoThing[data-species='scarecrow'] .ecoArt {
@@ -198,33 +206,53 @@
   }
 }
 
-@keyframes dawnHedgehogWaddle {
+@keyframes dawnGooseWaddle {
   from {
-    transform: translateY(0) rotate(-2deg);
+    transform: translateY(0) rotate(-1.4deg);
   }
 
   to {
-    transform: translateY(-0.09rem) rotate(2deg);
+    transform: translateY(-0.12rem) rotate(1.6deg);
   }
 }
 
-@keyframes dawnHedgehogSnuffle {
+@keyframes dawnGooseGraze {
   from {
-    transform: translateX(-0.05rem) rotate(-2deg) scale(1.02, 0.98);
+    transform: translateY(0.04rem) rotate(-3deg) scale(1.02, 0.98);
   }
 
   to {
-    transform: translateX(0.05rem) rotate(2deg) scale(0.98, 1.02);
+    transform: translateY(-0.08rem) rotate(2deg) scale(0.99, 1.02);
   }
 }
 
-@keyframes dawnHedgehogCurl {
-  0% {
-    transform: scale(1.1, 0.86) rotate(-9deg);
+@keyframes dawnGooseHonk {
+  from {
+    transform: translateX(-0.08rem) rotate(-2deg) scale(1.04, 0.97);
   }
 
-  100% {
-    transform: scale(1) rotate(0deg);
+  to {
+    transform: translateX(0.1rem) rotate(2deg) scale(0.98, 1.03);
+  }
+}
+
+@keyframes dawnGooseCharge {
+  from {
+    transform: translateX(-0.1rem) translateY(0.03rem) rotate(-4deg) scale(1.05, 0.96);
+  }
+
+  to {
+    transform: translateX(0.14rem) translateY(-0.09rem) rotate(4deg) scale(0.98, 1.04);
+  }
+}
+
+@keyframes dawnGooseFlap {
+  from {
+    transform: translateX(-0.12rem) rotate(-8deg) scale(1.05, 0.94);
+  }
+
+  to {
+    transform: translateX(0.14rem) rotate(8deg) scale(0.96, 1.06);
   }
 }
 
@@ -293,7 +321,7 @@
   .ecoThing[data-species='carrot'] .ecoArt,
   .ecoThing[data-species='crow'] .ecoArt,
   .ecoThing[data-species='fox'] .ecoArt,
-  .ecoThing[data-species='hedgehog'] .ecoArt,
+  .ecoThing[data-species='goose'] .ecoArt,
   .ecoThing[data-species='scarecrow'] .ecoArt,
   .ecoThing[data-species='hawk'][data-fx='hurt'] .ecoArt,
   .ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {

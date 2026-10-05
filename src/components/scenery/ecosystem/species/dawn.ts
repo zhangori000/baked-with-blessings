@@ -27,8 +27,8 @@ registerViewBoxes({
   fox: [132, 72],
   'fox-crouch': [132, 60],
   'fox-pounce': [142, 78],
-  hedgehog: [96, 58],
-  'hedgehog-ball': [76, 70],
+  goose: [116, 78],
+  'goose-honk': [124, 84],
   scarecrow: [92, 150],
 })
 
@@ -41,8 +41,8 @@ const carrotPulledAsset = ecoAsset('carrot-pulled')
 const foxAsset = ecoAsset('fox')
 const foxCrouchAsset = ecoAsset('fox-crouch')
 const foxPounceAsset = ecoAsset('fox-pounce')
-const hedgehogAsset = ecoAsset('hedgehog')
-const hedgehogBallAsset = ecoAsset('hedgehog-ball')
+const gooseAsset = ecoAsset('goose')
+const gooseHonkAsset = ecoAsset('goose-honk')
 const scarecrowAsset = ecoAsset('scarecrow')
 const crowAsset = ecoAsset('crow')
 const crowMobAsset = ecoAsset('crow-mob')
@@ -118,7 +118,7 @@ const dandelion: EcoSpecies = {
   state: 'grow',
   strongVs: ['carrot'],
   tags: ['plant', 'fuel'],
-  weakTo: ['crow', 'hedgehog', 'fire'],
+  weakTo: ['crow', 'goose', 'fire'],
   tick(entity, world, dt) {
     entity.data.water = Math.max(0, (entity.data.water ?? 0) - dt)
     const watered = (entity.data.water ?? 0) > 0
@@ -196,19 +196,6 @@ const seed: EcoSpecies = {
       return
     }
 
-    const snuffler = world.nearest(
-      { x: entity.x, y: world.groundY },
-      (other) => world.has(other, 'hedgehog') && other.state !== 'curl',
-      unit * 7,
-    )
-
-    if (snuffler) {
-      snuffler.fx = 'snuffle'
-      world.setState(snuffler, 'eat')
-      world.remove(entity)
-      return
-    }
-
     const crowded = world.nearest({ x: entity.x, y: world.groundY }, isPlant(world), unit * 1.6)
     const plants = world.count(isPlant(world))
     const inside = entity.x > unit && entity.x < world.width - unit
@@ -247,7 +234,7 @@ const carrot: EcoSpecies = {
   state: 'grow',
   strongVs: ['dandelion'],
   tags: ['plant', 'carrot', 'fuel'],
-  weakTo: ['bunny', 'crow'],
+  weakTo: ['bunny', 'crow', 'goose'],
   tick(entity, world, dt) {
     entity.data.water = Math.max(0, (entity.data.water ?? 0) - dt)
     const watered = (entity.data.water ?? 0) > 0
@@ -557,6 +544,50 @@ function startHawkFlee(hawk: EcoEntity, world: EcoWorld, fromX: number) {
   world.setState(hawk, 'flee')
 }
 
+function gooseClusterCount(world: EcoWorld, goose: EcoEntity) {
+  const radius = Math.max(world.unit * 13, 104)
+
+  return world.count(
+    (other) =>
+      world.has(other, 'goose') &&
+      !other.dying &&
+      !other.removed &&
+      Math.hypot(other.x - goose.x, (other.y - goose.y) * 0.45) < radius,
+  )
+}
+
+function gooseAirGuard(world: EcoWorld, hawk: EcoEntity) {
+  let best: EcoEntity | null = null
+  let bestDistance = Math.max(world.unit * 20, 156)
+
+  for (const other of world.entities) {
+    if (!world.has(other, 'goose') || other.dying || other.removed) {
+      continue
+    }
+
+    if (gooseClusterCount(world, other) < 2) {
+      continue
+    }
+
+    const distance = Math.abs(other.x - hawk.x)
+
+    if (distance < bestDistance) {
+      best = other
+      bestDistance = distance
+    }
+  }
+
+  return best
+}
+
+function startGooseFlap(goose: EcoEntity, world: EcoWorld, fromX: number, seconds = 1.2) {
+  goose.targetId = null
+  goose.data.avoidX = fromX
+  goose.data.flapUntil = world.time + seconds
+  world.setAsset(goose, gooseHonkAsset)
+  world.setState(goose, 'flap')
+}
+
 function peckHawk(crow: EcoEntity, hawk: EcoEntity, world: EcoWorld) {
   const mobbers = crowReadyMobCount(world, hawk)
 
@@ -609,10 +640,11 @@ const hawk: EcoSpecies = {
   state: 'soar',
   strongVs: ['bunny', 'balloon'],
   tags: ['hawk', 'predator'],
-  weakTo: ['crow', 'scarecrow'],
+  weakTo: ['crow', 'scarecrow', 'goose'],
   tick(entity, world, dt) {
     const unit = world.unit
     const guard = scarecrowAirGuard(world, entity)
+    const gooseGuard = gooseAirGuard(world, entity)
 
     if (entity.fx === 'hurt' && (entity.data.harriedUntil ?? 0) < world.time) {
       entity.fx = ''
@@ -695,7 +727,9 @@ const hawk: EcoSpecies = {
         prey.state === 'carried' ||
         prey.state === 'drop' ||
         (world.has(prey, 'bunny') && bunnySafeFromHawk(world, prey)) ||
+        (world.has(prey, 'goose') && gooseClusterCount(world, prey) >= 2) ||
         (prey.species === 'crow' && crowReadyMobCount(world, entity) >= 2) ||
+        (gooseGuard && Math.abs(gooseGuard.x - entity.x) < unit * 18) ||
         ((entity.data.harriedUntil ?? 0) > world.time && !committed) ||
         entity.t > 6
       ) {
@@ -716,6 +750,9 @@ const hawk: EcoSpecies = {
 
         if (world.has(prey, 'balloon')) {
           world.setState(prey, 'popped')
+        } else if (world.has(prey, 'goose')) {
+          startGooseFlap(prey, world, entity.x, 1.35)
+          entity.data.hunger = Math.max(0.25, (entity.data.hunger ?? 0) - 0.35)
         } else if (prey.species === 'crow' && Math.random() < Math.min(0.92, 0.64 * edge)) {
           world.kill(prey)
           entity.data.hunger = 0
@@ -769,8 +806,10 @@ const hawk: EcoSpecies = {
 
     steer(entity, goalX, goalY, unit * 4, dt, 3)
 
-    if (guard) {
-      const away = entity.x >= guard.x ? 1 : -1
+    const airGuard = guard ?? gooseGuard
+
+    if (airGuard) {
+      const away = entity.x >= airGuard.x ? 1 : -1
       steer(
         entity,
         clamp(entity.x + away * unit * 8, unit * 2, world.width - unit * 2),
@@ -849,6 +888,22 @@ const hawk: EcoSpecies = {
         entity.targetId = prey.id
         world.setState(entity, 'dive')
         return
+      }
+    }
+
+    if ((entity.data.hunger ?? 0) > 1.35 && chance(0.26, dt)) {
+      const prey = world.nearest(
+        entity,
+        (other) =>
+          world.has(other, 'goose') &&
+          other.state !== 'flap' &&
+          gooseClusterCount(world, other) < 2,
+        Math.max(unit * 36, world.height * 0.8),
+      )
+
+      if (prey) {
+        entity.targetId = prey.id
+        world.setState(entity, 'dive')
       }
     }
   },
@@ -1157,7 +1212,7 @@ const fox: EcoSpecies = {
   state: 'trot',
   strongVs: ['crow', 'bunny'],
   tags: ['fox', 'predator', 'burnable'],
-  weakTo: ['hedgehog'],
+  weakTo: ['goose'],
   tick(entity, world, dt) {
     const unit = world.unit
     const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 6)
@@ -1223,17 +1278,21 @@ const fox: EcoSpecies = {
       entity.lift = Math.sin(Math.PI * progress) * (entity.data.jump ?? unit * 2.2)
 
       if (progress > 0.32 && !(entity.data.resolved ?? 0)) {
-        const hedgehogTarget = world.nearest(
+        const gooseGuard = world.nearest(
           entity,
-          (other) => world.has(other, 'hedgehog') && other.state === 'curl',
-          unit * 2,
+          (other) => world.has(other, 'goose') && ['charge', 'honk', 'flap'].includes(other.state),
+          unit * 4.2,
         )
 
-        if (hedgehogTarget) {
+        if (gooseGuard) {
           entity.data.resolved = 1
-          entity.data.hurtX = hedgehogTarget.x
+          entity.data.avoidX = gooseGuard.x
+          gooseGuard.targetId = entity.id
           entity.lift = 0
-          world.setState(entity, 'yelp')
+          world.setAsset(gooseGuard, gooseHonkAsset)
+          world.setState(gooseGuard, 'charge')
+          world.setAsset(entity, foxAsset)
+          world.setState(entity, 'avoid')
           return
         }
 
@@ -1292,35 +1351,6 @@ const fox: EcoSpecies = {
         world.setAsset(entity, foxAsset)
         world.setState(entity, entity.data.caught ? 'eat' : 'trot')
         entity.fx = ''
-      }
-      return
-    }
-
-    if (entity.state === 'chase') {
-      world.setAsset(entity, foxAsset)
-      const target = world.byId(entity.targetId)
-
-      if (!target || !world.has(target, 'hedgehog') || entity.t > 5) {
-        entity.targetId = null
-        world.setState(entity, 'trot')
-        return
-      }
-
-      if (target.state === 'curl' && Math.abs(target.x - entity.x) < unit * 3) {
-        entity.data.hurtX = target.x
-        entity.targetId = null
-        world.setState(entity, 'yelp')
-        return
-      }
-
-      const gap = walkToward(entity, world, target.x, unit * 3.2, dt)
-
-      if (gap < unit * 1.5) {
-        world.setState(target, 'curl')
-        world.setAsset(target, hedgehogBallAsset)
-        entity.data.hurtX = target.x
-        entity.targetId = null
-        world.setState(entity, 'yelp')
       }
       return
     }
@@ -1413,128 +1443,239 @@ const fox: EcoSpecies = {
         return
       }
     }
-
-    if (chance(0.72, dt)) {
-      const hedgehogTarget = world.nearest(
-        entity,
-        (other) => world.has(other, 'hedgehog') && other.state !== 'curl',
-        Math.max(unit * 28, world.width * 0.75),
-      )
-
-      if (hedgehogTarget) {
-        entity.targetId = hedgehogTarget.id
-        world.setState(entity, 'chase')
-      }
-    }
   },
 }
 
-const hedgehog: EcoSpecies = {
+const isGooseFood = (world: EcoWorld) => (other: EcoEntity) =>
+  ((world.has(other, 'carrot') && other.state === 'grow') ||
+    (world.has(other, 'plant') && !world.has(other, 'carrot') && other.state !== 'puff')) &&
+  (other.data.burn ?? 0) <= 0
+
+const gooseFoxTarget = (goose: EcoEntity, world: EcoWorld) =>
+  world.nearest(
+    goose,
+    (other) => {
+      if (!world.has(other, 'fox') || !['stalk', 'pounce'].includes(other.state)) {
+        return false
+      }
+
+      const prey = world.byId(other.targetId)
+
+      return Boolean(prey && world.has(prey, 'bunny') && foxTargetStates.includes(prey.state))
+    },
+    Math.max(world.unit * 20, 132),
+  )
+
+function gooseHawkThreat(goose: EcoEntity, world: EcoWorld, flockSize: number) {
+  let best: EcoEntity | null = null
+  let bestDistance = world.unit * (flockSize >= 2 ? 24 : 8)
+
+  for (const other of world.entities) {
+    if (!world.has(other, 'hawk')) {
+      continue
+    }
+
+    if (
+      flockSize >= 2
+        ? ['flee', 'dead'].includes(other.state)
+        : !['dive', 'swoop'].includes(other.state)
+    ) {
+      continue
+    }
+
+    const distance =
+      flockSize >= 2
+        ? Math.abs(other.x - goose.x)
+        : Math.hypot(other.x - goose.x, other.y - goose.y)
+
+    if (distance < bestDistance) {
+      best = other
+      bestDistance = distance
+    }
+  }
+
+  return best
+}
+
+const goose: EcoSpecies = {
   anchor: 'bottom',
-  asset: hedgehogAsset,
+  asset: gooseAsset,
   idle: 'trot',
-  init(entity) {
-    entity.data.sniffAt = between(1.5, 3.5)
+  init(entity, world) {
+    entity.data.hunger = between(0.25, 0.85)
+    entity.data.turnAt = world.time + between(1.2, 3)
   },
   layer: 'front',
-  size: [2.2, 2.8],
+  size: [2.7, 3.4],
   state: 'waddle',
-  strongVs: ['fox', 'seed'],
-  tags: ['hedgehog', 'prey', 'burnable'],
+  strongVs: ['fox', 'hawk', 'plant', 'carrot'],
+  tags: ['goose', 'prey', 'burnable'],
   weakTo: ['hawk', 'fire'],
   tick(entity, world, dt) {
     const unit = world.unit
-    const threat = world.nearest(
+    const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 5)
+    const flockSize = gooseClusterCount(world, entity)
+    const poppedBalloon = world.nearest(
       entity,
-      (other) =>
-        (world.has(other, 'fox') && ['stalk', 'pounce', 'chase'].includes(other.state)) ||
-        (world.has(other, 'hawk') && ['dive', 'swoop'].includes(other.state)),
-      unit * 7,
+      (other) => world.has(other, 'balloon') && other.state === 'popped',
+      unit * 10,
     )
-    const fire = world.nearest(entity, (other) => world.has(other, 'fire'), unit * 4)
+    const hawkThreat = gooseHawkThreat(entity, world, flockSize)
+    const foxThreat = gooseFoxTarget(entity, world)
 
-    if (threat && entity.state !== 'curl') {
-      entity.targetId = null
-      entity.vx = 0
-      entity.vy = 0
-      entity.lift = 0
-      world.setAsset(entity, hedgehogBallAsset)
-      world.setState(entity, 'curl')
+    if (fire) {
+      startGooseFlap(entity, world, fire.x, 1.3)
     }
 
-    if (entity.state === 'curl') {
-      world.setAsset(entity, hedgehogBallAsset)
-      entity.lift = 0
-      entity.tilt = Math.sin(entity.t * 4) * 3
+    if (poppedBalloon && !fire && !['charge', 'flap'].includes(entity.state)) {
+      startGooseFlap(entity, world, poppedBalloon.x, 1.05)
+    }
 
-      if (!threat && entity.t > 1.3) {
-        entity.tilt = 0
-        world.setAsset(entity, hedgehogAsset)
+    if (hawkThreat && !fire && entity.state !== 'flap') {
+      if (flockSize >= 2) {
+        entity.data.honkUntil = world.time + 1.6
+        world.setAsset(entity, gooseHonkAsset)
+        world.setState(entity, 'honk')
+      } else {
+        startGooseFlap(entity, world, hawkThreat.x, 1.15)
+      }
+    }
+
+    if (foxThreat && !fire && entity.state !== 'charge') {
+      entity.targetId = foxThreat.id
+      world.setAsset(entity, gooseHonkAsset)
+      world.setState(entity, 'charge')
+    }
+
+    if (entity.state === 'flap') {
+      const fromX = entity.data.avoidX ?? entity.x
+
+      world.setAsset(entity, gooseHonkAsset)
+      entity.facing = fromX > entity.x ? -1 : 1
+      walk(entity, world, dt, unit * 3.1)
+      entity.x = clamp(entity.x, unit, world.width - unit)
+      entity.lift = Math.abs(Math.sin(entity.t * 13)) * unit * 0.42
+
+      if (world.time > (entity.data.flapUntil ?? 0) && !fire && !hawkThreat && !poppedBalloon) {
+        entity.lift = 0
+        world.setAsset(entity, gooseAsset)
         world.setState(entity, 'waddle')
       }
       return
     }
 
-    world.setAsset(entity, hedgehogAsset)
+    if (entity.state === 'honk') {
+      world.setAsset(entity, gooseHonkAsset)
+      settle(entity, dt)
+      entity.lift = 0
 
-    if (fire) {
-      entity.facing = fire.x > entity.x ? -1 : 1
-      walk(entity, world, dt, unit * 1.8)
+      if (
+        entity.t > 0.78 &&
+        world.time > (entity.data.honkUntil ?? 0) &&
+        !hawkThreat &&
+        !foxThreat
+      ) {
+        world.setAsset(entity, gooseAsset)
+        world.setState(entity, 'waddle')
+      }
+      return
+    }
+
+    if (entity.state === 'charge') {
+      const fox = world.byId(entity.targetId)
+
+      world.setAsset(entity, gooseHonkAsset)
+      entity.lift = Math.abs(Math.sin(entity.t * 11)) * unit * 0.22
+
+      if (!fox || !world.has(fox, 'fox') || entity.t > 3.2) {
+        entity.targetId = null
+        entity.lift = 0
+        world.setAsset(entity, gooseAsset)
+        world.setState(entity, 'waddle')
+        return
+      }
+
+      const gap = walkToward(entity, world, fox.x, unit * 3.7, dt)
+
+      if (gap < unit * 3.2) {
+        fox.data.avoidX = entity.x
+        entity.data.honkUntil = world.time + 1
+        world.setAsset(fox, foxAsset)
+        world.setState(fox, 'avoid')
+        world.setState(entity, 'honk')
+      }
       return
     }
 
     if (entity.state === 'eat') {
-      settle(entity, dt)
-      entity.fx = 'snuffle'
+      const plant = world.byId(entity.targetId)
 
-      if (entity.t > 0.8) {
-        entity.fx = ''
+      world.setAsset(entity, gooseAsset)
+      settle(entity, dt)
+
+      if (!plant || !isGooseFood(world)(plant)) {
+        entity.targetId = null
+        world.setState(entity, 'waddle')
+        return
+      }
+
+      if (entity.t > 1.1) {
+        if (!world.has(plant, 'carrot') && Math.random() < 0.68) {
+          world.spawn('seed', {
+            data: { fall: 0.65, life: 13, rise: 0 },
+            vx: world.wind * 0.18,
+            vy: -unit * 0.25,
+            x: clamp(entity.x + entity.facing * unit * 0.9, unit, world.width - unit),
+            y: world.groundY - unit * 0.7,
+          })
+        }
+
+        world.kill(plant)
+        entity.targetId = null
+        entity.data.hunger = 0
+        entity.data.meals = (entity.data.meals ?? 0) + 1
         world.setState(entity, 'waddle')
       }
       return
     }
 
-    let seedTarget = world.byId(entity.targetId)
+    if (entity.state === 'seek') {
+      const plant = world.byId(entity.targetId)
 
-    if (
-      seedTarget &&
-      !(seedTarget.species === 'seed' && seedTarget.y > world.groundY - unit * 6.5)
-    ) {
-      seedTarget = null
-      entity.targetId = null
-    }
+      world.setAsset(entity, gooseAsset)
 
-    if (!seedTarget && entity.t > 0.4) {
-      seedTarget = world.nearest(
-        entity,
-        (other) => other.species === 'seed' && other.y > world.groundY - unit * 4.5,
-        unit * 14,
-      )
-      entity.targetId = seedTarget?.id ?? null
-    }
-
-    if (seedTarget) {
-      if (walkToward(entity, world, seedTarget.x, unit * 1.15, dt) < unit * 0.85) {
-        world.remove(seedTarget)
-        entity.data.meals = (entity.data.meals ?? 0) + 1
+      if (!plant || !isGooseFood(world)(plant)) {
         entity.targetId = null
+        world.setState(entity, 'waddle')
+        return
+      }
+
+      entity.lift = Math.abs(Math.sin(entity.t * 7)) * unit * 0.08
+
+      if (walkToward(entity, world, plant.x, unit * 1.35, dt) < unit * 0.75) {
+        entity.lift = 0
         world.setState(entity, 'eat')
       }
       return
     }
 
-    walk(entity, world, dt, unit * 0.62)
+    world.setAsset(entity, gooseAsset)
+    entity.data.hunger = (entity.data.hunger ?? 0) + dt / 7
+    entity.lift = 0
+    walk(entity, world, dt, unit * 0.72)
 
-    if (chance(0.16, dt)) {
+    if (world.time > (entity.data.turnAt ?? 0)) {
       entity.facing = entity.facing === 1 ? -1 : 1
+      entity.data.turnAt = world.time + between(1.3, 3.5)
     }
 
-    if (entity.t > (entity.data.sniffAt ?? 2.5)) {
-      entity.fx = 'snuffle'
-      entity.data.sniffAt = between(2, 5)
-      entity.t = 0
-    } else if (entity.fx === 'snuffle' && entity.t > 0.5) {
-      entity.fx = ''
+    if ((entity.data.hunger ?? 0) > 0.72 && chance(0.85, dt)) {
+      const food = world.nearest(entity, isGooseFood(world), Math.max(unit * 28, world.width * 0.5))
+
+      if (food) {
+        entity.targetId = food.id
+        world.setState(entity, 'seek')
+      }
     }
   },
 }
@@ -1623,8 +1764,8 @@ export const dawnSpecies = {
   crow,
   dandelion,
   fox,
+  goose,
   hawk,
-  hedgehog,
   scarecrow,
   seed,
 }
