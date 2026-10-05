@@ -50,6 +50,12 @@ registerViewBoxes({
   'spell-meteor': [84, 118],
   'spell-polymorph': [92, 82],
   'spell-tornado': [104, 116],
+  'dragon-wyvern-glide': [180, 120],
+  'dragon-wyvern-dive': [180, 120],
+  'dragon-wyvern-strike': [180, 120],
+  'dragon-wyvern-climb': [180, 120],
+  'earth-spike': [60, 90],
+  'frenzy-vine': [48, 150],
   'light-ball': [80, 42],
   'arrow-volley': [100, 72],
   'rally-banner': [72, 110],
@@ -60,7 +66,6 @@ registerViewBoxes({
   'wizard-archmage-cast': [92, 112],
   'wizard-bender': [92, 112],
   'wizard-bender-cast': [92, 112],
-  'wizard-cast': [86, 86],
   'wizard-druid': [92, 112],
   'wizard-druid-cast': [92, 112],
   'wizard-frost': [92, 112],
@@ -93,6 +98,12 @@ const siegePlantAsset = ecoAsset('siege-plant')
 const spellTornadoAsset = ecoAsset('spell-tornado')
 const spellTornadoFireAsset = ecoAsset('spell-tornado-fire')
 const spellTornadoFrostAsset = ecoAsset('spell-tornado-frost')
+const wyvernGlideAsset = ecoAsset('dragon-wyvern-glide')
+const wyvernDiveAsset = ecoAsset('dragon-wyvern-dive')
+const wyvernStrikeAsset = ecoAsset('dragon-wyvern-strike')
+const wyvernClimbAsset = ecoAsset('dragon-wyvern-climb')
+const frenzyVineAsset = ecoAsset('frenzy-vine')
+const earthSpikeAsset = ecoAsset('earth-spike')
 const arrowVolleyAsset = ecoAsset('arrow-volley')
 const rallyBannerAsset = ecoAsset('rally-banner')
 
@@ -148,10 +159,13 @@ const worldlessSpecies = new Set([
   'spell-tornado',
   'sword-arc',
   'vine-snare',
-  'wizard-cast',
   'earth-slab',
   'water-whip',
   'fire-step-arc',
+  'floor-icicle',
+  'frenzy-vine',
+  'earth-spike',
+  'spell-clash',
   'air-spout',
   'wizard-fireball',
 ])
@@ -237,33 +251,14 @@ function dragonMeleeVulnerable(entity: EcoEntity) {
     entity.state === 'falling' ||
     entity.state === 'rooted' ||
     entity.state === 'flame-strafe' ||
-    entity.state === 'talon-snatch' ||
-    entity.state === 'rootstep' ||
-    entity.state === 'canopy' ||
-    entity.state === 'antler-plow' ||
-    entity.state === 'body-roll' ||
-    entity.state === 'orchard' ||
-    entity.state === 'ice-skid' ||
-    entity.state === 'wing-pinion' ||
-    entity.state === 'pagoda-coil'
+    entity.state === 'wyvern-strike'
   )
 }
 
 function dragonWeakPointOpen(entity: EcoEntity) {
   return (
     worldlessSpecies.has(entity.species) === false &&
-    (entity.state === 'flame-strafe' ||
-      entity.state === 'talon-snatch' ||
-      entity.state === 'wing-pinion' ||
-      entity.state === 'body-roll' ||
-      entity.state === 'whisker-lash' ||
-      entity.state === 'rootstep' ||
-      entity.state === 'canopy' ||
-      entity.state === 'antler-plow' ||
-      entity.state === 'orchard' ||
-      entity.state === 'ice-skid' ||
-      entity.state === 'whiteout' ||
-      entity.state === 'pagoda-coil')
+    (entity.state === 'flame-strafe' || entity.state === 'wyvern-strike')
   )
 }
 
@@ -387,13 +382,7 @@ function shielded(entity: EcoEntity, world: EcoWorld) {
 }
 
 function spawnCast(world: EcoWorld, x: number, y: number, size = 2.1, fx = 'sparkle', life = 0.65) {
-  const cast = world.spawn('wizard-cast', { data: { life }, size, x, y })
-
-  if (cast) {
-    cast.fx = fx
-  }
-
-  return cast
+  return spawnImpact(world, x, y, size, fx, life)
 }
 
 function leadTarget(foe: EcoEntity, originX: number, originY: number, speed: number) {
@@ -550,9 +539,9 @@ const dragonVariants = [
     species: 'frost-dragon',
   },
   {
-    asset: ecoAsset('dragon-western-emerald'),
+    asset: wyvernGlideAsset,
     idle: 'flap',
-    size: [12.2, 14],
+    size: [12.6, 14.4],
     species: 'emerald-dragon',
   },
 ] as const
@@ -854,6 +843,65 @@ function dragonAiRest(entity: EcoEntity, min = 1.2, max = 2.4) {
   entity.data.cool = between(min, max)
 }
 
+function startWyvernDive(entity: EcoEntity, world: EcoWorld, target: EcoEntity | null) {
+  entity.targetId = target?.id ?? null
+  entity.data.moveStartAt = world.time
+  entity.data.moveStartX = entity.x
+  entity.data.moveStartY = entity.y
+  entity.data.moveTargetX = target?.x ?? entity.x + entity.facing * world.unit * 8
+  entity.data.moveTargetY = world.groundY - world.unit * 2.4
+  entity.data.moveStep = 0
+  entity.fx = 'wyvern-telegraph'
+  world.setAsset(entity, wyvernGlideAsset)
+  world.setState(entity, 'wyvern-dive')
+}
+
+function startDragonSkyCast(
+  entity: EcoEntity,
+  world: EcoWorld,
+  state: string,
+  target: EcoEntity | null,
+) {
+  entity.targetId = target?.id ?? null
+  entity.data.moveStartAt = world.time
+  entity.data.moveStartX = entity.x
+  entity.data.moveStartY = entity.y
+  entity.data.moveTargetX = target?.x ?? entity.x + entity.facing * world.unit * 8
+  entity.data.moveTargetY = target ? bodyPoint(target, world).y : world.groundY - world.unit * 2
+  entity.data.moveStep = 0
+  entity.data.moveTick = 0
+  world.setState(entity, state)
+}
+
+function dragonLobFireball(entity: EcoEntity, world: EcoWorld, target: EcoEntity | null) {
+  const mouth = dragonMouth(entity, world)
+  const point = target
+    ? bodyPoint(target, world)
+    : { x: entity.x + entity.facing * world.unit * 10, y: world.groundY - world.unit }
+  const seconds = clamp(
+    Math.hypot(point.x - mouth.x, point.y - mouth.y) / (world.unit * 10),
+    0.7,
+    1.4,
+  )
+  const launch = ballistic(
+    mouth.x,
+    mouth.y,
+    point.x,
+    world.groundY - world.unit * 0.6,
+    seconds,
+    fireballGravity * world.unit,
+  )
+
+  world.spawn('fireball', {
+    ...launch,
+    data: { ownerId: entity.id, ownerTeam: teamOf(entity), targetId: target?.id ?? -1 },
+    size: 2.4,
+    x: mouth.x,
+    y: mouth.y,
+  })
+  spawnImpact(world, mouth.x, mouth.y, 2.2, 'fire', 0.32)
+}
+
 function dragonControlledTarget(
   entity: EcoEntity,
   world: EcoWorld,
@@ -874,7 +922,9 @@ function tickDragonMove(entity: EcoEntity, world: EcoWorld, dt: number) {
   const unit = world.unit
   const move = dragonMoveTarget(entity, world)
   const elapsed = world.time - (entity.data.moveStartAt ?? world.time)
-  entity.facing = move.targetX >= entity.x ? 1 : -1
+  if (entity.state !== 'wyvern-strike' && Math.abs(move.targetX - entity.x) > unit * 0.8) {
+    entity.facing = move.targetX >= entity.x ? 1 : -1
+  }
 
   if ((entity.data.moveApproach ?? 0) > 0) {
     const stageX = clamp(move.targetX - entity.facing * unit * 7, unit * 3, world.width - unit * 3)
@@ -890,6 +940,242 @@ function tickDragonMove(entity: EcoEntity, world: EcoWorld, dt: number) {
       entity.data.moveStartY = entity.y
       entity.vx = 0
       entity.vy = 0
+    }
+    return true
+  }
+
+  if (entity.state === 'wyvern-dive') {
+    const targetY = world.groundY - unit * 2.35
+
+    if (elapsed < 0.4) {
+      world.setAsset(entity, wyvernGlideAsset)
+      entity.fx = 'wyvern-telegraph'
+      moveTowardPoint(
+        entity,
+        world,
+        dt,
+        clamp(move.targetX - entity.facing * unit * 9, unit * 3, world.width - unit * 3),
+        Math.max(world.skyTop + unit * 4, world.groundY - unit * 10),
+        4 * dt,
+      )
+      entity.tilt = Math.sin(world.time * 10 + entity.id) * 4
+      return true
+    }
+
+    world.setAsset(entity, wyvernDiveAsset)
+    entity.fx = 'wyvern-dive'
+    const remaining = moveTowardPoint(entity, world, dt, move.targetX, targetY, 12 * dt)
+    tiltToVelocity(entity, 70)
+    entity.tilt = clamp(entity.tilt - 35, -14, 14)
+
+    if (remaining < unit * 1.3 || elapsed > 3.2) {
+      entity.data.moveStartAt = world.time
+      entity.data.moveStep = 0
+      world.setAsset(entity, wyvernStrikeAsset)
+      world.setState(entity, 'wyvern-strike')
+    }
+    return true
+  }
+
+  if (entity.state === 'wyvern-strike') {
+    world.setAsset(entity, wyvernStrikeAsset)
+    entity.fx = 'wyvern-strike'
+    moveTowardPoint(entity, world, dt, move.targetX, world.groundY - unit * 2.15, 4.5 * dt)
+    entity.tilt = entity.facing * -8
+
+    if ((entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      const foe = move.target ?? world.nearest(entity, isSpellDuelTarget(world, entity), unit * 4)
+
+      if (foe) {
+        damageGroundTarget(foe, world, 1.25, entity, 4.2)
+        spawnImpact(world, foe.x, bodyPoint(foe, world).y, 2.8, 'slash', 0.42)
+      }
+    }
+
+    if (elapsed > 0.6) {
+      entity.data.moveStartAt = world.time
+      entity.data.moveStartX = entity.x
+      entity.data.moveStartY = entity.y
+      world.setAsset(entity, wyvernClimbAsset)
+      world.setState(entity, 'wyvern-climb')
+    }
+    return true
+  }
+
+  if (entity.state === 'wyvern-climb') {
+    world.setAsset(entity, wyvernClimbAsset)
+    entity.fx = 'wyvern-climb'
+    const highX = clamp(
+      (entity.data.moveStartX ?? entity.x) - entity.facing * unit * 6,
+      unit * 2,
+      world.width - unit * 2,
+    )
+    const highY = Math.max(world.skyTop + unit * 3, world.groundY - unit * 11)
+    const remaining = moveTowardPoint(entity, world, dt, highX, highY, 7.5 * dt)
+    tiltToVelocity(entity, 18)
+
+    if (remaining < unit * 1.1 || elapsed > 1.5) {
+      entity.fx = ''
+      dragonAiRest(entity, 2, 3)
+      world.setAsset(entity, wyvernGlideAsset)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'ember-fireball') {
+    entity.fx = 'flame-charge'
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      entity.x,
+      Math.max(world.skyTop + unit * 4, world.groundY - unit * 13),
+      1.8 * dt,
+    )
+    entity.tilt = Math.sin(world.time * 8 + entity.id) * 4
+
+    if (elapsed > 0.45 && (entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      dragonLobFireball(entity, world, move.target)
+    }
+
+    if (elapsed > 0.95) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.8, 2.8)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'frost-breath') {
+    entity.fx = 'frozen'
+    const mouth = dragonMouth(entity, world)
+    const target = move.target
+      ? bodyPoint(move.target, world)
+      : { x: move.targetX, y: world.groundY - unit }
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      entity.x,
+      Math.max(world.skyTop + unit * 4, world.groundY - unit * 12),
+      1.6 * dt,
+    )
+
+    if (elapsed > 0.25 && elapsed < 1.15) {
+      spawnBeam(world, 'duel-beam-good', mouth, target, 0.14, 'ice-beam')
+      if ((entity.data.moveTick ?? 0) <= world.time) {
+        entity.data.moveTick = world.time + 0.22
+        world.spawn('floor-icicle', {
+          data: { life: 0.62, ownerId: entity.id, ownerTeam: teamOf(entity) },
+          facing: entity.facing,
+          size: between(1.2, 1.8),
+          x: target.x + between(-1.2, 1.2) * unit,
+          y: world.groundY,
+        })
+        if (move.target) {
+          move.target.fx = 'frozen'
+          move.target.data.slowUntil = Math.max(move.target.data.slowUntil ?? 0, world.time + 1.4)
+          damageGroundTarget(move.target, world, 0.24, entity, 0.8)
+        }
+      }
+    }
+
+    if (elapsed > 1.35) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.7, 2.7)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'frost-volley') {
+    entity.fx = 'frozen'
+    const mouth = dragonMouth(entity, world)
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      entity.x,
+      Math.max(world.skyTop + unit * 4, world.groundY - unit * 12),
+      1.6 * dt,
+    )
+
+    if (elapsed > 0.25 + (entity.data.moveStep ?? 0) * 0.2 && (entity.data.moveStep ?? 0) < 4) {
+      const target = move.target
+        ? bodyPoint(move.target, world)
+        : { x: move.targetX, y: world.groundY - unit }
+      const seconds = clamp(
+        Math.hypot(target.x - mouth.x, target.y - mouth.y) / (unit * 16),
+        0.35,
+        0.95,
+      )
+      const launch = ballistic(
+        mouth.x,
+        mouth.y,
+        target.x + between(-1, 1) * unit,
+        target.y,
+        seconds,
+        unit * 1.1,
+      )
+      world.spawn('ice-shard', {
+        ...launch,
+        data: { ownerId: entity.id, ownerTeam: teamOf(entity), targetId: move.target?.id ?? -1 },
+        size: 1.9,
+        x: mouth.x,
+        y: mouth.y,
+      })
+      entity.data.moveStep = (entity.data.moveStep ?? 0) + 1
+    }
+
+    if (elapsed > 1.35) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.6, 2.6)
+      world.setState(entity, 'patrol')
+    }
+    return true
+  }
+
+  if (entity.state === 'eastern-lightning') {
+    entity.fx = 'storm'
+    const targetX = move.target?.x ?? move.targetX
+    const targetY = world.groundY - unit * 1.2
+    moveTowardPoint(
+      entity,
+      world,
+      dt,
+      entity.x,
+      Math.max(world.skyTop + unit * 2.2, world.groundY - unit * 15),
+      1.7 * dt,
+    )
+
+    if (elapsed < 0.75 && (entity.data.moveTick ?? 0) <= world.time) {
+      entity.data.moveTick = world.time + 0.16
+      spawnImpact(world, targetX, targetY, 1.8 + elapsed * 2, 'lightning', 0.18)
+    }
+
+    if (elapsed > 0.75 && (entity.data.moveStep ?? 0) <= 0) {
+      entity.data.moveStep = 1
+      world.spawn('lightning-strike', {
+        data: { ownerId: entity.id, ownerTeam: teamOf(entity) },
+        size: 6.8,
+        x: targetX,
+        y: targetY,
+      })
+      spawnImpact(world, targetX, targetY, 3, 'lightning', 0.48)
+      for (const foe of world.within(targetX, world.groundY, unit * 3.6, (other) =>
+        isTargetableFoe(entity, other),
+      )) {
+        damageGroundTarget(foe, world, 0.82, entity, 2.4)
+      }
+    }
+
+    if (elapsed > 1.25) {
+      entity.fx = ''
+      dragonAiRest(entity, 1.4, 2.4)
+      world.setState(entity, 'patrol')
     }
     return true
   }
@@ -1710,39 +1996,22 @@ const dragon: EcoSpecies = {
         entity.targetId = target.id
 
         if (entity.species === 'ember-dragon') {
-          if (Math.random() < 0.46) {
-            startDragonMove(entity, world, 'talon-snatch', target, true)
-          } else {
+          if (Math.random() < 0.58) {
             startDragonFlameStrafe(entity, world, target)
+          } else {
+            startDragonSkyCast(entity, world, 'ember-fireball', target)
           }
         } else if (entity.species === 'emerald-dragon') {
-          startDragonMove(
-            entity,
-            world,
-            Math.random() < 0.36 ? 'antler-plow' : Math.random() < 0.62 ? 'body-roll' : 'rootstep',
-            target,
-            true,
-          )
+          startWyvernDive(entity, world, target)
         } else if (entity.species === 'frost-dragon') {
-          startDragonMove(
+          startDragonSkyCast(
             entity,
             world,
-            Math.random() < 0.38 ? 'wing-pinion' : Math.random() < 0.72 ? 'ice-skid' : 'whiteout',
+            Math.random() < 0.52 ? 'frost-breath' : 'frost-volley',
             target,
-            true,
           )
         } else if (entity.species === 'eastern-dragon') {
-          startDragonMove(
-            entity,
-            world,
-            Math.random() < 0.4
-              ? 'whisker-lash'
-              : Math.random() < 0.7
-                ? 'pagoda-coil'
-                : 'cloud-step',
-            target,
-            true,
-          )
+          startDragonSkyCast(entity, world, 'eastern-lightning', target)
         } else {
           startDragonFlameStrafe(entity, world, target)
         }
@@ -3190,7 +3459,7 @@ const wardWizardControls = {
   speed: 11,
 } as const
 
-const pyroWizardControls = {
+const _pyroWizardControls = {
   abilities: [
     siegeAbility({
       active: 0.2,
@@ -3288,7 +3557,7 @@ const pyroWizardControls = {
   speed: 11,
 } as const
 
-const frostWizardControls = {
+const _frostWizardControls = {
   abilities: [
     siegeAbility({
       cooldown: 0,
@@ -3392,7 +3661,7 @@ const frostWizardControls = {
   speed: 11,
 } as const
 
-const plantWizardControls = {
+const _plantWizardControls = {
   abilities: [
     siegeAbility({
       active: 0.24,
@@ -3487,7 +3756,7 @@ const plantWizardControls = {
   speed: 11,
 } as const
 
-const stormWizardControls = {
+const _stormWizardControls = {
   abilities: [
     siegeAbility({
       active: 0.2,
@@ -3598,7 +3867,7 @@ const stormWizardControls = {
   speed: 11,
 } as const
 
-const lightWizardControls = {
+const _lightWizardControls = {
   abilities: [
     siegeAbility({
       active: 0.2,
@@ -3695,7 +3964,7 @@ const lightWizardControls = {
   speed: 11,
 } as const
 
-const benderWizardControls = {
+const _benderWizardControls = {
   abilities: [
     siegeAbility({
       active: 0.32,
@@ -3786,7 +4055,7 @@ const emberDragon = {
 }
 const emeraldDragon = {
   ...dragon,
-  asset: ecoAsset('dragon-western-emerald'),
+  asset: wyvernGlideAsset,
   controls: emeraldDragonControls,
 }
 const frostDragon = {
@@ -5611,32 +5880,17 @@ const wizardTypes = [
 ] as const
 
 const wizardSpellStates = [
-  'shield',
-  'lightning',
-  'frost',
-  'fireball',
-  'tornado',
-  'arcane',
-  'ice-shard',
-  'rain',
-  'blink',
-  'meteor',
-  'summon',
-  'polymorph',
-  'fire-lance',
-  'ice-wall',
-  'vine',
-  'heal',
-  'storm',
-  'plant',
-  'light',
-  'ward',
-  'earth',
-  'water',
-  'fire-step',
-  'air-spout',
+  'arcane-ray',
+  'flame-cone',
+  'ice-beam',
+  'frenzy-plant',
+  'storm-bolt',
+  'golden-beam',
+  'earth-spike-wave',
   'duel',
 ] as const
+
+const wizardSignatureStates = wizardSpellStates.filter((state) => state !== 'duel')
 
 const isWizardCasting = (state: string) => wizardSpellStates.some((spell) => spell === state)
 
@@ -5647,33 +5901,12 @@ const wizardTypeFromAsset = (asset: string) =>
   wizardTypes.find((entry) => entry.asset === asset || entry.castAsset === asset) ?? wizardTypes[0]
 
 function wizardChargeFx(spell: string) {
-  if (spell === 'lightning' || spell === 'storm') {
-    return 'lightning'
-  }
-
-  if (spell === 'frost' || spell === 'ice-shard' || spell === 'ice-wall') {
-    return 'frost'
-  }
-
-  if (spell === 'plant' || spell === 'vine') {
-    return 'vine'
-  }
-
-  if (spell === 'shield' || spell === 'ward') {
-    return 'shield'
-  }
-
-  if (spell === 'rain' || spell === 'heal' || spell === 'light') {
-    return spell
-  }
-
-  if (spell === 'blink' || spell === 'polymorph') {
-    return 'blink'
-  }
-
-  if (spell === 'fireball' || spell === 'meteor' || spell === 'fire-lance') {
-    return 'fire'
-  }
+  if (spell === 'storm-bolt') return 'lightning'
+  if (spell === 'ice-beam') return 'frost'
+  if (spell === 'frenzy-plant') return 'vine'
+  if (spell === 'golden-beam') return 'light'
+  if (spell === 'flame-cone') return 'fire'
+  if (spell === 'earth-spike-wave') return 'earth'
 
   return 'arcane'
 }
@@ -5704,12 +5937,14 @@ function spawnBeam(
   from: { x: number; y: number },
   to: { x: number; y: number },
   life = 0.16,
+  fx = '',
 ) {
   const dx = to.x - from.x
   const dy = to.y - from.y
   const length = Math.max(world.unit * 0.8, Math.hypot(dx, dy))
   const beam = world.spawn(species, {
     data: { life },
+    facing: 1,
     size: length / world.unit,
     x: from.x + dx * 0.5,
     y: from.y + dy * 0.5,
@@ -5717,6 +5952,7 @@ function spawnBeam(
 
   if (beam) {
     beam.tilt = (Math.atan2(dy, dx) * 180) / Math.PI
+    beam.fx = fx
   }
 
   return beam
@@ -6036,6 +6272,296 @@ function releaseDuelWizards(world: EcoWorld, lord: EcoEntity | null) {
   }
 }
 
+function wizardSignatureStateForCode(code: number) {
+  return (
+    [
+      'arcane-ray',
+      'flame-cone',
+      'ice-beam',
+      'frenzy-plant',
+      'storm-bolt',
+      'golden-beam',
+      'earth-spike-wave',
+    ][code] ?? 'arcane-ray'
+  )
+}
+
+function isWizardSignatureCasting(state: string) {
+  return wizardSignatureStates.some((spell) => spell === state)
+}
+
+function wizardSignatureSpeed(state: string) {
+  return state === 'frenzy-plant' || state === 'earth-spike-wave' ? 14 : 40
+}
+
+function wizardSignatureDamage(state: string) {
+  if (state === 'flame-cone') return 0.4
+  if (state === 'storm-bolt') return 0.5
+  if (state === 'frenzy-plant' || state === 'earth-spike-wave') return 0.46
+  return 0.36
+}
+
+function wizardSignatureBeamFx(state: string) {
+  if (state === 'flame-cone') return 'wizard-flame'
+  if (state === 'ice-beam') return 'ice-beam'
+  if (state === 'storm-bolt') return 'wizard-lightning'
+  if (state === 'golden-beam') return 'golden-beam'
+  if (state === 'earth-spike-wave') return 'earth'
+  if (state === 'frenzy-plant') return 'vine'
+  return 'arcane-ray'
+}
+
+function activeSignatureCaster(entity: EcoEntity) {
+  return (
+    !entity.dying &&
+    !entity.removed &&
+    worldlessSpecies.has(entity.species) === false &&
+    (entity.countAs === 'wizard' ||
+      entity.species === 'wizard' ||
+      entity.species.endsWith('-wizard')) &&
+    isWizardSignatureCasting(entity.state) &&
+    entity.t > 0.58
+  )
+}
+
+let lastWizardClashAt = -1
+
+function updateWizardClashes(world: EcoWorld, dt: number) {
+  if (Math.abs(lastWizardClashAt - world.time) < 0.0001) return
+
+  lastWizardClashAt = world.time
+  const unit = world.unit
+  const casters = world.entities.filter(activeSignatureCaster)
+
+  for (const left of casters) {
+    if (left.facing !== 1) continue
+
+    const right = world.nearest(
+      left,
+      (other) =>
+        activeSignatureCaster(other) &&
+        other.facing === -1 &&
+        other.x > left.x &&
+        isEnemy(left, other),
+      unit * 38,
+    )
+
+    if (!right) continue
+
+    const leftTeam = teamOf(left)
+    const rightTeam = teamOf(right)
+    const existing = world.nearest(
+      { x: (left.x + right.x) * 0.5, y: world.groundY - unit * 4 },
+      (other) =>
+        other.species === 'spell-clash' &&
+        ((other.data.leftTeam === leftTeam && other.data.rightTeam === rightTeam) ||
+          (other.data.leftTeam === rightTeam && other.data.rightTeam === leftTeam)),
+      unit * 22,
+    )
+
+    if (!existing) {
+      world.spawn('spell-clash', {
+        data: { leftTeam, life: 4, rightTeam },
+        size: 2.8,
+        x: (left.x + right.x) * 0.5,
+        y: (staffPoint(left, world).y + staffPoint(right, world).y) * 0.5,
+      })
+    }
+  }
+
+  for (const clash of world.entities.filter((entity) => entity.species === 'spell-clash')) {
+    const leftTeam = clash.data.leftTeam ?? 0
+    const rightTeam = clash.data.rightTeam ?? 0
+    const leftCasters = casters.filter(
+      (caster) =>
+        teamOf(caster) === leftTeam &&
+        caster.facing === 1 &&
+        caster.x < clash.x + unit * 2 &&
+        Math.abs(caster.x - clash.x) < unit * 38,
+    )
+    const rightCasters = casters.filter(
+      (caster) =>
+        teamOf(caster) === rightTeam &&
+        caster.facing === -1 &&
+        caster.x > clash.x - unit * 2 &&
+        Math.abs(caster.x - clash.x) < unit * 38,
+    )
+
+    if (leftCasters.length === 0 || rightCasters.length === 0) {
+      spawnImpact(world, clash.x, clash.y, 2.2, 'duel', 0.32)
+      world.remove(clash)
+      continue
+    }
+
+    const leftAverage = leftCasters.reduce((sum, caster) => sum + staffPoint(caster, world).y, 0)
+    const rightAverage = rightCasters.reduce((sum, caster) => sum + staffPoint(caster, world).y, 0)
+    clash.y = (leftAverage / leftCasters.length + rightAverage / rightCasters.length) * 0.5
+    clash.x += (leftCasters.length - rightCasters.length) * unit * 1.6 * dt
+    if (leftCasters.length === rightCasters.length) {
+      clash.x += Math.sin(world.time * 18 + clash.id) * unit * 0.08
+    }
+    clash.fx = leftCasters.length === rightCasters.length ? 'hold' : 'push'
+
+    const rightEdge = Math.min(...rightCasters.map((caster) => caster.x))
+    const leftEdge = Math.max(...leftCasters.map((caster) => caster.x))
+
+    if (clash.x > rightEdge - unit * 1.2) {
+      for (const caster of rightCasters) {
+        caster.fx = 'stagger'
+        caster.vx += unit * 3.6
+        damageGroundTarget(caster, world, 0.65, leftCasters[0] ?? clash, 2.4)
+        world.setAsset(caster, wizardTypeFor(caster).asset)
+        world.setState(caster, 'wander')
+      }
+      spawnImpact(world, clash.x, clash.y, 3.4, 'duel', 0.62)
+      world.remove(clash)
+    } else if (clash.x < leftEdge + unit * 1.2) {
+      for (const caster of leftCasters) {
+        caster.fx = 'stagger'
+        caster.vx -= unit * 3.6
+        damageGroundTarget(caster, world, 0.65, rightCasters[0] ?? clash, 2.4)
+        world.setAsset(caster, wizardTypeFor(caster).asset)
+        world.setState(caster, 'wander')
+      }
+      spawnImpact(world, clash.x, clash.y, 3.4, 'duel', 0.62)
+      world.remove(clash)
+    } else if (clash.t > (clash.data.life ?? 4)) {
+      for (const caster of [...leftCasters, ...rightCasters]) {
+        caster.vx += (caster.x < clash.x ? -1 : 1) * unit * 2.8
+        caster.fx = 'stagger'
+        world.setAsset(caster, wizardTypeFor(caster).asset)
+        world.setState(caster, 'wander')
+      }
+      spawnImpact(world, clash.x, clash.y, 3.2, 'duel', 0.58)
+      world.remove(clash)
+    }
+  }
+}
+
+function wizardClashFor(entity: EcoEntity, world: EcoWorld) {
+  const team = teamOf(entity)
+
+  return world.nearest(
+    entity,
+    (other) =>
+      other.species === 'spell-clash' &&
+      (other.data.leftTeam === team || other.data.rightTeam === team) &&
+      Math.sign(other.x - entity.x || entity.facing) === entity.facing,
+    world.unit * 40,
+  )
+}
+
+function drawGroundSignature(entity: EcoEntity, world: EcoWorld, x: number) {
+  const kind = entity.state === 'frenzy-plant' ? 'frenzy-vine' : 'earth-spike'
+  const fx = entity.state === 'frenzy-plant' ? 'vine' : 'earth'
+  const size = entity.state === 'frenzy-plant' ? between(2.8, 3.7) : between(2.2, 3.1)
+  const spawned = world.spawn(kind, {
+    data: { life: 0.9, ownerId: entity.id, ownerTeam: teamOf(entity) },
+    facing: entity.facing,
+    size,
+    x: clamp(x, world.unit, world.width - world.unit),
+    y: world.groundY,
+  })
+
+  if (spawned) spawned.fx = fx
+}
+
+function drawWizardSignature(entity: EcoEntity, world: EcoWorld, to: { x: number; y: number }) {
+  const unit = world.unit
+  const origin = staffPoint(entity, world)
+
+  if ((entity.data.beamPulse ?? 0) > world.time) return
+
+  entity.data.beamPulse =
+    world.time +
+    (entity.state === 'frenzy-plant' || entity.state === 'earth-spike-wave' ? 0.16 : 0.08)
+
+  if (entity.state === 'frenzy-plant' || entity.state === 'earth-spike-wave') {
+    const distance = Math.abs(to.x - entity.x)
+    const front = clamp(
+      (entity.t - 0.58) * wizardSignatureSpeed(entity.state) * unit,
+      unit,
+      distance,
+    )
+    drawGroundSignature(entity, world, entity.x + entity.facing * front)
+    return
+  }
+
+  spawnBeam(world, 'duel-beam-good', origin, to, 0.14, wizardSignatureBeamFx(entity.state))
+
+  if (entity.state === 'ice-beam') {
+    const length = Math.abs(to.x - origin.x)
+    for (let index = 0; index < 2; index += 1) {
+      const along = clamp((entity.t * 0.32 + index * 0.26) % 1, 0.12, 0.94)
+      world.spawn('floor-icicle', {
+        data: { life: 0.52, ownerId: entity.id, ownerTeam: teamOf(entity) },
+        facing: entity.facing,
+        size: between(1, 1.55),
+        x: origin.x + entity.facing * length * along,
+        y: world.groundY,
+      })
+    }
+  } else if (entity.state === 'storm-bolt') {
+    spawnImpact(world, to.x, to.y, 1.6, 'lightning', 0.16)
+  }
+}
+
+function tickWizardSignature(entity: EcoEntity, world: EcoWorld) {
+  const unit = world.unit
+  const clash = wizardClashFor(entity, world)
+  const target = world.byId(entity.targetId)
+  const fallback = {
+    x: clamp(entity.x + entity.facing * unit * 18, unit, world.width - unit),
+    y: entity.y - world.heightOf(entity) * 0.62,
+  }
+  const targetPoint = clash
+    ? { x: clash.x, y: clash.y }
+    : target
+      ? bodyPoint(target, world)
+      : fallback
+
+  if (target && !clash) {
+    entity.facing = target.x >= entity.x ? 1 : -1
+  }
+
+  drawWizardSignature(entity, world, targetPoint)
+
+  if (clash) return
+
+  if ((entity.data.sigTick ?? 0) > world.time) return
+
+  entity.data.sigTick = world.time + 0.28
+
+  const frontDistance = (entity.t - 0.58) * wizardSignatureSpeed(entity.state) * unit
+  const reach = target ? Math.abs(target.x - entity.x) : unit * 18
+
+  if (frontDistance < reach && entity.state !== 'flame-cone') return
+
+  const impactFx = wizardSignatureBeamFx(entity.state)
+  const radius = entity.state === 'flame-cone' ? unit * 5.8 : unit * 2.8
+  const centerX = target?.x ?? entity.x + entity.facing * Math.min(frontDistance, unit * 18)
+
+  for (const foe of world.within(centerX, world.groundY, radius, (other) =>
+    isSpellDuelTarget(world, entity)(other),
+  )) {
+    if (Math.sign(foe.x - entity.x || entity.facing) !== entity.facing) continue
+
+    if (entity.state === 'flame-cone') {
+      foe.data.burn = Math.max(foe.data.burn ?? 0, 0.01)
+      foe.fx = 'burn'
+    } else if (entity.state === 'ice-beam') {
+      foe.data.slowUntil = Math.max(foe.data.slowUntil ?? 0, world.time + 1.5)
+      foe.fx = 'frozen'
+    } else if (entity.state === 'frenzy-plant') {
+      foe.fx = 'rooted'
+      foe.data.slowUntil = Math.max(foe.data.slowUntil ?? 0, world.time + 1.3)
+    }
+
+    spawnImpact(world, foe.x, bodyPoint(foe, world).y, 1.9, impactFx, 0.3)
+    damageGroundTarget(foe, world, wizardSignatureDamage(entity.state), entity, 1.7)
+  }
+}
+
 function duelSnapshot(world: EcoWorld, lord: EcoEntity) {
   const challengers = world.entities.filter(
     (other) =>
@@ -6087,17 +6613,18 @@ function startWizardSpell(
   entity.targetId = target?.id ?? null
   entity.data.casted = 0
   entity.data.beamPulse = 0
+  entity.data.sigTick = 0
   entity.data.spellCool = cooldown
   entity.fx = spell
   world.setAsset(entity, wizardTypeFor(entity).castAsset)
   const charge = staffPoint(entity, world)
-  spawnCast(
+  spawnImpact(
     world,
     charge.x,
     charge.y,
-    spell === 'storm' || spell === 'light' ? 2.3 : 1.8,
+    spell === 'storm-bolt' || spell === 'golden-beam' ? 2.3 : 1.8,
     wizardChargeFx(spell),
-    0.72,
+    0.42,
   )
   world.setState(entity, spell)
 }
@@ -6534,15 +7061,8 @@ const wizard: EcoSpecies = {
     const type = wizardTypeFor(entity)
 
     runSpellCollisionPass(world)
+    updateWizardClashes(world, dt)
 
-    entity.data.blinkCool = (entity.data.blinkCool ?? 0) - dt
-    entity.data.frostCool = (entity.data.frostCool ?? 0) - dt
-    entity.data.lightningCool = (entity.data.lightningCool ?? 0) - dt
-    entity.data.rainCool = (entity.data.rainCool ?? 0) - dt
-    entity.data.shieldCool = (entity.data.shieldCool ?? 0) - dt
-    entity.data.summonCool = (entity.data.summonCool ?? 0) - dt
-    entity.data.polymorphCool = (entity.data.polymorphCool ?? 0) - dt
-    entity.data.specialCool = (entity.data.specialCool ?? 0) - dt
     entity.data.spellCool = (entity.data.spellCool ?? 0) - dt
 
     if ((entity.data.blinkFx ?? 0) > 0) {
@@ -6585,15 +7105,11 @@ const wizard: EcoSpecies = {
         return
       }
 
-      const windup = entity.state === 'blink' ? 0.22 : 0.62
-      const doneAt = entity.state === 'blink' ? 0.5 : 1.18
-
-      if (entity.t > windup && !(entity.data.casted ?? 0)) {
-        entity.data.casted = 1
-        releaseWizardSpell(entity, world)
+      if (entity.t > 0.58) {
+        tickWizardSignature(entity, world)
       }
 
-      if (entity.t > doneAt) {
+      if (entity.t > 3.05) {
         entity.fx = ''
         entity.targetId = null
         entity.data.casted = 0
@@ -6605,31 +7121,6 @@ const wizard: EcoSpecies = {
     }
 
     world.setAsset(entity, type.asset)
-    const incoming = incomingFireball(entity, world, 5.8)
-    const incomingSpell = world.nearest(
-      entity,
-      (other) => world.has(other, 'projectile') && !sameTeam(entity, other),
-      unit * 6.2,
-    )
-
-    if (incomingSpell && type.code === 0 && (entity.data.specialCool ?? 0) <= 0) {
-      entity.data.specialCool = between(4.8, 6.8)
-      startWizardSpell(entity, world, 'ward', incomingSpell, 1.4)
-      return
-    }
-
-    if (incomingSpell && type.code === 6 && (entity.data.specialCool ?? 0) <= 0) {
-      entity.data.specialCool = between(2.4, 3.8)
-      entity.facing = incomingSpell.x >= entity.x ? 1 : -1
-      startWizardSpell(entity, world, 'earth', incomingSpell, 1.2)
-      return
-    }
-
-    if (incoming && (entity.data.blinkCool ?? 0) <= 0) {
-      entity.data.blinkCool = between(6, 8)
-      startWizardSpell(entity, world, 'blink', incoming, 1.2)
-      return
-    }
 
     const lord = world.nearest(entity, isDarkLord, Math.max(unit * 62, world.width))
 
@@ -6643,198 +7134,24 @@ const wizard: EcoSpecies = {
       return
     }
 
-    const fire = world.nearest(entity, isFireOrBurning(world), Math.max(unit * 34, world.height))
-
-    if (fire && (entity.data.rainCool ?? 0) <= 0 && (type.code === 0 || type.code === 4)) {
-      entity.facing = fire.x >= entity.x ? 1 : -1
-      entity.data.rainCool = between(7, 10)
-      startWizardSpell(entity, world, 'rain', fire, 1.8)
-      return
-    }
-
-    if (fire && (entity.data.rainCool ?? 0) <= 0 && type.code === 6) {
-      entity.facing = fire.x >= entity.x ? 1 : -1
-      entity.data.rainCool = between(3.5, 5)
-      startWizardSpell(entity, world, 'water', fire, 1.4)
-      return
-    }
-
-    if (fire && (entity.data.specialCool ?? 0) <= 0 && type.code === 3) {
-      entity.facing = fire.x >= entity.x ? 1 : -1
-      entity.data.specialCool = between(6, 8)
-      startWizardSpell(entity, world, 'heal', fire, 2)
-      return
-    }
-
-    const threatenedCottage = world.nearest(
+    const foe = world.nearest(
       entity,
       (other) =>
-        world.has(other, 'building') &&
-        ((other.data.burn ?? 0) > 0 ||
-          Boolean(incomingFireball(other, world, 5)) ||
-          world.entities.some(
-            (dragonEntity) =>
-              world.has(dragonEntity, 'dragon') &&
-              dragonEntity.state === 'aim' &&
-              dragonEntity.targetId === other.id,
-          )),
-      Math.max(unit * 46, world.width),
+        isSpellDuelTarget(world, entity)(other) &&
+        Math.abs(other.x - entity.x) < Math.max(unit * 54, world.width * 0.72),
+      Math.max(unit * 56, world.width),
     )
 
-    if (threatenedCottage && (entity.data.shieldCool ?? 0) <= 0 && type.code === 0) {
-      entity.data.shieldCool = between(5, 7)
-      startWizardSpell(entity, world, 'shield', threatenedCottage, 1.4)
-      return
-    }
-
-    if (incoming && (entity.data.specialCool ?? 0) <= 0 && type.code === 2) {
-      entity.data.specialCool = between(5, 7)
-      startWizardSpell(entity, world, 'ice-wall', incoming, 1.8)
-      return
-    }
-
-    if ((entity.data.spellCool ?? 0) <= 0) {
-      const foe = world.nearest(
+    if (foe && (entity.data.spellCool ?? 0) <= 0) {
+      entity.facing = foe.x >= entity.x ? 1 : -1
+      startWizardSpell(
         entity,
-        isSpellDuelTarget(world, entity),
-        Math.max(unit * 56, world.width),
+        world,
+        wizardSignatureStateForCode(type.code),
+        foe,
+        between(1.2, 2.2),
       )
-
-      if (foe) {
-        const book = entity.data.book ?? 0
-        const nearbyGround = world.within(
-          foe.x,
-          world.groundY,
-          unit * 7,
-          (other) => isSpellDuelTarget(world, entity)(other) && onGround(other, world),
-        )
-        entity.data.book = book + 1
-
-        if (nearbyGround.length >= 3 && (entity.data.specialCool ?? 0) <= 0) {
-          entity.data.specialCool = between(6, 8)
-          startWizardSpell(
-            entity,
-            world,
-            type.code === 1 ? 'meteor' : type.code === 6 ? 'air-spout' : 'tornado',
-            foe,
-            between(2.3, 3.3),
-          )
-          return
-        }
-
-        if (
-          type.code === 0 &&
-          (entity.data.summonCool ?? 0) <= 0 &&
-          (world.has(foe, 'dragon') || foe.species === 'dark-lord')
-        ) {
-          entity.data.summonCool = between(8, 12)
-          startWizardSpell(entity, world, 'summon', foe, between(2.6, 3.8))
-          return
-        }
-
-        if (
-          type.code === 3 &&
-          (entity.data.polymorphCool ?? 0) <= 0 &&
-          (world.has(foe, 'knight') || world.has(foe, 'wizard') || foe.species === 'dark-lord')
-        ) {
-          entity.data.polymorphCool = between(8, 12)
-          startWizardSpell(entity, world, 'polymorph', foe, between(2.6, 3.8))
-          return
-        }
-
-        if (world.has(foe, 'knight') && (entity.data.lightningCool ?? 0) <= 0) {
-          entity.data.lightningCool = between(4.5, 6.5)
-          startWizardSpell(entity, world, 'lightning', foe, between(2, 3))
-          return
-        }
-
-        if (type.code === 1 && (entity.data.specialCool ?? 0) <= 0) {
-          entity.data.specialCool = between(4.8, 7)
-          startWizardSpell(
-            entity,
-            world,
-            Math.random() < 0.45 ? 'meteor' : Math.random() < 0.72 ? 'fireball' : 'fire-lance',
-            foe,
-            between(2.4, 3.2),
-          )
-          return
-        }
-
-        if (type.code === 2 && (entity.data.frostCool ?? 0) <= 0) {
-          entity.data.frostCool = between(9, 13)
-          startWizardSpell(
-            entity,
-            world,
-            Math.random() < 0.62 ? 'ice-shard' : 'frost',
-            foe,
-            between(2.6, 3.8),
-          )
-          return
-        }
-
-        if (type.code === 3 && (entity.data.specialCool ?? 0) <= 0) {
-          entity.data.specialCool = between(6, 8.5)
-          startWizardSpell(entity, world, 'plant', foe, between(2.2, 3.2))
-          return
-        }
-
-        if (type.code === 5 && (entity.data.specialCool ?? 0) <= 0) {
-          entity.data.specialCool = between(5.5, 7.5)
-          startWizardSpell(entity, world, 'light', foe, between(2.1, 3.1))
-          return
-        }
-
-        if (type.code === 4 && (entity.data.specialCool ?? 0) <= 0) {
-          entity.data.specialCool = between(6, 9)
-          startWizardSpell(entity, world, 'storm', foe, between(2.7, 3.8))
-          return
-        }
-
-        if (type.code === 6 && (entity.data.specialCool ?? 0) <= 0) {
-          entity.data.specialCool = between(3.2, 5)
-          const spell = world.has(foe, 'dragon')
-            ? 'air-spout'
-            : world.has(foe, 'plant')
-              ? 'fire-step'
-              : (foe.data.burn ?? 0) > 0 || foe.species === 'green-flame'
-                ? 'water'
-                : Math.random() < 0.45
-                  ? 'earth'
-                  : Math.random() < 0.65
-                    ? 'water'
-                    : 'fire-step'
-          startWizardSpell(entity, world, spell, foe, between(1.7, 2.6))
-          return
-        }
-
-        if ((book + entity.id) % 4 === 1) {
-          startWizardSpell(entity, world, 'arcane', foe, between(2.2, 3.2))
-          return
-        }
-
-        if (Math.random() < 0.25) {
-          startWizardSpell(entity, world, 'fireball', foe, between(2.2, 3.2))
-          return
-        }
-
-        if (
-          (book % 3 === 0 || foe.state === 'swoop') &&
-          world.has(foe, 'dragon') &&
-          (entity.data.frostCool ?? 0) <= 0
-        ) {
-          entity.data.frostCool = between(10, 14)
-          startWizardSpell(entity, world, 'frost', foe, between(2.6, 3.8))
-          return
-        }
-
-        if ((entity.data.lightningCool ?? 0) <= 0) {
-          entity.data.lightningCool = between(5.5, 8)
-          startWizardSpell(entity, world, 'lightning', foe, between(2.4, 3.4))
-          return
-        }
-      }
-
-      entity.data.spellCool = 1.2
+      return
     }
 
     walk(entity, world, dt, unit * 0.62)
@@ -6846,14 +7163,52 @@ const wizard: EcoSpecies = {
   },
 }
 
+const signatureWizardControlsFor = (code: 0 | 1 | 2 | 3 | 4 | 5 | 6) =>
+  ({
+    abilities: [
+      siegeAbility({
+        active: 2.45,
+        cooldown: 0,
+        description: 'Cast this school’s signature spell in a clear three-beat channel.',
+        icon: 'spell',
+        key: 'q',
+        name: 'Signature spell',
+        radius: 18,
+        recovery: 0.25,
+        shape: 'line',
+        state: wizardSignatureStateForCode(code),
+        vfx: 'charge',
+        width: code === 1 ? 5.5 : 3.4,
+        windup: 0.6,
+        onRun(entity, world, context) {
+          const point = controlCastPoint(entity, world, context)
+          const target =
+            frontTarget(entity, world, world.unit * 22, 10) ??
+            world.nearest(point, (other) => isTargetableFoe(entity, other), world.unit * 18)
+          startWizardSpell(entity, world, wizardSignatureStateForCode(code), target, 0.6)
+        },
+        onTick(entity, world) {
+          updateWizardClashes(world, 1 / 60)
+          if (entity.t > 0.58 && isWizardSignatureCasting(entity.state)) {
+            tickWizardSignature(entity, world)
+          }
+        },
+      }),
+    ],
+    idleState: 'wander',
+    move: 'ground',
+    moveState: 'wander',
+    speed: 11,
+  }) as const
+
 const wizardControlsByType = [
-  wardWizardControls,
-  pyroWizardControls,
-  frostWizardControls,
-  plantWizardControls,
-  stormWizardControls,
-  lightWizardControls,
-  benderWizardControls,
+  signatureWizardControlsFor(0),
+  signatureWizardControlsFor(1),
+  signatureWizardControlsFor(2),
+  signatureWizardControlsFor(3),
+  signatureWizardControlsFor(4),
+  signatureWizardControlsFor(5),
+  signatureWizardControlsFor(6),
 ] as const
 
 const wizardSpeciesFor = (code: 0 | 1 | 2 | 3 | 4 | 5 | 6) => ({
@@ -7113,6 +7468,115 @@ const ballista: EcoSpecies = {
   },
 }
 
+const floorIcicle: EcoSpecies = {
+  anchor: 'bottom',
+  asset: ecoAsset('ice-shard'),
+  countAs: null,
+  idle: 'glow',
+  layer: 'front',
+  size: [1, 1.55],
+  state: 'rise',
+  strongVs: ['knight', 'dragon'],
+  tags: [],
+  weakTo: ['fireball'],
+  tick(entity, world) {
+    entity.fx = 'frost'
+    entity.scale = Math.max(
+      0.15,
+      Math.sin(clamp(entity.t / (entity.data.life ?? 0.52), 0, 1) * Math.PI),
+    )
+    entity.tilt = -90 + entity.facing * 8
+
+    if (entity.t > (entity.data.life ?? 0.52)) {
+      world.remove(entity)
+    }
+  },
+}
+
+const frenzyVine: EcoSpecies = {
+  anchor: 'bottom',
+  asset: frenzyVineAsset,
+  countAs: null,
+  idle: 'sway',
+  layer: 'front',
+  size: [1.7, 3.4],
+  state: 'slam',
+  strongVs: ['knight', 'wizard'],
+  tags: ['plant'],
+  weakTo: ['fire'],
+  tick(entity, world) {
+    const unit = world.unit
+    const progress = clamp(entity.t / (entity.data.life ?? 0.9), 0, 1)
+    entity.fx = 'vine'
+    entity.scale = Math.sin(progress * Math.PI) * 0.9 + 0.15
+    entity.tilt = entity.facing * Math.sin(progress * Math.PI) * -22
+
+    if ((entity.data.hit ?? 0) <= 0 && progress > 0.34) {
+      entity.data.hit = 1
+      for (const foe of world.within(entity.x, world.groundY, unit * 2.8, (other) =>
+        isTargetableFoe(entity, other),
+      )) {
+        foe.fx = 'rooted'
+        foe.data.slowUntil = Math.max(foe.data.slowUntil ?? 0, world.time + 1.4)
+        damageGroundTarget(foe, world, 0.42, entity, 1.8)
+      }
+    }
+
+    if (entity.t > (entity.data.life ?? 0.9)) {
+      world.remove(entity)
+    }
+  },
+}
+
+const earthSpike: EcoSpecies = {
+  anchor: 'bottom',
+  asset: earthSpikeAsset,
+  countAs: null,
+  idle: 'none',
+  layer: 'front',
+  size: [1.6, 2.8],
+  state: 'burst',
+  strongVs: ['knight', 'projectile'],
+  tags: [],
+  weakTo: ['water'],
+  tick(entity, world) {
+    const unit = world.unit
+    const progress = clamp(entity.t / (entity.data.life ?? 0.78), 0, 1)
+    entity.fx = 'earth'
+    entity.scale = Math.sin(progress * Math.PI) * 0.95 + 0.08
+    entity.tilt = entity.facing * Math.sin(progress * Math.PI) * 10
+
+    if ((entity.data.hit ?? 0) <= 0 && progress > 0.28) {
+      entity.data.hit = 1
+      for (const foe of world.within(entity.x, world.groundY, unit * 2.5, (other) =>
+        isTargetableFoe(entity, other),
+      )) {
+        damageGroundTarget(foe, world, 0.48, entity, 2.6)
+      }
+    }
+
+    if (entity.t > (entity.data.life ?? 0.78)) {
+      world.remove(entity)
+    }
+  },
+}
+
+const spellClash: EcoSpecies = {
+  anchor: 'center',
+  asset: ecoAsset('spell-impact'),
+  countAs: null,
+  idle: 'glow',
+  layer: 'front',
+  size: [2.4, 3.4],
+  state: 'clash',
+  strongVs: ['wizard'],
+  tags: [],
+  weakTo: ['wizard'],
+  tick(entity, world) {
+    entity.scale = 0.85 + Math.sin(world.time * 18 + entity.id) * 0.08
+  },
+}
+
 const frostNova: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('frost-nova'),
@@ -7128,26 +7592,6 @@ const frostNova: EcoSpecies = {
     entity.scale = Math.max(0.25, 0.7 + entity.t * 0.9)
 
     if (entity.t > (entity.data.life ?? 0.95)) {
-      world.remove(entity)
-    }
-  },
-}
-
-const wizardCast: EcoSpecies = {
-  anchor: 'center',
-  asset: ecoAsset('wizard-cast'),
-  countAs: null,
-  idle: 'glow',
-  layer: 'front',
-  size: [1.6, 2.5],
-  state: 'sparkle',
-  strongVs: ['dark-lord'],
-  tags: [],
-  weakTo: ['fireball'],
-  tick(entity, world) {
-    entity.scale = Math.max(0.2, 1 + entity.t * 0.55)
-
-    if (entity.t > (entity.data.life ?? 0.65)) {
       world.remove(entity)
     }
   },
@@ -7345,6 +7789,9 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   'storm-wizard': stormWizard,
   'light-wizard': lightWizard,
   'bender-wizard': benderWizard,
-  'wizard-cast': wizardCast,
+  'floor-icicle': floorIcicle,
+  'frenzy-vine': frenzyVine,
+  'earth-spike': earthSpike,
+  'spell-clash': spellClash,
   'wizard-fireball': wizardFireball,
 })

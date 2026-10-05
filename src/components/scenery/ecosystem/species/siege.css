@@ -155,11 +155,6 @@
   transform-origin: center bottom;
 }
 
-.ecoThing[data-species='wizard-cast'] .ecoArt {
-  animation: siegeCastBloom 0.65s ease-out forwards;
-  filter: drop-shadow(0 0 0.45rem rgba(255, 246, 200, 0.92));
-}
-
 .ecoThing:is(
     [data-species='wizard'],
     [data-species='ward-wizard'],
@@ -374,10 +369,7 @@
       [data-species='light-wizard'],
       [data-species='bender-wizard']
     )[data-fx='cast']
-    .ecoArt,
-  .ecoThing[data-species='wizard-cast'] .ecoArt,
-  .ecoThing[data-species='ballista'][data-fx='aim'] .ecoArt,
-  .ecoThing[data-species='bolt'][data-fx='magic'] .ecoArt {
+    .ecoArt {
     animation: none;
   }
 }
@@ -655,7 +647,7 @@
     [data-species='bender-wizard']
   )[data-state='blink']
   .ecoPose::before {
-  animation: siegeRuneSpin 1s linear infinite;
+  animation: none;
   background: conic-gradient(
     from 0deg,
     transparent,
@@ -747,27 +739,6 @@
   width: 38%;
 }
 
-.ecoThing[data-species='wizard-cast'][data-fx='shield'] .ecoArt {
-  filter: hue-rotate(170deg) saturate(1.4) drop-shadow(0 0 0.6rem rgba(184, 217, 240, 0.95));
-}
-
-.ecoThing[data-species='wizard-cast'][data-fx='lightning'] .ecoArt {
-  animation: siegeLightningPop 0.42s ease-out forwards;
-  filter: saturate(1.9) drop-shadow(0 0 0.7rem rgba(255, 217, 102, 0.95));
-}
-
-.ecoThing[data-species='wizard-cast'][data-fx='frost'] .ecoArt {
-  filter: hue-rotate(170deg) brightness(1.2) drop-shadow(0 0 0.7rem rgba(216, 244, 255, 0.95));
-}
-
-.ecoThing[data-species='wizard-cast'][data-fx='rain'] .ecoArt {
-  filter: hue-rotate(145deg) saturate(1.3) drop-shadow(0 0 0.5rem rgba(139, 196, 212, 0.9));
-}
-
-.ecoThing[data-species='wizard-cast'][data-fx='blink'] .ecoArt {
-  filter: hue-rotate(75deg) saturate(1.6) drop-shadow(0 0 0.68rem rgba(216, 191, 216, 0.96));
-}
-
 .ecoThing[data-species='bolt'][data-fx='lightning'] .ecoArt {
   animation: siegeLightningBolt 0.12s linear infinite alternate;
   filter: saturate(2) brightness(1.25) drop-shadow(0 0 0.45rem rgba(255, 217, 102, 0.98));
@@ -827,12 +798,6 @@
 
   to {
     transform: rotate(4deg) translateY(-0.14rem);
-  }
-}
-
-@keyframes siegeRuneSpin {
-  to {
-    transform: translateX(-50%) rotate(360deg) scaleY(0.26);
   }
 }
 
@@ -1293,10 +1258,7 @@
       [data-species='light-wizard'],
       [data-species='bender-wizard']
     )[data-state='blink']
-    .ecoPose::after,
-  .ecoThing[data-species='wizard-cast'][data-fx='lightning'] .ecoArt,
-  .ecoThing[data-species='bolt'][data-fx='lightning'] .ecoArt,
-  .ecoThing[data-species='frost-nova'] .ecoArt {
+    .ecoPose::after {
     animation: none;
   }
 }
@@ -1548,7 +1510,7 @@
     [data-species='bender-wizard']
   )[data-state='duel']
   .ecoPose::before {
-  animation: siegeRunePulse 0.92s linear infinite;
+  animation: none;
   background:
     radial-gradient(circle, transparent 35%, var(--wizard-rune) 37% 40%, transparent 43%),
     conic-gradient(
@@ -1959,22 +1921,6 @@
 
   100% {
     transform: rotate(2deg) translateY(-0.18rem) scale(1.04, 0.96);
-  }
-}
-
-@keyframes siegeRunePulse {
-  0% {
-    opacity: 0.54;
-    transform: translateX(-50%) rotate(0deg) scaleY(0.2) scale(0.84);
-  }
-
-  55% {
-    opacity: 0.96;
-  }
-
-  100% {
-    opacity: 0.72;
-    transform: translateX(-50%) rotate(360deg) scaleY(0.28) scale(1.08);
   }
 }
 
@@ -2628,7 +2574,7 @@
     [data-species='bender-wizard']
   )[data-state='ice-shard']
   .ecoPose::before {
-  animation: siegeRunePulse 0.92s linear infinite;
+  animation: none;
   background:
     radial-gradient(circle, transparent 35%, var(--wizard-rune) 37% 40%, transparent 43%),
     conic-gradient(
@@ -3211,7 +3157,7 @@
     [data-species='bender-wizard']
   )[data-state='polymorph']
   .ecoPose::before {
-  animation: siegeRunePulse 0.92s linear infinite;
+  animation: none;
   background:
     radial-gradient(circle, transparent 35%, var(--wizard-rune) 37% 40%, transparent 43%),
     conic-gradient(
@@ -3354,25 +3300,6 @@
 }
 
 .ecoThing[data-fx='blink'] .ecoPose::before,
-.ecoThing[data-species='wizard-cast'][data-fx='blink'] .ecoPose::before {
-  animation: siegeBlinkSparkle 0.55s ease-out forwards;
-  background:
-    radial-gradient(circle at 20% 55%, rgba(216, 191, 255, 0.9) 0 0.14rem, transparent 0.2rem),
-    radial-gradient(circle at 65% 22%, rgba(255, 246, 200, 0.92) 0 0.18rem, transparent 0.24rem),
-    radial-gradient(circle at 82% 70%, rgba(184, 217, 240, 0.86) 0 0.15rem, transparent 0.22rem),
-    radial-gradient(circle, rgba(216, 191, 255, 0.42), transparent 68%);
-  border-radius: 50%;
-  content: '';
-  height: 130%;
-  left: 50%;
-  pointer-events: none;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 130%;
-  z-index: 5;
-}
-
 .ecoThing[data-species='cottage'] .ecoPose::after,
 .ecoThing:is(
     [data-species='wizard'],
@@ -3554,8 +3481,7 @@
   .ecoThing[data-species='spell-familiar'] .ecoArt,
   .ecoThing[data-species='spell-polymorph'] .ecoArt,
   .ecoThing[data-fx='polymorph'] .ecoPose::after,
-  .ecoThing[data-fx='blink'] .ecoPose::before,
-  .ecoThing[data-species='wizard-cast'][data-fx='blink'] .ecoPose::before {
+  .ecoThing[data-fx='blink'] .ecoPose::before {
     animation: none;
   }
 }
@@ -3700,7 +3626,7 @@
     [data-species='bender-wizard']
   )[data-state='cast']
   .ecoPose::before {
-  animation: siegeRuneSpin 1.2s linear infinite;
+  animation: none;
   background: conic-gradient(
     from 0deg,
     transparent,
@@ -4092,16 +4018,6 @@
 .ecoThing[data-species='knight'][data-state='rally'] .ecoArt {
   animation: siegeKnightRally 0.46s ease-in-out infinite alternate;
   filter: drop-shadow(0 0 0.35rem rgba(255, 217, 102, 0.72));
-}
-
-@keyframes siegeRuneSpin {
-  from {
-    transform: translateX(-50%) rotateX(62deg) rotate(0deg);
-  }
-
-  to {
-    transform: translateX(-50%) rotateX(62deg) rotate(360deg);
-  }
 }
 
 @keyframes siegeStaffCharge {
@@ -5865,6 +5781,398 @@
   .ecoThing[data-species='knight'][data-fx='slash'] .ecoArt,
   .ecoThing[data-species='archer'][data-fx='charge'] .ecoArt,
   .ecoThing[data-species='archer'][data-state='aim'] .ecoArt {
+    animation: none;
+  }
+}
+
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='arcane-ray'],
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='flame-cone'],
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='ice-beam'],
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='frenzy-plant'],
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='storm-bolt'],
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='golden-beam'],
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='earth-spike-wave'] {
+  --wizard-rune: transparent;
+}
+
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='arcane-ray']
+  .ecoPose::before,
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='flame-cone']
+  .ecoPose::before,
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='ice-beam']
+  .ecoPose::before,
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='frenzy-plant']
+  .ecoPose::before,
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='storm-bolt']
+  .ecoPose::before,
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='golden-beam']
+  .ecoPose::before,
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='ward-wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard'],
+    [data-species='storm-wizard'],
+    [data-species='light-wizard'],
+    [data-species='bender-wizard']
+  )[data-state='earth-spike-wave']
+  .ecoPose::before {
+  content: none;
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='arcane-ray'] .ecoArt {
+  filter: hue-rotate(165deg) saturate(1.35) brightness(1.18)
+    drop-shadow(0 0 0.45rem rgba(184, 217, 240, 0.95));
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='golden-beam'] .ecoArt {
+  filter: sepia(0.55) saturate(1.8) brightness(1.22)
+    drop-shadow(0 0 0.5rem rgba(255, 217, 102, 0.96));
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='ice-beam'] .ecoArt {
+  filter: hue-rotate(175deg) saturate(1.9) brightness(1.35)
+    drop-shadow(0 0 0.65rem rgba(216, 244, 255, 0.98));
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='wizard-lightning'] .ecoArt {
+  animation: siegeLightningBolt 0.1s linear infinite alternate;
+  filter: saturate(2.1) brightness(1.32) drop-shadow(0 0 0.65rem rgba(255, 217, 102, 0.98));
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='wizard-flame'] .ecoArt {
+  opacity: 0.42;
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='wizard-flame'] .ecoPose::before {
+  animation: siegeFlameStreamFlicker 0.12s ease-in-out infinite alternate;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 246, 200, 0.96),
+    rgba(255, 166, 94, 0.9) 48%,
+    rgba(216, 72, 45, 0.78)
+  );
+  border-radius: 999rem 65% 65% 999rem;
+  box-shadow: 0 0 0.45rem rgba(255, 166, 94, 0.86);
+  content: '';
+  height: 115%;
+  left: 0;
+  opacity: 0.95;
+  pointer-events: none;
+  position: absolute;
+  top: -8%;
+  transform: scaleY(0.42);
+  width: 100%;
+}
+
+.ecoThing[data-species='duel-beam-good'][data-fx='ice-beam'] .ecoPose::before {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(216, 244, 255, 0.8),
+    rgba(139, 196, 212, 0.45)
+  );
+  border-radius: 999rem;
+  box-shadow: 0 0 0.58rem rgba(216, 244, 255, 0.9);
+  content: '';
+  height: 32%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 34%;
+  width: 100%;
+}
+
+.ecoThing[data-species='floor-icicle'] .ecoArt {
+  animation: siegeIciclePop 0.52s ease-out forwards;
+  filter: hue-rotate(170deg) brightness(1.25) drop-shadow(0 0 0.32rem rgba(216, 244, 255, 0.86));
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='frenzy-vine'] .ecoArt {
+  animation: siegeFrenzyVine 0.82s cubic-bezier(0.22, 1, 0.36, 1) both;
+  filter: saturate(1.15) drop-shadow(0 0 0.3rem rgba(119, 170, 82, 0.72));
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='earth-spike'] .ecoArt {
+  animation: siegeEarthSpike 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  filter: drop-shadow(0 0 0.28rem rgba(139, 115, 85, 0.72));
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='spell-clash'] .ecoArt {
+  animation: siegeSpellClashPulse 0.24s ease-in-out infinite alternate;
+  filter: saturate(1.7) brightness(1.18) drop-shadow(0 0 0.75rem rgba(255, 246, 200, 0.96));
+}
+
+.ecoThing[data-species='spell-clash'][data-fx='push'] .ecoArt {
+  filter: saturate(2) brightness(1.24) drop-shadow(0 0 0.9rem rgba(255, 217, 102, 0.98));
+}
+
+.ecoThing[data-species='emerald-dragon'][data-state='wyvern-dive'] .ecoArt {
+  animation: siegeWyvernDive 0.22s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.35rem rgba(139, 115, 85, 0.55));
+}
+
+.ecoThing[data-species='emerald-dragon'][data-state='wyvern-strike'] .ecoArt {
+  animation: siegeWyvernStrike 0.18s ease-out alternate;
+  filter: drop-shadow(0 0 0.55rem rgba(255, 166, 94, 0.82));
+}
+
+.ecoThing[data-species='emerald-dragon'][data-state='wyvern-climb'] .ecoArt {
+  animation: siegeWyvernClimb 0.42s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='eastern-dragon'][data-state='eastern-lightning'] .ecoArt,
+.ecoThing[data-species='frost-dragon'][data-state='frost-breath'] .ecoArt,
+.ecoThing[data-species='frost-dragon'][data-state='frost-volley'] .ecoArt,
+.ecoThing[data-species='ember-dragon'][data-state='ember-fireball'] .ecoArt {
+  animation: siegeDragonSkyCast 0.38s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+@keyframes siegeIciclePop {
+  0% {
+    opacity: 0;
+    transform: translateY(0.8rem) scale(0.3, 0.2) rotate(-90deg);
+  }
+
+  45% {
+    opacity: 1;
+    transform: translateY(0) scale(0.95, 1.15) rotate(-90deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0.2rem) scale(0.8, 0.75) rotate(-90deg);
+  }
+}
+
+@keyframes siegeFrenzyVine {
+  0% {
+    opacity: 0;
+    transform: translateY(1.2rem) scaleY(0.08) rotate(0deg);
+  }
+
+  42% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1.05) rotate(0deg);
+  }
+
+  68% {
+    transform: translateY(0) scaleY(0.98) rotate(-18deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0.6rem) scaleY(0.2) rotate(8deg);
+  }
+}
+
+@keyframes siegeEarthSpike {
+  0% {
+    opacity: 0;
+    transform: translateY(0.8rem) scaleY(0.08);
+  }
+
+  36% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1.08);
+  }
+
+  68% {
+    transform: translateY(0) scaleY(0.96) rotate(5deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0.45rem) scaleY(0.18);
+  }
+}
+
+@keyframes siegeSpellClashPulse {
+  from {
+    transform: scale(0.85) rotate(-6deg);
+  }
+
+  to {
+    transform: scale(1.14) rotate(8deg);
+  }
+}
+
+@keyframes siegeWyvernDive {
+  from {
+    transform: translateY(-0.08rem) rotate(-3deg);
+  }
+
+  to {
+    transform: translateY(0.08rem) rotate(4deg);
+  }
+}
+
+@keyframes siegeWyvernStrike {
+  from {
+    transform: scale(1.04) rotate(-5deg);
+  }
+
+  to {
+    transform: scale(0.98) rotate(3deg);
+  }
+}
+
+@keyframes siegeWyvernClimb {
+  from {
+    transform: translateY(0.08rem) rotate(2deg);
+  }
+
+  to {
+    transform: translateY(-0.12rem) rotate(-4deg);
+  }
+}
+
+@keyframes siegeDragonSkyCast {
+  from {
+    transform: translateY(0) rotate(-1deg);
+  }
+
+  to {
+    transform: translateY(-0.16rem) rotate(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='duel-beam-good'][data-fx='wizard-lightning'] .ecoArt,
+  .ecoThing[data-species='duel-beam-good'][data-fx='wizard-flame'] .ecoPose::before,
+  .ecoThing[data-species='floor-icicle'] .ecoArt,
+  .ecoThing[data-species='frenzy-vine'] .ecoArt,
+  .ecoThing[data-species='earth-spike'] .ecoArt,
+  .ecoThing[data-species='spell-clash'] .ecoArt,
+  .ecoThing[data-species='emerald-dragon'][data-state='wyvern-dive'] .ecoArt,
+  .ecoThing[data-species='emerald-dragon'][data-state='wyvern-strike'] .ecoArt,
+  .ecoThing[data-species='emerald-dragon'][data-state='wyvern-climb'] .ecoArt,
+  .ecoThing[data-species='eastern-dragon'][data-state='eastern-lightning'] .ecoArt,
+  .ecoThing[data-species='frost-dragon'][data-state='frost-breath'] .ecoArt,
+  .ecoThing[data-species='frost-dragon'][data-state='frost-volley'] .ecoArt,
+  .ecoThing[data-species='ember-dragon'][data-state='ember-fireball'] .ecoArt {
     animation: none;
   }
 }
