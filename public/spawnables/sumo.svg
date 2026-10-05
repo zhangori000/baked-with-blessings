@@ -1,249 +1,36 @@
-<svg width="156" height="160" viewBox="0 0 156 160" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
-  <defs>
-    <style>
-      .part,
-      .rig {
-        transform-box: view-box;
-      }
-      .torso {
-        transform-origin: 78px 98px;
-      }
-      .head {
-        transform-origin: 78px 43px;
-      }
-      .armL {
-        transform-origin: 51px 72px;
-      }
-      .armR {
-        transform-origin: 104px 72px;
-      }
-      .legL {
-        transform-origin: 58px 102px;
-      }
-      .legR {
-        transform-origin: 98px 102px;
-      }
-      .legLift {
-        transform-origin: 96px 104px;
-        animation: liftLeg 1.15s cubic-bezier(0.32, 0, 0.16, 1.18) infinite;
-      }
-      .skin {
-        fill: #efb184;
-      }
-      .skinDark {
-        fill: #c77c58;
-      }
-      .shade {
-        fill: #c77c58;
-        opacity: 0.34;
-      }
-      .palm {
-        fill: #f7c197;
-      }
-      .foot {
-        fill: none;
-        stroke: #7d4b35;
-        stroke-width: 8;
-        stroke-linecap: round;
-      }
-      .shadeLine {
-        fill: none;
-        stroke: #c77c58;
-        stroke-width: 4;
-        stroke-linecap: round;
-        opacity: 0.45;
-      }
-      .palmLines {
-        fill: none;
-        stroke: #c77c58;
-        stroke-width: 2;
-        stroke-linecap: round;
-        opacity: 0.58;
-      }
-      .brows {
-        fill: none;
-        stroke: #4a2530;
-        stroke-width: 4;
-        stroke-linecap: round;
-      }
-      .mouth {
-        fill: none;
-        stroke: #8c3f2e;
-        stroke-width: 3.4;
-        stroke-linecap: round;
-      }
-      .proud {
-        stroke-width: 3.8;
-      }
-      .mawashi {
-        fill: #213a76;
-      }
-      .mawashiHi {
-        fill: #4560ae;
-      }
-      .sagari {
-        stroke: #fff1cf;
-        stroke-width: 3.4;
-        stroke-linecap: round;
-      }
-      .dust {
-        transform-origin: 108px 138px;
-        opacity: 0;
-      }
-      .sumoRaised .legR {
-        animation: shikoLeg 1.15s cubic-bezier(0.32, 0, 0.16, 1.18) infinite;
-      }
-      .sumoRaised .torso {
-        animation: shikoBody 1.15s cubic-bezier(0.32, 0, 0.16, 1.18) infinite;
-      }
-      .sumoRaised .dust {
-        animation: sumoDust 1.15s ease-out infinite;
-      }
-      @keyframes shikoLeg {
-        0%,
-        100% {
-          transform: rotate(-52deg) translate(-15px, -36px);
-        }
-        42% {
-          transform: rotate(-60deg) translate(-18px, -42px);
-        }
-        63% {
-          transform: rotate(0) translate(0, 0);
-        }
-        74% {
-          transform: scale(1.08, 0.86) translateY(7px);
-        }
-      }
-      @keyframes liftLeg {
-        0%,
-        52% {
-          opacity: 1;
-          transform: rotate(0) translate(0, 0);
-        }
-        63% {
-          opacity: 0;
-          transform: rotate(42deg) translate(18px, 34px) scale(0.9);
-        }
-        76% {
-          opacity: 0;
-          transform: rotate(42deg) translate(18px, 34px) scale(0.9);
-        }
-        100% {
-          opacity: 1;
-          transform: rotate(0) translate(0, 0);
-        }
-      }
-      @keyframes shikoBody {
-        0%,
-        100% {
-          transform: translateY(0) scale(1);
-        }
-        56% {
-          transform: translateY(-8px) rotate(-2deg);
-        }
-        70% {
-          transform: translateY(8px) scale(1.08, 0.9);
-        }
-        82% {
-          transform: translateY(-2px) scale(0.98, 1.02);
-        }
-      }
-      @keyframes sumoDust {
-        0%,
-        58% {
-          opacity: 0;
-          transform: scale(0.3);
-        }
-        72% {
-          opacity: 0.6;
-          transform: scale(1);
-        }
-        100% {
-          opacity: 0;
-          transform: scale(1.35);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .rig,
-        .torso,
-        .head,
-        .armL,
-        .armR,
-        .legL,
-        .legR,
-        .legLift,
-        .dust {
-          animation: none;
-        }
-      }
-    </style>
-  </defs>
-  <ellipse cx="78" cy="148" rx="58" ry="6" fill="#2d2433" opacity=".1" />
-  <ellipse class="dust" cx="108" cy="138" rx="28" ry="6" fill="#d8ae95" />
-  <g class="rig sumoRaised" transform="">
-    <g class="part legL">
-      <path
-        d="M57 100C43 107 30 120 14 128C28 132 47 126 65 112C67 106 64 101 57 100Z"
-        class="skinDark"
-      />
-      <path d="M17 128C31 130 48 123 62 112" class="foot" />
+<svg xmlns="http://www.w3.org/2000/svg" width="156" height="160" viewBox="0 0 156 160" role="img" aria-hidden="true">
+  <style>svg{overflow:visible} .rig{transform-box:view-box} #head,#torso,#armL,#armR,#legL,#legR,#mawashi,.dust{transform-box:view-box} .skin{fill:#d99075}.skinLight{fill:#f0b095}.skinShade{fill:#bd6d58}.flush{fill:#e66f77}.ink{fill:#2c1d22}.hair{fill:#141112}.silk{fill:#141b34}.silkHi{fill:#27345e}.cord{stroke:#0d1022;stroke-width:4;stroke-linecap:round}.line{stroke:#753f37;stroke-width:2.4;stroke-linecap:round;fill:none}.toe{fill:#b86152}.dust{fill:#d9baa0;opacity:0}.groundL,.groundR,.liftL,.liftR{transform-box:view-box}.liftL,.liftR{opacity:0}.groundL{animation:groundL 1.4s ease-in-out infinite}.liftL{animation:liftL 1.4s ease-in-out infinite}.groundR{animation:groundR 1.4s ease-in-out infinite}.liftR{animation:liftR 1.4s ease-in-out infinite}#torso{transform-origin:78px 102px;animation:body 1.4s ease-in-out infinite}#head{transform-origin:78px 46px;animation:head 1.4s ease-in-out infinite}#armL{transform-origin:50px 58px;animation:armL 1.4s ease-in-out infinite}#armR{transform-origin:106px 58px;animation:armR 1.4s ease-in-out infinite}#legL{transform-origin:55px 96px;animation:legL 1.4s ease-in-out infinite}#legR{transform-origin:101px 96px;animation:legR 1.4s ease-in-out infinite}#mawashi{transform-origin:78px 98px;animation:mawashi 1.4s ease-in-out infinite}.dustL{animation:dustL 1.4s ease-in-out infinite}.dustR{animation:dustR 1.4s ease-in-out infinite}@keyframes body{0%,18%,56%,68%,100%{transform:translateY(0) scale(1)}28%,42%{transform:translate(5px,-4px) rotate(2deg)}50%{transform:translateY(5px) scale(1.09,.91)}78%,92%{transform:translate(-5px,-4px) rotate(-2deg)}}@keyframes head{0%,18%,56%,68%,100%{transform:translateY(0)}28%,42%{transform:translate(5px,-4px) rotate(2deg)}50%{transform:translateY(5px)}78%,92%{transform:translate(-5px,-4px) rotate(-2deg)}}@keyframes armL{0%,18%,56%,68%,100%{transform:rotate(0deg)}28%,42%{transform:rotate(-14deg) translate(3px,-4px)}50%{transform:translateY(5px)}}@keyframes armR{0%,18%,56%,68%,100%{transform:rotate(0deg)}50%{transform:translateY(5px)}78%,92%{transform:rotate(14deg) translate(-3px,-4px)}}@keyframes legL{0%,18%,28%,42%,56%,100%{transform:translateY(0)}50%{transform:translateY(5px) scale(1.03,.96)}}@keyframes legR{0%,56%,68%,78%,92%,100%{transform:translateY(0)}98%{transform:translateY(5px) scale(1.03,.96)}}@keyframes groundL{0%,18%,50%,56%,100%{opacity:1}24%,44%{opacity:0}}@keyframes liftL{0%,18%,50%,56%,100%{opacity:0}24%,44%{opacity:1}}@keyframes groundR{0%,68%,98%,100%{opacity:1}74%,94%{opacity:0}}@keyframes liftR{0%,68%,98%,100%{opacity:0}74%,94%{opacity:1}}@keyframes mawashi{0%,18%,56%,68%,100%{transform:translateY(0)}28%,42%{transform:translate(4px,-4px) rotate(1deg)}50%{transform:translateY(4px) scale(1.04,.95)}78%,92%{transform:translate(-4px,-4px) rotate(-1deg)}}@keyframes dustL{0%,45%{opacity:0;transform:scale(.35)}51%{opacity:.75;transform:translate(-8px,-2px) scale(1)}68%,100%{opacity:0;transform:translate(-16px,-5px) scale(1.6,.7)}}@keyframes dustR{0%,95%{opacity:0;transform:scale(.35)}99%{opacity:.75;transform:translate(8px,-2px) scale(1)}100%{opacity:0;transform:translate(16px,-5px) scale(1.6,.7)}}</style>
+  <ellipse cx="78" cy="150" rx="54" ry="8" fill="#6e5c64" opacity=".22"/>
+  <g id="sumo" class="rig">
+    <g id="legL"><g class="groundL"><path class="skin" d="M58 98c-18 4-29 15-39 32 2 9 13 14 22 10 8-9 16-16 30-21 13-4 1-25-13-21z"/><path class="skinShade" d="M40 116c-8 4-15 10-21 17 4 5 12 8 20 7 5-6 11-11 19-15z"/><ellipse class="skin" cx="31" cy="143" rx="18" ry="7"/><circle class="toe" cx="20" cy="141" r="2.2"/><circle class="toe" cx="27" cy="139" r="2.1"/><circle class="toe" cx="34" cy="139" r="2.1"/></g><g class="liftL"><path class="skin" d="M55 99c-14-9-31-10-47-3-5-8-2-19 7-24 20-5 39 1 52 15 8 8-2 19-12 12z"/><path class="skinShade" d="M14 75c12-4 25-1 36 7-7 2-16 5-26 13-9-1-15-7-10-20z"/><ellipse class="skin" cx="12" cy="82" rx="16" ry="8" transform="rotate(-12 12 82)"/><circle class="toe" cx="2" cy="82" r="2.1"/><circle class="toe" cx="8" cy="78" r="2.1"/><circle class="toe" cx="15" cy="77" r="2.1"/></g></g>
+    <g id="legR"><g class="groundR"><path class="skin" d="M98 98c18 4 29 15 39 32-2 9-13 14-22 10-8-9-16-16-30-21-13-4-1-25 13-21z"/><path class="skinShade" d="M116 116c8 4 15 10 21 17-4 5-12 8-20 7-5-6-11-11-19-15z"/><ellipse class="skin" cx="125" cy="143" rx="18" ry="7"/><circle class="toe" cx="115" cy="139" r="2.1"/><circle class="toe" cx="122" cy="139" r="2.1"/><circle class="toe" cx="129" cy="141" r="2.2"/></g><g class="liftR"><path class="skin" d="M101 99c14-9 31-10 47-3 5-8 2-19-7-24-20-5-39 1-52 15-8 8 2 19 12 12z"/><path class="skinShade" d="M142 75c-12-4-25-1-36 7 7 2 16 5 26 13 9-1 15-7 10-20z"/><ellipse class="skin" cx="144" cy="82" rx="16" ry="8" transform="rotate(12 144 82)"/><circle class="toe" cx="154" cy="82" r="2.1"/><circle class="toe" cx="148" cy="78" r="2.1"/><circle class="toe" cx="141" cy="77" r="2.1"/></g></g>
+    <g id="torso">
+      <path class="skin" d="M43 58c2-21 24-27 35-26s33 6 36 27c3 24 12 58-11 72-14 8-36 8-50 0-23-14-13-49-10-73z"/>
+      <path class="skinLight" d="M54 60c6-13 20-18 29-17 17 2 26 18 27 39 1 23-11 39-31 40-24 1-38-18-34-42 1-8 4-15 9-20z"/>
+      <ellipse class="skinShade" cx="82" cy="91" rx="32" ry="35" opacity=".38"/>
+      <ellipse class="skinLight" cx="76" cy="83" rx="30" ry="31"/>
+      <path class="line" d="M58 95q20 13 42 0" opacity=".38"/>
     </g>
-    <g class="part legR" transform="rotate(-52 98 102) translate(-15 -36)">
-      <path
-        d="M96 100C111 108 126 120 142 128C128 132 108 126 90 112C87 106 89 101 96 100Z"
-        class="skinDark"
-      />
-      <path d="M139 128C125 130 108 123 94 112" class="foot" />
+    <g id="mawashi">
+      <path class="silk" d="M45 91c20 8 46 8 66 0l6 17c-23 10-55 10-78 0z"/>
+      <path class="silkHi" d="M51 90c16 5 38 6 55 1l2 7c-19 5-40 5-58 0z"/>
+      <path class="silk" d="M67 101h22l8 31c-9 5-28 5-37 0z"/>
+      <path class="silkHi" d="M73 103h10l3 29c-5 2-12 2-16 0z"/>
+      <path class="cord" d="M55 105v22M62 107v25M70 108v27M78 109v28M86 108v27M94 107v25M101 105v22"/>
     </g>
-
-    <g class="part legLift">
-      <path
-        d="M92 101C111 92 124 75 127 52C143 62 145 87 130 105C118 113 103 110 92 101Z"
-        class="skinDark"
-      />
-      <path d="M128 54C137 62 141 72 140 83" class="foot" />
+    <g id="armL"><path class="skin" d="M50 58c-11 8-19 19-22 32-2 9 12 14 17 7 6-8 9-17 18-24 9-7-3-22-13-15z"/><ellipse class="skinLight" cx="37" cy="97" rx="10" ry="9"/><path class="line" d="M33 98q5 2 10-1"/></g>
+    <g id="armR"><path class="skin" d="M106 58c11 8 19 19 22 32 2 9-12 14-17 7-6-8-9-17-18-24-9-7 3-22 13-15z"/><ellipse class="skinLight" cx="119" cy="97" rx="10" ry="9"/><path class="line" d="M113 97q5 3 11 0"/></g>
+    <g id="head">
+      <path class="skin" d="M63 24c-7 5-10 14-8 25 2 12 12 20 24 20s22-8 23-20c1-11-3-20-10-25-8-6-21-6-29 0z"/>
+      <path class="skinLight" d="M64 28c-5 5-7 13-5 21 2 9 10 15 20 15s18-6 19-15c1-8-2-16-7-21-7-5-20-5-27 0z"/>
+      <path class="hair" d="M58 33c4-10 12-16 21-16s18 6 21 16c-7-3-14-4-21-4s-14 1-21 4z"/>
+      <path class="hair" d="M56 36c2-7 6-12 12-15-2 8-2 16 0 24-5-1-9-4-12-9z"/>
+      <path class="hair" d="M100 36c-2-7-6-12-12-15 2 8 2 16 0 24 5-1 9-4 12-9z"/>
+      <path class="hair" d="M68 18c-6-10 2-17 10-13 9-6 20 1 15 13-7 3-17 3-25 0z"/>
+      <path d="M69 15c6-6 18-6 24 1-8 4-16 4-24-1z" fill="#221c20"/>
+      <path class="ink" d="M61 34q5-4 11 0"/><path class="ink" d="M84 34q6-4 12 0"/><ellipse class="ink" cx="66" cy="40" rx="2.1" ry="2.7"/><ellipse class="ink" cx="90" cy="40" rx="2.1" ry="2.7"/><ellipse class="flush" cx="59" cy="47" rx="5" ry="4"/><ellipse class="flush" cx="97" cy="47" rx="5" ry="4"/><path d="M69 51q9 7 19 0" fill="none" stroke="#733832" stroke-width="2.4" stroke-linecap="round"/>
     </g>
-    <g class="part armL">
-      <path d="M48 68C34 66 21 74 16 91C31 99 48 88 57 73Z" class="skin" />
-      <path d="M27 90C37 86 47 77 55 69" class="shadeLine" />
-    </g>
-    <g class="part armR">
-      <path d="M105 68C119 66 132 74 137 91C122 99 106 88 98 73Z" class="skin" />
-      <path d="M126 90C116 86 106 77 100 69" class="shadeLine" />
-    </g>
-    <g class="part torso">
-      <path
-        d="M42 61C45 39 59 29 78 29C105 29 121 49 117 76C113 106 95 126 76 126C53 126 36 105 39 78C40 70 41 65 42 61Z"
-        class="skin"
-      />
-      <path d="M77 31C99 43 106 77 92 108C87 119 80 125 72 126C85 98 89 63 77 31Z" class="shade" />
-      <path d="M48 82C63 90 91 90 109 82L103 116C85 129 62 129 44 116Z" class="mawashi" />
-      <path d="M51 85C66 89 90 89 106 85" class="mawashiHi" opacity=".78" />
-      <path d="M69 85C75 80 84 80 89 85C84 93 74 93 69 85Z" fill="#fff1cf" />
-      <path d="M55 91V124M64 92V130M73 93V132M82 93V132M91 92V129M100 91V122" class="sagari" />
-      <circle cx="55" cy="58" r="4" fill="#ee8f95" opacity=".42" />
-      <circle cx="101" cy="58" r="4" fill="#ee8f95" opacity=".42" />
-    </g>
-    <g class="part head">
-      <ellipse cx="78" cy="38" rx="22" ry="20" class="skin" />
-      <ellipse cx="56" cy="41" rx="5" ry="7" fill="#d99770" />
-      <ellipse cx="100" cy="41" rx="5" ry="7" fill="#d99770" />
-      <path d="M55 30C61 13 87 9 102 27C96 39 67 42 55 30Z" fill="#17182b" />
-      <path d="M61 18C69 5 91 6 98 17C89 27 70 28 61 18Z" fill="#202033" />
-      <path
-        d="M66 15C74 20 88 20 97 14"
-        fill="none"
-        stroke="#30304a"
-        stroke-width="4"
-        stroke-linecap="round"
-        opacity=".85"
-      />
-      <path class="brows" d="M58 39Q64 36 69 39M81 39Q87 36 92 39" />
-      <circle cx="66" cy="45" r="2.3" fill="#202033" />
-      <circle cx="89" cy="45" r="2.3" fill="#202033" />
-      <path d="M67 54Q76 61 87 54" class="mouth proud" />
-      <circle cx="61" cy="51" r="4" fill="#ee8f95" opacity=".52" />
-      <circle cx="94" cy="51" r="4" fill="#ee8f95" opacity=".52" />
-    </g>
+    <ellipse class="dust dustL" cx="42" cy="145" rx="9" ry="4"/>
+    <ellipse class="dust dustR" cx="114" cy="145" rx="9" ry="4"/>
   </g>
 </svg>

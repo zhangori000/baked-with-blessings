@@ -1,166 +1,28 @@
-<svg width="260" height="140" viewBox="0 0 260 140" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="body" x1="17" y1="81" x2="228" y2="66" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2d8fa0" />
-      <stop offset=".55" stop-color="#5fc9bd" />
-      <stop offset="1" stop-color="#2f97ad" />
-    </linearGradient>
-    <style>
-      .dragon {
-        transform-origin: 130px 74px;
-        animation: swim 2.4s ease-in-out infinite;
-      }
-      .finA {
-        transform-origin: center;
-        animation: finA 1.8s ease-in-out infinite;
-      }
-      .finB {
-        transform-origin: center;
-        animation: finB 2.2s ease-in-out infinite;
-      }
-      .whisker {
-        transform-origin: 214px 60px;
-        animation: whisk 2.2s ease-in-out infinite;
-      }
-      .glow {
-        transform-origin: 122px 75px;
-        animation: glow 1.9s ease-in-out infinite;
-      }
-      @keyframes swim {
-        0%,
-        100% {
-          transform: translateY(0) rotate(-1deg);
-        }
-        50% {
-          transform: translateY(-7px) rotate(2deg);
-        }
-      }
-      @keyframes finA {
-        0%,
-        100% {
-          transform: rotate(-4deg);
-        }
-        50% {
-          transform: rotate(8deg);
-        }
-      }
-      @keyframes finB {
-        0%,
-        100% {
-          transform: rotate(6deg);
-        }
-        50% {
-          transform: rotate(-5deg);
-        }
-      }
-      @keyframes whisk {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(5px);
-        }
-      }
-      @keyframes glow {
-        0%,
-        100% {
-          opacity: 0.2;
-          transform: scale(0.88) rotate(0);
-        }
-        50% {
-          opacity: 0.55;
-          transform: scale(1.08) rotate(18deg);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .dragon,
-        .finA,
-        .finB,
-        .whisker,
-        .glow {
-          animation: none;
-        }
-      }
-    </style>
-  </defs>
-  <ellipse cx="134" cy="129" rx="70" ry="5" fill="#2d2433" opacity=".08" />
-  <path
-    class="glow"
-    d="M75 101C102 72 136 55 181 49C153 73 129 99 105 121C104 99 91 94 75 101Z"
-    fill="#fff3aa"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="140" viewBox="0 0 260 140" role="img" aria-hidden="true">
+  <style>svg{overflow:visible}.dragon,.seg,.fin,.whisker,.mane,.leg{transform-box:view-box}.dragon{animation:bob 2.2s ease-in-out infinite;transform-origin:132px 70px}.seg{animation:wave 1.45s ease-in-out infinite}.s1{animation-delay:-1.28s}.s2{animation-delay:-1.16s}.s3{animation-delay:-1.04s}.s4{animation-delay:-.92s}.s5{animation-delay:-.8s}.s6{animation-delay:-.68s}.s7{animation-delay:-.56s}.s8{animation-delay:-.44s}.s9{animation-delay:-.32s}.s10{animation-delay:-.2s}.s11{animation-delay:-.08s}.fin{animation:fin 1.1s ease-in-out infinite;transform-origin:center}.whisker{animation:whisker 1.4s ease-in-out infinite;transform-origin:220px 58px}.mane{animation:mane 1.2s ease-in-out infinite;transform-origin:204px 47px}.leg{animation:leg .95s ease-in-out infinite;transform-origin:center}.l2,.l4{animation-delay:-.45s}@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}@keyframes wave{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}@keyframes fin{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(7deg) translateY(3px)}}@keyframes whisker{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(6deg)}}@keyframes mane{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}@keyframes leg{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(3px) rotate(5deg)}}</style>
+  <ellipse cx="132" cy="111" rx="91" ry="12" fill="#7590a7" opacity=".16"/>
   <g class="dragon">
-    <path
-      d="M14 89C37 54 77 48 113 70C141 88 163 82 185 54C201 34 227 32 245 48C228 53 218 66 207 83C181 121 137 123 101 94C69 69 43 66 14 89Z"
-      fill="url(#body)"
-    />
-    <path
-      d="M27 90C54 72 77 72 101 88C134 109 167 102 191 72C177 105 135 119 96 92C66 72 46 73 27 90Z"
-      fill="#166b7e"
-      opacity=".42"
-    />
-    <path
-      d="M46 76C66 66 91 68 117 84C142 99 167 94 186 68C154 77 131 73 107 58C82 42 60 48 46 76Z"
-      fill="#fff4c7"
-    />
-    <path
-      d="M50 76C58 77 66 81 73 86M86 69C94 72 102 77 110 83M124 86C132 91 142 93 151 93M164 88C172 85 178 80 184 73"
-      stroke="#d97f3c"
-      stroke-width="2.2"
-      stroke-linecap="round"
-      fill="none"
-      opacity=".8"
-    />
-    <path d="M28 89L3 108L15 72Z" fill="#ffd966" />
-    <path class="finA" d="M63 74C51 89 45 108 43 132C59 116 69 94 70 76Z" fill="#19839c" />
-    <path class="finB" d="M116 89C109 108 95 126 78 137C101 132 119 110 126 91Z" fill="#19839c" />
-    <path class="finA" d="M171 83C185 96 203 102 225 104C208 89 190 80 171 77Z" fill="#19839c" />
-    <path class="finB" d="M179 57C165 51 156 39 153 24C172 28 184 41 189 59Z" fill="#ff8f6b" />
-    <path class="finA" d="M181 80C169 93 155 99 139 98C148 82 164 74 184 69Z" fill="#ff8f6b" />
-    <path class="mane" d="M181 40C185 30 195 24 208 23C203 33 195 40 183 44Z" />
-    <path class="mane" d="M111 36C118 26 129 21 143 22C136 34 124 40 111 39Z" />
-    <path class="mane" d="M64 55C59 43 61 31 69 21C73 35 72 48 64 58Z" />
-    <g transform="translate(190 40)">
-      <path d="M0 15C3 -7 28 -14 48 3C53 20 36 37 15 35C5 32 -1 25 0 15Z" fill="#6bd3c7" />
-      <path d="M8 9C18 -1 35 0 45 10C35 21 17 20 8 9Z" fill="#fff4c7" />
-      <path d="M7 0L0 -22L20 -4Z" fill="#ffd966" />
-      <path d="M31 -3L51 -21L47 8Z" fill="#ffd966" />
-      <circle cx="36" cy="9" r="2.3" fill="#202033" />
-      <circle cx="36.6" cy="8.3" r=".8" fill="#fff4de" />
-      <path
-        d="M43 19Q49 23 56 18"
-        stroke="#5d4037"
-        stroke-width="2.1"
-        stroke-linecap="round"
-        fill="none"
-      />
-      <path
-        class="whisker"
-        d="M12 31Q2 51 -8 68"
-        stroke="#d79b52"
-        stroke-width="2.4"
-        stroke-linecap="round"
-        fill="none"
-      />
-      <path
-        class="whisker"
-        d="M22 32Q45 44 57 67"
-        stroke="#d79b52"
-        stroke-width="2.4"
-        stroke-linecap="round"
-        fill="none"
-      />
-    </g>
-    <g fill="none" stroke="#236f7d" stroke-width="6" stroke-linecap="round">
-      <path d="M74 93Q67 108 65 124" />
-      <path d="M70 121L61 130M70 121L78 132" />
-      <path d="M128 101Q122 116 113 128" />
-      <path d="M113 128L103 134M113 128L121 138" />
-      <path d="M169 91Q177 105 190 113" />
-      <path d="M190 113L199 122M190 113L181 121" />
-      <path d="M207 77Q221 85 235 87" />
-      <path d="M235 87L246 94M235 87L225 97" />
-    </g>
+    <path d="M19 91c23-38 57-43 89-20 27 19 44 24 70-9 18-23 39-30 66-15" fill="none" stroke="#6cb6c8" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" opacity=".16"/>
+    <g class="fin s3"><path class="fin" d="M62 55c5-17 18-27 34-30-4 18-13 31-30 41z" fill="#8fd5df" opacity=".5"/></g>
+    <g class="fin s6"><path class="fin" d="M137 76c6-18 20-28 37-29-5 18-16 31-34 40z" fill="#8fd5df" opacity=".5"/></g>
+    <g class="fin s9"><path class="fin" d="M193 47c7-15 19-23 34-22-5 15-15 26-31 32z" fill="#8fd5df" opacity=".55"/></g>
+    <g class="seg s1"><ellipse cx="21" cy="89" rx="11" ry="7" transform="rotate(-46 21 89)" fill="#f26f3f"/><path d="M13 93c-8 5-13 16-9 28 11-5 20-12 24-24z" fill="#8fd5df" opacity=".72"/><path d="M19 83c-12-6-15-17-13-30 12 5 21 14 25 28z" fill="#8fd5df" opacity=".62"/></g>
+    <g class="seg s2"><ellipse cx="42" cy="71" rx="20" ry="14" transform="rotate(-37 42 71)" fill="#fff6e8"/><path d="M31 68c9-8 20-10 31-5-5 9-16 14-29 13z" fill="#ee663a" opacity=".94"/><path d="M39 81q5-7 13-9M30 74q7-8 17-10" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".6"/></g>
+    <g class="seg s3"><ellipse cx="63" cy="60" rx="23" ry="15" transform="rotate(-20 63 60)" fill="#fff6e8"/><path d="M51 51c14-8 30-2 37 9-15 2-27 1-39-4z" fill="#ee663a"/><path d="M61 71q7-8 17-11M48 63q9-9 21-12" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".65"/></g>
+    <g class="seg s4"><ellipse cx="88" cy="63" rx="24" ry="16" transform="rotate(17 88 63)" fill="#fff6e8"/><path d="M79 51c10-2 22 3 31 12-9 7-24 9-34 4z" fill="#111821" opacity=".9"/><path d="M86 75q8-8 19-10M73 66q9-8 21-11" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".65"/></g>
+    <g class="seg s5"><ellipse cx="114" cy="77" rx="24" ry="16" transform="rotate(33 114 77)" fill="#fff6e8"/><path d="M97 74c12-12 30-14 43-5-8 9-24 15-40 13z" fill="#ee663a"/><path d="M111 90q8-8 18-11M99 80q9-9 21-11" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".65"/></g>
+    <g class="seg s6"><ellipse cx="141" cy="84" rx="25" ry="16" transform="rotate(12 141 84)" fill="#fff6e8"/><path d="M129 72c15-3 28 2 37 13-13 5-28 5-40-2z" fill="#ee663a" opacity=".92"/><circle cx="151" cy="72" r="4" fill="#111821" opacity=".85"/><path d="M137 96q9-8 19-10M125 86q10-8 22-10" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".65"/></g>
+    <g class="seg s7"><ellipse cx="169" cy="76" rx="25" ry="16" transform="rotate(-25 169 76)" fill="#fff6e8"/><path d="M155 72c9-12 24-18 39-14-4 12-17 22-34 25z" fill="#ee663a"/><path d="M168 88q7-9 17-13M154 80q8-10 20-14" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".65"/></g>
+    <g class="seg s8"><ellipse cx="195" cy="57" rx="24" ry="15" transform="rotate(-31 195 57)" fill="#fff6e8"/><path d="M182 53c12-10 28-12 40-5-7 9-21 15-36 14z" fill="#111821" opacity=".88"/><path d="M195 69q7-9 16-12M181 61q8-9 19-13" stroke="#d7c9ba" stroke-width="1.1" fill="none" opacity=".65"/></g>
+    <g class="mane"><path d="M196 39c-7-14-1-27 13-35 0 17-4 30-15 41zM207 42c2-16 12-27 29-31-5 16-14 27-29 37zM216 53c14-9 28-9 40 1-13 8-27 10-42 6z" fill="#f7a0b6" opacity=".75"/></g>
+    <g class="seg s9"><path d="M207 48c10-18 36-18 45-1 7 13 0 29-16 33-16 4-34-3-39-17-2-5 4-8 10-15z" fill="#fff6e8"/><path d="M212 44c9-10 26-10 35 0-9 4-22 5-35 0z" fill="#ee663a"/><path d="M230 33c7-9 20-9 27 0-10 3-19 4-27 0z" fill="#ee663a"/><ellipse cx="233" cy="54" rx="3" ry="4" fill="#172033"/><path d="M242 60q8 2 13 9" stroke="#8b4b40" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M247 68q-11 8-25 7" stroke="#8b4b40" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+    <g class="whisker"><path d="M229 63c9 4 17 10 24 20M224 65c8 9 11 20 7 31" stroke="#f1dcc2" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M231 66c10 0 20 4 28 12M219 66c2 12-1 23-10 32" stroke="#f1dcc2" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>
+    <g class="leg l1"><path d="M83 75c-8 10-8 20 1 26 6-3 9-7 8-13 6 0 10-2 12-6-8-2-15-4-21-7z" fill="#f0d5bf"/><path d="M84 101l-4 7M90 100l2 8M94 96l7 5" stroke="#6f4238" stroke-width="1.6" stroke-linecap="round"/></g>
+    <g class="leg l2"><path d="M125 92c-8 8-8 17 0 23 6-2 9-6 8-11 5 1 9-1 11-4-7-3-13-5-19-8z" fill="#f0d5bf"/><path d="M125 115l-4 6M131 114l2 7M135 111l7 4" stroke="#6f4238" stroke-width="1.5" stroke-linecap="round"/></g>
+    <g class="leg l3"><path d="M160 64c-5 11-3 19 8 23 5-4 7-9 4-14 6-1 9-4 10-8-8 0-15 0-22-1z" fill="#f0d5bf"/><path d="M168 88l-1 7M174 85l4 6M177 80l8 2" stroke="#6f4238" stroke-width="1.5" stroke-linecap="round"/></g>
+    <g class="leg l4"><path d="M204 66c-4 9-1 16 9 20 5-4 6-8 3-12 5-1 8-4 9-8-7 0-14 0-21 0z" fill="#f0d5bf"/><path d="M213 86v7M218 83l4 6M221 78l8 1" stroke="#6f4238" stroke-width="1.5" stroke-linecap="round"/></g>
+    <path class="fin" d="M35 92c-10 12-19 18-35 21 6-14 16-23 32-29z" fill="#8fd5df" opacity=".62"/>
+    <path class="fin" d="M105 90c-13 11-24 15-42 14 10-13 23-19 40-21z" fill="#8fd5df" opacity=".44"/>
+    <path class="fin" d="M183 72c-9 14-18 22-34 26 5-15 15-25 31-33z" fill="#8fd5df" opacity=".46"/>
   </g>
 </svg>
