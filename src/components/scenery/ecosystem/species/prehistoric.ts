@@ -2720,7 +2720,7 @@ const meganeura: EcoSpecies = {
   controls: meganeuraControls,
   idle: 'buzz',
   init(entity, world) {
-    entity.y = between(world.groundY - world.unit * 9, world.groundY - world.unit * 3.5)
+    entity.y = between(world.skyTop + world.unit * 1.5, world.groundY - world.unit * 3.5)
     entity.data.breedAt = world.time + between(20, 34)
   },
   layer: 'front',
@@ -2783,7 +2783,7 @@ const meganeura: EcoSpecies = {
         world,
         dt,
         unit * (hunting ? 5.4 : 4.4),
-        world.groundY - unit * 10,
+        hunting || plant ? world.groundY - unit * 10 : world.skyTop + unit * 1.5,
         world.groundY - unit * 2,
         5,
       )
