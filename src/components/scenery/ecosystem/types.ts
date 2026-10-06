@@ -200,6 +200,7 @@ export type EcoControls = {
   idleState?: string
   move: EcoControlMove
   moveState?: string
+  pose?: (entity: EcoEntity, world: EcoWorld, moving: boolean) => { asset: string; state: string }
   speed: number
 }
 

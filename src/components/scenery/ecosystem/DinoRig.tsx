@@ -28,6 +28,12 @@ const dinoRigSvgs: Record<string, string> = {
     '<svg class="ecoDinoSvg" width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">\n  <ellipse class="ecoDinoShadow" cx="100" cy="104" rx="40" ry="3.5" fill="#000000" opacity="0.07" />\n  <path d="M94 60C82 44 70 28 54 14C40 8 20 8 2 14C14 20 22 30 28 42C36 46 40 52 42 60C54 58 62 62 70 70C78 70 86 68 94 66Z" fill="#9e6744" />\n  <path d="M94 60C82 44 70 28 54 14C40 8 20 8 2 14" fill="none" stroke="#7a5038" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />\n  <path d="M106 60C116 40 128 24 146 12C162 6 184 8 198 16C184 20 174 30 168 42C160 44 154 50 150 58C138 56 128 60 120 68C114 68 110 66 106 66Z" fill="#c4875a" />\n  <path d="M168 42C160 44 154 50 150 58C138 56 128 60 120 68" fill="none" stroke="#9e6744" stroke-width="1.6" opacity="0.6" />\n  <path d="M106 60C116 40 128 24 146 12C162 6 184 8 198 16" fill="none" stroke="#7a5038" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />\n  <path d="M146 12L140 20M146 12L150 21" stroke="#7a5038" stroke-width="1.6" stroke-linecap="round" />\n  <path d="M150 22C140 34 132 46 124 60M172 18C160 30 150 42 138 58" fill="none" stroke="#e6b98a" stroke-width="1.4" opacity="0.55" />\n  <path d="M40 16C54 26 66 40 78 58M20 14C36 24 50 38 60 54" fill="none" stroke="#e6b98a" stroke-width="1.4" opacity="0.35" />\n  <path d="M86 70Q80 82 74 90M96 70Q98 82 92 92" fill="none" stroke="#b8885c" stroke-width="3" stroke-linecap="round" />\n  <path d="M72 90l-4 2M72 90l-2 4M90 92l-4 2M90 92l-1 4" stroke="#b8885c" stroke-width="1.6" stroke-linecap="round" />\n  <path d="M80 60C88 52 106 52 116 58C118 66 108 74 94 74C82 74 76 68 80 60Z" fill="#d8a775" />\n  <path d="M82 68C90 74 104 74 112 68C106 75 92 77 82 68Z" fill="#b8885c" opacity="0.7" />\n  <path d="M112.5 64.9 L113 64.6 L113.5 64.3 L114.1 63.9 L114.6 63.6 L115.1 63.3 L115.6 63 L116 62.7 L116.5 62.4 L117 62.1 L117.4 61.8 L117.9 61.6 L118.3 61.3 L118.7 61 L119.1 60.7 L119.5 60.5 L119.9 60.2 L120.3 60 L120.7 59.7 L121 59.5 L121.4 59.3 L121.7 59 L122 58.8 L122.4 58.6 L122.7 58.4 L123 58.2 L123.2 58 L123.5 57.8 L123.8 57.6 L120.2 50.4 L119.9 50.5 L119.6 50.6 L119.2 50.7 L118.9 50.8 L118.5 51 L118.2 51.1 L117.8 51.2 L117.4 51.3 L117 51.5 L116.6 51.6 L116.2 51.8 L115.8 51.9 L115.3 52.1 L114.9 52.3 L114.4 52.4 L114 52.6 L113.5 52.8 L113 53 L112.5 53.1 L112 53.3 L111.5 53.5 L110.9 53.7 L110.4 54 L109.8 54.2 L109.3 54.4 L108.7 54.6 L108.1 54.8 L107.5 55.1Z" fill="#d8a775" />\n  <g transform="translate(122 54)">\n    <path d="M-2 -4C-12 -16 -28 -26 -44 -30C-34 -20 -20 -10 -6 2Z" fill="#c4483a" />\n    <path d="M-4 -6C-14 -15 -26 -22 -38 -26C-28 -18 -18 -10 -6 -2Z" fill="#9e3a2f" opacity="0.6" />\n    <path d="M10 2L72 6L10 9Z" fill="#ecc98f" />\n    <path d="M10 2L72 6" stroke="#b3905c" stroke-width="1.2" opacity="0.7" />\n    <path d="M10 -6C26 -4 50 -1 74 3L10 4Z" fill="#ecc98f" />\n    <path d="M-6 -2C-6 -10 2 -12 10 -9C16 -7 16 4 10 8C2 10 -6 6 -6 -2Z" fill="#d8a775" />\n    <circle cx="5" cy="-3" r="2.4" fill="#f8efdc" />\n    <circle cx="5.6" cy="-2.8" r="1.5" fill="#26312a" />\n  </g>\n<g class="ecoDinoPart ecoDinoPart--body"></g></svg>\n',
 }
 
+// Stable objects: React re-applies innerHTML when the object changes, which would rebuild the
+// SVG (and restart its CSS animations) on every re-render.
+const dinoRigHtml: Record<string, { __html: string }> = Object.fromEntries(
+  Object.entries(dinoRigSvgs).map(([asset, svg]) => [asset, { __html: svg }]),
+)
+
 const fallbackBySpecies: Record<string, string> = {
   brachiosaurus: '/spawnables/brachiosaurus.svg',
   pterodactyl: '/spawnables/pterodactyl.svg',
@@ -417,13 +423,11 @@ export function DinoRig({
     return <QuetzalcoatlusRig asset={asset} />
   }
 
-  const svg = dinoRigSvgs[asset] ?? dinoRigSvgs[fallbackBySpecies[species]]
+  const html = dinoRigHtml[asset] ?? dinoRigHtml[fallbackBySpecies[species]]
 
-  if (!svg) {
+  if (!html) {
     return null
   }
 
-  return (
-    <span aria-hidden="true" className="ecoDinoRig" dangerouslySetInnerHTML={{ __html: svg }} />
-  )
+  return <span aria-hidden="true" className="ecoDinoRig" dangerouslySetInnerHTML={html} />
 }

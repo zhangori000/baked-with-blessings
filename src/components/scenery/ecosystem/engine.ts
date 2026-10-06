@@ -668,6 +668,11 @@ export class Ecosystem implements EcoWorld {
 
     this.gainControlResource(entity, (maxControlResource / 25) * dt)
 
+    // The species tick (which normally decays this) is skipped while controlled.
+    if (entity.data.attackTimer) {
+      entity.data.attackTimer = Math.max(0, entity.data.attackTimer - dt)
+    }
+
     if (cast?.phase === 'active' && castAbility) {
       this.tickCast(entity, castAbility, dt)
       return true
@@ -725,6 +730,20 @@ export class Ecosystem implements EcoWorld {
         Math.max((Math.atan2(vy, Math.abs(vx) + 0.001) * 180) / Math.PI, -28),
         28,
       )
+    } else if (entity.anchor === 'bottom') {
+      // Bottom-anchored flyers stay on their ground line and gain altitude through lift.
+      entity.x = Math.min(Math.max(entity.x + vx * dt, unit), this.width - unit)
+      entity.y = this.groundY + (entity.data.depth ?? 0)
+      entity.lift = Math.min(
+        Math.max(entity.lift - vy * dt, 0),
+        Math.max(0, entity.y - this.skyTop - this.heightOf(entity)),
+      )
+      entity.vx = vx
+      entity.vy = 0
+      entity.tilt =
+        entity.lift > 0
+          ? Math.min(Math.max((Math.atan2(vy, Math.abs(vx) + 0.001) * 180) / Math.PI, -35), 35)
+          : entity.tilt * 0.85
     } else {
       entity.x = Math.min(Math.max(entity.x + vx * dt, unit), this.width - unit)
       entity.y = Math.min(
@@ -746,13 +765,16 @@ export class Ecosystem implements EcoWorld {
     }
 
     if ((entity.data.controlActionUntil ?? 0) <= this.time) {
-      this.setAsset(entity, entity.controlResetAsset)
+      const pose = controls.pose?.(entity, this, moving)
+
+      this.setAsset(entity, pose?.asset ?? entity.controlResetAsset)
 
       this.setState(
         entity,
-        moving
-          ? (controls.moveState ?? controls.idleState ?? 'move')
-          : (controls.idleState ?? 'idle'),
+        pose?.state ??
+          (moving
+            ? (controls.moveState ?? controls.idleState ?? 'move')
+            : (controls.idleState ?? 'idle')),
       )
       entity.fx =
         entity.data.controlFxUntil && entity.data.controlFxUntil > this.time ? entity.fx : ''

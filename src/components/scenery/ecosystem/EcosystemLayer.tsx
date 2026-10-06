@@ -693,9 +693,11 @@ function ControlHud({
                     : 'Use arrow keys to move'}
               </span>
               <span className="ecoHintKeys">
-                {coarsePointer
-                  ? 'Tap Q basic · hold E to charge'
-                  : 'Q basic · hold E to charge · R ultimate'}
+                {controlled.abilities.length === 1
+                  ? `${coarsePointer ? 'Tap' : 'Press'} Q for ${controlled.abilities[0]!.name}`
+                  : coarsePointer
+                    ? 'Tap Q basic · hold E to charge'
+                    : 'Q basic · hold E to charge · R ultimate'}
               </span>
               {controlled.move === 'swim' ? (
                 <span className="ecoHintKeys">

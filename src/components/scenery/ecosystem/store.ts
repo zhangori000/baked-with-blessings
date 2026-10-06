@@ -15,6 +15,7 @@ type NodeCache = {
   attack: string
   fx: string
   hitFlash: number
+  hitUntil: number
   healthUntil: number
   hp: number
   pose: string
@@ -35,6 +36,7 @@ const emptySnapshot: EcoSnapshot = {
   tallies: {},
   toast: '',
 }
+const hitFlashSeconds = 0.5
 const underseaDesktopBackdrop = { floorY: 520, height: 600, surfaceY: 95, width: 1200 }
 const underseaMobileBackdrop = { floorY: 760, height: 860, surfaceY: 150, width: 430 }
 const labelForSpecies = (species: string) =>
@@ -162,6 +164,7 @@ export class EcosystemStore {
       attack: '',
       fx: '',
       hitFlash: 0,
+      hitUntil: 0,
       healthUntil: 0,
       hp: Number.NaN,
       pose: '',
@@ -560,14 +563,26 @@ export class EcosystemStore {
 
     if (node.hitFlash !== hitFlash) {
       node.hitFlash = hitFlash
-      node.root.dataset.hit = hitFlash > 0 ? String(Math.round(hitFlash * 1000)) : ''
-      const art = node.root.querySelector<HTMLElement>('.ecoArt, .ecoDinoSvg')
+      node.hitUntil =
+        hitFlash > 0 && engine.time - hitFlash < hitFlashSeconds
+          ? performance.now() + hitFlashSeconds * 1000
+          : 0
 
-      if (art && hitFlash > 0) {
-        art.style.animation = 'none'
-        void art.offsetWidth
-        art.style.animation = ''
+      if (node.hitUntil) {
+        node.root.dataset.hit = String(Math.round(hitFlash * 1000))
+        const art = node.root.querySelector<HTMLElement>('.ecoArt, .ecoDinoSvg')
+
+        if (art) {
+          art.style.animation = 'none'
+          void art.offsetWidth
+          art.style.animation = ''
+        }
       }
+    }
+
+    // A lingering hit marker would replay the white flash whenever the art re-mounts.
+    if (node.root.dataset.hit !== undefined && performance.now() >= node.hitUntil) {
+      delete node.root.dataset.hit
     }
 
     const cast = entity.controlCast
