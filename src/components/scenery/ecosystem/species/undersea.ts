@@ -6,6 +6,7 @@ import {
   faceTravel,
   flee,
   integrate,
+  pick,
   steer,
   tiltToVelocity,
   walk,
@@ -48,7 +49,7 @@ registerViewBoxes({
   'sea-octopus-ink': [128, 112],
   'sea-orca': [176, 86],
   'sea-puffer': [98, 76],
-  'sea-puffer-puffed': [112, 100],
+  'sea-puffer-puffed': [140, 140],
   'sea-shark': [168, 82],
   'sea-shark-bite': [168, 90],
   'sea-swordfish': [190, 74],
@@ -200,12 +201,15 @@ function weightedBoatAsset() {
 }
 
 const isBoat = (other: EcoEntity) => other.species === 'boat' && other.state !== 'wreck'
+const isSailingBoat = (other: EcoEntity) => other.species === 'boat' && other.state === 'sail'
 const isFish = (other: EcoEntity) => other.species === 'fish-school'
 const isKelp = (other: EcoEntity) => other.species === 'kelp-coral'
 const isJelly = (other: EcoEntity) => other.species === 'jellyfish'
 const isTurtle = (other: EcoEntity) => other.species === 'sea-turtle'
 const isCrab = (other: EcoEntity) => other.species === 'crab'
 const isPuffer = (other: EcoEntity) => other.species === 'pufferfish'
+const isCalmPuffer = (other: EcoEntity) => isPuffer(other) && other.state === 'drift'
+const isPuffedPuffer = (other: EcoEntity) => isPuffer(other) && other.scale > 1.6
 const isShark = (other: EcoEntity) => other.species === 'shark'
 const isSwordfish = (other: EcoEntity) => other.species === 'swordfish'
 const isOctopus = (other: EcoEntity) => other.species === 'octopus'
@@ -404,8 +408,23 @@ function markBoatSunk(boat: EcoEntity) {
   boat.countAs = null
 }
 
+function overturnBoat(boat: EcoEntity, world: EcoWorld) {
+  world.setAsset(boat, capsizedAsset)
+  boat.data.waterline = 64 / 92
+  boat.y = boatBottomOnSurface(boat, world)
+  boat.data.zBoost = world.height * 2
+  spawnSwimmers(world, boat, boat.data.kind === 4 ? 1 : Math.round(between(1, 3)))
+  spawnBurst(world, boat.x, boat.y + world.unit * 1.2, 2.8)
+}
+
+function sinkBoat(boat: EcoEntity, world: EcoWorld, delay: number) {
+  world.setState(boat, 'capsized')
+  boat.data.sinkDelay = delay
+  markBoatSunk(boat)
+}
+
 function capsizeBoat(boat: EcoEntity, world: EcoWorld, cause?: EcoEntity) {
-  if (boat.state === 'capsized' || boat.state === 'sinking' || boat.state === 'wreck') {
+  if (boat.state !== 'sail' && boat.state !== 'splashdown') {
     return false
   }
 
@@ -417,18 +436,385 @@ function capsizeBoat(boat: EcoEntity, world: EcoWorld, cause?: EcoEntity) {
     return false
   }
 
-  world.setAsset(boat, capsizedAsset)
-  world.setState(boat, 'capsized')
-  boat.data.waterline = 64 / 92
+  overturnBoat(boat, world)
   boat.vx *= 0.25
   boat.vy = world.unit * 0.35
-  boat.y = boatBottomOnSurface(boat, world)
   boat.tilt = boat.facing * -18
-  boat.data.sinkDelay = between(1.8, 3.8)
+  sinkBoat(boat, world, between(1.8, 3.8))
+
+  return true
+}
+
+const boatFlightsToSink = 3
+
+function boatGravity(world: EcoWorld) {
+  return world.unit * 60
+}
+
+function launchBoat(boat: EcoEntity, rammer: EcoEntity, world: EcoWorld, power: number) {
+  const unit = world.unit
+  const gravity = boatGravity(world)
+  const rest = boatBottomOnSurface(boat, world)
+  const ceiling = Math.max(unit * 1.5, rest - world.heightOf(boat) - unit * 0.3)
+  const apex = Math.min(
+    ceiling,
+    Math.max(unit * 2.5, unit * 7.5 * power * clamp(7 / boat.size, 0.45, 1.4)),
+  )
+  const rise = Math.sqrt(2 * gravity * apex)
+  const airtime = (2 * rise) / gravity
+  const turns = pick([0.5, 1, 1, 1.5]) + between(-0.06, 0.06)
+  const side = rammer.x <= boat.x ? 1 : -1
+
+  boat.vy = -rise
+  boat.vx = clamp(boat.vx * 0.4 + (boat.x - rammer.x) * 2.2 + rammer.vx * 0.3, -unit * 9, unit * 9)
+  boat.data.spin = (side * boat.facing * turns * 360) / airtime
+  boat.data.flips = (boat.data.flips ?? 0) + 1
   boat.data.zBoost = world.height * 2
-  markBoatSunk(boat)
-  spawnSwimmers(world, boat, boat.data.kind === 4 ? 1 : Math.round(between(1, 3)))
-  spawnBurst(world, boat.x, boat.y + world.unit * 1.2, 2.8)
+  boat.fx = ''
+  boat.lift = 0
+  world.setState(boat, 'airborne')
+  world.shake(0.85)
+  world.effect({
+    text: 'Launched!',
+    tone: 'strong',
+    type: 'damage',
+    x: boat.x,
+    y: boat.y - world.heightOf(boat) * 1.2,
+  })
+}
+
+function wrapAngle(degrees: number) {
+  return ((((degrees + 180) % 360) + 360) % 360) - 180
+}
+
+// Lands right side up (bob and sail on), upside down (crew spills, then it rolls back over),
+// or, after too many flights, it stays capsized and sinks.
+function landBoat(boat: EcoEntity, world: EcoWorld) {
+  const angle = wrapAngle(boat.tilt)
+  const wrecked = (boat.data.flips ?? 0) >= boatFlightsToSink
+
+  boat.vy = 0
+  boat.data.spin = 0
+  spawnBurst(world, boat.x, surfaceY(world) + world.unit * 0.6, Math.min(6, 2.6 + boat.size * 0.18))
+  world.shake(0.45)
+
+  if (wrecked || Math.abs(angle) > 95) {
+    boat.tilt = wrapAngle(angle + 180) * 0.4
+    overturnBoat(boat, world)
+
+    if (wrecked) {
+      sinkBoat(boat, world, 0.9)
+    } else {
+      world.setState(boat, 'overturned')
+    }
+    return
+  }
+
+  boat.tilt = angle
+  boat.data.landTilt = angle
+  world.setState(boat, 'splashdown')
+}
+
+function flyBoat(boat: EcoEntity, world: EcoWorld, dt: number) {
+  const margin = world.widthOf(boat) * 0.4
+
+  boat.vy += boatGravity(world) * dt
+  boat.vx *= 1 - dt * 0.35
+  boat.x += boat.vx * dt
+  boat.y += boat.vy * dt
+  boat.tilt += (boat.data.spin ?? 0) * dt
+
+  if (boat.x < margin || boat.x > world.width - margin) {
+    boat.x = clamp(boat.x, margin, world.width - margin)
+    boat.vx *= -0.55
+  }
+
+  if (boat.vy > 0 && boat.y >= boatBottomOnSurface(boat, world)) {
+    boat.y = boatBottomOnSurface(boat, world)
+    landBoat(boat, world)
+  }
+}
+
+function resumeSailing(boat: EcoEntity, world: EcoWorld) {
+  boat.data.zBoost = 0
+  boat.lift = 0
+  boat.vx = boat.data.cruise ?? boat.vx
+  world.setState(boat, 'sail')
+}
+
+function touches(
+  point: { x: number; y: number },
+  other: EcoEntity,
+  world: EcoWorld,
+  radius: number,
+) {
+  const halfWidth = world.widthOf(other) * 0.42
+  const halfHeight = world.heightOf(other) * 0.42
+  const centerY = other.anchor === 'bottom' ? other.y - world.heightOf(other) * 0.5 : other.y
+  const dx = point.x - clamp(point.x, other.x - halfWidth, other.x + halfWidth)
+  const dy = point.y - clamp(point.y, centerY - halfHeight, centerY + halfHeight)
+
+  return Math.hypot(dx, dy) <= radius
+}
+
+const pufferMaxScale = 5.6
+const pufferSmallPrey = new Set(['anglerfish', 'crab', 'fish-school', 'jellyfish', 'sea-swimmer'])
+const pufferBigFoes = new Set(['octopus', 'orca', 'sea-turtle', 'shark', 'swordfish', 'whale'])
+
+function startPuff(entity: EcoEntity, world: EcoWorld, seconds: number) {
+  world.setAsset(entity, pufferPuffedAsset)
+  world.setState(entity, 'puffed')
+  entity.data.puffUntil = world.time + seconds
+  spawnBurst(world, entity.x, entity.y, 2.6)
+  world.shake(0.25)
+}
+
+// Spines only bite once the puffer is properly inflated; small fry pop, big swimmers get stabbed and bounced off.
+function pufferSpikes(entity: EcoEntity, world: EcoWorld) {
+  if (entity.scale < 1.8) {
+    return
+  }
+
+  const radius = world.widthOf(entity) * 0.4
+
+  for (const other of world.within(
+    entity.x,
+    entity.y,
+    radius + world.unit * 16,
+    (candidate) => pufferSmallPrey.has(candidate.species) || pufferBigFoes.has(candidate.species),
+  )) {
+    if (!touches(entity, other, world, radius)) {
+      continue
+    }
+
+    if (pufferSmallPrey.has(other.species)) {
+      spawnBurst(world, other.x, other.y, 1.4)
+      world.kill(other)
+      continue
+    }
+
+    if ((other.data.spikedAt ?? -9) > world.time - 0.8) {
+      continue
+    }
+
+    const angle = Math.atan2(other.y - entity.y, other.x - entity.x)
+    const push = world.unit * (isWhale(other) ? 6 : 16)
+
+    other.data.spikedAt = world.time
+    world.damage(entity, other, isWhale(other) ? 0.6 : 1, entity.x)
+    other.vx += Math.cos(angle) * push
+    other.vy += Math.sin(angle) * push * 0.6
+    other.targetId = null
+    other.fx = 'dazed'
+    other.data.fx = 0.8
+    entity.vx -= Math.cos(angle) * world.unit * 3
+    entity.vy -= Math.sin(angle) * world.unit * 2
+  }
+}
+
+function easeOutBack(value: number) {
+  const overshoot = 1.70158
+
+  return 1 + (overshoot + 1) * (value - 1) ** 3 + overshoot * (value - 1) ** 2
+}
+
+function springScale(
+  entity: EcoEntity,
+  goal: number,
+  stiffness: number,
+  damping: number,
+  dt: number,
+) {
+  const velocity =
+    (entity.data.scaleV ?? 0) +
+    ((goal - entity.scale) * stiffness - (entity.data.scaleV ?? 0) * damping) * dt
+
+  entity.data.scaleV = velocity
+  entity.scale = clamp(entity.scale + velocity * dt, 1, pufferMaxScale * 1.25)
+}
+
+type RamKind = 'orca' | 'shark' | 'swordfish' | 'whale'
+
+// clear = share of the body that leaves the water at the top of the jump; launch scales the boat's flight.
+const ramProfiles: Record<
+  RamKind,
+  { clear: number; every: readonly [number, number]; launch: number; rest: string }
+> = {
+  orca: { clear: 0.62, every: [20, 40], launch: 0.85, rest: 'hunt' },
+  shark: { clear: 0.52, every: [24, 46], launch: 0.7, rest: 'prowl' },
+  swordfish: { clear: 0.58, every: [26, 50], launch: 0.6, rest: 'lance' },
+  whale: { clear: 0.64, every: [10, 22], launch: 1.15, rest: 'cruise' },
+}
+
+const isRamState = (state: string) =>
+  state === 'ram-dive' || state === 'ram-rise' || state === 'breach'
+
+function ramLength(entity: EcoEntity, world: EcoWorld, kind: RamKind) {
+  return world.widthOf(entity) * (kind === 'whale' ? 0.84 : 0.92)
+}
+
+function scheduleRam(entity: EcoEntity, world: EcoWorld, kind: RamKind, factor = 1) {
+  const [min, max] = ramProfiles[kind].every
+
+  entity.data.ramAt = world.time + between(min, max) * factor
+}
+
+function startRam(
+  entity: EcoEntity,
+  world: EcoWorld,
+  kind: RamKind,
+  boat: EcoEntity | null,
+  quick = false,
+) {
+  const length = ramLength(entity, world, kind)
+  const surface = surfaceY(world)
+  const deep = surface + length * 0.5 + world.unit * (quick ? 4 : 10)
+
+  entity.data.ramBoatId = boat?.id ?? -1
+  entity.data.ramDepth = clamp(
+    quick ? Math.max(entity.y + world.unit * 2, deep) : deep,
+    waterTop(world),
+    waterBottom(world),
+  )
+  entity.data.ramDiveUntil = world.time + (quick ? 0.9 : 5)
+  entity.targetId = null
+  world.setState(entity, 'ram-dive')
+}
+
+function endRam(entity: EcoEntity, world: EcoWorld, kind: RamKind) {
+  entity.data.ramBoatId = -1
+  scheduleRam(entity, world, kind)
+
+  if (kind === 'whale') {
+    world.setAsset(entity, whaleAsset)
+  }
+
+  world.setState(entity, ramProfiles[kind].rest)
+}
+
+function maybeStartRam(entity: EcoEntity, world: EcoWorld, kind: RamKind) {
+  if (world.time < (entity.data.ramAt ?? 0)) {
+    return false
+  }
+
+  scheduleRam(entity, world, kind)
+
+  const boat = world.nearest({ x: entity.x, y: surfaceY(world) }, isSailingBoat, world.width * 0.45)
+
+  if (boat && Math.random() < 0.7) {
+    startRam(entity, world, kind, boat)
+    return true
+  }
+
+  if (!boat && kind === 'whale' && Math.random() < 0.35) {
+    startRam(entity, world, kind, null)
+    return true
+  }
+
+  return false
+}
+
+// Dive to build speed, rocket straight up under the boat, then arc through the air and splash back down.
+function ramming(entity: EcoEntity, world: EcoWorld, dt: number, kind: RamKind) {
+  if (!isRamState(entity.state)) {
+    return false
+  }
+
+  const unit = world.unit
+  const surface = surfaceY(world)
+  const length = ramLength(entity, world, kind)
+  const reach = length * 0.46
+  const boatId = entity.data.ramBoatId ?? -1
+  const boat = boatId >= 0 ? world.byId(boatId) : null
+  const target = boat && isSailingBoat(boat) ? boat : null
+  const burst = pace(entity, world, kind, 'burst')
+  const margin = world.widthOf(entity) * 0.3
+
+  if (entity.state === 'ram-dive') {
+    if (boatId >= 0 && !target) {
+      endRam(entity, world, kind)
+      return true
+    }
+
+    const depth = entity.data.ramDepth ?? entity.y
+    const aimX = target ? target.x + target.vx * 1.1 : entity.x
+
+    steer(entity, aimX, depth, burst, dt, 3)
+    integrate(entity, dt)
+    keepInWater(entity, world)
+    faceTravel(entity)
+    tiltToVelocity(entity, 30)
+
+    const lined = !target || Math.abs(aimX - entity.x) < unit * 4 + world.widthOf(target) * 0.3
+
+    if ((entity.y >= depth - unit * 1.5 && lined) || world.time > (entity.data.ramDiveUntil ?? 0)) {
+      world.setState(entity, 'ram-rise')
+      entity.vy = Math.min(entity.vy, 0)
+
+      if (kind === 'whale') {
+        world.setAsset(entity, whaleBreachAsset)
+      }
+    }
+
+    return true
+  }
+
+  const gravity = world.unit * 90
+  // The sky above the waterline is short, so cap the leap to keep the breach on screen.
+  const rise = Math.min(length * ramProfiles[kind].clear, Math.max(unit * 3, surface - unit))
+  const launch = Math.sqrt(2 * gravity * rise)
+
+  if (entity.state === 'ram-rise') {
+    entity.vy = Math.max(-launch, entity.vy - launch * 5 * dt)
+
+    const eta = Math.max(0.08, (entity.y - reach - surface) / launch)
+    const aimX = target ? target.x + target.vx * eta : entity.x
+
+    entity.vx +=
+      (clamp((aimX - entity.x) / Math.max(eta, 0.25), -burst, burst) - entity.vx) *
+      Math.min(1, dt * 8)
+    integrate(entity, dt)
+    entity.x = clamp(entity.x, margin, world.width - margin)
+    entity.tilt =
+      kind === 'whale'
+        ? clamp((entity.vx / burst) * 18 * entity.facing, -18, 18)
+        : -72 + clamp(((entity.vx * entity.facing) / burst) * 14, -14, 14)
+
+    if (entity.y - reach <= surface + unit * 0.3) {
+      if (
+        target &&
+        Math.abs(target.x - entity.x) <
+          world.widthOf(target) * 0.5 + world.widthOf(entity) * 0.2 + unit
+      ) {
+        launchBoat(target, entity, world, ramProfiles[kind].launch)
+        entity.vy *= 0.85
+      }
+
+      if (kind !== 'whale') {
+        entity.vx = entity.facing * burst * 0.3
+      }
+
+      spawnBurst(world, entity.x, surface + unit, kind === 'whale' ? 4.2 : 3)
+      world.setState(entity, 'breach')
+    }
+
+    return true
+  }
+
+  entity.vy += gravity * dt
+  integrate(entity, dt)
+  entity.x = clamp(entity.x, margin, world.width - margin)
+  entity.tilt =
+    kind === 'whale'
+      ? clamp(entity.t * 80, 0, 80)
+      : clamp((Math.atan2(entity.vy, Math.abs(entity.vx) + 1) * 180) / Math.PI, -80, 80)
+
+  if (entity.vy > 0 && entity.y - reach * 0.2 > surface + unit) {
+    spawnBurst(world, entity.x, surface + unit, kind === 'whale' ? 5.4 : 3.2)
+    world.shake(kind === 'whale' ? 0.7 : 0.3)
+    entity.vy *= 0.3
+    endRam(entity, world, kind)
+  }
 
   return true
 }
@@ -533,10 +919,6 @@ function grazeKelp(fish: EcoEntity, kelp: EcoEntity, world: EcoWorld) {
   return true
 }
 
-function heal(entity: EcoEntity, amount: number) {
-  entity.hp = Math.min(entity.maxHp, entity.hp + amount)
-}
-
 function controlAction(
   entity: EcoEntity,
   world: EcoWorld,
@@ -608,10 +990,6 @@ function controlHit(attacker: EcoEntity, target: EcoEntity, world: EcoWorld, amo
     attacker.data.hitStopUntil = world.time + 0.05
   }
   world.gainControlResource(attacker, dealt * 8)
-
-  if ((attacker.data.controlLifestealUntil ?? 0) > world.time) {
-    heal(attacker, amount * 0.22)
-  }
 }
 
 function shove(attacker: EcoEntity, target: EcoEntity, world: EcoWorld, force: number) {
@@ -621,56 +999,106 @@ function shove(attacker: EcoEntity, target: EcoEntity, world: EcoWorld, force: n
   target.fx = 'dazed'
 }
 
+function noseOf(entity: EcoEntity, world: EcoWorld) {
+  return { x: entity.x + entity.facing * world.widthOf(entity) * 0.42, y: entity.y }
+}
+
+const podRange = 24
+const podSize = 3
+const podCallRange = 70
+
+function orcasNear(entity: EcoEntity, world: EcoWorld, range = podRange) {
+  return world.within(entity.x, entity.y, world.unit * range, isOrca)
+}
+
+// An orca's pod is every orca swimming with it that hasn't been driven off a whale.
+function orcaPod(orca: EcoEntity, world: EcoWorld) {
+  return orcasNear(orca, world, podRange + 6).filter(
+    (mate) => world.time > (mate.data.whaleGiveUpUntil ?? 0),
+  )
+}
+
+function rallyPod(orca: EcoEntity, target: EcoEntity, world: EcoWorld) {
+  for (const mate of orcasNear(orca, world)) {
+    if (mate !== orca && (!isWhale(target) || world.time > (mate.data.whaleGiveUpUntil ?? 0))) {
+      mate.targetId = target.id
+    }
+  }
+}
+
+// One or two orcas can only nip a whale; a pod of three or more takes turns and wears it down.
+function orcaBiteWhale(orca: EcoEntity, whale: EcoEntity, world: EcoWorld) {
+  const tired = whale.data.tired ?? 0
+
+  whale.data.harriedAt = world.time
+
+  if (orcaPod(orca, world).length >= podSize) {
+    whale.data.tired = Math.min(1, tired + 0.1)
+    world.damage(null, whale, 0.3 + tired * 0.5, orca.x)
+    return
+  }
+
+  whale.targetId = orca.id
+
+  if (whale.hp - 0.3 > whale.maxHp * 0.5) {
+    world.damage(null, whale, 0.3, orca.x)
+    return
+  }
+
+  world.effect({
+    text: 'Shrugs it off',
+    tone: 'resist',
+    type: 'damage',
+    x: whale.x,
+    y: whale.y - world.heightOf(whale) * 0.4,
+  })
+}
+
 type SeaAbilityConfig = {
   active?: number
   amount?: number | ((target: EcoEntity) => number)
   archetype?: string
   asset?: string
-  buff?: { block?: number; icon: string; name: string; seconds: number; speed?: number }
-  charge?: { max: number; min?: number }
   cooldown: number
   dash?: number
   description: string
-  heal?: number
   icon?: string
-  key: 'q' | 'w' | 'e' | 'r'
   name: string
   radius?: number
   recovery?: number
-  shape: 'circle' | 'cone' | 'line' | 'self'
+  shape: 'circle' | 'line' | 'self'
   state?: string
   target?: 'area' | 'front'
-  ultimate?: boolean
   vfx?: EcoControlAbility['vfx']
   width?: number
   windup?: number
   onRun?: (entity: EcoEntity, world: EcoWorld, context: EcoControlAbilityContext) => void
+  onTick?: (
+    entity: EcoEntity,
+    world: EcoWorld,
+    context: EcoControlAbilityContext,
+    dt: number,
+  ) => void
   onHit?: (entity: EcoEntity, target: EcoEntity, world: EcoWorld) => void
 }
 
 function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
   const range = config.radius ?? Math.abs(config.dash ?? 4)
   const width = config.width ?? (config.shape === 'line' ? 2.8 : range)
-  const windup = Math.max(
-    config.windup ?? 0.2,
-    config.key === 'r' ? 0.45 : config.key === 'q' ? 0.25 : 0,
-  )
 
   return {
     active: config.active ?? 0.26,
     archetype: config.archetype,
-    charge: config.charge,
     cooldown: config.cooldown,
     dash: config.dash,
     description: config.description,
     icon: config.icon,
-    key: config.key,
+    key: 'q',
     name: config.name,
     recovery: config.recovery ?? 0.24,
     telegraph: { range, shape: config.shape, width },
-    ultimate: config.ultimate,
     vfx: config.vfx,
-    windup,
+    windup: config.windup ?? 0.25,
     run(entity, world, context) {
       controlAction(
         entity,
@@ -681,29 +1109,15 @@ function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
         config.vfx,
       )
 
-      if (config.buff) {
-        if (config.buff.block !== undefined) {
-          entity.data.controlBlockUntil = world.time + config.buff.seconds
-          entity.data.controlBlock = config.buff.block
-        }
-        if (config.buff.speed !== undefined) {
-          entity.data.controlSpeedUntil = world.time + config.buff.seconds
-          entity.data.controlSpeed = config.buff.speed
-        }
-        world.addControlBuff(entity, config.buff.name, config.buff.icon, config.buff.seconds)
-      }
-
-      if (config.heal) {
-        world.heal(entity, config.heal)
-      }
-
-      if (config.ultimate || config.vfx === 'shockwave') {
-        world.shake(config.ultimate ? 0.8 : 0.35)
+      if (config.vfx === 'shockwave') {
+        world.shake(0.35)
       }
 
       config.onRun?.(entity, world, context)
     },
-    tick(entity, world, context) {
+    tick(entity, world, context, dt) {
+      config.onTick?.(entity, world, context, dt)
+
       if (config.amount === undefined) {
         return
       }
@@ -726,13 +1140,12 @@ function seaAbility(config: SeaAbilityConfig): EcoControlAbility {
         }
 
         context.cast.hitIds.add(target.id)
-        const charge = clamp(entity.data.controlCharge ?? 1, 0.35, 1)
-        const baseAmount =
-          typeof config.amount === 'function' ? config.amount(target) : config.amount
-        const amount = baseAmount * (config.charge ? 0.7 + charge * 0.75 : 1)
+        const amount = typeof config.amount === 'function' ? config.amount(target) : config.amount
 
-        controlHit(entity, target, world, amount)
-        shove(entity, target, world, config.ultimate ? 4.8 : 2.8)
+        if (amount > 0) {
+          controlHit(entity, target, world, amount)
+          shove(entity, target, world, 2.8)
+        }
         config.onHit?.(entity, target, world)
       }
     },
@@ -743,63 +1156,19 @@ const fishControls = {
   abilities: [
     seaAbility({
       cooldown: 2.2,
-      dash: 4.2,
-      description: 'Scatter in a short skillshot burst.',
+      dash: 5,
+      description: 'Flash silver and burst away. Nearby hunters lose track of the school.',
       icon: 'scatter',
-      key: 'q',
-      name: 'Scatter',
+      name: 'Flash scatter',
       shape: 'line',
       state: 'scatter',
       vfx: 'water',
       width: 3,
-    }),
-    seaAbility({
-      buff: { block: 0.45, icon: '◆', name: 'Bait ball', seconds: 3.4 },
-      cooldown: 5.4,
-      description: 'Tighten into a bait ball that blunts bites.',
-      icon: 'bait',
-      key: 'w',
-      name: 'Bait ball',
-      shape: 'self',
-      state: 'school',
-      vfx: 'buff',
-    }),
-    seaAbility({
-      amount: 0.55,
-      cooldown: 3.4,
-      dash: 5,
-      description: 'Dart through nearby predators.',
-      icon: 'dart',
-      key: 'e',
-      name: 'Dart',
-      shape: 'line',
-      state: 'scatter',
-      target: 'front',
-      vfx: 'water',
-      width: 3.2,
-    }),
-    seaAbility({
-      cooldown: 3,
-      description: 'Ultimate: split and call a helper shoal.',
-      icon: 'school',
-      key: 'r',
-      name: 'School call',
-      shape: 'self',
-      state: 'school',
-      ultimate: true,
-      vfx: 'buff',
       onRun(entity, world) {
-        if (world.canBreed()) {
-          world.spawn('fish-school', {
-            countAs: 'fish-school',
-            size: entity.size * 0.72,
-            x: clamp(
-              entity.x - entity.facing * world.unit * 2,
-              world.unit,
-              world.width - world.unit,
-            ),
-            y: clamp(entity.y + between(-1, 1) * world.unit, waterTop(world), waterBottom(world)),
-          })
+        for (const hunter of world.within(entity.x, entity.y, world.unit * 7, isPredator)) {
+          hunter.targetId = null
+          hunter.fx = 'dazed'
+          hunter.data.fx = 1
         }
       },
     }),
@@ -815,9 +1184,8 @@ const jellyControls = {
     seaAbility({
       amount: (target) => (isShark(target) ? 0.7 : 1.1),
       cooldown: 2.2,
-      description: 'Sting the closest creature in front.',
+      description: 'Sting the closest creature in front and slow it down.',
       icon: 'sting',
-      key: 'q',
       name: 'Sting',
       radius: 4.2,
       shape: 'line',
@@ -828,56 +1196,6 @@ const jellyControls = {
       onHit(_entity, target, world) {
         target.data.controlSpeedUntil = world.time + 1.2
         target.data.controlSpeed = 0.55
-      },
-    }),
-    seaAbility({
-      amount: 0.55,
-      cooldown: 4.8,
-      description: 'Pulse outward and shove nearby swimmers.',
-      icon: 'pulse',
-      key: 'w',
-      name: 'Drift pulse',
-      radius: 5.5,
-      shape: 'circle',
-      state: 'drift',
-      target: 'area',
-      vfx: 'shockwave',
-    }),
-    seaAbility({
-      buff: { icon: '⚡', name: 'Bell lift', seconds: 2.4, speed: 1.5 },
-      cooldown: 5.8,
-      dash: 2.4,
-      description: 'Float upward out of danger.',
-      icon: 'lift',
-      key: 'e',
-      name: 'Bell lift',
-      shape: 'line',
-      state: 'drift',
-      vfx: 'water',
-      onRun(entity, world) {
-        entity.y = clamp(entity.y - world.unit * 2.2, waterTop(world), waterBottom(world))
-      },
-    }),
-    seaAbility({
-      cooldown: 3,
-      description: 'Ultimate: bloom with stinging bubbles.',
-      icon: 'bloom',
-      key: 'r',
-      name: 'Bloom',
-      radius: 6,
-      shape: 'circle',
-      state: 'drift',
-      ultimate: true,
-      vfx: 'shockwave',
-      onRun(entity, world) {
-        for (let index = 0; index < 3; index += 1) {
-          spawnBurst(
-            world,
-            clamp(entity.x + between(-2.5, 2.5) * world.unit, world.unit, world.width - world.unit),
-            clamp(entity.y + between(-1.5, 1.5) * world.unit, waterTop(world), waterBottom(world)),
-            1.7,
-          )
-        }
       },
     }),
   ],
@@ -894,7 +1212,6 @@ const turtleControls = {
       cooldown: 2.4,
       description: 'Crunch jellyfish and small prey with a hard turtle beak.',
       icon: 'bite',
-      key: 'q',
       name: 'Beak crunch',
       radius: 4.5,
       shape: 'line',
@@ -904,53 +1221,6 @@ const turtleControls = {
       width: 3.8,
       onHit(entity, target, world) {
         world.heal(entity, isJelly(target) ? 0.6 : 0.2)
-      },
-    }),
-    seaAbility({
-      buff: { block: 0.28, icon: '◆', name: 'Shell', seconds: 3.8 },
-      cooldown: 5.6,
-      description: 'Tuck into the shell and reduce damage.',
-      icon: 'block',
-      key: 'w',
-      name: 'Shell block',
-      shape: 'self',
-      state: 'paddle',
-      vfx: 'buff',
-    }),
-    seaAbility({
-      buff: { icon: '⚡', name: 'Paddle', seconds: 1.8, speed: 1.8 },
-      cooldown: 4.4,
-      dash: 3.2,
-      description: 'Paddle dash through danger.',
-      icon: 'dash',
-      key: 'e',
-      name: 'Paddle dash',
-      shape: 'line',
-      state: 'paddle',
-      vfx: 'water',
-      width: 3,
-    }),
-    seaAbility({
-      cooldown: 3,
-      description: 'Ultimate: graze kelp and heal.',
-      heal: 1.8,
-      icon: 'kelp',
-      key: 'r',
-      name: 'Kelp snack',
-      shape: 'self',
-      state: 'paddle',
-      ultimate: true,
-      vfx: 'heal',
-      onRun(entity, world) {
-        const kelp = world.nearest(
-          entity,
-          (other) => isKelp(other) && other.state !== 'grow',
-          world.unit * 8,
-        )
-        if (kelp) {
-          kelp.fx = 'wobble'
-          spawnBurst(world, kelp.x, kelp.y - world.heightOf(kelp) * 0.5, 1.7)
-        }
       },
     }),
   ],
@@ -967,7 +1237,6 @@ const crabControls = {
       cooldown: 1.8,
       description: 'Pinch anything close after a claw tell.',
       icon: 'pinch',
-      key: 'q',
       name: 'Pinch',
       radius: 3.2,
       shape: 'line',
@@ -975,43 +1244,6 @@ const crabControls = {
       target: 'front',
       vfx: 'slash',
       width: 3,
-    }),
-    seaAbility({
-      buff: { block: 0.32, icon: '◆', name: 'Burrow', seconds: 3.6 },
-      cooldown: 5,
-      description: 'Burrow into sand to block damage.',
-      icon: 'burrow',
-      key: 'w',
-      name: 'Burrow',
-      shape: 'self',
-      state: 'scuttle',
-      vfx: 'buff',
-    }),
-    seaAbility({
-      cooldown: 3.6,
-      dash: 4,
-      description: 'Side scuttle in a quick burst.',
-      icon: 'scuttle',
-      key: 'e',
-      name: 'Scuttle',
-      shape: 'line',
-      state: 'scuttle',
-      vfx: 'charge',
-      width: 2.8,
-    }),
-    seaAbility({
-      amount: 0.85,
-      cooldown: 3,
-      description: 'Ultimate: rake claws through nearby enemies.',
-      icon: 'claw',
-      key: 'r',
-      name: 'Claw rake',
-      radius: 4.2,
-      shape: 'circle',
-      state: 'scuttle',
-      target: 'area',
-      ultimate: true,
-      vfx: 'slash',
     }),
   ],
   idleState: 'scuttle',
@@ -1023,67 +1255,50 @@ const crabControls = {
 const pufferControls = {
   abilities: [
     seaAbility({
-      amount: 1.2,
-      asset: pufferPuffedAsset,
-      cooldown: 2.6,
-      description: 'Puff spikes and punish close attackers.',
-      icon: 'puff',
-      key: 'q',
-      name: 'Puff spikes',
-      radius: 4.5,
-      shape: 'circle',
-      state: 'puffed',
-      target: 'area',
-      vfx: 'shockwave',
-    }),
-    seaAbility({
-      amount: 0.6,
-      asset: pufferPuffedAsset,
-      cooldown: 5.2,
-      description: 'Poison cloud that slows nearby predators.',
-      icon: 'toxin',
-      key: 'w',
-      name: 'Toxin cloud',
-      radius: 5.5,
-      shape: 'circle',
-      state: 'puffed',
-      target: 'area',
-      vfx: 'water',
-      onHit(_entity, target, world) {
-        target.data.controlSpeedUntil = world.time + 2.4
-        target.data.controlSpeed = 0.58
-      },
-    }),
-    seaAbility({
-      cooldown: 4,
-      dash: -3.5,
-      description: 'Scoot backward from danger.',
-      icon: 'scoot',
-      key: 'e',
-      name: 'Back scoot',
-      shape: 'line',
-      state: 'drift',
-      vfx: 'water',
-      width: 2.8,
-    }),
-    seaAbility({
-      asset: pufferPuffedAsset,
-      buff: { block: 0.45, icon: '◆', name: 'Spines', seconds: 4.2 },
+      active: 0.35,
+      archetype: 'Mega puff',
       cooldown: 3,
-      description: 'Ultimate: stay puffed and shrug off hits.',
-      heal: 0.5,
-      icon: 'spine',
-      key: 'r',
-      name: 'Spine armor',
-      shape: 'self',
+      description:
+        'Gulp water and balloon into a huge spiky ball. Small fish pop, big swimmers get stabbed and bounced off.',
+      icon: 'puff',
+      name: 'Mega puff',
+      radius: 9,
+      shape: 'circle',
       state: 'puffed',
-      ultimate: true,
-      vfx: 'buff',
+      vfx: 'shockwave',
+      onRun(entity, world) {
+        startPuff(entity, world, 3.6)
+        entity.data.controlSpeedUntil = entity.data.puffUntil ?? world.time
+        entity.data.controlSpeed = 0.6
+      },
+      onTick(entity, world, context) {
+        entity.scale = 1 + (pufferMaxScale - 1) * easeOutBack(context.activeProgress)
+        pufferSpikes(entity, world)
+      },
     }),
   ],
   idleState: 'drift',
   move: 'swim',
   moveState: 'drift',
+  pose(entity: EcoEntity, world: EcoWorld) {
+    const puffUntil = entity.data.puffUntil ?? 0
+
+    if (world.time < puffUntil) {
+      entity.scale = pufferMaxScale + Math.sin(world.time * 9) * 0.06
+      pufferSpikes(entity, world)
+      return { asset: pufferPuffedAsset, state: 'puffed' }
+    }
+
+    const shrink = clamp((world.time - puffUntil) / 0.7, 0, 1)
+
+    entity.scale = 1 + (pufferMaxScale - 1) * (1 - shrink) ** 2
+    pufferSpikes(entity, world)
+
+    return {
+      asset: shrink < 0.6 ? pufferPuffedAsset : pufferAsset,
+      state: shrink < 1 ? 'deflate' : 'drift',
+    }
+  },
   speed: controlledSeaSpeed('pufferfish'),
 } as const
 
@@ -1096,9 +1311,8 @@ const sharkControls = {
       asset: sharkBiteAsset,
       cooldown: 1.6,
       dash: 3.8,
-      description: 'Burst in with the snout, bite and start a head-shake.',
+      description: 'Burst in with the snout and bite.',
       icon: 'bite',
-      key: 'q',
       name: 'Ram bite',
       radius: 7.2,
       shape: 'line',
@@ -1108,49 +1322,6 @@ const sharkControls = {
       width: 4.8,
       onHit(entity, _target, world) {
         world.heal(entity, 0.35)
-      },
-    }),
-    seaAbility({
-      archetype: 'Head-shake hold',
-      buff: { icon: '⚡', name: 'Head shake', seconds: 2.4, speed: 1.25 },
-      charge: { max: 1.1, min: 0.22 },
-      cooldown: 5.2,
-      description: 'Hold after closing in, then thrash the head side to side.',
-      icon: 'thrash',
-      key: 'w',
-      name: 'Head shake',
-      shape: 'self',
-      state: 'hunt',
-      vfx: 'buff',
-    }),
-    seaAbility({
-      archetype: 'Blood-scent sprint',
-      asset: sharkBiteAsset,
-      buff: { icon: '⚡', name: 'Blood scent', seconds: 2.6, speed: 1.4 },
-      cooldown: 3.6,
-      description: 'Smell blood and sprint toward wounded prey.',
-      icon: 'blood',
-      key: 'e',
-      name: 'Blood scent',
-      shape: 'self',
-      state: 'hunt',
-      vfx: 'buff',
-    }),
-    seaAbility({
-      asset: sharkBiteAsset,
-      buff: { icon: '⚡', name: 'Frenzy', seconds: 5, speed: 1.65 },
-      cooldown: 3,
-      description: 'Ultimate: fast lifesteal frenzy.',
-      heal: 0.6,
-      icon: 'frenzy',
-      key: 'r',
-      name: 'Frenzy',
-      shape: 'self',
-      state: 'hunt',
-      ultimate: true,
-      vfx: 'buff',
-      onRun(entity, world) {
-        entity.data.controlLifestealUntil = world.time + 5
       },
     }),
   ],
@@ -1167,59 +1338,14 @@ const swordfishControls = {
       archetype: 'Bill thrust',
       cooldown: 2,
       dash: 7,
-      description: 'Thrust the long bill straight through prey.',
+      description: 'Thrust the long bill straight through everything in the way.',
       icon: 'lance',
-      key: 'q',
       name: 'Bill thrust',
       shape: 'line',
       state: 'strike',
       target: 'area',
       vfx: 'charge',
       width: 3.2,
-    }),
-    seaAbility({
-      amount: 1.1,
-      archetype: 'Side-sweep bill slash',
-      cooldown: 3.2,
-      dash: 2.8,
-      description: 'Sweep the bill sideways through close prey.',
-      icon: 'slash',
-      key: 'w',
-      name: 'Side sweep',
-      radius: 5.2,
-      shape: 'cone',
-      state: 'strike',
-      target: 'area',
-      vfx: 'slash',
-      width: 5.2,
-    }),
-    seaAbility({
-      archetype: 'Hold sprint',
-      buff: { icon: '⚡', name: 'Current', seconds: 3.2, speed: 1.9 },
-      charge: { max: 1.15, min: 0.22 },
-      cooldown: 5,
-      description: 'Sprint with a fast current.',
-      icon: 'sprint',
-      key: 'e',
-      name: 'Current sprint',
-      shape: 'self',
-      state: 'lance',
-      vfx: 'water',
-    }),
-    seaAbility({
-      amount: 1.2,
-      cooldown: 3,
-      dash: 9,
-      description: 'Ultimate: pierce every close target.',
-      icon: 'skewer',
-      key: 'r',
-      name: 'Skewer run',
-      shape: 'line',
-      state: 'strike',
-      target: 'area',
-      ultimate: true,
-      vfx: 'charge',
-      width: 4,
     }),
   ],
   idleState: 'lance',
@@ -1231,17 +1357,17 @@ const swordfishControls = {
 const octopusControls = {
   abilities: [
     seaAbility({
-      archetype: 'Local ink cloud',
-      cooldown: 3.2,
-      description: 'Release a close ink cloud that dazes hunters around the octopus.',
-      icon: 'ink',
-      key: 'q',
-      name: 'Ink cloud',
-      radius: 5.5,
-      shape: 'circle',
-      state: 'ink',
+      archetype: 'Ink jet',
       asset: octopusInkAsset,
+      cooldown: 3.2,
+      dash: -6,
+      description: 'Blast a cloud of ink that dazes nearby hunters, then jet backward out of it.',
+      icon: 'ink',
+      name: 'Ink jet',
+      shape: 'line',
+      state: 'ink',
       vfx: 'ink',
+      width: 5,
       onRun(entity, world) {
         spawnBurst(world, entity.x, entity.y, 3.1)
         for (const target of areaTargets(entity, world, world.unit * 5.5)) {
@@ -1251,50 +1377,6 @@ const octopusControls = {
           shove(entity, target, world, 2.4)
         }
       },
-    }),
-    seaAbility({
-      amount: (target) => (isBoat(target) ? 1.6 : 1.1),
-      archetype: 'Hold grab',
-      asset: octopusAsset,
-      charge: { max: 1.1, min: 0.24 },
-      cooldown: 3.8,
-      description: 'Grab a close target after a tentacle tell.',
-      icon: 'grab',
-      key: 'w',
-      name: 'Grab',
-      radius: 5,
-      shape: 'line',
-      state: 'grab',
-      target: 'front',
-      vfx: 'bite',
-      width: 4,
-    }),
-    seaAbility({
-      asset: octopusAsset,
-      buff: { block: 0.38, icon: '◆', name: 'Camo', seconds: 4 },
-      cooldown: 6,
-      description: 'Camouflage to reduce damage.',
-      icon: 'camouflage',
-      key: 'e',
-      name: 'Camouflage',
-      shape: 'self',
-      state: 'prowl',
-      vfx: 'buff',
-    }),
-    seaAbility({
-      asset: octopusInkAsset,
-      buff: { icon: '⚡', name: 'Jet', seconds: 1.3, speed: 3.25 },
-      cooldown: 3,
-      dash: -7,
-      description: 'Ultimate: jet escape in a burst of ink.',
-      icon: 'jet',
-      key: 'r',
-      name: 'Jet escape',
-      shape: 'line',
-      state: 'ink',
-      ultimate: true,
-      vfx: 'ink',
-      width: 5,
     }),
   ],
   idleState: 'prowl',
@@ -1306,171 +1388,78 @@ const octopusControls = {
 const whaleControls = {
   abilities: [
     seaAbility({
-      active: 0.45,
-      asset: whaleBreachAsset,
+      active: 8,
+      archetype: 'Breach ram',
       cooldown: 4,
-      description: 'Breach upward and flip boats.',
+      description: 'Dive, then rocket up under the nearest boat and launch it into the air.',
       icon: 'breach',
-      key: 'q',
-      name: 'Breach',
-      radius: 10,
+      name: 'Breach ram',
+      radius: 18,
       shape: 'circle',
-      state: 'breach',
-      vfx: 'shockwave',
-      windup: 0.42,
-      onRun(entity, world) {
-        entity.y = clamp(surfaceY(world) + world.unit * 1.6, surfaceY(world), waterBottom(world))
-        const boat = world.nearest({ x: entity.x, y: surfaceY(world) }, isBoat, world.unit * 10)
-        if (boat) {
-          capsizeBoat(boat, world, entity)
-        }
-        spawnBurst(world, entity.x, surfaceY(world) + world.unit * 2, 4)
-      },
-    }),
-    seaAbility({
-      amount: (target) => (isBoat(target) ? 1.4 : 1),
-      asset: whaleAsset,
-      cooldown: 4.8,
-      description: 'Spin a bubble-net ring that traps fish close enough to feed.',
-      icon: 'bubble',
-      key: 'w',
-      name: 'Bubble net',
-      radius: 9,
-      shape: 'circle',
-      state: 'cruise',
-      target: 'area',
       vfx: 'water',
-      onHit(entity, target) {
-        if (isFish(target)) {
-          target.vx += (entity.x - target.x) * 1.1
-          target.vy += (entity.y - target.y) * 0.7
-        }
-      },
-    }),
-    seaAbility({
-      asset: whaleAsset,
-      cooldown: 6.5,
-      description: 'Whale song scatters and calms enemies.',
-      icon: 'song',
-      key: 'e',
-      name: 'Song',
-      radius: 13,
-      shape: 'circle',
-      state: 'cruise',
-      vfx: 'shockwave',
+      windup: 0.3,
       onRun(entity, world) {
-        for (const target of areaTargets(entity, world, world.unit * 13)) {
-          target.targetId = null
-          target.data.controlSpeedUntil = world.time + 2.2
-          target.data.controlSpeed = 0.62
-          shove(entity, target, world, 2)
-        }
+        entity.fx = ''
+        entity.data.controlFxUntil = 0
+        startRam(
+          entity,
+          world,
+          'whale',
+          world.nearest({ x: entity.x, y: surfaceY(world) }, isSailingBoat, world.unit * 18),
+          true,
+        )
       },
-    }),
-    seaAbility({
-      asset: whaleAsset,
-      cooldown: 3,
-      description: 'Ultimate: gulp krill bubbles and heal.',
-      heal: 2,
-      icon: 'gulp',
-      key: 'r',
-      name: 'Krill gulp',
-      shape: 'self',
-      state: 'cruise',
-      ultimate: true,
-      vfx: 'heal',
+      onTick(entity, world, context, dt) {
+        if (ramming(entity, world, dt, 'whale')) {
+          return
+        }
+
+        context.cast.phaseElapsed = Number.POSITIVE_INFINITY
+        entity.data.controlActionUntil = world.time
+      },
     }),
   ],
   idleState: 'cruise',
   move: 'swim',
   moveState: 'cruise',
+  pose: () => ({ asset: whaleAsset, state: 'cruise' }),
   speed: controlledSeaSpeed('whale'),
 } as const
 
 const orcaControls = {
   abilities: [
     seaAbility({
-      amount: 1.25,
-      archetype: 'Wave-wash',
+      active: 0.3,
+      amount: (target) => (isWhale(target) ? 0 : 1.25),
+      archetype: 'Pod strike',
       cooldown: 2.4,
-      dash: 2.4,
-      description: 'Wash a bow wave forward to roll prey off balance.',
-      icon: 'wave',
-      key: 'q',
-      name: 'Wave wash',
+      dash: 4.2,
+      description:
+        'Lunge-bite and call the pod in. Alone you can only nip a whale; with three or more orcas the pod wears it down.',
+      icon: 'pod',
+      name: 'Pod strike',
+      radius: 6,
       shape: 'line',
       state: 'hunt',
       target: 'front',
       vfx: 'charge',
       width: 4.6,
-    }),
-    seaAbility({
-      amount: 0.9,
-      archetype: 'Hold tail slap',
-      charge: { max: 1.15, min: 0.24 },
-      cooldown: 4.5,
-      description: 'Tail slap and stun nearby prey.',
-      icon: 'tail',
-      key: 'w',
-      name: 'Tail stun',
-      radius: 6.5,
-      shape: 'circle',
-      state: 'hunt',
-      target: 'area',
-      vfx: 'slash',
-      onHit(_entity, target, world) {
-        target.data.controlSpeedUntil = world.time + 1.7
-        target.data.controlSpeed = 0.45
-      },
-    }),
-    seaAbility({
-      amount: 1.15,
-      archetype: 'Coordinated pod ram',
-      cooldown: 6,
-      dash: 6.8,
-      description: 'Coordinate a pod-style ram through the target line.',
-      icon: 'pod',
-      key: 'e',
-      name: 'Pod ram',
-      radius: 9,
-      shape: 'line',
-      state: 'hunt',
-      target: 'area',
-      vfx: 'charge',
-      width: 5.2,
-    }),
-    seaAbility({
-      amount: 1.6,
-      cooldown: 3,
-      dash: 7.2,
-      description: 'Final Smash: beaching lunge with a brief helper orca.',
-      icon: 'lunge',
-      key: 'r',
-      name: 'Beach lunge',
-      shape: 'line',
-      state: 'hunt',
-      target: 'area',
-      ultimate: true,
-      vfx: 'buff',
-      width: 5.4,
-      onRun(entity, world) {
-        if (world.canBreed()) {
-          const helper = world.spawn('orca', {
-            countAs: null,
-            data: { life: 7 },
-            size: entity.size * 0.72,
-            x: clamp(
-              entity.x - entity.facing * world.unit * 4,
-              world.unit,
-              world.width - world.unit,
-            ),
-            y: clamp(entity.y + world.unit * 1.2, waterTop(world), waterBottom(world)),
-          })
-          if (helper) {
-            helper.hp = 2
-            helper.maxHp = 2
+      onTick(entity, world, context) {
+        const nose = noseOf(entity, world)
+
+        for (const whale of world.within(entity.x, entity.y, world.unit * 30, isWhale)) {
+          if (!context.cast.hitIds.has(whale.id) && touches(nose, whale, world, world.unit * 1.6)) {
+            context.cast.hitIds.add(whale.id)
+            orcaBiteWhale(entity, whale, world)
+            rallyPod(entity, whale, world)
           }
         }
+      },
+      onHit(entity, target, world) {
+        if (isWhale(target)) {
+          orcaBiteWhale(entity, target, world)
+        }
+        rallyPod(entity, target, world)
       },
     }),
   ],
@@ -1483,82 +1472,37 @@ const orcaControls = {
 const anglerControls = {
   abilities: [
     seaAbility({
-      cooldown: 3,
-      description: 'Lure small prey toward the lantern.',
-      icon: 'lure',
-      key: 'q',
-      name: 'Lure',
-      radius: 9,
-      shape: 'circle',
-      state: 'lure',
-      asset: anglerAsset,
-      vfx: 'buff',
-      onRun(entity, world) {
-        for (const target of world.within(
-          entity.x,
-          entity.y,
-          world.unit * 9,
-          (other) => isFish(other) || isJelly(other),
-        )) {
-          steer(
-            target,
-            entity.x,
-            entity.y,
-            pace(target, world, isFish(target) ? 'fish' : 'jellyfish', 'cruise'),
-            0.2,
-            2.5,
-          )
-          target.fx = 'aim'
-          target.data.fx = 0.8
-        }
-      },
-    }),
-    seaAbility({
+      active: 0.6,
       amount: 1.25,
+      archetype: 'Lure gulp',
+      asset: anglerAsset,
       cooldown: 2.8,
-      description: 'Ambush gulp after the lure pulls prey close.',
-      icon: 'bite',
-      key: 'w',
-      name: 'Ambush gulp',
+      description: 'Flash the lantern to reel small prey in, then snap them up.',
+      icon: 'lure',
+      name: 'Lure gulp',
       radius: 4.8,
       shape: 'line',
       state: 'strike',
       target: 'front',
       vfx: 'bite',
       width: 3.2,
+      onTick(entity, world, _context, dt) {
+        const mouth = noseOf(entity, world)
+
+        for (const target of world.within(
+          entity.x,
+          entity.y,
+          world.unit * 9,
+          (other) => isFish(other) || isJelly(other),
+        )) {
+          target.x += (mouth.x - target.x) * Math.min(1, dt * 3)
+          target.y += (mouth.y - target.y) * Math.min(1, dt * 3)
+          target.fx = 'aim'
+          target.data.fx = 0.8
+        }
+      },
       onHit(entity, _target, world) {
         world.heal(entity, 0.35)
-      },
-    }),
-    seaAbility({
-      buff: { block: 0.4, icon: '◆', name: 'Hide', seconds: 3 },
-      cooldown: 5.6,
-      description: 'Dim the lantern and hide.',
-      icon: 'hide',
-      key: 'e',
-      name: 'Deep hide',
-      shape: 'self',
-      state: 'hide',
-      asset: anglerAsset,
-      vfx: 'buff',
-    }),
-    seaAbility({
-      amount: 0.45,
-      cooldown: 3,
-      description: 'Ultimate: flash the lure and daze close prey.',
-      icon: 'lantern',
-      key: 'r',
-      name: 'Lantern flash',
-      radius: 6,
-      shape: 'circle',
-      state: 'lure',
-      asset: anglerAsset,
-      target: 'area',
-      ultimate: true,
-      vfx: 'shockwave',
-      onHit(_entity, target) {
-        target.fx = 'dazed'
-        target.data.fx = 1.2
       },
     }),
   ],
@@ -1831,7 +1775,7 @@ const seaTurtle: EcoSpecies = {
       const target = targetOrNearest(
         entity,
         world,
-        (other) => isJelly(other) || isPuffer(other),
+        (other) => isJelly(other) || isCalmPuffer(other),
         unit * 15,
       )
 
@@ -1921,36 +1865,75 @@ const pufferfish: EcoSpecies = {
   idle: 'bob',
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 2, waterBottom(world))
+    entity.data.puffCool = between(1, 3)
   },
   layer: 'front',
   size: [1.8, 2.2],
   state: 'drift',
-  strongVs: ['shark', 'crab', 'fish-school', 'orca'],
+  strongVs: ['shark', 'orca', 'fish-school', 'crab', 'jellyfish', 'anglerfish'],
   tags: ['prey'],
   tick(entity, world, dt) {
     clearFx(entity, dt)
     const unit = world.unit
-    const threat = world.nearest(entity, (other) => isShark(other) || isOrca(other), unit * 6)
+    const threat = world.nearest(
+      entity,
+      (other) =>
+        isShark(other) ||
+        isOrca(other) ||
+        isSwordfish(other) ||
+        isOctopus(other) ||
+        isTurtle(other),
+      unit * 7 + world.widthOf(entity) * 0.5,
+    )
+    const startled = world.time - (entity.data.hitFlash ?? -9) < 0.5
 
-    if (threat && world.matchup(entity, threat) === 'strong') {
-      world.setAsset(entity, pufferPuffedAsset)
-      world.setState(entity, 'puffed')
-      entity.scale = Math.min(1.22, entity.scale + dt * 1.4)
-      flee(entity, threat, pace(entity, world, 'pufferfish', 'burst'), dt, 2.4)
+    entity.data.puffCool = Math.max(0, (entity.data.puffCool ?? 0) - dt)
 
-      if (
-        Math.hypot(entity.x - threat.x, entity.y - threat.y) <
-        Math.max(unit * 3.2, world.widthOf(threat) * 0.35)
-      ) {
-        hurt(threat, world, 0.8 * world.edge(entity, threat))
-        threat.targetId = null
-        threat.fx = 'dazed'
-        threat.data.fx = 0.6
+    if (entity.state === 'drift' && entity.scale > 1.3) {
+      world.setState(entity, 'deflate')
+    }
+
+    if (
+      entity.state === 'drift' &&
+      (entity.data.puffCool ?? 0) <= 0 &&
+      (threat || startled || chance(0.025, dt))
+    ) {
+      startPuff(entity, world, between(3, 4.5))
+    }
+
+    if (entity.state === 'puffed') {
+      springScale(entity, pufferMaxScale, 60, 9, dt)
+      pufferSpikes(entity, world)
+      const prey = world.nearest(entity, (other) => pufferSmallPrey.has(other.species), unit * 14)
+      const aim = prey ?? threat
+
+      if (aim) {
+        steer(entity, aim.x, aim.y, pace(entity, world, 'pufferfish', 'cruise') * 1.4, dt, 1.2)
+      } else {
+        entity.vx *= 1 - Math.min(1, dt)
+        entity.vy += (Math.sin(world.time * 2 + entity.id) * unit * 0.6 - entity.vy) * dt
+      }
+
+      if (world.time > (entity.data.puffUntil ?? 0)) {
+        world.setState(entity, 'deflate')
+      }
+    } else if (entity.state === 'deflate') {
+      world.setAsset(entity, entity.scale > 1.6 ? pufferPuffedAsset : pufferAsset)
+      springScale(entity, 1, 14, 5, dt)
+      pufferSpikes(entity, world)
+      entity.vx += between(-1, 1) * unit * 40 * dt
+      entity.vy += between(-1, 1) * unit * 30 * dt
+      entity.vx *= 1 - Math.min(1, dt * 1.5)
+      entity.vy *= 1 - Math.min(1, dt * 1.5)
+
+      if (entity.scale < 1.04 && entity.t > 0.8) {
+        entity.scale = 1
+        entity.data.scaleV = 0
+        entity.data.puffCool = between(2.5, 5)
+        world.setState(entity, 'drift')
       }
     } else {
       world.setAsset(entity, pufferAsset)
-      world.setState(entity, 'drift')
-      entity.scale = Math.max(1, entity.scale - dt * 0.8)
       wander(
         entity,
         world,
@@ -1964,14 +1947,14 @@ const pufferfish: EcoSpecies = {
     }
 
     integrate(entity, dt)
-    if (threat && world.matchup(entity, threat) === 'strong') {
-      keepInWater(entity, world)
-      faceTravel(entity)
-    } else {
+    if (entity.state === 'drift') {
       keepWaterDepth(entity, world)
       wrapRight(entity, world)
+    } else {
+      keepInWater(entity, world)
+      faceTravel(entity)
     }
-    tiltToVelocity(entity, 12)
+    tiltToVelocity(entity, entity.state === 'drift' ? 12 : 6)
   },
   weakTo: ['sea-turtle', 'octopus', 'swordfish'],
 }
@@ -1986,6 +1969,7 @@ const shark: EcoSpecies = {
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 2, waterBottom(world))
     entity.vx = entity.facing * pace(entity, world, 'shark', 'cruise') * between(0.8, 1.15)
+    scheduleRam(entity, world, 'shark', 0.5)
   },
   layer: 'front',
   size: [10.6, 11.8],
@@ -1994,13 +1978,17 @@ const shark: EcoSpecies = {
   tags: ['predator'],
   tick(entity, world, dt) {
     clearFx(entity, dt)
+    if (ramming(entity, world, dt, 'shark')) {
+      return
+    }
+
     const unit = world.unit
     const danger = world.nearest(
       entity,
       (other) =>
         (isOrca(other) ||
           isOctopus(other) ||
-          isPuffer(other) ||
+          isPuffedPuffer(other) ||
           isJelly(other) ||
           isSwordfish(other)) &&
         world.edge(other, entity) > 1,
@@ -2024,6 +2012,8 @@ const shark: EcoSpecies = {
         world.setState(entity, 'hunt')
         steer(entity, target.x, target.y, pace(entity, world, 'shark', 'burst'), dt, 2.8)
         consume(entity, target, world, isBoat(target) ? 2.3 : 1.8)
+      } else if (maybeStartRam(entity, world, 'shark')) {
+        return
       } else {
         world.setAsset(entity, sharkAsset)
         world.setState(entity, 'prowl')
@@ -2064,6 +2054,7 @@ const swordfish: EcoSpecies = {
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 2, waterBottom(world))
     entity.vx = entity.facing * pace(entity, world, 'swordfish', 'cruise') * between(0.8, 1.15)
+    scheduleRam(entity, world, 'swordfish', 0.5)
   },
   layer: 'front',
   size: [7.6, 8.8],
@@ -2072,6 +2063,10 @@ const swordfish: EcoSpecies = {
   tags: ['predator'],
   tick(entity, world, dt) {
     clearFx(entity, dt)
+    if (ramming(entity, world, dt, 'swordfish')) {
+      return
+    }
+
     const unit = world.unit
     const danger = world.nearest(
       entity,
@@ -2105,6 +2100,8 @@ const swordfish: EcoSpecies = {
           entity.targetId = null
           entity.vx *= -0.35
         }
+      } else if (maybeStartRam(entity, world, 'swordfish')) {
+        return
       } else {
         world.setState(entity, 'lance')
         wander(
@@ -2182,7 +2179,11 @@ const octopus: EcoSpecies = {
         entity,
         world,
         (other) =>
-          isCrab(other) || isFish(other) || isBoat(other) || isPuffer(other) || isSwordfish(other),
+          isCrab(other) ||
+          isFish(other) ||
+          isBoat(other) ||
+          isCalmPuffer(other) ||
+          isSwordfish(other),
         unit * 10,
       )
 
@@ -2227,6 +2228,34 @@ const octopus: EcoSpecies = {
   weakTo: ['orca', 'whale', 'pufferfish'],
 }
 
+function whaleTailSlap(whale: EcoEntity, world: EcoWorld, orcas: EcoEntity[], hunted: boolean) {
+  if (world.time < (whale.data.slapAt ?? 0)) {
+    return
+  }
+
+  const reach = world.widthOf(whale) * 0.5
+  const orca = orcas.find(
+    (other) =>
+      Math.hypot(other.x - whale.x, other.y - whale.y) < reach + world.widthOf(other) * 0.3,
+  )
+
+  if (!orca) {
+    return
+  }
+
+  whale.data.slapAt = world.time + (hunted ? between(1.6, 2.6) : between(0.9, 1.6))
+  whale.fx = 'slap'
+  whale.data.fx = 0.5
+  world.damage(whale, orca, hunted ? 0.4 : 0.7, whale.x)
+  shove(whale, orca, world, 9)
+  orca.targetId = null
+  spawnBurst(world, orca.x, orca.y, 2.2)
+
+  if (!hunted && orcasNear(orca, world, podCallRange).length < podSize) {
+    orca.data.whaleGiveUpUntil = world.time + between(10, 16)
+  }
+}
+
 const whale: EcoSpecies = {
   anchor: 'center',
   asset: whaleAsset,
@@ -2237,60 +2266,68 @@ const whale: EcoSpecies = {
   init(entity, world) {
     capWidth(entity, world, 0.9)
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 4, waterBottom(world))
-    entity.data.breachAt = world.time + between(5, 10)
+    scheduleRam(entity, world, 'whale', 0.5)
     entity.facing = 1
     entity.vx = pace(entity, world, 'whale', 'cruise') * between(0.85, 1.15)
   },
   layer: 'front',
   size: [23.8, 26.3],
   state: 'cruise',
-  strongVs: ['boat', 'octopus'],
+  strongVs: ['boat', 'octopus', 'orca'],
   tags: ['predator'],
   tick(entity, world, dt) {
     clearFx(entity, dt)
+    if (ramming(entity, world, dt, 'whale')) {
+      return
+    }
+
     const unit = world.unit
-    const orca = world.nearest(
-      entity,
-      (other) => isOrca(other) && world.edge(other, entity) > 1,
-      unit * 9,
+    const orcas = orcasNear(entity, world).filter(
+      (orca) => world.time > (orca.data.whaleGiveUpUntil ?? 0),
     )
+    const hunted = orcas.some((orca) => orcaPod(orca, world).length >= podSize)
+    const tired = entity.data.tired ?? 0
     let cruising = false
 
-    if (orca && world.edge(orca, entity) > 1) {
-      flee(entity, orca, pace(entity, world, 'whale', 'burst'), dt, 1.6)
-    } else if (world.time > (entity.data.breachAt ?? 0)) {
-      world.setAsset(entity, whaleBreachAsset)
-      world.setState(entity, 'breach')
-      const boat = world.nearest({ x: entity.x, y: surfaceY(world) }, isBoat, unit * 7)
-      const breachX = boat?.x ?? entity.x + entity.facing * unit * 2
+    world.setAsset(entity, whaleAsset)
 
-      steer(
+    if (orcas.length) {
+      whaleTailSlap(entity, world, orcas, hunted)
+    }
+
+    if (hunted) {
+      const podX = orcas.reduce((sum, other) => sum + other.x, 0) / orcas.length
+      const podY = orcas.reduce((sum, other) => sum + other.y, 0) / orcas.length
+
+      world.setState(entity, 'flee')
+      flee(
         entity,
-        breachX,
-        surfaceY(world) + unit * 1.4,
-        pace(entity, world, 'whale', 'burst'),
+        { x: podX, y: podY },
+        pace(entity, world, 'whale', 'burst') * (1 - tired * 0.6),
         dt,
-        2.2,
+        1.4,
       )
+    } else if (orcas.length) {
+      const orca =
+        world.nearest(entity, (other) => orcas.includes(other), unit * podRange) ?? orcas[0]!
 
-      if (
-        boat &&
-        Math.abs(boat.x - entity.x) < Math.max(unit * 5.2, world.widthOf(entity) * 0.42)
-      ) {
-        capsizeBoat(boat, world, entity)
-      }
-
-      if (entity.y < surfaceY(world) + unit * 1.2 || entity.t > 1.2) {
-        entity.data.breachAt = world.time + between(8, 16)
-        entity.vy = unit * 1.2
-        world.setState(entity, 'dive')
-      }
+      world.setState(entity, 'fight')
+      steer(entity, orca.x, orca.y, pace(entity, world, 'whale', 'cruise') * 1.4, dt, 1.2)
     } else {
-      world.setAsset(entity, whaleAsset)
-      world.setState(entity, entity.state === 'dive' && entity.t < 1.4 ? 'dive' : 'cruise')
+      entity.data.tired = Math.max(0, tired - dt * 0.05)
+
+      if (world.time - (entity.data.harriedAt ?? -99) > 6) {
+        entity.hp = Math.min(entity.maxHp, entity.hp + dt * 0.05)
+      }
+
+      if (maybeStartRam(entity, world, 'whale')) {
+        return
+      }
+
+      world.setState(entity, 'cruise')
       entity.vx += (entity.facing * pace(entity, world, 'whale', 'cruise') - entity.vx) * dt * 0.5
       entity.vy += (Math.sin(world.time * 0.35 + entity.id) * unit * 0.25 - entity.vy) * dt * 0.6
-      cruising = entity.state === 'cruise'
+      cruising = true
     }
 
     hungerDrift(
@@ -2310,7 +2347,130 @@ const whale: EcoSpecies = {
     }
     tiltToVelocity(entity, 12)
   },
-  weakTo: ['orca'],
+  weakTo: ['orca-pod'],
+}
+
+const orcaPrey = (other: EcoEntity) =>
+  isShark(other) || isTurtle(other) || isOctopus(other) || isSwordfish(other)
+
+// The pod takes turns: one orca darts in to bite while the rest box the whale in
+// ahead, above (cutting off its air), below and behind.
+function podHunt(entity: EcoEntity, whale: EcoEntity, world: EcoWorld, dt: number) {
+  const unit = world.unit
+  const pod = orcaPod(entity, world).sort((a, b) => a.id - b.id)
+  const index = Math.max(0, pod.indexOf(entity))
+  const turn = Math.floor(world.time / 2) % pod.length
+  const burst = pace(entity, world, 'orca', 'burst')
+
+  world.setState(entity, 'hunt')
+
+  if (index === turn) {
+    steer(entity, whale.x, whale.y, burst, dt, 3)
+
+    if (
+      world.time > (entity.data.biteAt ?? 0) &&
+      touches(noseOf(entity, world), whale, world, unit * 1.6)
+    ) {
+      entity.data.biteAt = world.time + 1.8
+      orcaBiteWhale(entity, whale, world)
+      entity.vx = -entity.facing * burst * 0.6
+    }
+    return
+  }
+
+  const ahead = world.widthOf(whale) * 0.6 + unit * 3
+  const over = world.heightOf(whale) * 0.5 + unit * 2.5
+  const slots = [
+    { x: whale.facing * ahead, y: 0 },
+    { x: 0, y: -over },
+    { x: 0, y: over },
+    { x: -whale.facing * ahead, y: 0 },
+  ]
+  const slot = slots[((index - turn - 1 + pod.length) % pod.length) % slots.length]!
+
+  steer(
+    entity,
+    whale.x + slot.x + Math.sin(world.time * 1.6 + entity.id) * unit * 1.5,
+    whale.y + slot.y,
+    burst * 0.85,
+    dt,
+    2.2,
+  )
+}
+
+function harassWhale(entity: EcoEntity, whale: EcoEntity, world: EcoWorld, dt: number) {
+  const unit = world.unit
+  const burst = pace(entity, world, 'orca', 'burst')
+
+  world.setState(entity, 'hunt')
+
+  if (world.time < (entity.data.biteAt ?? 0)) {
+    const angle = world.time * 0.9 + entity.id
+
+    steer(
+      entity,
+      whale.x + Math.cos(angle) * (world.widthOf(whale) * 0.7 + unit * 4),
+      whale.y + Math.sin(angle) * (world.heightOf(whale) * 0.6 + unit * 3),
+      burst * 0.7,
+      dt,
+      2,
+    )
+    return
+  }
+
+  steer(entity, whale.x, whale.y, burst, dt, 2.8)
+
+  if (touches(noseOf(entity, world), whale, world, unit * 1.6)) {
+    entity.data.biteAt = world.time + between(2.5, 4.5)
+    orcaBiteWhale(entity, whale, world)
+    entity.vx = -entity.facing * burst * 0.5
+  }
+}
+
+// Orcas call to each other across the bay and fall in behind the lowest-id one, two abreast,
+// keeping a little personal space.
+function podFormation(entity: EcoEntity, world: EcoWorld, dt: number) {
+  const unit = world.unit
+  const pod = orcasNear(entity, world, podCallRange).sort((a, b) => a.id - b.id)
+
+  world.setState(entity, pod.length > 1 ? 'pod' : 'hunt')
+
+  if (pod.length < 2) {
+    return false
+  }
+
+  const leader = pod[0]!
+
+  if (leader === entity) {
+    return false
+  }
+
+  const index = pod.indexOf(entity)
+  const row = Math.ceil(index / 2)
+  const side = index % 2 ? -1 : 1
+  const gap = world.widthOf(leader) * 0.75
+
+  steer(
+    entity,
+    leader.x - leader.facing * gap * row,
+    leader.y + side * unit * 2.6 * row,
+    pace(entity, world, 'orca', 'burst') * 0.8,
+    dt,
+    2,
+  )
+
+  for (const mate of pod) {
+    const dx = entity.x - mate.x
+    const dy = entity.y - mate.y
+    const spacing = Math.hypot(dx, dy)
+
+    if (mate !== entity && spacing < unit * 3) {
+      entity.vx += (dx / Math.max(spacing, 1)) * unit * 20 * dt
+      entity.vy += (dy / Math.max(spacing, 1)) * unit * 20 * dt
+    }
+  }
+
+  return true
 }
 
 const orca: EcoSpecies = {
@@ -2321,46 +2481,44 @@ const orca: EcoSpecies = {
   hp: 4,
   init(entity, world) {
     entity.y = clamp(entity.y, waterTop(world) + world.unit * 3, waterBottom(world))
+    scheduleRam(entity, world, 'orca', 0.5)
   },
   layer: 'front',
   size: [13.6, 15],
   state: 'hunt',
-  strongVs: ['shark', 'sea-turtle', 'whale', 'octopus', 'swordfish'],
+  strongVs: ['shark', 'sea-turtle', 'octopus', 'swordfish'],
   tags: ['predator'],
   tick(entity, world, dt) {
     clearFx(entity, dt)
-
-    if ((entity.data.life ?? 0) > 0 && entity.age > (entity.data.life ?? 0)) {
-      world.kill(entity)
+    if (ramming(entity, world, dt, 'orca')) {
       return
     }
 
     const unit = world.unit
-    const puffer = world.nearest(
-      entity,
-      (other) => isPuffer(other) && world.edge(other, entity) > 1,
-      unit * 10,
-    )
+    const puffer = world.nearest(entity, isPuffedPuffer, unit * 12)
 
-    if (puffer && world.edge(puffer, entity) > 1) {
+    if (puffer) {
+      world.setState(entity, 'flee')
       flee(entity, puffer, pace(entity, world, 'orca', 'burst'), dt, 3.5)
     } else {
-      const target = targetOrNearest(
-        entity,
-        world,
-        (other) =>
-          isShark(other) ||
-          isTurtle(other) ||
-          isWhale(other) ||
-          isOctopus(other) ||
-          isSwordfish(other),
-        unit * 18,
-      )
+      const whale =
+        world.time > (entity.data.whaleGiveUpUntil ?? 0)
+          ? world.nearest(entity, isWhale, unit * 26)
+          : null
+      const rallied = whale !== null && entity.targetId === whale.id
+      const prey = rallied ? null : targetOrNearest(entity, world, orcaPrey, unit * 18)
 
-      if (target) {
-        steer(entity, target.x, target.y, pace(entity, world, 'orca', 'burst'), dt, 2.4)
-        consume(entity, target, world, isWhale(target) ? 2.2 : 1.8)
-      } else {
+      if (whale && orcaPod(entity, world).length >= podSize) {
+        podHunt(entity, whale, world, dt)
+      } else if (prey) {
+        world.setState(entity, 'hunt')
+        steer(entity, prey.x, prey.y, pace(entity, world, 'orca', 'burst'), dt, 2.4)
+        consume(entity, prey, world, 1.8)
+      } else if (whale && orcasNear(entity, world, podCallRange).length < podSize) {
+        harassWhale(entity, whale, world, dt)
+      } else if (maybeStartRam(entity, world, 'orca')) {
+        return
+      } else if (!podFormation(entity, world, dt)) {
         wander(
           entity,
           world,
@@ -2377,14 +2535,7 @@ const orca: EcoSpecies = {
       entity,
       world,
       dt,
-      world.count(
-        (other) =>
-          isShark(other) ||
-          isTurtle(other) ||
-          isWhale(other) ||
-          isOctopus(other) ||
-          isSwordfish(other),
-      ) > 0,
+      world.count((other) => orcaPrey(other) || isWhale(other)) > 0,
       62,
     )
     integrate(entity, dt)
@@ -2484,6 +2635,7 @@ const boat: EcoSpecies = {
     entity.hp = variant.hp
     entity.size = between(variant.size[0], variant.size[1])
     entity.vx = entity.facing * world.unit * between(variant.speed[0], variant.speed[1])
+    entity.data.cruise = entity.vx
     entity.y = boatBottomOnSurface(entity, world)
   },
   layer: 'front',
@@ -2495,7 +2647,65 @@ const boat: EcoSpecies = {
     clearFx(entity, dt)
     const unit = world.unit
     const kind = entity.data.kind ?? 0
-    const variantId = boatVariants[kind]?.id ?? 'rowboat'
+    const variant = boatVariants[kind] ?? boatVariants[0]!
+    const variantId = variant.id
+
+    if (entity.state === 'airborne') {
+      flyBoat(entity, world, dt)
+      return
+    }
+
+    if (entity.state === 'splashdown') {
+      const bob = Math.sin(entity.t * 13) * Math.exp(-entity.t * 3.5)
+
+      entity.y = boatBottomOnSurface(entity, world) + bob * unit * 0.9
+      entity.x += entity.vx * dt
+      entity.vx *= 1 - Math.min(1, dt * 1.5)
+      entity.data.landTilt = (entity.data.landTilt ?? 0) * (1 - Math.min(1, dt * 4))
+      entity.tilt = entity.data.landTilt + bob * 6
+
+      if (entity.t > 1.1) {
+        resumeSailing(entity, world)
+      }
+      return
+    }
+
+    if (entity.state === 'overturned') {
+      entity.y = boatBottomOnSurface(entity, world)
+      entity.x += entity.vx * dt
+      entity.vx *= 1 - Math.min(1, dt * 1.2)
+      entity.tilt += (Math.sin(entity.t * 3) * 6 - entity.tilt) * Math.min(1, dt * 3)
+
+      if (entity.t > 1.6) {
+        world.setState(entity, 'righting')
+      }
+      return
+    }
+
+    // Hops out of the water and rolls back over, swapping to the upright art halfway round.
+    if (entity.state === 'righting') {
+      const roll = clamp(entity.t / 0.8, 0, 1)
+
+      entity.lift = Math.sin(roll * Math.PI) * unit * 2.2
+
+      if (roll < 0.5) {
+        entity.tilt = entity.facing * 180 * roll
+      } else {
+        world.setAsset(entity, variant.asset)
+        entity.data.waterline = variant.waterline
+        entity.tilt = entity.facing * (180 * roll - 180)
+      }
+
+      entity.y = boatBottomOnSurface(entity, world)
+
+      if (roll >= 1) {
+        entity.lift = 0
+        entity.data.landTilt = 0
+        spawnBurst(world, entity.x, surfaceY(world) + unit * 0.6, 2.4)
+        world.setState(entity, 'splashdown')
+      }
+      return
+    }
 
     if (entity.state === 'capsized') {
       entity.data.sinkDelay = (entity.data.sinkDelay ?? 2) - dt
@@ -2567,16 +2777,6 @@ const boat: EcoSpecies = {
       } else {
         entity.data.actionAt = between(4, 9)
       }
-    }
-
-    const whaleThreat = world.nearest(entity, isWhale, unit * 4.2)
-
-    if (
-      whaleThreat &&
-      matchupEdge(whaleThreat, entity, world) > 1 &&
-      Math.abs(whaleThreat.y - entity.y) < unit * 4
-    ) {
-      capsizeBoat(entity, world, whaleThreat)
     }
   },
   weakTo: ['whale', 'octopus'],
