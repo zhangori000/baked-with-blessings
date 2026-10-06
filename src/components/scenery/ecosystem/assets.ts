@@ -10,7 +10,7 @@ const aspectByAsset: Record<string, number> = {
 }
 
 const viewBoxes: Record<string, readonly [number, number]> = {
-  archer: [82, 92],
+  archer: [96, 116],
   arrow: [120, 20],
   balloon: [88, 118],
   bee: [92, 58],
