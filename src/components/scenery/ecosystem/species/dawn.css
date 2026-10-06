@@ -81,12 +81,44 @@
   animation: dawnScarecrowBurn 0.34s ease-in-out infinite alternate;
 }
 
-.ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {
-  filter: brightness(1.05) saturate(0.9);
+.ecoThing[data-species='hawk'] .ecoArt {
+  transform-origin: center center;
 }
 
-.ecoThing[data-species='hawk'][data-fx='hurt'] .ecoArt {
-  filter: brightness(1.42) saturate(0.72);
+.ecoThing[data-species='hawk'][data-state='climb'] .ecoArt,
+.ecoThing[data-species='hawk'][data-state='depart'] .ecoArt,
+.ecoThing[data-species='hawk'][data-state='evade'] .ecoArt,
+.ecoThing[data-species='hawk'][data-state='flush'] .ecoArt {
+  animation: dawnHawkBeat 0.34s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='hawk'][data-state='strike'] .ecoArt {
+  animation: dawnHawkStrike 0.42s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {
+  animation: dawnHawkVeer 0.6s ease-in-out;
+}
+
+/* Hawks and crows react to hits physically; the shared hurt flash recolors their plumage. */
+.ecoThing[data-species='hawk'][data-fx='flinch'] .ecoArt,
+.ecoThing[data-species='hawk'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='hawk'][data-hit] .ecoArt {
+  animation: dawnHawkFlinch 0.42s ease-out;
+  filter: none;
+}
+
+.ecoThing[data-species='hawk'][data-fx='flinch-b'] .ecoArt {
+  animation: dawnHawkFlinchB 0.42s ease-out;
+  filter: none;
+}
+
+.ecoThing[data-species='hawk'][data-state='flip'] .ecoArt {
+  animation: dawnHawkTalonFlip 0.85s ease-in-out both;
+}
+
+.ecoThing[data-species='hawk'][data-state='away'] {
+  visibility: hidden;
 }
 
 .ecoThing[data-species='crow'] .ecoArt {
@@ -98,7 +130,7 @@
 }
 
 .ecoThing[data-species='crow'][data-state='mob'] .ecoArt {
-  animation: dawnCrowMob 0.28s ease-in-out infinite alternate;
+  animation: dawnCrowBeat 0.2s ease-in-out infinite alternate;
 }
 
 .ecoThing[data-species='crow'][data-state='peck'] .ecoArt {
@@ -110,8 +142,29 @@
   animation: dawnCrowFlee 0.2s ease-in-out infinite alternate;
 }
 
+.ecoThing[data-species='crow'][data-state='tumble'] .ecoArt {
+  animation:
+    dawnCrowTumble 0.55s ease-out,
+    dawnCrowFlee 0.2s ease-in-out 0.55s infinite alternate;
+}
+
+.ecoThing[data-species='crow'][data-fx='caw'] .ecoArt {
+  animation: dawnCrowCaw 0.4s ease-out;
+}
+
+.ecoThing[data-species='crow'][data-fx='jab'] .ecoArt,
 .ecoThing[data-species='crow'][data-fx='peck'] .ecoArt {
-  filter: brightness(1.28) saturate(1.12);
+  animation: dawnCrowJab 0.26s ease-out;
+}
+
+.ecoThing[data-species='crow'][data-fx='hurt'] .ecoArt,
+.ecoThing[data-species='crow'][data-hit] .ecoArt {
+  animation: dawnCrowFlinch 0.4s ease-out;
+  filter: none;
+}
+
+.ecoThing[data-species='feather'] .ecoArt {
+  opacity: var(--dawn-feather-fade, 1);
 }
 
 @keyframes dawnCarrotSprout {
@@ -287,13 +340,167 @@
   }
 }
 
-@keyframes dawnCrowMob {
+@keyframes dawnCrowBeat {
   from {
-    transform: translateX(-0.1rem) translateY(0.04rem) rotate(-11deg) scale(1.04, 0.96);
+    transform: translateY(0.03rem) rotate(-3deg) scale(1.03, 0.9);
   }
 
   to {
-    transform: translateX(0.14rem) translateY(-0.08rem) rotate(10deg) scale(0.98, 1.03);
+    transform: translateY(-0.07rem) rotate(3deg) scale(0.98, 1.06);
+  }
+}
+
+@keyframes dawnCrowTumble {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  45% {
+    transform: rotate(200deg) scale(0.94, 1.04);
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes dawnCrowCaw {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  30% {
+    transform: rotate(-7deg) scale(1.07, 0.96);
+  }
+
+  60% {
+    transform: rotate(3deg) scale(0.98, 1.03);
+  }
+}
+
+@keyframes dawnCrowJab {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  40% {
+    transform: translateX(0.22rem) translateY(0.06rem) rotate(14deg);
+  }
+}
+
+@keyframes dawnCrowFlinch {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+
+  25% {
+    transform: translateX(-0.1rem) rotate(-10deg) scale(1.05, 0.95);
+  }
+
+  60% {
+    transform: translateX(0.06rem) rotate(5deg) scale(1.02);
+  }
+}
+
+@keyframes dawnHawkBeat {
+  from {
+    transform: translateY(0.04rem) rotate(-1.5deg) scale(1.02, 0.88);
+  }
+
+  to {
+    transform: translateY(-0.06rem) rotate(1.5deg) scale(0.99, 1.06);
+  }
+}
+
+@keyframes dawnHawkStrike {
+  from {
+    transform: rotate(-3deg) scale(1);
+  }
+
+  to {
+    transform: translateY(0.06rem) rotate(9deg) scale(1.05, 0.95);
+  }
+}
+
+@keyframes dawnHawkVeer {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  40% {
+    transform: rotate(-7deg) scale(1, 0.95);
+  }
+}
+
+@keyframes dawnHawkFlinch {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+
+  16% {
+    transform: translate(0.08rem, 0.1rem) rotate(-9deg) scale(1.07, 0.92);
+  }
+
+  40% {
+    transform: translate(-0.07rem, -0.04rem) rotate(6deg) scale(1.05);
+  }
+
+  68% {
+    transform: translate(0.03rem, 0) rotate(-3deg) scale(1.02);
+  }
+}
+
+@keyframes dawnHawkFlinchB {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+
+  16% {
+    transform: translate(0.08rem, 0.1rem) rotate(-9deg) scale(1.07, 0.92);
+  }
+
+  40% {
+    transform: translate(-0.07rem, -0.04rem) rotate(6deg) scale(1.05);
+  }
+
+  68% {
+    transform: translate(0.03rem, 0) rotate(-3deg) scale(1.02);
+  }
+}
+
+@keyframes dawnHawkTalonFlip {
+  0% {
+    transform: rotate(0deg) scaleY(1);
+  }
+
+  22% {
+    transform: rotate(-18deg) scaleY(-0.15);
+  }
+
+  34% {
+    transform: translateY(-0.12rem) rotate(-6deg) scaleY(-1);
+  }
+
+  50% {
+    transform: translateY(-0.18rem) rotate(4deg) scaleY(-1);
+  }
+
+  66% {
+    transform: translateY(-0.12rem) rotate(-6deg) scaleY(-1);
+  }
+
+  82% {
+    transform: rotate(-14deg) scaleY(0.2);
+  }
+
+  100% {
+    transform: rotate(0deg) scaleY(1);
   }
 }
 
@@ -320,11 +527,15 @@
 @media (prefers-reduced-motion: reduce) {
   .ecoThing[data-species='carrot'] .ecoArt,
   .ecoThing[data-species='crow'] .ecoArt,
+  .ecoThing[data-species='crow'][data-state] .ecoArt,
+  .ecoThing[data-species='crow'][data-fx] .ecoArt,
+  .ecoThing[data-species='crow'][data-hit] .ecoArt,
   .ecoThing[data-species='fox'] .ecoArt,
   .ecoThing[data-species='goose'] .ecoArt,
   .ecoThing[data-species='scarecrow'] .ecoArt,
-  .ecoThing[data-species='hawk'][data-fx='hurt'] .ecoArt,
-  .ecoThing[data-species='hawk'][data-fx='veer'] .ecoArt {
+  .ecoThing[data-species='hawk'][data-state] .ecoArt,
+  .ecoThing[data-species='hawk'][data-fx] .ecoArt,
+  .ecoThing[data-species='hawk'][data-hit] .ecoArt {
     animation: none;
   }
 }
