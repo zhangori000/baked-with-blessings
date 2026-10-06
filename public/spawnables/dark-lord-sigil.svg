@@ -1,0 +1,36 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <style>.fl{transform-box:fill-box;transform-origin:50% 100%;animation:flK .38s ease-in-out infinite alternate}.f2{animation-delay:-.19s}.rn{animation:rnK .9s ease-in-out infinite alternate}@keyframes flK{0%{transform:scale(1,.85)}100%{transform:scale(.86,1.18)}}@keyframes rnK{0%{opacity:.62}100%{opacity:1}}@media (prefers-reduced-motion: reduce){.fl,.rn{animation:none}}</style>
+  <defs>
+    <radialGradient id="darkLordSigilPool" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#79d36a" stop-opacity="0.5" />
+      <stop offset="45%" stop-color="#314229" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#171820" stop-opacity="0.35" />
+    </radialGradient>
+  </defs>
+  <g class="fl"><g transform="translate(21 18.6) rotate(-6) scale(0.17) translate(-29 -66)"><path d="M29 67C13 62 7 48 14 35C18 27 28 21 25 5C39 17 49 28 49 43C49 56 41 64 29 67Z" fill="#314229" /><path d="M31 64C21 59 18 49 23 40C27 33 35 29 34 17C43 28 45 37 43 47C41 56 37 62 31 64Z" fill="#79d36a" /></g></g>
+  <g class="fl f2"><g transform="translate(40 16.2) rotate(-3) scale(0.21) translate(-29 -66)"><path d="M29 67C13 62 7 48 14 35C18 27 28 21 25 5C39 17 49 28 49 43C49 56 41 64 29 67Z" fill="#314229" /><path d="M31 64C21 59 18 49 23 40C27 33 35 29 34 17C43 28 45 37 43 47C41 56 37 62 31 64Z" fill="#79d36a" /><path d="M27 61C23 56 24 50 29 43C33 38 35 34 34 27C42 39 40 53 27 61Z" fill="#d8f4aa" /></g></g>
+  <g class="fl"><g transform="translate(60 15.4) rotate(0) scale(0.24) translate(-29 -66)"><path d="M29 67C13 62 7 48 14 35C18 27 28 21 25 5C39 17 49 28 49 43C49 56 41 64 29 67Z" fill="#314229" /><path d="M31 64C21 59 18 49 23 40C27 33 35 29 34 17C43 28 45 37 43 47C41 56 37 62 31 64Z" fill="#79d36a" /><path d="M27 61C23 56 24 50 29 43C33 38 35 34 34 27C42 39 40 53 27 61Z" fill="#d8f4aa" /></g></g>
+  <g class="fl f2"><g transform="translate(80 16.2) rotate(3) scale(0.21) translate(-29 -66)"><path d="M29 67C13 62 7 48 14 35C18 27 28 21 25 5C39 17 49 28 49 43C49 56 41 64 29 67Z" fill="#314229" /><path d="M31 64C21 59 18 49 23 40C27 33 35 29 34 17C43 28 45 37 43 47C41 56 37 62 31 64Z" fill="#79d36a" /><path d="M27 61C23 56 24 50 29 43C33 38 35 34 34 27C42 39 40 53 27 61Z" fill="#d8f4aa" /></g></g>
+  <g class="fl"><g transform="translate(99 18.6) rotate(6) scale(0.17) translate(-29 -66)"><path d="M29 67C13 62 7 48 14 35C18 27 28 21 25 5C39 17 49 28 49 43C49 56 41 64 29 67Z" fill="#314229" /><path d="M31 64C21 59 18 49 23 40C27 33 35 29 34 17C43 28 45 37 43 47C41 56 37 62 31 64Z" fill="#79d36a" /></g></g>
+  <ellipse cx="60" cy="26" rx="56" ry="12.5" fill="url(#darkLordSigilPool)" />
+  <ellipse cx="60" cy="26" rx="56" ry="12.5" fill="none" stroke="#314229" stroke-width="3.4" />
+  <ellipse cx="60" cy="26" rx="56" ry="12.5" fill="none" stroke="#79d36a" stroke-width="1.6" />
+  <ellipse cx="60" cy="26" rx="44" ry="9.2" fill="none" stroke="#79d36a" stroke-width="1" opacity="0.7" />
+  <g class="rn" fill="none" stroke="#d8f4aa" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M109 24.4L111.6 26L109 27.6" />
+    <path d="M94.2 31.6L95.8 34.6L97.2 31.6" />
+    <path d="M58.6 34.4L61.4 37.4M61.4 34.4L58.6 37.4" />
+    <path d="M23 31.6V34.6M23 33.1H25.6" />
+    <path d="M11 24.4L8.4 26L11 27.6" />
+    <path d="M22.8 20.4L24.4 17.6L26 20.4Z" />
+    <path d="M58.6 17.6H61.4M60 15V18.2" />
+    <path d="M94.4 17.4L97 20.4M97 17.4L94.4 20.4" />
+  </g>
+  <path d="M60 18.4L63.4 22.6H56.6Z" fill="#79d36a" opacity="0.8" />
+  <path d="M33.4 30.2L41 27.4L39 31.6Z" fill="#79d36a" opacity="0.8" />
+  <path d="M86.6 30.2L79 27.4L81 31.6Z" fill="#79d36a" opacity="0.8" />
+  <ellipse cx="60" cy="26" rx="34" ry="6.8" fill="none" stroke="#d8f4aa" stroke-width="0.8" opacity="0.6" stroke-dasharray="3 4" />
+  <path d="M51 26.6C55 23 65 23 69 26.6C65 30.2 55 30.2 51 26.6Z" fill="#171820" />
+  <path d="M53.4 26.6C56.4 24.6 63.6 24.6 66.6 26.6C63.6 28.6 56.4 28.6 53.4 26.6Z" fill="#79d36a" />
+  <ellipse cx="60" cy="26.6" rx="0.9" ry="2.2" fill="#171820" />
+</svg>

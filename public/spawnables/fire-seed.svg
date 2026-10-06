@@ -1,0 +1,17 @@
+<svg width="64" height="28" viewBox="0 0 64 28" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="fireSeedGlow" cx="0.72" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.85" />
+      <stop offset="55%" stop-color="#ffb74d" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#ff8a65" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="44" cy="14" rx="20" ry="13" fill="url(#fireSeedGlow)" />
+  <path d="M0 14C14 5 30 4 46 10L46 18C30 24 14 23 0 14Z" fill="#ff8a3d" />
+  <path d="M14 14C25 8 36 8 47 12L47 16C36 20 25 20 14 14Z" fill="#ffd966" />
+  <circle cx="49" cy="14" r="8.5" fill="#6b3f2a" />
+  <path d="M43 10.5C46 7 52 6.5 55.5 9.5C52 9.5 48 10.5 45.5 13Z" fill="#a0603c" />
+  <circle cx="51" cy="15.5" r="2.4" fill="#ffb74d" />
+  <circle cx="46.5" cy="17.5" r="1.4" fill="#ffd966" />
+  <path d="M55 9C59 11 61 13 62.5 14C61 15 59 17 55 19C57 16 57 12 55 9Z" fill="#fff6c8" opacity="0.8" />
+</svg>
