@@ -489,12 +489,14 @@
 .ecoThing[data-species='dino-tail-streak'] .ecoArt {
   mix-blend-mode: screen;
 }
-.ecoThing[data-species='shooting-star'] .ecoArt {
+.ecoLayer[data-scene='prehistoric'] .ecoThing[data-species='shooting-star'] .ecoArt {
   filter: drop-shadow(0 0 0.35rem rgba(232, 86, 42, 0.85))
     drop-shadow(0 0 0.8rem rgba(255, 211, 107, 0.6));
   opacity: var(--dino-star-opacity, 1);
 }
-.ecoThing[data-species='shooting-star'][data-state='asteroid'] .ecoArt {
+.ecoLayer[data-scene='prehistoric']
+  .ecoThing[data-species='shooting-star'][data-state='asteroid']
+  .ecoArt {
   animation: prehistoricAsteroidBurn 0.18s ease-in-out infinite alternate;
   filter: drop-shadow(0 0 1rem rgba(255, 138, 61, 0.95));
 }
@@ -1780,7 +1782,7 @@
   .ecoThing[data-species='dino-spike'] .ecoArt,
   .ecoThing[data-species='dino-tornado'] .ecoArt,
   .ecoThing[data-species='dino-tail-streak'] .ecoArt,
-  .ecoThing[data-species='shooting-star'] .ecoArt,
+  .ecoLayer[data-scene='prehistoric'] .ecoThing[data-species='shooting-star'] .ecoArt,
   .ecoThing[data-species='dino-ash'] .ecoPop,
   .ecoThing[data-species='dino-impact'] .ecoAnchor::before,
   .ecoThing[data-species='dino-impact'] .ecoAnchor::after,

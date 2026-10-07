@@ -1043,6 +1043,7 @@ export function EcosystemLayer({ className, layer, store }: EcosystemLayerProps)
     <div
       aria-hidden={layer === 'back' ? true : undefined}
       className={cn('ecoLayer', `ecoLayer--${layer}`, className)}
+      data-scene={snapshot.scene || undefined}
       onClick={layer === 'front' ? store.dismissSelection : undefined}
       onPointerMove={
         layer === 'front'
