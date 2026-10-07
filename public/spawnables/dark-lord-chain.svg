@@ -1,67 +1,59 @@
-<svg width="200" height="16" viewBox="0 0 200 16" xmlns="http://www.w3.org/2000/svg">
-  <style>.gl{animation:glK .3s ease-in-out infinite alternate}@keyframes glK{0%{opacity:.45}100%{opacity:.95}}@media (prefers-reduced-motion: reduce){.gl{animation:none}}</style>
-  <path class="gl" d="M2 8H182" stroke="#79d36a" stroke-width="1.6" stroke-linecap="round" />
-  <g transform="translate(0 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(22 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(44 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(66 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(88 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(110 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(132 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <g transform="translate(154 0)">
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#171820" stroke-width="3.6" />
-    <rect x="1.5" y="2.4" width="17" height="11.2" rx="5.6" fill="none" stroke="#4b4554" stroke-width="1.8" />
-    <path d="M5.4 3.2H13.4" stroke="#79d36a" stroke-width="0.9" stroke-linecap="round" />
-  </g>
-  <rect x="14" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M16.6 6.9H25.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="36" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M38.6 6.9H47.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="58" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M60.6 6.9H69.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="80" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M82.6 6.9H91.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="102" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M104.6 6.9H113.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="124" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M126.6 6.9H135.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="146" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M148.6 6.9H157.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <rect x="168" y="5.8" width="14.4" height="4.4" rx="2.2" fill="#3b3642" stroke="#171820" stroke-width="1" />
-  <path d="M170.6 6.9H179.6" stroke="#6b6472" stroke-width="0.9" stroke-linecap="round" />
-  <path d="M180.6 7C182.6 1.4 191.6 0.4 197.6 4.6L194.6 6.6C190.8 4 186.2 4.4 184.4 8Z" fill="#3b3642" stroke="#171820" stroke-width="0.9" stroke-linejoin="round" />
-  <path d="M180.6 9C182.6 14.6 191.6 15.6 197.6 11.4L194.6 9.4C190.8 12 186.2 11.6 184.4 8Z" fill="#3b3642" stroke="#171820" stroke-width="0.9" stroke-linejoin="round" />
-  <path d="M197.6 4.6L199.6 2.4L198.6 6.2Z" fill="#171820" />
-  <path d="M197.6 11.4L199.6 13.6L198.6 9.8Z" fill="#171820" />
-  <circle class="gl" cx="182.8" cy="8" r="2" fill="#79d36a" />
-  <path d="M38 1.6L39.6 4L38 6.4L36.4 4Z" fill="#d8f4aa" />
-  <path d="M126 9.6L127.6 12L126 14.4L124.4 12Z" fill="#d8f4aa" />
+<svg width="240" height="10" viewBox="0 0 240 10" xmlns="http://www.w3.org/2000/svg">
+  <style>.gl{animation:glK .4s ease-in-out infinite alternate}.sp{animation:spK .5s ease-in-out infinite alternate}@keyframes glK{0%{opacity:.6}100%{opacity:1}}@keyframes spK{0%{opacity:.15}100%{opacity:1}}@media (prefers-reduced-motion: reduce){.gl,.sp{animation:none}}</style>
+  <defs>
+    <linearGradient id="chainGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#79d36a" stop-opacity="0" />
+      <stop offset="28%" stop-color="#79d36a" stop-opacity="0.32" />
+      <stop offset="50%" stop-color="#79d36a" stop-opacity="0.55" />
+      <stop offset="72%" stop-color="#79d36a" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="#79d36a" stop-opacity="0" />
+    </linearGradient>
+    <g id="cb">
+      <path d="M0.9 4.1H9.9A0.9 0.9 0 0 1 9.9 5.9H0.9A0.9 0.9 0 0 1 0.9 4.1Z" fill="#2d2a32" />
+      <path d="M1.4 4.3H9.4C9.8 4.3 9.8 4.8 9.4 4.8H1.4C1 4.8 1 4.3 1.4 4.3Z" fill="#6b6878" />
+    </g>
+    <g id="cl">
+      <path d="M3 2H9A3 3 0 0 1 9 8H3A3 3 0 0 1 3 2ZM3.5 3.9A1.1 1.1 0 0 0 3.5 6.1H8.5A1.1 1.1 0 0 0 8.5 3.9Z" fill="#2d2a32" fill-rule="evenodd" />
+      <path d="M3 2H9C10.4 2 11.4 2.8 11.8 4C10.8 3.4 9.8 3.2 8.6 3.2H3.4C2.2 3.2 1.2 3.4 0.2 4C0.6 2.8 1.6 2 3 2Z" fill="#4a4856" />
+      <path d="M3.8 2.4H7.4C7.8 2.4 7.8 2.8 7.4 2.8H3.8C3.4 2.8 3.4 2.4 3.8 2.4Z" fill="#6b6878" />
+      <path d="M0.2 6C1.2 6.6 2.2 6.8 3.4 6.8H8.6C9.8 6.8 10.8 6.6 11.8 6C11.4 7.2 10.4 8 9 8H3C1.6 8 0.6 7.2 0.2 6Z" fill="#79d36a" opacity="0.4" />
+    </g>
+    <path id="cs" d="M0 -1.8L0.9 0L0 1.8L-0.9 0Z" fill="#d8f4aa" />
+  </defs>
+  <rect class="gl" x="0" y="0" width="240" height="10" rx="5" fill="url(#chainGlow)" />
+  <rect class="gl" x="2" y="4.6" width="236" height="0.8" rx="0.4" fill="#79d36a" opacity="0.55" />
+  <use href="#cb" x="9.6" />
+  <use href="#cb" x="25.6" />
+  <use href="#cb" x="41.6" />
+  <use href="#cb" x="57.6" />
+  <use href="#cb" x="73.6" />
+  <use href="#cb" x="89.6" />
+  <use href="#cb" x="105.6" />
+  <use href="#cb" x="121.6" />
+  <use href="#cb" x="137.6" />
+  <use href="#cb" x="153.6" />
+  <use href="#cb" x="169.6" />
+  <use href="#cb" x="185.6" />
+  <use href="#cb" x="201.6" />
+  <use href="#cb" x="217.6" />
+  <use href="#cl" x="1" />
+  <use href="#cl" x="17" />
+  <use href="#cl" x="33" />
+  <use href="#cl" x="49" />
+  <use href="#cl" x="65" />
+  <use href="#cl" x="81" />
+  <use href="#cl" x="97" />
+  <use href="#cl" x="113" />
+  <use href="#cl" x="129" />
+  <use href="#cl" x="145" />
+  <use href="#cl" x="161" />
+  <use href="#cl" x="177" />
+  <use href="#cl" x="193" />
+  <use href="#cl" x="209" />
+  <use href="#cl" x="225" />
+  <use class="sp" href="#cs" x="30" y="1.8" style="animation-delay:0s" />
+  <use class="sp" href="#cs" x="88" y="8.2" style="animation-delay:0.25s" />
+  <use class="sp" href="#cs" x="148" y="1.8" style="animation-delay:0.5s" />
+  <use class="sp" href="#cs" x="206" y="8.2" style="animation-delay:0.15s" />
+  <use class="sp" href="#cs" x="118" y="1.8" style="animation-delay:0.4s" />
 </svg>

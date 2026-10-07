@@ -1,17 +1,26 @@
 <svg width="64" height="28" viewBox="0 0 64 28" xmlns="http://www.w3.org/2000/svg">
+  <style>.fa,.fb,.fc{transform-box:fill-box;transform-origin:100% 50%}.fa{animation:fsA .2s ease-in-out infinite alternate}.fb{animation:fsB .15s ease-in-out infinite alternate}.fc{animation:fsC .24s ease-in-out infinite alternate}.fe{animation:fsE .18s linear infinite alternate}@keyframes fsA{0%{transform:scale(1,1)}100%{transform:scale(.9,1.08)}}@keyframes fsB{0%{transform:scale(.94,1.06)}100%{transform:scale(1.04,.92)}}@keyframes fsC{0%{transform:scale(1,.94)}100%{transform:scale(.88,1.06)}}@keyframes fsE{0%{opacity:.35}100%{opacity:1}}@media (prefers-reduced-motion: reduce){.fa,.fb,.fc,.fe{animation:none}}</style>
   <defs>
-    <radialGradient id="fireSeedGlow" cx="0.72" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.85" />
-      <stop offset="55%" stop-color="#ffb74d" stop-opacity="0.45" />
-      <stop offset="100%" stop-color="#ff8a65" stop-opacity="0" />
+    <radialGradient id="fireSeedGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.8" />
+      <stop offset="45%" stop-color="#ffa65e" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#f2734b" stop-opacity="0" />
     </radialGradient>
   </defs>
-  <ellipse cx="44" cy="14" rx="20" ry="13" fill="url(#fireSeedGlow)" />
-  <path d="M0 14C14 5 30 4 46 10L46 18C30 24 14 23 0 14Z" fill="#ff8a3d" />
-  <path d="M14 14C25 8 36 8 47 12L47 16C36 20 25 20 14 14Z" fill="#ffd966" />
-  <circle cx="49" cy="14" r="8.5" fill="#6b3f2a" />
-  <path d="M43 10.5C46 7 52 6.5 55.5 9.5C52 9.5 48 10.5 45.5 13Z" fill="#a0603c" />
-  <circle cx="51" cy="15.5" r="2.4" fill="#ffb74d" />
-  <circle cx="46.5" cy="17.5" r="1.4" fill="#ffd966" />
-  <path d="M55 9C59 11 61 13 62.5 14C61 15 59 17 55 19C57 16 57 12 55 9Z" fill="#fff6c8" opacity="0.8" />
+  <circle cx="48" cy="14" r="14" fill="url(#fireSeedGlow)" />
+  <path class="fa" d="M48 3.4C40 3.4 33 5 26.4 7.6C22 6.4 17.6 6 12.6 6.8C15.8 7.8 18 9 19.6 10.2C13 10.6 6.4 12 0.4 14C6.4 15.8 12.6 17 19.2 17.6C16.6 19 13.6 20.2 10 21.2C17 22.4 22.8 21.8 27.8 20.6C34 23.2 41 24.6 48 24.6Z" fill="#c84a32" />
+  <path class="fb" d="M48 5.4C41 5.6 35 7 29.4 9.2C25.4 8.6 21.4 8.8 17.4 9.8C20.6 10.8 22.6 11.6 24 12.4C18.8 13 13.2 13.6 7.4 14.6C13.2 16 18.8 16.6 24.4 16.8C22.4 18 19.8 19 16.8 19.8C22.8 20.6 28 20 32 19C37 21 42 22.4 48 22.6Z" fill="#f2734b" />
+  <path class="fc" d="M48 7.4C42 7.6 36.4 9 31 11C26.4 11.8 21.4 12.8 16 14.2C21.4 15.6 26.4 16 31 16.8C36.4 18.8 42 20.4 48 20.6Z" fill="#ffa65e" />
+  <path class="fb" d="M48 9.6C43 9.8 38 11 33 12.6C30.2 13.2 27.4 13.8 24.6 14.4C27.8 15.2 30.8 15.6 34 16.2C38 17.4 43 18.4 48 18.4Z" fill="#ffd966" />
+  <circle cx="48" cy="14" r="10.9" fill="#c84a32" />
+  <circle cx="48.7" cy="13.6" r="9.5" fill="#f2734b" />
+  <circle cx="49.4" cy="13.1" r="7.6" fill="#ffa65e" />
+  <circle cx="50" cy="12.7" r="5.7" fill="#ffd966" />
+  <circle cx="50.6" cy="12.3" r="3.6" fill="#fff6c8" />
+  <path d="M42.6 20.6C45 23 49.4 23.8 53 22.4C50 22.2 46.4 21.6 42.6 20.6Z" fill="#7a2e22" opacity="0.55" />
+  <path d="M46.6 8.8C48.4 7.4 51 7.2 52.8 8C51 8.2 49 8.6 46.6 8.8Z" fill="#fff6c8" opacity="0.9" />
+  <circle class="fe" cx="5" cy="9.6" r="1.1" fill="#ffd966" />
+  <circle class="fe" cx="9.4" cy="19.4" r="0.9" fill="#ffa65e" />
+  <circle cx="3" cy="17.4" r="0.8" fill="#7a2e22" />
+  <circle cx="14.6" cy="4.6" r="0.75" fill="#7a2e22" />
 </svg>

@@ -511,7 +511,7 @@
   opacity: 0.82;
   pointer-events: none;
   position: absolute;
-  transform: translateX(-50%) rotate(0deg) scaleY(0.26);
+  transform: translateX(-50%) scaleY(0.26) rotate(0deg);
   width: 128%;
   z-index: -1;
 }
@@ -1035,7 +1035,7 @@
   opacity: 0.86;
   pointer-events: none;
   position: absolute;
-  transform: translateX(-50%) rotate(0deg) scaleY(0.24);
+  transform: translateX(-50%) scaleY(0.24) rotate(0deg);
   width: 140%;
   z-index: -1;
 }
@@ -1236,15 +1236,15 @@
 .ecoThing[data-species='dark-lord'][data-state='curse'] .ecoArt,
 .ecoThing[data-species='dark-lord'][data-state='green-fire'] .ecoArt,
 .ecoThing[data-species='dark-lord'][data-state='duel'] .ecoArt {
-  animation: siegeDarkLordCast 0.5s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 0.62rem rgba(121, 211, 106, 0.9));
+  animation: siegeDarkLordCast 0.9s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.36rem rgba(121, 211, 106, 0.7));
   transform-origin: center bottom;
 }
 
 .ecoThing[data-species='dark-lord'][data-state='curse'] .ecoPose::before,
 .ecoThing[data-species='dark-lord'][data-state='green-fire'] .ecoPose::before,
 .ecoThing[data-species='dark-lord'][data-state='duel'] .ecoPose::before {
-  animation: siegeDarkRune 1s linear infinite;
+  animation: siegeDarkRune 2.6s linear infinite;
   background: conic-gradient(
     from 0deg,
     transparent,
@@ -1260,11 +1260,11 @@
   content: '';
   height: 118%;
   left: 50%;
-  opacity: 0.82;
+  opacity: 0.58;
   pointer-events: none;
   position: absolute;
-  transform: translateX(-50%) rotate(0deg) scaleY(0.24);
-  width: 140%;
+  transform: translateX(-50%) scaleY(0.24) rotate(0deg);
+  width: 118%;
   z-index: -1;
 }
 
@@ -1282,12 +1282,12 @@
   content: '';
   height: 110%;
   left: 50%;
-  opacity: 0.8;
+  opacity: 0.55;
   pointer-events: none;
   position: absolute;
   top: -18%;
   transform: translateX(-50%);
-  width: 118%;
+  width: 108%;
   z-index: -1;
 }
 
@@ -1365,17 +1365,17 @@
 
 @keyframes siegeDarkLordCast {
   from {
-    transform: rotate(-3deg) translateY(0);
+    transform: translateY(0);
   }
 
   to {
-    transform: rotate(5deg) translateY(-0.16rem);
+    transform: translateY(-0.18rem) rotate(1.5deg);
   }
 }
 
 @keyframes siegeDarkRune {
   to {
-    transform: translateX(-50%) rotate(-360deg) scaleY(0.24);
+    transform: translateX(-50%) scaleY(0.24) rotate(-360deg);
   }
 }
 
@@ -1702,7 +1702,7 @@
   opacity: 0.86;
   pointer-events: none;
   position: absolute;
-  transform: translateX(-50%) rotate(0deg) scaleY(0.24);
+  transform: translateX(-50%) scaleY(0.24) rotate(0deg);
   width: 140%;
   z-index: -1;
 }
@@ -1978,7 +1978,7 @@
   opacity: 0.9;
   pointer-events: none;
   position: absolute;
-  transform: translateX(-50%) rotate(0deg) scaleY(0.24);
+  transform: translateX(-50%) scaleY(0.24) rotate(0deg);
   width: 140%;
   z-index: -1;
 }
@@ -2936,8 +2936,8 @@
     [data-state='betray']
   )
   .ecoArt {
-  animation: siegeDarkLordCast 0.5s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 0.62rem rgba(121, 211, 106, 0.9));
+  animation: siegeDarkLordCast 0.9s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.36rem rgba(121, 211, 106, 0.7));
   transform-origin: center bottom;
 }
 
@@ -2949,7 +2949,7 @@
     [data-state='betray']
   )
   .ecoPose::before {
-  animation: siegeDarkRune 1s linear infinite;
+  animation: siegeDarkRune 2.6s linear infinite;
   background: conic-gradient(
     from 0deg,
     transparent,
@@ -2965,17 +2965,17 @@
   content: '';
   height: 118%;
   left: 50%;
-  opacity: 0.82;
+  opacity: 0.58;
   pointer-events: none;
   position: absolute;
-  transform: translateX(-50%) rotate(0deg) scaleY(0.24);
-  width: 140%;
+  transform: translateX(-50%) scaleY(0.24) rotate(0deg);
+  width: 118%;
   z-index: -1;
 }
 
 .ecoThing[data-species='dark-lord'][data-state='betray'] .ecoPose::before {
-  animation-duration: 0.35s;
-  width: 220%;
+  animation-duration: 1.2s;
+  width: 160%;
 }
 
 .ecoThing[data-species='dark-lord-serpent'] .ecoArt,
@@ -2983,10 +2983,21 @@
   filter: drop-shadow(0 0 0.4rem rgba(121, 211, 106, 0.9));
 }
 
-.ecoThing[data-species='dark-lord-chain'] .ecoArt {
-  animation: siegeBeamFlicker 0.1s linear infinite alternate;
-  filter: drop-shadow(0 0 0.32rem rgba(121, 211, 106, 0.85));
-  transform-origin: center;
+.ecoThing[data-species='dark-tether'] .ecoArt {
+  opacity: 0;
+}
+
+.ecoThing[data-species='dark-tether'] .ecoPose::after {
+  background: url('/spawnables/dark-lord-chain.svg') left center / auto 100% repeat-x;
+  content: '';
+  filter: drop-shadow(0 0 0.18rem rgba(121, 211, 106, 0.75));
+  height: 100%;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: var(--tether-len, 0);
 }
 
 .ecoThing[data-species='dark-lord-sigil'] .ecoArt {
@@ -3073,11 +3084,124 @@
 @media (prefers-reduced-motion: reduce) {
   .ecoThing[data-species='fireball'] .ecoArt,
   .ecoThing[data-species='fire-seed'] .ecoArt,
-  .ecoThing[data-species='dark-lord-chain'] .ecoArt,
+  .ecoThing[data-species='dark-tether'] .ecoArt,
   .ecoThing[data-species='dark-lord-sigil'] .ecoArt,
   .ecoThing[data-species='dark-lord-skeleton'] .ecoArt,
   .ecoThing[data-species='dark-lord'] .ecoArt,
   .ecoThing[data-species='dark-lord'] .ecoPose::before {
+    animation: none;
+  }
+}
+
+/* Element hits use their own burst art (fire puff, ice shatter, thorn splat): pop, no spin. */
+.ecoThing[data-species='spell-impact']:is(
+    [data-fx='fire'],
+    [data-fx='frost'],
+    [data-fx='ice-beam'],
+    [data-fx='thorn'],
+    [data-fx='vine']
+  )
+  .ecoArt {
+  animation: siegeImpactPop 0.34s ease-out forwards;
+  filter: none;
+}
+
+.ecoThing[data-species='spell-impact'][data-fx='fire'] .ecoArt {
+  filter: drop-shadow(0 0 0.4rem rgba(255, 166, 94, 0.8));
+}
+
+.ecoThing[data-species='spell-impact']:is([data-fx='frost'], [data-fx='ice-beam']) .ecoArt {
+  filter: drop-shadow(0 0 0.4rem rgba(216, 244, 255, 0.9));
+}
+
+@keyframes siegeImpactPop {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.55);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+/* Ice beam: frost creeps over the dragon it holds (--frost comes from dragonStyle). */
+.ecoThing:is(
+    [data-species='dragon'],
+    [data-species='eastern-dragon'],
+    [data-species='ember-dragon'],
+    [data-species='emerald-dragon'],
+    [data-species='frost-dragon']
+  ):not([data-state='frozen'])
+  .ecoPose::before {
+  background: url('/spawnables/frost-nova.svg') center / contain no-repeat;
+  content: '';
+  height: 96%;
+  left: 50%;
+  opacity: calc(var(--frost, 0) * 0.9);
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(calc(0.55 + var(--frost, 0) * 0.5));
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+  width: 96%;
+  z-index: 2;
+}
+
+/* Plant wizard kit: thorn darts, thorns erupting from the floor, a fighting sapling. */
+.ecoThing[data-species='plant-thorn'] .ecoArt {
+  filter: drop-shadow(0 0 0.18rem rgba(119, 170, 82, 0.8));
+}
+
+.ecoThing[data-species='thorn-spike'] .ecoArt {
+  clip-path: inset(0 0 calc((1 - var(--rise, 0)) * 100%) 0);
+  transform: translateY(calc((1 - var(--rise, 0)) * 100%));
+}
+
+.ecoThing[data-species='thorn-sapling'][data-state='grow'] .ecoArt {
+  animation: siegeSaplingGrow 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  transform-origin: center bottom;
+}
+
+.ecoThing[data-species='thorn-sapling'][data-state='whip'] .ecoArt {
+  animation: siegeSaplingWhip 0.35s ease-out;
+  transform-origin: center bottom;
+}
+
+@keyframes siegeSaplingGrow {
+  from {
+    transform: scale(0.3, 0.1);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes siegeSaplingWhip {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  35% {
+    transform: rotate(12deg) scaleX(1.06);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='thorn-sapling'] .ecoArt,
+  .ecoThing[data-species='spell-impact'] .ecoArt {
     animation: none;
   }
 }
