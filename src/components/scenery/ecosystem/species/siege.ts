@@ -1154,8 +1154,9 @@ const fireball: EcoSpecies = {
   },
 }
 
+// Ground fires and burning things only; fireballs and fire-seeds still in the air are not stompable.
 const isFireOrBurning = (world: EcoWorld) => (other: EcoEntity) =>
-  world.has(other, 'fire') || (other.data.burn ?? 0) > 0
+  (world.has(other, 'fire') && !world.has(other, 'projectile')) || (other.data.burn ?? 0) > 0
 
 function dismountKnight(entity: EcoEntity, world: EcoWorld) {
   if ((entity.data.mounted ?? 0) <= 0 || entity.dying || entity.removed) {
