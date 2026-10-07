@@ -1,0 +1,36 @@
+<svg width="104" height="44" viewBox="0 0 104 44" xmlns="http://www.w3.org/2000/svg">
+  <style>.fl{transform-box:fill-box;transform-origin:100% 60%;animation:flK .22s ease-in-out infinite alternate}.ey{animation:eyK .5s ease-in-out infinite alternate}@keyframes flK{0%{transform:scale(1,1)}100%{transform:scale(1.1,.86)}}@keyframes eyK{0%{opacity:.75}100%{opacity:1}}@media (prefers-reduced-motion: reduce){.fl,.ey{animation:none}}</style>
+  <defs>
+    <radialGradient id="darkLordSkullGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#d8f4aa" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#79d36a" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#79d36a" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="80" cy="22" rx="24" ry="21" fill="url(#darkLordSkullGlow)" />
+  <g class="fl">
+    <path d="M0 23C20 7 46 6 74 16C70 24 70 28 74 32C46 39 20 38 0 23Z" fill="#314229" />
+    <path d="M14 23C32 13 50 12 72 18C70 23 70 26 72 30C50 33 32 32 14 23Z" fill="#79d36a" />
+    <path d="M38 23C50 18 60 18 72 20.4C71 23 71 25 72 27.4C60 28.6 50 28 38 23Z" fill="#d8f4aa" />
+    <path d="M70 8C62 2 52 1 40 4C50 4 58 7 64 12Z" fill="#314229" />
+    <path d="M66 9C60 5.4 54 4.6 47 5.6C53 6.6 58 8.6 62 11.6Z" fill="#79d36a" />
+    <path d="M62 37C54 41 44 42 34 39C44 38.6 52 36.6 58 33Z" fill="#314229" />
+  </g>
+  <path d="M68 13C72 3 86 1 92 8C88 6 82 6 78 9Z" fill="#314229" />
+  <path d="M71 12C74 6 82 4.4 87 7.4C83 7 79 8 76 10.6Z" fill="#79d36a" />
+  <circle cx="82" cy="19.6" r="13" fill="#e8e4dc" />
+  <path d="M69.4 22.4C68.6 14.4 73.4 8.4 79.8 6.8C75 11 73.4 17.4 75 26.4C72.4 26.2 70.2 24.8 69.4 22.4Z" fill="#d8d4d0" />
+  <path d="M73.4 24C73.6 29.4 77.6 33.4 83.6 33.6C89.4 33.4 93.6 29.6 94 24Z" fill="#e8e4dc" />
+  <path d="M76 28.6H92.6V30.6C89.4 35 79.2 35 76 30.6Z" fill="#d8d4d0" />
+  <path d="M79.4 28.8V32.4M82.6 28.8V33.4M85.8 28.8V33.2M89 28.8V32.4" stroke="#8a847c" stroke-width="0.9" stroke-linecap="round" />
+  <path d="M74.6 16.4L83 19.2C83 23 81 24.8 78.6 24.8C76 24.8 74.4 22 74.6 16.4Z" fill="#171820" />
+  <path d="M85.6 19.2L93.6 16.4C93.8 22 92 24.8 89.8 24.8C87.6 24.8 85.6 23 85.6 19.2Z" fill="#171820" />
+  <g class="ey">
+    <circle cx="79.2" cy="21.2" r="1.9" fill="#79d36a" />
+    <circle cx="89.6" cy="21.2" r="1.8" fill="#79d36a" />
+    <circle cx="79.8" cy="20.6" r="0.6" fill="#d8f4aa" />
+    <circle cx="90.2" cy="20.6" r="0.6" fill="#d8f4aa" />
+  </g>
+  <path d="M85.6 24.2L84.4 27H87Z" fill="#171820" />
+  <path d="M78.4 9.6L80.6 12.8L79 15" fill="none" stroke="#8a847c" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -1,0 +1,177 @@
+<svg width="220" height="90" viewBox="0 0 220 90" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="water" x1="43" y1="32" x2="171" y2="67" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#58b8c0" />
+      <stop offset="1" stop-color="#1f7888" />
+    </linearGradient>
+    <clipPath id="pondClip">
+      <path
+        d="M24 54C32 35 66 27 111 28C154 28 190 39 196 55C203 72 169 83 112 83C62 83 20 70 24 54Z"
+      />
+    </clipPath>
+    <style>
+      .koiA {
+        animation: koiA 8.5s linear infinite;
+      }
+      .koiB {
+        animation: koiB 10.5s linear infinite;
+      }
+      .koiC {
+        animation: koiC 12s linear infinite;
+      }
+      .rip {
+        animation: rip 3.4s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .koiA,
+      .koiB,
+      .koiC {
+        transform-box: view-box;
+        transform-origin: 110px 57px;
+      }
+      @keyframes koiA {
+        0% {
+          transform: rotate(0deg) translate(38px, 0) rotate(0deg);
+        }
+        50% {
+          transform: rotate(180deg) translate(30px, 4px) rotate(-180deg);
+        }
+        100% {
+          transform: rotate(360deg) translate(38px, 0) rotate(-360deg);
+        }
+      }
+      @keyframes koiB {
+        0% {
+          transform: rotate(130deg) translate(34px, -2px) rotate(-130deg);
+        }
+        50% {
+          transform: rotate(310deg) translate(28px, 3px) rotate(-310deg);
+        }
+        100% {
+          transform: rotate(490deg) translate(34px, -2px) rotate(-490deg);
+        }
+      }
+      @keyframes koiC {
+        0% {
+          transform: rotate(250deg) translate(28px, 2px) rotate(-250deg);
+        }
+        50% {
+          transform: rotate(70deg) translate(36px, -3px) rotate(-70deg);
+        }
+        100% {
+          transform: rotate(-110deg) translate(28px, 2px) rotate(110deg);
+        }
+      }
+      @keyframes rip {
+        0%,
+        100% {
+          opacity: 0.28;
+          transform: scale(0.96);
+        }
+        50% {
+          opacity: 0.65;
+          transform: scale(1.03);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .koiA,
+        .koiB,
+        .koiC,
+        .rip {
+          animation: none;
+        }
+      }
+    </style>
+  </defs>
+  <ellipse cx="109" cy="84" rx="84" ry="5" fill="#2d2433" opacity=".1" />
+  <g transform="translate(178 22)">
+    <path d="M12 8L12 70" stroke="#79624c" stroke-width="5" stroke-linecap="round" />
+    <path d="M0 23H40" stroke="#79624c" stroke-width="4" stroke-linecap="round" />
+    <path d="M12 31L38 22L43 29L17 39Z" fill="#d7b66f" />
+    <circle cx="42" cy="30" r="4" fill="#75a66c" />
+  </g>
+  <g opacity=".98">
+    <ellipse cx="35" cy="48" rx="17" ry="8" fill="#9b9990" />
+    <ellipse cx="58" cy="35" rx="16" ry="6" fill="#b6b0a4" />
+    <ellipse cx="86" cy="30" rx="15" ry="5" fill="#8e958a" />
+    <ellipse cx="118" cy="30" rx="16" ry="5" fill="#bfb7a8" />
+    <ellipse cx="150" cy="34" rx="15" ry="6" fill="#96968d" />
+    <ellipse cx="179" cy="45" rx="18" ry="8" fill="#b8b0a4" />
+    <ellipse cx="190" cy="63" rx="20" ry="10" fill="#8f958b" />
+    <ellipse cx="158" cy="77" rx="24" ry="9" fill="#bfb7a8" />
+    <ellipse cx="114" cy="81" rx="26" ry="9" fill="#96968d" />
+    <ellipse cx="72" cy="78" rx="23" ry="9" fill="#b7b0a4" />
+    <ellipse cx="38" cy="65" rx="20" ry="10" fill="#8e958a" />
+  </g>
+  <path
+    d="M24 54C32 35 66 27 111 28C154 28 190 39 196 55C203 72 169 83 112 83C62 83 20 70 24 54Z"
+    fill="url(#water)"
+  />
+  <path
+    d="M34 51C58 37 95 35 140 38C164 40 181 45 190 53"
+    stroke="#90e7ea"
+    stroke-width="3"
+    stroke-linecap="round"
+    fill="none"
+    opacity=".72"
+  />
+  <path
+    d="M29 57C47 72 88 78 137 76C166 75 188 67 197 57"
+    stroke="#0e5364"
+    stroke-width="6"
+    stroke-linecap="round"
+    fill="none"
+    opacity=".2"
+  />
+  <g clip-path="url(#pondClip)" opacity=".72">
+    <g class="koiA">
+      <ellipse cx="110" cy="57" rx="15" ry="5" fill="#fff4de" />
+      <path d="M101 54C108 50 116 51 121 57C114 59 107 59 101 54Z" fill="#ef6f3f" />
+      <path d="M98 57L84 51L89 64Z" fill="#ef6f3f" />
+      <circle cx="122" cy="56" r="1.4" fill="#202033" />
+    </g>
+    <g class="koiB">
+      <ellipse cx="110" cy="57" rx="14" ry="5" fill="#f47d43" />
+      <path d="M105 53C112 51 119 53 123 57C117 60 110 59 105 53Z" fill="#fff7e6" />
+      <path d="M100 57L87 51L91 63Z" fill="#b83532" />
+      <circle cx="123" cy="56" r="1.3" fill="#202033" />
+    </g>
+    <g class="koiC">
+      <ellipse cx="110" cy="57" rx="13" ry="5" fill="#fff7e6" />
+      <path d="M104 53C110 50 119 52 123 57C116 59 109 58 104 53Z" fill="#202033" opacity=".85" />
+      <path d="M100 57L88 52L92 62Z" fill="#f47d43" />
+      <circle cx="123" cy="56" r="1.2" fill="#202033" />
+    </g>
+  </g>
+  <ellipse
+    class="rip"
+    cx="110"
+    cy="57"
+    rx="48"
+    ry="11"
+    fill="none"
+    stroke="#d9fbff"
+    stroke-width="2"
+    opacity=".45"
+  />
+  <ellipse
+    class="rip"
+    cx="129"
+    cy="60"
+    rx="25"
+    ry="6"
+    fill="none"
+    stroke="#d9fbff"
+    stroke-width="1.5"
+    opacity=".35"
+  />
+  <path d="M51 70C66 60 83 60 99 69C83 80 64 81 51 70Z" fill="#5f8f54" />
+  <path d="M64 68C75 63 84 64 93 69C83 74 73 75 64 68Z" fill="#9ccc65" opacity=".82" />
+  <path d="M142 71C157 61 176 62 191 72C174 82 157 82 142 71Z" fill="#5f8f54" />
+  <path d="M155 69C165 64 176 65 185 72C174 76 164 76 155 69Z" fill="#9ccc65" opacity=".82" />
+  <path d="M121 68C123 60 131 55 140 60C139 69 130 75 121 68Z" fill="#86b75a" />
+  <circle cx="135" cy="57" r="3" fill="#ffd3e5" />
+  <path d="M135 55C129 50 130 45 135 42C141 45 141 51 135 55Z" fill="#ff8fbe" />
+  <path d="M135 55C141 50 147 52 149 58C144 62 139 61 135 55Z" fill="#ff9fcb" />
+  <path d="M135 55C130 61 123 59 122 53C127 50 132 51 135 55Z" fill="#ff9fcb" />
+</svg>

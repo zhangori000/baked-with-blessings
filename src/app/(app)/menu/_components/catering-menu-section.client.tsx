@@ -2204,6 +2204,14 @@ export function CateringMenuSection({
             object-position: center top;
           }
 
+          .cateringScene-prehistoric .cateringPersuasionSky img {
+            object-position: center top;
+          }
+
+          .cateringScene-undersea .cateringPersuasionSky img {
+            object-position: center top;
+          }
+
           .cateringScene-moonlit .cateringPersuasionSky img {
             object-position: 28% top;
           }

@@ -1,6 +1,14 @@
 import type { CSSProperties } from 'react'
 
-export type SceneTone = 'dawn' | 'under-tree' | 'moonlit' | 'classic' | 'blossom' | 'fairy-castle'
+export type SceneTone =
+  | 'dawn'
+  | 'under-tree'
+  | 'moonlit'
+  | 'classic'
+  | 'blossom'
+  | 'fairy-castle'
+  | 'prehistoric'
+  | 'undersea'
 
 export type SceneCloudConfig = {
   className: string
@@ -47,6 +55,8 @@ export const menuSceneTones: SceneTone[] = [
   'classic',
   'blossom',
   'fairy-castle',
+  'prehistoric',
+  'undersea',
 ]
 export const persistentMenuSceneStorageKey = 'baked-with-blessings-menu-scene'
 
@@ -57,12 +67,16 @@ export const menuHeroSkyByScene: Record<SceneTone, string> = {
   classic: '/sceneries/classic-sky.svg',
   blossom: '/sceneries/blossom-breeze-sky.svg',
   'fairy-castle': '/sceneries/fairy-castle.svg',
+  prehistoric: '/sceneries/prehistoric-valley.svg',
+  undersea: '/sceneries/undersea-deep.svg',
 }
 
 export const menuHeroMobileSkyByScene: Partial<Record<SceneTone, string>> = {
   dawn: '/sceneries/brown-anime-gradient-sky-mobile-experimental.svg',
   blossom: '/sceneries/blossom-breeze-sky-mobile-experimental.svg',
   'fairy-castle': '/sceneries/fairy-castle-mobile-experimental.svg',
+  prehistoric: '/sceneries/prehistoric-valley-mobile.svg',
+  undersea: '/sceneries/undersea-deep-mobile.svg',
   classic: '/sceneries/classic-sky-mobile-experimental.svg',
   'under-tree': '/sceneries/girl-under-tree-sky-mobile-experimental.svg',
   moonlit: '/sceneries/moonlit-purple-sky-mobile-experimental.svg',
@@ -82,6 +96,8 @@ export const menuHeroMeadowByScene: Record<SceneTone, string> = {
   classic: '/sceneries/classic-meadow.svg',
   blossom: '/sceneries/blossom-grass-mound.svg',
   'fairy-castle': '/sceneries/transparent-meadow.svg',
+  prehistoric: '/sceneries/transparent-meadow.svg',
+  undersea: '/sceneries/transparent-meadow.svg',
 }
 
 export const menuSceneButtonAuraByScene: Record<SceneTone, string> = {
@@ -91,6 +107,8 @@ export const menuSceneButtonAuraByScene: Record<SceneTone, string> = {
   classic: 'rgba(255, 215, 79, 0.84)',
   blossom: 'rgba(255, 176, 208, 0.9)',
   'fairy-castle': 'rgba(255, 211, 117, 0.9)',
+  prehistoric: 'rgba(255, 170, 92, 0.88)',
+  undersea: 'rgba(98, 218, 230, 0.9)',
 }
 
 export const menuScenePriceColorByScene: Record<SceneTone, string> = {
@@ -100,6 +118,8 @@ export const menuScenePriceColorByScene: Record<SceneTone, string> = {
   classic: 'rgba(23, 52, 31, 0.68)',
   blossom: 'rgba(91, 48, 80, 0.84)',
   'fairy-castle': 'rgba(248, 242, 214, 0.94)',
+  prehistoric: 'rgba(250, 244, 222, 0.95)',
+  undersea: 'rgba(232, 252, 255, 0.96)',
 }
 
 export const menuScenePriceShadowByScene: Record<SceneTone, string> = {
@@ -109,6 +129,8 @@ export const menuScenePriceShadowByScene: Record<SceneTone, string> = {
   classic: 'none',
   blossom: '0 1px 0 rgba(255, 245, 251, 0.45)',
   'fairy-castle': '0 2px 10px rgba(71, 86, 53, 0.35)',
+  prehistoric: '0 2px 10px rgba(52, 72, 38, 0.42)',
+  undersea: '0 2px 12px rgba(3, 39, 58, 0.64)',
 }
 
 export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[]> = {
@@ -207,6 +229,35 @@ export const menuHeroCloudsByScene: Record<SceneTone, readonly SceneCloudConfig[
     },
   ],
   'fairy-castle': [],
+  prehistoric: [
+    {
+      className: 'left-[6%] top-[9%] w-[12rem] md:left-[10%] md:w-[16rem]',
+      src: '/clouds/prehistoric-cloud-bank.svg',
+      style: { animationDelay: '-6s' },
+    },
+    {
+      className: 'right-[30%] top-[16%] hidden w-[10rem] md:block md:w-[12rem]',
+      src: '/clouds/prehistoric-cloud-puff.svg',
+      style: { animationDelay: '-13s' },
+    },
+  ],
+  undersea: [
+    {
+      className: 'left-[8%] top-[22%] w-[15rem] opacity-70 md:left-[12%] md:w-[19rem]',
+      src: '/spawnables/sea-drifter-whale.svg',
+      style: { animationDelay: '-8s' },
+    },
+    {
+      className: 'right-[18%] top-[34%] w-[11rem] opacity-75 md:w-[15rem]',
+      src: '/spawnables/sea-drifter-manta.svg',
+      style: { animationDelay: '-16s' },
+    },
+    {
+      className: 'left-[42%] top-[46%] hidden w-[13rem] opacity-65 md:block',
+      src: '/spawnables/sea-drifter-fish.svg',
+      style: { animationDelay: '-4s' },
+    },
+  ],
 }
 
 export const menuHeroFlowersByScene: Record<SceneTone, readonly SceneFlowerConfig[]> = {
@@ -249,6 +300,8 @@ export const menuHeroFlowersByScene: Record<SceneTone, readonly SceneFlowerConfi
     { asset: '/flowers/cherry-blossom-branch.svg', left: '88%', scale: 0.27 },
   ],
   'fairy-castle': [],
+  prehistoric: [],
+  undersea: [],
 }
 
 const noScenePieces: readonly ScenePieceConfig[] = []
@@ -284,6 +337,8 @@ export const menuHeroPiecesByScene: Record<SceneTone, readonly ScenePieceConfig[
   classic: noScenePieces,
   blossom: noScenePieces,
   'fairy-castle': noScenePieces,
+  prehistoric: noScenePieces,
+  undersea: noScenePieces,
 }
 
 export const menuHeroCrittersByScene: Record<SceneTone, readonly SceneCritterConfig[]> = {
@@ -311,6 +366,8 @@ export const menuHeroCrittersByScene: Record<SceneTone, readonly SceneCritterCon
     },
   ],
   'fairy-castle': noSceneCritters,
+  prehistoric: noSceneCritters,
+  undersea: noSceneCritters,
 }
 
 export const menuHeroFlowerSeamByScene: Record<SceneTone, string> = {
@@ -320,6 +377,8 @@ export const menuHeroFlowerSeamByScene: Record<SceneTone, string> = {
   classic: '0.5rem',
   blossom: '0rem',
   'fairy-castle': '0.5rem',
+  prehistoric: '0.5rem',
+  undersea: '0.5rem',
 }
 
 export const menuSceneSeededAccentCountByScene: Record<SceneTone, number> = {
@@ -329,6 +388,8 @@ export const menuSceneSeededAccentCountByScene: Record<SceneTone, number> = {
   classic: 9,
   blossom: 9,
   'fairy-castle': 0,
+  prehistoric: 6,
+  undersea: 5,
 }
 
 export const menuSpawnedAccentSourcesByScene: Record<SceneTone, readonly string[]> = {
@@ -349,6 +410,8 @@ export const menuSpawnedAccentSourcesByScene: Record<SceneTone, readonly string[
     '/catering/decor/sheep-sleepy.svg',
   ],
   'fairy-castle': ['/sceneries/fairy-castle-house.svg', '/sceneries/fairy-castle-house-wide.svg'],
+  prehistoric: ['/flowers/prehistoric-fern.svg', '/flowers/prehistoric-horsetail.svg'],
+  undersea: ['/spawnables/sea-kelp-coral.svg'],
 }
 
 export const menuCloudSpawnDesignsByScene: Record<SceneTone, readonly SceneCloudSpawnConfig[]> = {
@@ -369,13 +432,15 @@ export const menuCloudSpawnDesignsByScene: Record<SceneTone, readonly SceneCloud
   'fairy-castle': [
     { maxWidth: 16.8, minWidth: 11.8, src: '/sceneries/fairy-castle-cloud-puff.svg' },
   ],
-}
-
-export const getNextMenuSceneTone = (current: SceneTone): SceneTone => {
-  const currentIndex = menuSceneTones.indexOf(current)
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % menuSceneTones.length : 0
-
-  return menuSceneTones[nextIndex] ?? menuSceneTones[0]
+  prehistoric: [
+    { maxWidth: 18.6, minWidth: 13.2, src: '/clouds/prehistoric-cloud-bank.svg' },
+    { maxWidth: 14.4, minWidth: 9.8, src: '/clouds/prehistoric-cloud-puff.svg' },
+  ],
+  undersea: [
+    { maxWidth: 18.4, minWidth: 12.6, src: '/spawnables/sea-drifter-fish.svg' },
+    { maxWidth: 16.2, minWidth: 10.4, src: '/spawnables/sea-drifter-manta.svg' },
+    { maxWidth: 19.2, minWidth: 13.8, src: '/spawnables/sea-drifter-jelly.svg' },
+  ],
 }
 
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
@@ -405,6 +470,10 @@ const getSceneAccentScaleRange = (sceneTone: SceneTone): [number, number] => {
     return [1.04, 1.52]
   }
 
+  if (sceneTone === 'undersea') {
+    return [1.02, 1.34]
+  }
+
   return [0.76, 0.98]
 }
 
@@ -419,6 +488,10 @@ const getSceneAccentBottomRange = (sceneTone: SceneTone): [number, number] => {
 
   if (sceneTone === 'moonlit') {
     return [8, 50]
+  }
+
+  if (sceneTone === 'undersea') {
+    return [8, 42]
   }
 
   return [8, 48]

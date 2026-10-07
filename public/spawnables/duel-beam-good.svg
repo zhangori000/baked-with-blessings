@@ -1,0 +1,13 @@
+<svg width="144" height="18" viewBox="0 0 144 18" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M0 9C22 2 42 16 64 8C86 0 110 3 144 9C112 16 88 18 65 10C42 3 20 15 0 9Z"
+    fill="#b8d9f0"
+    opacity="0.72"
+  />
+  <path
+    d="M0 9C28 7 46 10 72 8C98 6 120 7 144 9C116 11 94 12 72 10C47 8 27 11 0 9Z"
+    fill="#fff6c8"
+  />
+  <path d="M18 4L23 8L18 12L13 8Z" fill="#ffd966" opacity="0.9" />
+  <path d="M114 3L120 8L114 14L108 8Z" fill="#d8bfd8" opacity="0.9" />
+</svg>

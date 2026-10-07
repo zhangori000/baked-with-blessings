@@ -1,17 +1,19 @@
-.ecoThing[data-species='shooting-star'] {
+.ecoLayer[data-scene='moonlit'] .ecoThing[data-species='shooting-star'] {
   opacity: var(--night-star-opacity, 1);
 }
 
-.ecoThing[data-species='shooting-star'] .ecoPop,
+.ecoLayer[data-scene='moonlit'] .ecoThing[data-species='shooting-star'] .ecoPop,
 .ecoThing[data-species='impact'] .ecoPop {
   animation: none;
 }
 
-.ecoThing[data-species='shooting-star'] .ecoArt {
+.ecoLayer[data-scene='moonlit'] .ecoThing[data-species='shooting-star'] .ecoArt {
   filter: drop-shadow(0 0 0.42rem rgba(255, 230, 150, 0.92));
 }
 
-.ecoThing[data-species='shooting-star'][data-state='asteroid'] .ecoArt {
+.ecoLayer[data-scene='moonlit']
+  .ecoThing[data-species='shooting-star'][data-state='asteroid']
+  .ecoArt {
   animation: nightAsteroidBurn 0.18s ease-in-out infinite alternate;
   filter: drop-shadow(-0.8rem 0.15rem 0.42rem rgba(255, 112, 67, 0.8))
     drop-shadow(0 0 0.8rem rgba(255, 217, 102, 0.72));
@@ -91,6 +93,57 @@
 
 .ecoThing[data-species='bat'][data-state='hunt'] .ecoArt {
   filter: drop-shadow(0 0 0.25rem rgba(255, 246, 200, 0.28));
+}
+
+.ecoLayer[data-scene='moonlit'] .ecoThing[data-species='boat'] .ecoAnchor::before {
+  animation: nightBoatReflection 3.8s ease-in-out infinite;
+  background: radial-gradient(
+    ellipse,
+    rgba(255, 211, 111, 0.34) 0%,
+    rgba(255, 211, 111, 0.18) 34%,
+    rgba(125, 105, 200, 0) 72%
+  );
+  border-radius: 999px;
+  content: '';
+  height: 34%;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 78%;
+  transform: translateX(-50%);
+  width: 118%;
+  z-index: -1;
+}
+
+.ecoLayer[data-scene='moonlit'] .ecoThing[data-species='boat'] .ecoArt {
+  filter: drop-shadow(0 0.18rem 0.2rem rgba(10, 21, 64, 0.26))
+    drop-shadow(0 0 0.42rem rgba(255, 211, 111, 0.28));
+}
+
+.ecoLayer[data-scene='moonlit'] .ecoThing[data-species='boat'][data-fx='dazed'] .ecoArt {
+  animation: nightBoatStartle 0.28s ease-in-out 2;
+}
+
+.ecoThing[data-species='lantern'] .ecoArt {
+  animation: nightLanternSway 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 0.42rem rgba(255, 214, 120, 0.76))
+    drop-shadow(0 0 0.9rem rgba(255, 174, 76, 0.38));
+  transform-origin: center top;
+}
+
+.ecoThing[data-species='lantern'][data-state='rise'] .ecoAnchor::before {
+  animation: nightLanternHalo 2.8s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 221, 134, 0.28), rgba(255, 221, 134, 0));
+  border-radius: 999px;
+  content: '';
+  height: 150%;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  z-index: -1;
 }
 
 .ecoThing[data-species='swan'] .ecoArt {
@@ -269,6 +322,54 @@
   }
 }
 
+@keyframes nightBoatReflection {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: translateX(-50%) scaleX(0.92);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: translateX(-50%) scaleX(1.08);
+  }
+}
+
+@keyframes nightBoatStartle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(-3deg) translateY(-0.18rem);
+  }
+}
+
+@keyframes nightLanternSway {
+  0%,
+  100% {
+    transform: rotate(-3deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(3deg) translateY(-0.18rem);
+  }
+}
+
+@keyframes nightLanternHalo {
+  0%,
+  100% {
+    opacity: 0.56;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  50% {
+    opacity: 0.86;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
 @keyframes nightSwanDip {
   0%,
   100% {
@@ -330,14 +431,20 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ecoThing[data-species='shooting-star'] .ecoArt,
-  .ecoThing[data-species='shooting-star'][data-state='asteroid'] .ecoArt,
+  .ecoLayer[data-scene='moonlit'] .ecoThing[data-species='shooting-star'] .ecoArt,
+  .ecoLayer[data-scene='moonlit']
+    .ecoThing[data-species='shooting-star'][data-state='asteroid']
+    .ecoArt,
   .ecoThing[data-species='impact'] .ecoAnchor::before,
   .ecoThing[data-species='impact'] .ecoAnchor::after,
   .ecoThing[data-species='impact'] .ecoPose,
   .ecoThing[data-species='impact'] .ecoArt,
   .ecoThing[data-species='owl'][data-state='hoot'] .ecoArt,
   .ecoThing[data-species='bat'] .ecoArt,
+  .ecoLayer[data-scene='moonlit'] .ecoThing[data-species='boat'] .ecoAnchor::before,
+  .ecoLayer[data-scene='moonlit'] .ecoThing[data-species='boat'][data-fx='dazed'] .ecoArt,
+  .ecoThing[data-species='lantern'] .ecoArt,
+  .ecoThing[data-species='lantern'][data-state='rise'] .ecoAnchor::before,
   .ecoThing[data-species='swan'][data-state='dip'] .ecoArt,
   .ecoThing[data-species='swan'][data-state='takeoff'] .ecoArt,
   .ecoThing[data-species='swan'][data-state='circle'] .ecoArt,

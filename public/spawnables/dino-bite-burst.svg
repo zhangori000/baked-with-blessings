@@ -1,0 +1,13 @@
+<svg width="96" height="70" viewBox="0 0 96 70" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M47 35L48 0L57 29L88 12L64 39L96 51L60 49L63 70L47 53L29 69L34 47L0 52L31 38L8 13L40 29Z"
+    fill="#ffd36b"
+    opacity="0.92"
+  />
+  <path
+    d="M48 36L50 12L56 33L77 25L60 42L82 50L58 49L60 63L48 51L36 62L39 47L16 50L37 40L21 24L43 33Z"
+    fill="#ff8a3d"
+    opacity="0.9"
+  />
+  <circle cx="49" cy="41" r="12" fill="#fff0bd" opacity="0.85" />
+</svg>

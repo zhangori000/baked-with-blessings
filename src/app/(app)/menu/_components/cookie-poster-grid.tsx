@@ -89,6 +89,8 @@ const posterSceneryTones: PosterSceneTone[] = [
   'classic',
   'blossom',
   'fairy-castle',
+  'prehistoric',
+  'undersea',
 ]
 const posterSkyByScenery: Record<PosterSceneTone, string> = {
   dawn: '/sceneries/brown-anime-gradient-sky.svg',
@@ -97,6 +99,8 @@ const posterSkyByScenery: Record<PosterSceneTone, string> = {
   classic: '/sceneries/classic-sky.svg',
   blossom: '/sceneries/blossom-breeze-sky.svg',
   'fairy-castle': '/sceneries/fairy-castle.svg',
+  prehistoric: '/sceneries/prehistoric-valley.svg',
+  undersea: '/sceneries/undersea-deep.svg',
 }
 const posterMeadowByScenery: Record<PosterSceneTone, string> = {
   dawn: '/sceneries/brown-anime-rolling-meadow.svg',
@@ -105,6 +109,8 @@ const posterMeadowByScenery: Record<PosterSceneTone, string> = {
   classic: '/sceneries/classic-meadow.svg',
   blossom: '/sceneries/blossom-grass-mound.svg',
   'fairy-castle': '/sceneries/transparent-meadow.svg',
+  prehistoric: '/sceneries/transparent-meadow.svg',
+  undersea: '/sceneries/transparent-meadow.svg',
 }
 const posterButtonAuraByScenery: Record<PosterSceneTone, string> = {
   dawn: 'rgba(255, 214, 101, 0.86)',
@@ -113,6 +119,8 @@ const posterButtonAuraByScenery: Record<PosterSceneTone, string> = {
   classic: 'rgba(255, 215, 79, 0.85)',
   blossom: 'rgba(255, 176, 208, 0.92)',
   'fairy-castle': 'rgba(154, 172, 138, 0.9)',
+  prehistoric: 'rgba(255, 170, 92, 0.9)',
+  undersea: 'rgba(98, 218, 230, 0.9)',
 }
 const posterCloudAssetsByScenery: Record<PosterSceneTone, readonly string[]> = {
   dawn: ['/clouds/brown-anime-cloud-fluffy.svg', '/clouds/brown-anime-cloud-layered.svg'],
@@ -121,6 +129,12 @@ const posterCloudAssetsByScenery: Record<PosterSceneTone, readonly string[]> = {
   classic: ['/clouds/three-ball-cloud-compact.svg', '/clouds/three-ball-cloud.svg'],
   blossom: ['/clouds/sakura-soft-cloud.svg'],
   'fairy-castle': ['/sceneries/fairy-castle-cloud-puff.svg'],
+  prehistoric: ['/clouds/prehistoric-cloud-bank.svg', '/clouds/prehistoric-cloud-puff.svg'],
+  undersea: [
+    '/spawnables/sea-drifter-fish.svg',
+    '/spawnables/sea-drifter-manta.svg',
+    '/spawnables/sea-drifter-jelly.svg',
+  ],
 }
 
 let spawnedPosterCloudID = 0

@@ -17,7 +17,9 @@ import type { EcoEntity, EcoSpecies, EcoWorld } from '../types'
 registerViewBoxes({
   asteroid: [170, 96],
   bat: [112, 70],
+  boat: [190, 118],
   impact: [260, 180],
+  lantern: [76, 96],
   'lily-frog': [96, 76],
   'lily-pad': [118, 48],
   owl: [112, 84],
@@ -36,11 +38,37 @@ const isSwan = (other: EcoEntity) => other.species === 'swan'
 const isPad = (other: EcoEntity) => other.species === 'lily-pad'
 const isLowPrey = (world: EcoWorld) => (other: EcoEntity) =>
   (isMoth(other) || isFirefly(other)) && other.y > world.waterY - world.unit * 12
+const isBatPrey = (world: EcoWorld) => (other: EcoEntity) =>
+  isMoth(other) || isFirefly(other) || isLantern(world)(other)
+const isOwlPrey = (other: EcoEntity) => isMoth(other) || isBat(other) || isFrog(other)
+
+const lilyFrogMouth = (entity: EcoEntity, world: EcoWorld) => ({
+  x: entity.x + entity.facing * world.unit * 1.05,
+  y: entity.y - world.heightOf(entity) * 0.58,
+})
+
+function aimLilyTongue(entity: EcoEntity, target: EcoEntity, world: EcoWorld, maxUnits: number) {
+  const mouth = lilyFrogMouth(entity, world)
+  const targetY = target.anchor === 'bottom' ? target.y - world.heightOf(target) * 0.5 : target.y
+  const dx = target.x - mouth.x
+  const dy = targetY - mouth.y
+  const reach = Math.hypot(dx, dy)
+
+  entity.facing = dx >= 0 ? 1 : -1
+  entity.data.tongue = clamp((reach + world.widthOf(target) * 0.28) / world.unit, 1.8, maxUnits)
+  entity.data.tongueAngle = clamp((Math.atan2(dy, Math.abs(dx)) * 180) / Math.PI, -72, 32)
+
+  return { mouth, reach, targetY }
+}
 
 function eatIfClose(hunter: EcoEntity, prey: EcoEntity, world: EcoWorld, reach = 1.7) {
   const gap = Math.hypot(prey.x - hunter.x, prey.y - hunter.y)
+  const edge = world.edge(hunter, prey)
 
-  if (gap < world.unit * reach + world.widthOf(prey) * 0.35) {
+  if (
+    gap < world.unit * reach * Math.max(0.72, Math.min(1.18, edge)) + world.widthOf(prey) * 0.35 &&
+    Math.random() < Math.min(0.96, 0.7 * edge)
+  ) {
     world.kill(prey)
     hunter.targetId = null
     return true
@@ -58,7 +86,8 @@ function starTilt(entity: EcoEntity) {
 }
 
 function triggerImpact(entity: EcoEntity, world: EcoWorld) {
-  const impact = world.spawn('impact', {
+  const dinoImpact = world.hasSpecies('dino-impact')
+  const impact = world.spawn(dinoImpact ? 'dino-impact' : 'impact', {
     countAs: null,
     data: { siteX: clamp(entity.x, 0, world.width) },
     x: clamp(entity.x, world.unit * 2, world.width - world.unit * 2),
@@ -71,6 +100,13 @@ function triggerImpact(entity: EcoEntity, world: EcoWorld) {
 
   for (const other of [...world.entities]) {
     if (other === impact || other === entity || other.dying || other.removed) {
+      continue
+    }
+
+    if (dinoImpact && other.species === 'dino-nest') {
+      other.data.warm = 1
+      other.data.hatchAt = Math.min(other.data.hatchAt ?? 36, 12)
+      other.fx = 'wobble'
       continue
     }
 
@@ -121,13 +157,29 @@ const boat: EcoSpecies = {
   layer: 'front',
   size: [5.6, 6.8],
   state: 'row',
+  strongVs: ['lantern', 'swan'],
   tags: [],
+  weakTo: ['shooting-star', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
     const margin = world.width * 0.1
 
     entity.y = waterLine(entity, world)
-    entity.x += entity.facing * unit * 0.45 * dt
+    const frog = world.nearest(entity, isFrog, Math.max(unit * 16, world.width * 0.24))
+
+    if (frog && chance(0.8 * world.edge(frog, entity), dt)) {
+      entity.facing = frog.x >= entity.x ? -1 : 1
+      entity.fx = 'dazed'
+      entity.data.startled = 0.8
+    }
+
+    entity.data.startled = Math.max(0, (entity.data.startled ?? 0) - dt)
+
+    if ((entity.data.startled ?? 0) <= 0 && entity.fx === 'dazed') {
+      entity.fx = ''
+    }
+
+    entity.x += entity.facing * unit * 0.38 * dt
     entity.lift = (Math.sin(world.time * 1.4 + entity.id) + 1) * unit * 0.06
     entity.tilt = Math.sin(world.time * 1.1 + entity.id) * 2
 
@@ -145,10 +197,10 @@ const boat: EcoSpecies = {
 
     entity.data.next = between(5, 9)
 
-    if (world.count((other) => other.species === 'lantern' && !other.user) < 18) {
+    if (world.count((other) => other.species === 'lantern' && !other.user) < 24) {
       world.spawn('lantern', {
         countAs: null,
-        data: { free: 1 },
+        data: { free: 1, fromBoat: 1 },
         x: entity.x + entity.facing * world.widthOf(entity) * 0.34,
         y: entity.y - world.heightOf(entity) * 0.8,
       })
@@ -161,8 +213,9 @@ const lantern: EcoSpecies = {
   asset: ecoAsset('lantern'),
   idle: 'glow',
   init(entity, world) {
-    entity.data.leaveAt = between(34, 46)
+    entity.data.leaveAt = between(42, 58)
     entity.data.hoverY = between(world.skyTop + world.unit * 2, world.height * 0.45)
+    entity.data.sway = between(0.65, 1.15)
 
     if (entity.user) {
       entity.y = world.groundY - world.unit
@@ -176,15 +229,17 @@ const lantern: EcoSpecies = {
   },
   size: [2.2, 2.8],
   state: 'rise',
+  strongVs: ['moth'],
   tags: ['lantern'],
+  weakTo: ['bat', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
-    const sway = Math.sin(world.time * 0.7 + entity.id) * unit * 0.3
+    const sway = Math.sin(world.time * (entity.data.sway ?? 0.8) + entity.id) * unit * 0.42
 
     if ((entity.data.free ?? 0) > 0) {
       const leaving = entity.age > (entity.data.leaveAt ?? 40)
-      entity.vy += ((leaving ? -unit * 0.9 : -unit * 0.32) - entity.vy) * Math.min(1, dt)
-      entity.vx = world.wind * 0.25 + sway
+      entity.vy += ((leaving ? -unit * 0.78 : -unit * 0.24) - entity.vy) * Math.min(1, dt)
+      entity.vx = world.wind * 0.18 + sway
       integrate(entity, dt)
 
       if (entity.y < -unit * 4) {
@@ -200,7 +255,7 @@ const lantern: EcoSpecies = {
   },
 }
 
-const shootingStar: EcoSpecies = {
+export const shootingStar: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('shooting-star'),
   countAs: 'shooting-star',
@@ -225,7 +280,9 @@ const shootingStar: EcoSpecies = {
   style: (entity) => ({
     '--night-star-opacity': `${entity.data.opacity ?? 1}`,
   }),
+  strongVs: ['lantern', 'boat', 'swan', 'frog', 'bat', 'owl', 'insect'],
   tags: ['star'],
+  weakTo: ['cloud'],
   tick(entity, world, dt) {
     const unit = world.unit
 
@@ -338,9 +395,27 @@ const moth: EcoSpecies = {
   layer: 'front',
   size: [1.9, 2.4],
   state: 'orbit',
+  strongVs: ['lantern'],
   tags: ['insect', 'prey'],
+  weakTo: ['firefly', 'bat', 'owl', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
+    const firefly = world.nearest(entity, isFirefly, unit * 12)
+
+    if (firefly && chance(0.65 * world.edge(firefly, entity), dt)) {
+      entity.fx = 'dazed'
+      entity.targetId = null
+      flee(entity, firefly, unit * 3.6, dt, 4)
+      integrate(entity, dt)
+      faceTravel(entity)
+      keepInSky(entity, world, 0, world.groundY - unit)
+      return
+    }
+
+    if (entity.fx === 'dazed') {
+      entity.fx = ''
+    }
+
     let light = world.byId(entity.targetId)
 
     if (!light || entity.t > (entity.data.switchAt ?? 8)) {
@@ -389,7 +464,9 @@ const firefly: EcoSpecies = {
   style: (entity) => ({
     '--eco-glow': Math.pow(Math.max(0, Math.cos(entity.data.phase ?? 0)), 3).toFixed(2),
   }),
+  strongVs: ['moth'],
   tags: ['firefly', 'insect', 'prey'],
+  weakTo: ['bat', 'frog'],
   tick(entity, world, dt) {
     const unit = world.unit
     const phase = entity.data.phase ?? 0
@@ -433,9 +510,28 @@ const owl: EcoSpecies = {
   layer: 'front',
   size: [3.4, 4.4],
   state: 'glide',
+  strongVs: ['bat', 'moth', 'frog'],
   tags: ['owl', 'predator'],
+  weakTo: ['swan', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
+    const swanThreat = world.nearest(entity, isSwan, Math.max(unit * 28, world.height * 0.55))
+
+    if (swanThreat) {
+      entity.targetId = null
+      entity.fx = 'dazed'
+      flee(entity, swanThreat, unit * 5.8, dt, 4)
+      integrate(entity, dt)
+      faceTravel(entity)
+      tiltToVelocity(entity, 30)
+      keepInSky(entity, world, world.skyTop, world.height * 0.42)
+      world.setState(entity, 'glide')
+      return
+    }
+
+    if (entity.fx === 'dazed') {
+      entity.fx = ''
+    }
 
     if (entity.state === 'hoot') {
       entity.vx *= 0.9
@@ -453,17 +549,23 @@ const owl: EcoSpecies = {
     if (entity.state === 'swoop') {
       const target = world.byId(entity.targetId)
 
-      if (!target) {
+      if (!target || !isOwlPrey(target)) {
         world.setState(entity, 'glide')
         return
       }
 
-      steer(entity, target.x, target.y, unit * 10, dt, 3.2)
+      const targetY =
+        target.anchor === 'bottom' ? target.y - world.heightOf(target) * 0.45 : target.y
+
+      steer(entity, target.x, targetY, unit * 10, dt, 3.2)
       integrate(entity, dt)
       faceTravel(entity)
       tiltToVelocity(entity, 38)
 
-      if (eatIfClose(entity, target, world, isBat(target) ? 1.9 : 1.55) || entity.t > 3.2) {
+      if (
+        eatIfClose(entity, target, world, isBat(target) || isFrog(target) ? 1.9 : 1.55) ||
+        entity.t > 3.2
+      ) {
         entity.data.cool = between(2.5, 4.5)
         entity.data.goalX = clamp(entity.x + entity.facing * unit * 8, 0, world.width)
         entity.data.goalY = between(world.skyTop + unit, world.height * 0.34)
@@ -503,7 +605,13 @@ const owl: EcoSpecies = {
 
     const mothTarget = world.nearest(entity, isMoth, Math.max(world.width, world.height) * 0.7)
     const batTarget = world.nearest(entity, isBat, unit * 24)
-    const target = batTarget && Math.random() < 0.24 ? batTarget : (mothTarget ?? batTarget)
+    const frogTarget = world.nearest(entity, isFrog, unit * 34)
+    const target =
+      frogTarget && Math.random() < 0.38
+        ? frogTarget
+        : batTarget && Math.random() < 0.24
+          ? batTarget
+          : (mothTarget ?? batTarget ?? frogTarget)
 
     if (target) {
       entity.targetId = target.id
@@ -525,17 +633,21 @@ const bat: EcoSpecies = {
   layer: 'front',
   size: [2.2, 3],
   state: 'flutter',
+  strongVs: ['moth', 'firefly', 'lantern'],
   tags: ['bat', 'predator'],
+  weakTo: ['owl', 'swan'],
   tick(entity, world, dt) {
     const unit = world.unit
     const owlThreat = world.nearest(entity, isOwl, unit * 20)
+    const swanThreat = world.nearest(entity, isSwan, Math.max(unit * 28, world.height * 0.55))
+    const threat = owlThreat ?? swanThreat
 
-    if (owlThreat) {
+    if (threat) {
       world.setState(entity, 'flee')
-      flee(entity, owlThreat, unit * 7.6, dt, 7)
+      flee(entity, threat, unit * 7.6, dt, 7)
       entity.vy += Math.sin(world.time * 14 + entity.id) * unit * dt * 2
     } else {
-      const prey = world.nearest(entity, (other) => isMoth(other) || isFirefly(other), unit * 20)
+      const prey = world.nearest(entity, isBatPrey(world), Math.max(unit * 28, world.width * 0.3))
 
       if (prey) {
         world.setState(entity, 'hunt')
@@ -583,7 +695,9 @@ const swan: EcoSpecies = {
   layer: 'front',
   size: [4.2, 5.3],
   state: 'glide',
+  strongVs: ['bat', 'owl', 'frog'],
   tags: ['swan'],
+  weakTo: ['boat', 'shooting-star'],
   tick(entity, world, dt) {
     const unit = world.unit
     const margin = unit * 2
@@ -739,7 +853,9 @@ const lilyFrog: EcoSpecies = {
     '--frog-tongue': `${entity.data.tongue ?? 0}rem`,
     '--frog-tongue-angle': `${entity.data.tongueAngle ?? 0}deg`,
   }),
+  strongVs: ['moth', 'firefly', 'boat'],
   tags: ['frog', 'predator'],
+  weakTo: ['swan', 'owl'],
   tick(entity, world, dt) {
     const unit = world.unit
     entity.y = waterLine(entity, world) - unit * 0.1
@@ -765,19 +881,26 @@ const lilyFrog: EcoSpecies = {
       const prey = world.byId(entity.targetId)
 
       if (prey) {
-        const dx = prey.x - entity.x
-        const dy = prey.y - (entity.y - world.heightOf(entity) * 0.56)
-        entity.facing = dx >= 0 ? 1 : -1
-        entity.data.tongue = clamp(Math.hypot(dx, dy) / unit, 0, 13)
-        entity.data.tongueAngle = clamp((Math.atan2(dy, Math.abs(dx)) * 180) / Math.PI, -70, 28)
+        aimLilyTongue(entity, prey, world, 15)
 
-        if (entity.t > 0.18) {
-          eatIfClose(entity, prey, world, 2.1)
+        if (entity.t > 0.12 && (entity.data.ate ?? 0) <= 0) {
+          entity.data.ate = 1
+
+          if (isLowPrey(world)(prey)) {
+            const aim = aimLilyTongue(entity, prey, world, 15)
+            const gap = Math.hypot(prey.x - aim.mouth.x, aim.targetY - aim.mouth.y)
+
+            if (gap <= (entity.data.tongue ?? 0) * unit + world.widthOf(prey) * 0.24) {
+              world.kill(prey)
+              entity.data.meals = (entity.data.meals ?? 0) + 1
+            }
+          }
         }
       }
 
       if (entity.t > 0.44) {
         entity.data.tongue = 0
+        entity.data.ate = 0
         world.setState(entity, 'sit')
       }
       return
@@ -807,10 +930,11 @@ const lilyFrog: EcoSpecies = {
     entity.data.nextCroak = (entity.data.nextCroak ?? 4) - dt
     entity.lift = Math.sin(world.time * 1.4 + entity.id) * unit * 0.04
 
-    const prey = world.nearest(entity, isLowPrey(world), unit * 16)
+    const prey = world.nearest(lilyFrogMouth(entity, world), isLowPrey(world), unit * 20)
 
-    if (prey && chance(1.4, dt)) {
+    if (prey && chance(4.8, dt)) {
       entity.targetId = prey.id
+      aimLilyTongue(entity, prey, world, 15)
       world.setState(entity, 'snap')
       return
     }
@@ -822,10 +946,23 @@ const lilyFrog: EcoSpecies = {
 
     if ((entity.data.nextHop ?? 0) <= 0) {
       const nearSwan = world.nearest(entity, isSwan, unit * 10)
-      const away = nearSwan ? (nearSwan.x >= entity.x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1
+      const huntPrey = world.nearest(entity, isLowPrey(world), unit * 38)
+      const away = nearSwan
+        ? nearSwan.x >= entity.x
+          ? -1
+          : 1
+        : huntPrey
+          ? huntPrey.x >= entity.x
+            ? 1
+            : -1
+          : Math.random() < 0.5
+            ? -1
+            : 1
       entity.data.startX = entity.x
       entity.data.targetX = clamp(
-        entity.x + away * between(4, 9) * unit,
+        huntPrey
+          ? entity.x + clamp(huntPrey.x - entity.x, -unit * 9.5, unit * 9.5)
+          : entity.x + away * between(4, 9) * unit,
         unit * 2,
         world.width - unit * 2,
       )

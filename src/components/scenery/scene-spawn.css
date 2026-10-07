@@ -549,6 +549,7 @@
   align-items: center;
   cursor: grab;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.35rem;
   margin-bottom: 0.6rem;
   touch-action: none;
@@ -583,7 +584,9 @@
   align-items: center;
   display: flex;
   flex: none;
+  flex-wrap: wrap;
   gap: 0.3rem;
+  justify-content: flex-end;
   margin-left: auto;
 }
 
@@ -633,14 +636,12 @@
 }
 
 .spawnTrayTitle {
+  flex: none;
   font-family: var(--font-rounded-display);
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -661,6 +662,28 @@
 .spawnTrayClose:hover,
 .spawnTrayClose:focus-visible {
   background: rgba(92, 67, 31, 0.14);
+}
+
+.spawnTrayMatchupBanner {
+  align-items: center;
+  background: color-mix(in srgb, var(--scene-action-aura, rgba(92, 67, 31, 0.14)) 46%, transparent);
+  border: 1px solid color-mix(in srgb, var(--scene-text, rgba(74, 54, 23, 0.92)) 14%, transparent);
+  border-radius: 999px;
+  color: var(--scene-text, rgba(74, 54, 23, 0.92));
+  display: flex;
+  font-family: var(--font-rounded-body);
+  font-size: 0.74rem;
+  gap: 0.32rem;
+  justify-content: center;
+  line-height: 1.2;
+  margin: -0.2rem 0 0.55rem;
+  padding: 0.34rem 0.65rem;
+  text-align: center;
+}
+
+.spawnTrayMatchupBanner strong {
+  font-family: var(--font-rounded-display);
+  font-size: 0.78rem;
 }
 
 .spawnTrayGrid {
@@ -715,6 +738,19 @@
   min-height: 4.6rem;
   scroll-snap-align: start;
   width: 4.7rem;
+}
+
+.spawnTray[data-matchups][data-layout='float'] {
+  display: flex;
+  flex-direction: column;
+}
+
+.spawnTray[data-matchups][data-layout='float'] .spawnTrayGrid {
+  margin: -0.1rem;
+  max-height: min(14.5rem, 38vh);
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.1rem;
 }
 
 .spawnTray[data-layout='side'] {
@@ -796,6 +832,21 @@
   transform: translateY(1px) scale(0.97);
 }
 
+.spawnTrayTile[data-selected] {
+  border-color: color-mix(in srgb, var(--scene-text) 42%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--scene-action-aura) 74%, transparent),
+    0 2px 0 rgba(92, 67, 31, 0.1);
+}
+
+.spawnTrayTile[data-matchup-relation='strong'] {
+  border-color: color-mix(in srgb, var(--success) 42%, var(--scene-panel-border));
+}
+
+.spawnTrayTile[data-matchup-relation='weak'] {
+  border-color: color-mix(in srgb, var(--scene-flower-petal) 42%, var(--scene-panel-border));
+}
+
 .spawnTrayTileIcon {
   align-items: center;
   display: flex;
@@ -835,6 +886,33 @@
   right: 0.35rem;
   text-align: center;
   top: 0.35rem;
+}
+
+.spawnTrayRelationBadge {
+  align-items: center;
+  border: 1px solid rgba(255, 253, 247, 0.72);
+  border-radius: 999px;
+  display: inline-flex;
+  font-family: var(--font-rounded-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  height: 1.08rem;
+  justify-content: center;
+  left: 0.35rem;
+  line-height: 1.08rem;
+  position: absolute;
+  top: 0.35rem;
+  width: 1.08rem;
+}
+
+.spawnTrayTile[data-matchup-relation='strong'] .spawnTrayRelationBadge {
+  background: color-mix(in srgb, var(--success) 34%, var(--bakery-color-panel-fill));
+  color: color-mix(in srgb, var(--success) 78%, var(--scene-text));
+}
+
+.spawnTrayTile[data-matchup-relation='weak'] .spawnTrayRelationBadge {
+  background: color-mix(in srgb, var(--scene-flower-petal) 30%, var(--bakery-color-panel-fill));
+  color: color-mix(in srgb, var(--scene-flower-petal) 78%, var(--scene-text));
 }
 
 .spawnTrayMilestone {
@@ -888,6 +966,142 @@
   background: rgba(92, 67, 31, 0.85);
 }
 
+.spawnTrayMatchupDetail,
+.spawnTrayMatchupEmptyCard {
+  background: color-mix(in srgb, var(--scene-panel-fill) 88%, var(--bakery-color-panel-fill) 12%);
+  border: 1px solid color-mix(in srgb, var(--scene-panel-border) 78%, var(--scene-text) 22%);
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 247, 0.56);
+  margin-top: 0.6rem;
+}
+
+.spawnTrayMatchupDetail {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.62rem;
+}
+
+.spawnTrayMatchupEmptyCard {
+  color: color-mix(in srgb, var(--scene-text) 68%, transparent);
+  font-family: var(--font-rounded-body);
+  font-size: 0.78rem;
+  padding: 0.7rem;
+  text-align: center;
+}
+
+.spawnTrayMatchupDetailHeader {
+  align-items: center;
+  display: grid;
+  gap: 0.48rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.spawnTrayMatchupDetailIcon {
+  align-items: center;
+  background: rgba(255, 253, 247, 0.74);
+  border: 1px solid rgba(92, 67, 31, 0.1);
+  border-radius: 0.78rem;
+  display: inline-flex;
+  height: 2.65rem;
+  justify-content: center;
+  width: 2.65rem;
+}
+
+.spawnTrayMatchupDetailIcon img {
+  height: 2.25rem;
+  object-fit: contain;
+  width: 2.25rem;
+}
+
+.spawnTrayMatchupDetailTitle {
+  display: grid;
+  gap: 0.04rem;
+  min-width: 0;
+}
+
+.spawnTrayMatchupDetailTitle span {
+  color: color-mix(in srgb, var(--scene-text) 58%, transparent);
+  font-family: var(--font-rounded-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.spawnTrayMatchupDetailTitle strong {
+  color: var(--scene-text);
+  font-family: var(--font-rounded-display);
+  font-size: 0.98rem;
+  line-height: 1.05;
+}
+
+.spawnTrayMatchupDetailRow {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.spawnTrayMatchupDetailLabel {
+  font-family: var(--font-rounded-display);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.spawnTrayMatchupDetailRow[data-tone='strong'] .spawnTrayMatchupDetailLabel {
+  color: color-mix(in srgb, var(--success) 82%, var(--scene-text));
+}
+
+.spawnTrayMatchupDetailRow[data-tone='weak'] .spawnTrayMatchupDetailLabel {
+  color: color-mix(in srgb, var(--scene-flower-petal) 78%, var(--scene-text));
+}
+
+.spawnTrayMatchupDetailList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.spawnTrayMatchupPill,
+.spawnTrayMatchupEmpty {
+  align-items: center;
+  background: rgba(255, 253, 247, 0.74);
+  border: 1px solid rgba(92, 67, 31, 0.1);
+  border-radius: 999px;
+  color: var(--scene-text);
+  display: inline-flex;
+  font-family: var(--font-rounded-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  gap: 0.22rem;
+  line-height: 1.1;
+  min-height: 1.45rem;
+  padding: 0.2rem 0.46rem;
+  white-space: normal;
+}
+
+.spawnTrayMatchupDetailRow[data-tone='strong'] .spawnTrayMatchupPill {
+  background: color-mix(in srgb, var(--success) 16%, rgba(255, 253, 247, 0.82));
+  border-color: color-mix(in srgb, var(--success) 28%, var(--scene-panel-border));
+}
+
+.spawnTrayMatchupDetailRow[data-tone='weak'] .spawnTrayMatchupPill {
+  background: color-mix(in srgb, var(--scene-flower-petal) 14%, rgba(255, 253, 247, 0.82));
+  border-color: color-mix(in srgb, var(--scene-flower-petal) 28%, var(--scene-panel-border));
+}
+
+.spawnTrayMatchupPill img {
+  flex: none;
+  height: 1.05rem;
+  object-fit: contain;
+  width: 1.05rem;
+}
+
+.spawnTrayMatchupEmpty {
+  color: color-mix(in srgb, var(--scene-text) 62%, transparent);
+  font-family: var(--font-rounded-body);
+  font-weight: 700;
+}
+
 @keyframes spawnTrayMilestonePulse {
   from {
     opacity: 0.6;
@@ -910,6 +1124,66 @@
   color: rgba(74, 54, 23, 0.66);
   font-family: var(--font-rounded-body);
   font-size: 0.76rem;
+}
+
+.spawnTrayPlay {
+  align-items: center;
+  background: rgba(92, 67, 31, 0.07);
+  border: 0;
+  border-radius: 999px;
+  color: rgba(74, 54, 23, 0.78);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-rounded-display);
+  font-size: 0.76rem;
+  font-weight: 700;
+  gap: 0.36rem;
+  margin-left: auto;
+  padding: 0.3rem 0.4rem 0.3rem 0.62rem;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.spawnTrayPlay:hover,
+.spawnTrayPlay:focus-visible {
+  background: rgba(92, 67, 31, 0.13);
+  color: rgba(74, 54, 23, 0.95);
+}
+
+.spawnTrayPlaySwitch {
+  background: rgba(92, 67, 31, 0.22);
+  border-radius: 999px;
+  height: 0.95rem;
+  position: relative;
+  transition: background 180ms ease;
+  width: 1.65rem;
+}
+
+.spawnTrayPlaySwitch::after {
+  background: #fffdf7;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(92, 67, 31, 0.28);
+  content: '';
+  height: 0.71rem;
+  left: 0.12rem;
+  position: absolute;
+  top: 0.12rem;
+  transition: translate 180ms ease;
+  width: 0.71rem;
+}
+
+.spawnTrayPlay[aria-pressed='true'] {
+  background: rgba(92, 67, 31, 0.8);
+  color: #fffdf7;
+}
+
+.spawnTrayPlay[aria-pressed='true'] .spawnTrayPlaySwitch {
+  background: rgba(255, 253, 247, 0.38);
+}
+
+.spawnTrayPlay[aria-pressed='true'] .spawnTrayPlaySwitch::after {
+  translate: 0.7rem 0;
 }
 
 .spawnTrayClear {
@@ -964,13 +1238,25 @@
 }
 
 @media (max-width: 639px) {
+  .spawnTrayTools {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+
+  .spawnTrayTitle {
+    margin-right: auto;
+  }
+
+  .spawnTrayMatchupBanner {
+    border-radius: 0.85rem;
+    flex-wrap: wrap;
+    gap: 0.16rem 0.32rem;
+    padding-inline: 0.52rem;
+  }
+
   .spawnTray[data-layout='side'] {
     padding: 0.6rem 0.5rem 0.55rem;
     width: 7.4rem;
-  }
-
-  .spawnTray[data-layout='side'] .spawnTrayTitle {
-    display: none;
   }
 
   .spawnTray[data-layout='side'] .spawnTrayHeader {
@@ -1008,4 +1294,15 @@
   .spawnTrayTileIcon--pop {
     animation: none;
   }
+}
+
+.homeCookieStage,
+.cateringHeroBand,
+.ecoLayer,
+.ecoControlHud,
+:root[data-eco-controlling] body,
+:root[data-eco-play] body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }

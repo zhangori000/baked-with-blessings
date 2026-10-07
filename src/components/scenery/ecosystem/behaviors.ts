@@ -53,11 +53,25 @@ export function integrate(entity: EcoEntity, dt: number) {
   entity.y += entity.vy * dt
 }
 
-export function faceTravel(entity: EcoEntity, threshold = 4) {
-  if (entity.vx > threshold) {
-    entity.facing = 1
-  } else if (entity.vx < -threshold) {
-    entity.facing = -1
+// Turns only after the new direction has held for `hold` seconds, so velocity
+// that wobbles around zero (orbiting, arriving, knockback) can't flicker the sprite.
+export function faceTravel(entity: EcoEntity, threshold = 4, hold = 0.12) {
+  const wanted = entity.vx > threshold ? 1 : entity.vx < -threshold ? -1 : 0
+
+  if (wanted === 0 || wanted === entity.facing) {
+    entity.data.faceTurnAt = -1
+    return
+  }
+
+  const since = entity.data.faceTurnAt ?? -1
+
+  if (since < 0 || since > entity.age) {
+    entity.data.faceTurnAt = entity.age
+  }
+
+  if (entity.age - (entity.data.faceTurnAt ?? entity.age) >= hold) {
+    entity.facing = wanted
+    entity.data.faceTurnAt = -1
   }
 }
 

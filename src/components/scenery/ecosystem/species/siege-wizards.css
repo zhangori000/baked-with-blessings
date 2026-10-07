@@ -1,0 +1,129 @@
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard']
+  )
+  .ecoArt {
+  transform-box: view-box;
+  transform-origin: center bottom;
+}
+
+.ecoThing:is(
+    [data-species='wizard'],
+    [data-species='pyro-wizard'],
+    [data-species='frost-wizard'],
+    [data-species='plant-wizard']
+  ):is(
+    [data-state='meteor-seeds'],
+    [data-state='ice-beam'],
+    [data-state='frenzy-plant'],
+    [data-state='duel']
+  )
+  .ecoArt {
+  filter: drop-shadow(0 0 0.58rem var(--wizard-glow));
+}
+
+.ecoThing:is([data-species='wizard'])[data-state='duel'] .ecoArt {
+  animation: wizardWardSpriteBeat 1.24s ease-in-out infinite;
+}
+
+.ecoThing[data-species='pyro-wizard'][data-state='meteor-seeds'] .ecoArt {
+  animation: wizardPyroSpriteBeat 0.96s ease-in-out infinite;
+}
+
+.ecoThing[data-species='frost-wizard'][data-state='ice-beam'] .ecoArt {
+  animation: wizardFrostSpriteBeat 1.16s ease-in-out infinite;
+}
+
+.ecoThing[data-species='plant-wizard'][data-state='frenzy-plant'] .ecoArt {
+  animation: wizardDruidSpriteBeat 1.05s ease-in-out infinite;
+}
+
+@keyframes wizardPyroSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  28% {
+    transform: translateY(0.18rem) scale(1.08, 0.9);
+  }
+
+  55% {
+    transform: translate(0.18rem, -0.18rem) rotate(6deg) scale(0.96, 1.08);
+  }
+
+  78% {
+    transform: translateX(-0.1rem) rotate(-3deg);
+  }
+}
+
+@keyframes wizardFrostSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  32% {
+    transform: translateY(-0.08rem) rotate(-5deg) scale(0.98, 1.02);
+  }
+
+  58% {
+    transform: translateY(0.14rem) rotate(6deg) scale(1.03, 0.96);
+  }
+
+  82% {
+    transform: translateY(-0.04rem);
+  }
+}
+
+@keyframes wizardDruidSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  28% {
+    transform: translateY(0.22rem) scale(1.08, 0.88);
+  }
+
+  55% {
+    transform: translateY(-0.14rem) rotate(-4deg) scale(0.98, 1.06);
+  }
+
+  78% {
+    transform: translateY(0.04rem) rotate(3deg);
+  }
+}
+
+@keyframes wizardWardSpriteBeat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  30% {
+    transform: rotate(-2deg);
+  }
+
+  56% {
+    transform: translateY(0.08rem) scale(1.04, 0.96);
+  }
+
+  78% {
+    transform: translateY(-0.04rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing:is(
+      [data-species='wizard'],
+      [data-species='pyro-wizard'],
+      [data-species='frost-wizard'],
+      [data-species='plant-wizard']
+    )
+    .ecoArt {
+    animation: none;
+  }
+}

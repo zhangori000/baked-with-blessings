@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 430 860" role="img" aria-label="Prehistoric valley with a smoking volcano">
+  <title>Prehistoric valley</title>
+  <desc>A sunny prehistoric valley with a gently smoking volcano, a waterfall cliff, a lake, palm trees, tree ferns and a distant long-necked dinosaur.</desc>
+  <defs>
+    <linearGradient id="pvSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#86cbe6" />
+      <stop offset="52%" stop-color="#c2e8e8" />
+      <stop offset="100%" stop-color="#f9e5bc" />
+    </linearGradient>
+    <linearGradient id="pvGround" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a3cf57" />
+      <stop offset="100%" stop-color="#96c650" />
+    </linearGradient>
+    <linearGradient id="pvLake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7fcad6" />
+      <stop offset="100%" stop-color="#a3dde2" />
+    </linearGradient>
+    <radialGradient id="pvGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#ffd36b" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#ff8a3d" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#ff8a3d" stop-opacity="0" />
+    </radialGradient>
+    <path id="pvFrond" d="M0 3C28-13 61-17 92-7C60-10 31-5 0 7Z M12 4L20 17L25 1Z M28 0L37 14L41-3Z M45-4L54 9L58-6Z M62-7L70 4L74-8Z M78-8L84 0L86-8Z" />
+    <path id="pvTFrond" d="M0 0C20-14 46-12 64 6C70 12 70 20 64 24C62 16 58 10 50 8C36 2 18 2 0 6Z M10-5L13-14L18-4Z M24-8L28-17L32-7Z M38-8L44-16L46-5Z M51-4L59-9L58 1Z M60 4L68 1L65 9Z" />
+    <path id="pvFern" d="M-2 0C-4-22 0-46 11-68L14-67C5-46 2-22 3 0Z M0.7 -10C-8.3 -17.0 -17.3 -14.2 -18.2 -8.6C-10.1 -9.3 -4.7 -7.2 0.7 -5.8Z M2.5 -14C11.5 -22.4 20.5 -21.0 21.9 -16.1C13.3 -14.7 7.9 -11.9 2.5 -10.5Z M1.5 -20C-6.4 -26.1 -14.2 -23.7 -15.0 -18.8C-7.9 -19.4 -3.2 -17.6 1.5 -16.3Z M3.4 -24C11.2 -31.3 19.0 -30.1 20.3 -25.8C12.8 -24.6 8.1 -22.2 3.4 -21.0Z M2.7 -30C-4.0 -35.2 -10.7 -33.1 -11.3 -29.0C-5.3 -29.5 -1.3 -27.9 2.7 -26.9Z M4.8 -34C11.4 -40.2 18.1 -39.2 19.2 -35.6C12.8 -34.5 8.8 -32.4 4.8 -31.4Z M4.3 -40C-1.2 -44.3 -6.6 -42.6 -7.2 -39.1C-2.2 -39.6 1.0 -38.3 4.3 -37.4Z M6.6 -44C12.1 -49.1 17.6 -48.3 18.5 -45.3C13.2 -44.4 9.9 -42.7 6.6 -41.9Z M6.5 -50C2.2 -53.4 -2.1 -52.0 -2.6 -49.3C1.3 -49.7 3.9 -48.7 6.5 -48.0Z M9.0 -54C13.3 -58.0 17.6 -57.4 18.3 -55.0C14.2 -54.3 11.6 -53.0 9.0 -52.3Z M8.9 -59C5.7 -61.5 2.6 -60.5 2.2 -58.5C5.1 -58.8 7.0 -58.0 8.9 -57.5Z M11.5 -63C14.7 -65.9 17.8 -65.5 18.3 -63.7C15.3 -63.2 13.4 -62.3 11.5 -61.8Z" />
+    <g id="pvPalm">
+      <path d="M-7 0C-8-50-4-104 6-150L14-149C10-104 9-50 9 0Z" fill="#8a6142" />
+      <path d="M3 0C3-50 6-104 11-150L14-149C10-104 9-50 9 0Z" fill="#a57a52" />
+      <path d="M-6-28L8-34L8-30L-6-24Z M-5-62L10-68L10-64L-5-58Z M-3-96L11-102L11-98L-3-92Z M1-128L12-133L12-129L1-124Z" fill="#6e4c33" />
+      <use href="#pvFrond" transform="translate(9 -150) rotate(-10) scale(1.05)" fill="#3f8250" />
+      <use href="#pvFrond" transform="translate(9 -150) rotate(32) scale(0.82)" fill="#2f6b45" />
+      <use href="#pvFrond" transform="translate(9 -150) scale(-1 1) rotate(-6) scale(0.94)" fill="#3f8250" />
+      <use href="#pvFrond" transform="translate(9 -150) scale(-1 1) rotate(36) scale(0.74)" fill="#2f6b45" />
+      <use href="#pvFrond" transform="translate(9 -152) rotate(-48) scale(0.7)" fill="#5f9f52" />
+      <use href="#pvFrond" transform="translate(9 -152) scale(-1 1) rotate(-62) scale(0.6)" fill="#5f9f52" />
+      <ellipse cx="9" cy="-150" rx="8" ry="5" fill="#6e4c33" />
+    </g>
+    <g id="pvTreeFern">
+      <path d="M-5 0C-6-36-4-72 0-104L6-104C8-72 8-36 7 0Z" fill="#6e4c33" />
+      <path d="M1 0C2-36 3-72 3-104L6-104C8-72 8-36 7 0Z" fill="#8a6142" />
+      <path d="M-4-20L7-24L7-21L-4-17Z M-3-50L7-54L7-51L-3-47Z M-1-80L7-83L7-80L-1-77Z" fill="#5a3d28" />
+      <use href="#pvTFrond" transform="translate(3 -104) rotate(4) scale(0.95)" fill="#2f6b45" />
+      <use href="#pvTFrond" transform="translate(3 -104) scale(-1 1) rotate(8) scale(0.88)" fill="#2f6b45" />
+      <use href="#pvTFrond" transform="translate(3 -106) rotate(-26) scale(0.8)" fill="#3f8250" />
+      <use href="#pvTFrond" transform="translate(3 -106) scale(-1 1) rotate(-30) scale(0.74)" fill="#3f8250" />
+      <use href="#pvTFrond" transform="translate(3 -108) rotate(-62) scale(0.56)" fill="#5f9f52" />
+    </g>
+    <g id="pvFernClump">
+      <use href="#pvFern" transform="rotate(-42) scale(0.86)" fill="#2f6b45" />
+      <use href="#pvFern" transform="scale(-1 1) rotate(-40) scale(0.9)" fill="#2f6b45" />
+      <use href="#pvFern" transform="rotate(-16)" fill="#3f8250" />
+      <use href="#pvFern" transform="scale(-1 1) rotate(-12) scale(0.94)" fill="#3f8250" />
+      <use href="#pvFern" transform="rotate(4) scale(0.78)" fill="#5f9f52" />
+    </g>
+    <g id="pvBrachio">
+      <rect x="-22" y="0" width="8" height="24" rx="3" fill="#79a598" />
+      <rect x="14" y="0" width="8" height="22" rx="3" fill="#79a598" />
+      <path d="M-96 0C-74-2-56-10-44-16C-30-26-6-28 10-20C18-16 22-24 26-40C30-58 34-72 40-80C44-86 54-87 59-83C63-80 61-76 56-76C51-76 47-74 45-70C39-56 35-36 31-14C29-4 25 2 19 6L19 24L10 24L8 8C0 10-14 10-24 8L-26 24L-35 24L-37 4C-54 4-74 2-96 0Z" fill="#8db8a8" />
+    </g>
+    <path id="pvPtero" d="M0 4L24-10L33-3L38-7L50-9L44-2L70 4L45 7L37 4L29 8Z" />
+  </defs>
+  <style>
+    .pvSmoke { animation: pvSmokeRise 9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .pvSmoke2 { animation-delay: -3s; }
+    .pvSmoke3 { animation-delay: -6s; }
+    .pvGlow { animation: pvGlowPulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .pvFalls { animation: pvFallsFlow 1.6s linear infinite; }
+    .pvPtero { animation: pvPteroGlide 16s ease-in-out infinite; }
+    @keyframes pvSmokeRise {
+      0% { opacity: 0; transform: translate(0, 14px) scale(0.7); }
+      20% { opacity: 0.9; }
+      100% { opacity: 0; transform: translate(var(--pv-smoke-x, -40px), -54px) scale(1.3); }
+    }
+    @keyframes pvGlowPulse {
+      0%, 100% { opacity: 0.6; transform: scale(0.92); }
+      50% { opacity: 1; transform: scale(1.06); }
+    }
+    @keyframes pvFallsFlow {
+      from { transform: translateY(0); }
+      to { transform: translateY(44px); }
+    }
+    @keyframes pvPteroGlide {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-60px, 10px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pvSmoke, .pvGlow, .pvFalls, .pvPtero { animation: none; }
+    }
+  </style>
+  <rect width="430" height="860" fill="url(#pvSky)" />
+
+  <circle cx="352" cy="160" r="40" fill="#fff4cf" opacity="0.45" />
+  <circle cx="352" cy="160" r="26" fill="#fff0bb" />
+
+  <g fill="#fffaf2">
+    <ellipse cx="96" cy="150" rx="50" ry="11" />
+    <ellipse cx="116" cy="140" rx="28" ry="14" />
+    <ellipse cx="80" cy="143" rx="19" ry="9" />
+    <ellipse cx="380" cy="262" rx="40" ry="9" />
+    <ellipse cx="396" cy="254" rx="22" ry="11" />
+  </g>
+  <g fill="#f3e2cf" opacity="0.9">
+    <ellipse cx="100" cy="156" rx="42" ry="5" />
+    <ellipse cx="384" cy="268" rx="34" ry="4" />
+  </g>
+
+  <g class="pvPtero" fill="#5f7f8a" opacity="0.55">
+    <use href="#pvPtero" transform="translate(262 312) scale(0.5)" />
+    <use href="#pvPtero" transform="translate(300 330) scale(0.38)" />
+  </g>
+
+  <path d="M0 382L40 360L90 374L140 346L190 368L240 352L300 372L360 350L430 366V560H0Z" fill="#c6e2d6" />
+  <path d="M0 410L60 392L120 404L180 386L250 406L320 390L380 404L430 394V560H0Z" fill="#a9cfc1" />
+
+  <ellipse class="pvGlow" cx="96.0" cy="339.8" rx="39.6" ry="18.9" fill="url(#pvGlow)" />
+  <path d="M-45.9 486.0C-7.2 461.9 41.0 403.4 71.9 351.8L77.1 343.2L84.8 339.8L90.0 345.0L96.9 338.1L103.7 341.5L110.6 338.1L115.8 346.7C145.9 403.4 190.6 461.9 238.8 486.0Z" fill="#7a4e45" />
+  <path d="M-45.9 486.0C-7.2 461.9 41.0 403.4 71.9 351.8L77.1 343.2C66.8 384.5 49.6 437.8 34.1 486.0Z" fill="#5f3a34" />
+  <path d="M110.6 338.1L115.8 346.7C145.9 403.4 190.6 461.9 238.8 486.0L216.4 486.0C178.6 458.5 142.4 405.2 107.2 343.2Z" fill="#94604f" />
+  <ellipse cx="94.3" cy="343.2" rx="12.9" ry="2.9" fill="#ffb547" />
+  <path d="M87.4 345.0C84.0 365.6 73.6 384.5 70.2 403.4C68.5 412.0 75.4 413.8 77.9 405.2C82.2 388.0 90.8 367.3 92.6 345.0Z" fill="#ff8a3d" />
+  <path d="M70.2 403.4C66.8 417.2 61.6 429.2 59.9 441.3C60.7 444.7 64.2 444.7 65.0 439.6C66.8 429.2 71.9 415.5 75.4 405.2Z" fill="#ff8a3d" />
+  <path d="M63.3 398.3C70.2 396.6 80.5 398.3 85.7 403.4C78.8 406.9 68.5 406.9 61.6 403.4Z" fill="#5f3a34" />
+  <path d="M101.2 345.0C108.0 365.6 114.9 379.4 127.0 391.4C130.4 394.8 133.8 391.4 131.3 388.0C121.8 375.9 113.2 360.4 106.3 345.0Z" fill="#ffb547" />
+  <path d="M120.1 384.5C127.0 382.8 135.6 384.5 140.7 389.7C133.8 393.1 125.2 393.1 118.4 389.7Z" fill="#5f3a34" />
+  <path d="M89.1 346.7C85.7 360.4 80.5 372.5 77.1 384.5C80.5 372.5 85.7 358.7 90.8 346.7Z" fill="#ffd36b" />
+  <path d="M101.2 334.6C108.0 317.4 118.4 303.7 133.8 295.1C149.3 286.5 164.8 286.5 175.1 276.2C182.0 267.6 173.4 259.0 161.4 262.4C152.8 252.1 135.6 253.8 128.7 264.1C114.9 260.7 102.9 271.0 102.9 284.8C92.6 295.1 87.4 315.7 89.1 334.6Z" fill="#ded4cc" opacity="0.92" />
+  <path d="M97.7 334.6C102.9 319.2 111.5 307.1 123.5 298.5C114.9 295.1 106.3 288.2 104.6 281.3C96.0 291.6 92.6 314.0 92.6 334.6Z" fill="#c9beb5" />
+  <g fill="#d6cbc2" style="--pv-smoke-x: 30px">
+    <ellipse class="pvSmoke" cx="99.4" cy="322.6" rx="13.8" ry="10.3" />
+    <ellipse class="pvSmoke pvSmoke2" cx="106.3" cy="308.8" rx="16.3" ry="12.0" />
+    <ellipse class="pvSmoke pvSmoke3" cx="116.6" cy="295.1" rx="18.9" ry="13.8" />
+  </g>
+
+  <use href="#pvBrachio" transform="translate(248 468) scale(0.5)" />
+
+  <path d="M312 510L326 420C330 404 340 396 354 394L430 388V510Z" fill="#8f7c68" />
+  <path d="M312 510L326 420C330 404 340 396 354 394L370 392C356 420 346 460 340 510Z" fill="#76634f" />
+  <path d="M318 414C332 394 356 388 378 392C400 382 420 384 430 388V404C410 400 390 404 372 410C352 404 334 410 322 424Z" fill="#3f8250" />
+  <path d="M330 406C348 396 368 394 386 400C404 392 420 394 430 398V404C410 400 390 404 372 410C354 406 338 410 326 418Z" fill="#5f9f52" />
+  <clipPath id="pvChute376"><rect x="376" y="406" width="24" height="100" /></clipPath>
+  <path d="M376 406C383.2 436 374 453.0 377 506L401 506C398 453.0 402 436 400 406Z" fill="#e2f5f7" />
+  <g clip-path="url(#pvChute376)"><g class="pvFalls" fill="#b9e4ec">
+    <rect x="380.3" y="362" width="3.4" height="15.0" rx="2" />
+    <rect x="388.5" y="380.5" width="3.4" height="16.7" rx="2" />
+    <rect x="394.2" y="367.3" width="2.4" height="12.3" rx="2" />
+    <rect x="380.3" y="406" width="3.4" height="15.0" rx="2" />
+    <rect x="388.5" y="424.5" width="3.4" height="16.7" rx="2" />
+    <rect x="394.2" y="411.3" width="2.4" height="12.3" rx="2" />
+    <rect x="380.3" y="450" width="3.4" height="15.0" rx="2" />
+    <rect x="388.5" y="468.5" width="3.4" height="16.7" rx="2" />
+    <rect x="394.2" y="455.3" width="2.4" height="12.3" rx="2" />
+    <rect x="380.3" y="494" width="3.4" height="15.0" rx="2" />
+    <rect x="388.5" y="512.5" width="3.4" height="16.7" rx="2" />
+    <rect x="394.2" y="499.3" width="2.4" height="12.3" rx="2" />
+    <rect x="380.3" y="538" width="3.4" height="15.0" rx="2" />
+    <rect x="388.5" y="556.5" width="3.4" height="16.7" rx="2" />
+    <rect x="394.2" y="543.3" width="2.4" height="12.3" rx="2" />
+  </g></g>
+  <rect x="372" y="400" width="32" height="7" rx="3.5" fill="#cdeef2" />
+
+  <path d="M-10 512C-10.0 487.4 26.0 485.4 26.0 499.4C26.0 476.4 62.0 474.4 62.0 488.4C62.0 485.2 98.0 483.2 98.0 497.2C98.0 474.2 150.0 472.2 150.0 486.2L150 512Z" fill="#7dac91" />
+  <path d="M110 512C110.0 486.2 152.0 484.2 152.0 498.2C152.0 495.0 194.0 493.0 194.0 507.0C194.0 484.0 236.0 482.0 236.0 496.0C236.0 492.8 250.0 490.8 250.0 504.8L250 512Z" fill="#669982" />
+  <path d="M210 512C210.0 487.0 250.0 485.0 250.0 499.0C250.0 476.0 290.0 474.0 290.0 488.0C290.0 484.8 330.0 482.8 330.0 496.8L330 512Z" fill="#7dac91" />
+
+  <path d="M236 528C252 512 284 504 330 502L430 500V544C380 548 330 548 290 544C266 542 248 536 236 528Z" fill="url(#pvLake)" />
+  <g fill="#d2f0f2" opacity="0.85">
+    <rect x="300" y="514" width="40" height="3" rx="1.5" />
+    <rect x="356" y="528" width="48" height="3" rx="1.5" />
+  </g>
+  <ellipse cx="388" cy="504" rx="26" ry="6" fill="#e8f8f9" />
+
+  <path d="M0 508C80 506 160 512 236 522C270 538 330 548 430 542V860H0Z" fill="url(#pvGround)" />
+  <path d="M0 664C90 654 180 660 270 664C330 666 390 660 430 658V860H0Z" fill="#78b443" />
+  <path d="M0 794C110 786 230 792 330 794C370 795 400 792 430 790V860H0Z" fill="#6aa13b" />
+
+  <g fill="#8db84c">
+    <path d="M182 580L188 572L190 580L196 574L194 584C190 588 184 586 182 580Z" />
+    <path d="M210 592L216 584L218 592L224 586L222 596C218 600 212 598 210 592Z" />
+    <path d="M238 582L244 574L246 582L252 576L250 586C246 590 240 588 238 582Z" />
+  </g>
+
+  <ellipse cx="62" cy="606" rx="22" ry="12" fill="#a99a8a" />
+  <ellipse cx="68" cy="601" rx="14" ry="7" fill="#bfb1a1" />
+  <ellipse cx="82" cy="610" rx="11" ry="6" fill="#9a8a78" />
+
+  <use href="#pvPalm" transform="translate(26 646) scale(1.18)" />
+  <use href="#pvTreeFern" transform="translate(372 590) scale(0.86)" />
+  <use href="#pvPalm" transform="translate(408 690) scale(1.2) rotate(-5)" />
+
+  <use href="#pvFernClump" transform="translate(36 806) scale(1.1)" />
+  <use href="#pvFernClump" transform="translate(410 832) scale(1.05)" />
+</svg>

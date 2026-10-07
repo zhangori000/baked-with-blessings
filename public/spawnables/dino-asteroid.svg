@@ -1,0 +1,29 @@
+<svg width="170" height="96" viewBox="0 0 170 96" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dinoAsteroidFlame" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffcf7a" stop-opacity="0" />
+      <stop offset="55%" stop-color="#ff9a3d" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#ff5a2a" stop-opacity="0.95" />
+    </linearGradient>
+    <radialGradient id="dinoAsteroidGlow" cx="0.72" cy="0.48" r="0.48">
+      <stop offset="0%" stop-color="#fff2c0" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#ff9a3d" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#ff5a2a" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <path d="M2 44C34 16 78 22 121 39C77 42 35 56 2 76Z" fill="url(#dinoAsteroidFlame)" opacity="0.85" />
+  <path d="M18 24C52 16 86 28 123 46C80 43 50 45 18 58Z" fill="#ffd36b" opacity="0.5" />
+  <path d="M26 70C60 50 92 50 125 55C84 65 54 77 26 90Z" fill="#ff7a3d" opacity="0.6" />
+  <circle cx="52" cy="34" r="2" fill="#ffd36b" opacity="0.8" />
+  <circle cx="40" cy="62" r="1.6" fill="#ff7a3d" opacity="0.8" />
+  <circle cx="70" cy="76" r="1.8" fill="#ffb04d" opacity="0.7" />
+  <ellipse cx="123" cy="51" rx="46" ry="39" fill="url(#dinoAsteroidGlow)" />
+  <path d="M106 16C125 7 150 15 161 35C171 54 157 79 135 87C114 94 90 85 79 67C67 46 82 25 106 16Z" fill="#5e4038" />
+  <path d="M101 22C117 15 139 18 151 34C134 30 114 30 94 39C94 32 96 27 101 22Z" fill="#7d5a4b" />
+  <path d="M79 55C93 67 115 73 142 72C130 87 103 87 88 73C82 68 79 62 79 55Z" fill="#3e2a2c" opacity="0.72" />
+  <ellipse cx="128" cy="38" rx="12" ry="8" fill="#2e1f22" opacity="0.45" />
+  <ellipse cx="105" cy="58" rx="10" ry="7" fill="#2e1f22" opacity="0.4" />
+  <ellipse cx="141" cy="62" rx="7" ry="5" fill="#2e1f22" opacity="0.36" />
+  <path d="M84 40C88 50 86 58 80 64M120 74C126 70 132 70 138 74" fill="none" stroke="#ff9a3d" stroke-width="2.4" stroke-linecap="round" opacity="0.8" />
+  <path d="M96 29C104 20 120 15 136 20C121 21 108 26 96 38Z" fill="#c08a55" opacity="0.5" />
+</svg>

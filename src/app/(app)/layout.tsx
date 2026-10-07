@@ -81,7 +81,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
         <link href="/favicon.ico" rel="alternate icon" sizes="32x32" />
       </head>
-      <body>
+      {/* Browser extensions such as Grammarly add attributes to <body> before React hydrates. */}
+      <body suppressHydrationWarning>
         <Providers>
           <ViewportFlowers />
           <div className="siteFrame">

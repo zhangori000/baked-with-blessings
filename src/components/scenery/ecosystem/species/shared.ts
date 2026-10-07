@@ -203,7 +203,15 @@ export const fireSpecies: EcoSpecies = {
         Math.abs(other.x - entity.x) < unit * 1.5 &&
         onGround(other, world)
       ) {
-        world.kill(other)
+        // Units with a health bar burn down through it instead of vanishing at full health.
+        if (other.maxHp > 1) {
+          other.hp -= 0.4
+          other.data.hitFlash = world.time
+        }
+
+        if (other.maxHp <= 1 || other.hp <= 0) {
+          world.kill(other)
+        }
       }
     }
   },

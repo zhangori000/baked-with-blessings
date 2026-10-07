@@ -1,28 +1,67 @@
-<svg width="158" height="92" viewBox="0 0 158 92" xmlns="http://www.w3.org/2000/svg">
+<svg width="190" height="118" viewBox="0 0 190 118" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="boatLanternGlow" cx="0.5" cy="0.5" r="0.55">
-      <stop offset="0%" stop-color="#fff6c8" stop-opacity="0.95" />
-      <stop offset="100%" stop-color="#ffd966" stop-opacity="0" />
+    <radialGradient id="boatGlow" cx="0.52" cy="0.52" r="0.56">
+      <stop offset="0%" stop-color="#fff4b8" stop-opacity="0.9" />
+      <stop offset="46%" stop-color="#ffd36f" stop-opacity="0.34" />
+      <stop offset="100%" stop-color="#ffd36f" stop-opacity="0" />
     </radialGradient>
+    <linearGradient id="hullWarm" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#cb8748" />
+      <stop offset="56%" stop-color="#8d512b" />
+      <stop offset="100%" stop-color="#5c321d" />
+    </linearGradient>
+    <linearGradient id="hairGold" x1="0" x2="1" y1="0" y2="0.18">
+      <stop offset="0%" stop-color="#fff1a8" />
+      <stop offset="58%" stop-color="#f1bd44" />
+      <stop offset="100%" stop-color="#c98325" />
+    </linearGradient>
+    <linearGradient id="waterGold" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#ffd36f" stop-opacity="0" />
+      <stop offset="45%" stop-color="#ffd36f" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#ffd36f" stop-opacity="0" />
+    </linearGradient>
   </defs>
-  <ellipse cx="126" cy="31" rx="22" ry="22" fill="url(#boatLanternGlow)" />
-  <line x1="121" y1="70" x2="121" y2="18" stroke="#6b4423" stroke-width="2.2" stroke-linecap="round" />
-  <path d="M114 20H128L132 37H110Z" fill="#ffd966" />
-  <path d="M118 22H126L128 35H116Z" fill="#fff6c8" opacity="0.8" />
-  <rect x="112" y="16" width="18" height="5" rx="1.5" fill="#5d4037" />
-  <rect x="110" y="36" width="22" height="5" rx="1.5" fill="#5d4037" />
-  <path d="M10 53C42 71 113 71 148 52C143 75 119 92 78 92C37 92 17 75 10 53Z" fill="#8b4a22" />
-  <path d="M22 63C54 77 109 77 138 61C126 78 103 87 77 87C50 87 31 78 22 63Z" fill="#6b4423" opacity="0.72" />
-  <path d="M13 53C51 61 108 60 146 52C108 69 50 70 13 53Z" fill="#d4a652" />
-  <circle cx="62" cy="36" r="10" fill="#f0d4b0" />
-  <path d="M50 44C58 36 70 36 78 45C78 58 69 67 56 67C49 61 46 51 50 44Z" fill="#8bc4d4" />
-  <path d="M49 40C34 46 24 59 18 80C39 74 54 61 64 42Z" fill="#ffd966" />
-  <path d="M18 77C31 74 43 66 53 55C42 72 30 83 18 86Z" fill="#d4a652" opacity="0.75" />
-  <circle cx="91" cy="36" r="9" fill="#f0d4b0" />
-  <path d="M79 45C88 36 102 38 110 48C109 61 98 69 85 65C78 59 76 51 79 45Z" fill="#9ccc65" />
-  <path d="M84 35C88 27 99 27 105 35C101 40 91 41 84 35Z" fill="#8b7355" />
-  <path d="M99 51L151 79" stroke="#8b7355" stroke-width="3" stroke-linecap="round" />
-  <ellipse cx="148" cy="80" rx="9" ry="3" fill="#8b7355" transform="rotate(25 148 80)" />
-  <path d="M105 46L141 27" stroke="#8b7355" stroke-width="2.6" stroke-linecap="round" />
-  <ellipse cx="142" cy="26" rx="8" ry="2.8" fill="#8b7355" transform="rotate(-27 142 26)" />
+  <ellipse cx="96" cy="72" rx="84" ry="42" fill="url(#boatGlow)" opacity="0.82" />
+  <path d="M18 90C58 102 131 102 173 88" fill="none" stroke="#7d69c8" stroke-width="5" stroke-linecap="round" opacity="0.28" />
+  <path d="M31 99C66 109 126 109 160 99" fill="none" stroke="url(#waterGold)" stroke-width="4" stroke-linecap="round" />
+  <path d="M52 110C78 115 113 115 139 110" fill="none" stroke="url(#waterGold)" stroke-width="3" stroke-linecap="round" opacity="0.75" />
+  <circle cx="158" cy="27" r="18" fill="#ffe59b" opacity="0.2" />
+  <path d="M150 15H166L171 36H145Z" fill="#ffd978" opacity="0.95" />
+  <path d="M154 18H164L166 33H153Z" fill="#fff5c8" opacity="0.92" />
+  <rect x="148" y="13" width="20" height="4" rx="2" fill="#8b5a2c" />
+  <rect x="145" y="35" width="26" height="5" rx="2.5" fill="#8b5a2c" />
+  <path d="M59 49C45 58 34 76 24 102C40 101 59 84 71 59C75 51 68 45 59 49Z" fill="url(#hairGold)" />
+  <path d="M43 86C34 99 27 108 17 111C31 113 47 102 60 82" fill="none" stroke="#d89228" stroke-width="7" stroke-linecap="round" opacity="0.82" />
+  <path d="M51 57C42 69 37 82 34 96" fill="none" stroke="#fff0a6" stroke-width="3" stroke-linecap="round" opacity="0.82" />
+  <path d="M113 57L164 31" fill="none" stroke="#8b6743" stroke-width="4" stroke-linecap="round" />
+  <ellipse cx="165" cy="31" rx="11" ry="3.8" fill="#8b6743" transform="rotate(-27 165 31)" />
+  <path d="M111 61L176 93" fill="none" stroke="#8b6743" stroke-width="4" stroke-linecap="round" />
+  <ellipse cx="176" cy="93" rx="12" ry="4" fill="#8b6743" transform="rotate(28 176 93)" />
+  <path d="M17 63C50 78 138 79 177 60C170 94 135 112 88 112C48 112 24 94 17 63Z" fill="url(#hullWarm)" />
+  <path d="M21 63C59 73 130 72 174 60C130 84 59 84 21 63Z" fill="#e2a65d" />
+  <path d="M35 79C69 92 126 91 157 76C144 95 119 105 87 105C58 105 43 95 35 79Z" fill="#5f341f" opacity="0.58" />
+  <path d="M45 76C69 82 116 84 148 75" fill="none" stroke="#f0bf75" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+  <path d="M58 88C83 94 113 94 139 88" fill="none" stroke="#3d2318" stroke-width="1.7" stroke-linecap="round" opacity="0.38" />
+  <circle cx="58" cy="43" r="10" fill="#f4c9a3" />
+  <path d="M49 41C52 32 67 31 72 41C65 43 57 43 49 41Z" fill="url(#hairGold)" />
+  <path d="M52 50C59 43 72 46 78 56C75 66 60 69 51 62C48 58 48 53 52 50Z" fill="#b18be8" />
+  <path d="M50 57C59 52 70 54 78 60" fill="none" stroke="#7f5cc2" stroke-width="4" stroke-linecap="round" opacity="0.9" />
+  <circle cx="55" cy="43" r="1.2" fill="#2b2532" />
+  <circle cx="61" cy="43" r="1.2" fill="#2b2532" />
+  <path d="M55 47Q59 50 63 47" fill="none" stroke="#8a4d3a" stroke-width="1.5" stroke-linecap="round" />
+  <circle cx="69" cy="37" r="3" fill="#e77fb3" />
+  <path d="M66 37C70 34 72 35 73 39" fill="none" stroke="#f9c74f" stroke-width="1.4" stroke-linecap="round" />
+  <circle cx="113" cy="42" r="9" fill="#e9bd93" />
+  <path d="M103 39C108 30 122 32 128 41C121 45 111 45 103 39Z" fill="#60452f" />
+  <path d="M99 50C108 42 124 44 132 56C129 66 116 72 103 67C98 61 96 54 99 50Z" fill="#f5f2e8" />
+  <path d="M104 50C113 44 125 47 130 58C126 66 116 70 106 66C102 61 101 55 104 50Z" fill="#289184" />
+  <path d="M96 58L112 57M121 58L139 55" fill="none" stroke="#e9bd93" stroke-width="4" stroke-linecap="round" />
+  <circle cx="110" cy="42" r="1.2" fill="#2b2532" />
+  <circle cx="116" cy="42" r="1.2" fill="#2b2532" />
+  <path d="M110 46Q114 48 118 46" fill="none" stroke="#7b4734" stroke-width="1.5" stroke-linecap="round" />
+  <circle cx="139" cy="55" r="3" fill="#6f4a2d" />
+  <circle cx="92" cy="61" r="3" fill="#6f4a2d" />
+  <path d="M72 61C81 57 92 58 99 63" fill="none" stroke="#6f3f25" stroke-width="2" stroke-linecap="round" opacity="0.56" />
+  <path d="M113 56L136 55" fill="none" stroke="#8b6743" stroke-width="3" stroke-linecap="round" />
+  <path d="M93 61L112 61" fill="none" stroke="#8b6743" stroke-width="3" stroke-linecap="round" />
 </svg>

@@ -35,14 +35,15 @@ export type EcoTag =
   | 'caterpillar'
   | 'cloud'
   | 'dragon'
+  | 'dark-lord'
   | 'fire'
   | 'fireball'
   | 'firefly'
   | 'fox'
   | 'frog'
   | 'fuel'
+  | 'goose'
   | 'hawk'
-  | 'hedgehog'
   | 'insect'
   | 'knight'
   | 'lantern'
@@ -65,7 +66,6 @@ export type EcoTag =
   | 'spirit'
   | 'star'
   | 'swan'
-  | 'tanuki'
   | 'target'
   | 'torii'
   | 'treasure'
@@ -73,20 +73,26 @@ export type EcoTag =
   | 'villager'
   | 'wizard'
 
+export type EcoMatchup = 'even' | 'strong' | 'weak'
+
 export type EcoEntity = {
   age: number
   anchor: EcoAnchor
   aspect: number
   asset: string
   countAs: string | null
+  controlResetAsset: string
   data: Record<string, number>
   dying: boolean
   facing: 1 | -1
   fx: string
+  controlBuffs?: EcoControlBuff[]
+  controlCast?: EcoControlCast
   hp: number
   id: number
   idle: EcoIdle
   lift: number
+  maxHp: number
   removed: boolean
   scale: number
   size: number
@@ -98,6 +104,19 @@ export type EcoEntity = {
   user: boolean
   vx: number
   vy: number
+  x: number
+  y: number
+}
+
+export type EcoEffect = {
+  amount?: number
+  id?: number
+  key?: EcoControlAbilityKey
+  name?: string
+  text?: string
+  tone?: 'heal' | 'heavy' | 'normal' | 'resist' | 'strong'
+  type: 'banner' | 'damage' | 'heal' | 'shake' | 'vfx'
+  vfx?: EcoControlAbility['vfx']
   x: number
   y: number
 }
@@ -115,6 +134,84 @@ export type EcoSpawnOptions = {
   y?: number
 }
 
+export type EcoControlMove = 'fly' | 'ground' | 'swim'
+
+export type EcoControlAbilityKey = 'q' | 'w' | 'e' | 'r'
+
+export type EcoTelegraph = {
+  angle?: number
+  range: number
+  shape: 'circle' | 'cone' | 'ellipse' | 'line' | 'self'
+  width?: number
+}
+
+export type EcoControlCastPhase = 'active' | 'recovery' | 'windup'
+
+export type EcoControlCast = {
+  activeStarted: boolean
+  elapsed: number
+  endX: number
+  endY: number
+  hitIds: Set<number>
+  key: EcoControlAbilityKey
+  phase: EcoControlCastPhase
+  phaseElapsed: number
+  queuedKey: EcoControlAbilityKey | null
+  releaseRequested: boolean
+  startX: number
+  startY: number
+}
+
+export type EcoControlBuff = {
+  expiresAt: number
+  icon: string
+  name: string
+  startedAt: number
+}
+
+export type EcoControlAbilityContext = {
+  activeProgress: number
+  cast: EcoControlCast
+  phaseProgress: number
+}
+
+export type EcoControlAbility = {
+  active?: number
+  archetype?: string
+  asset?: string | ((entity: EcoEntity) => string | undefined)
+  charge?: { max: number; min?: number }
+  cooldown: number
+  description: string
+  dash?: number
+  icon?: string
+  key: EcoControlAbilityKey
+  name: string
+  recovery?: number
+  run?(entity: EcoEntity, world: EcoWorld, context: EcoControlAbilityContext): void
+  telegraph?: EcoTelegraph
+  tick?: (entity: EcoEntity, world: EcoWorld, context: EcoControlAbilityContext, dt: number) => void
+  ultimate?: boolean
+  vfx?: 'bite' | 'buff' | 'charge' | 'heal' | 'ink' | 'shockwave' | 'slash' | 'water'
+  windup?: number
+}
+
+export type EcoControls = {
+  abilities: readonly EcoControlAbility[]
+  idleState?: string
+  move: EcoControlMove
+  moveState?: string
+  pose?: (entity: EcoEntity, world: EcoWorld, moving: boolean) => { asset: string; state: string }
+  speed: number
+}
+
+export type EcoControlInput = {
+  cursorX?: number
+  cursorY?: number
+  followCursor: boolean
+  x: number
+  y: number
+}
+
 export type EcoWorld = {
   readonly entities: readonly EcoEntity[]
   readonly groundY: number
@@ -128,19 +225,28 @@ export type EcoWorld = {
   readonly wind: number
   byId(id: number | null): EcoEntity | null
   canBreed(): boolean
+  damage(attacker: EcoEntity | null, target: EcoEntity, amount: number, fromX?: number): number
+  effect(effect: EcoEffect): void
+  gainControlResource(entity: EcoEntity, amount: number): void
+  heal(entity: EcoEntity, amount: number): number
+  addControlBuff(entity: EcoEntity, name: string, icon: string, seconds: number): void
   count(test: (entity: EcoEntity) => boolean): number
   has(entity: EcoEntity, tag: EcoTag): boolean
   hasSpecies(species: string): boolean
   heightOf(entity: EcoEntity): number
   kill(entity: EcoEntity): void
+  matchup(attacker: EcoEntity, defender: EcoEntity): EcoMatchup
+  edge(attacker: EcoEntity, defender: EcoEntity): number
   nearest(
     from: { x: number; y: number },
     test: (entity: EcoEntity) => boolean,
     maxDistance?: number,
   ): EcoEntity | null
   remove(entity: EcoEntity): void
+  releaseControlAbility(key: EcoControlAbilityKey): boolean
   resetTally(key: string): void
   setAsset(entity: EcoEntity, asset: string): void
+  shake(amount?: number): void
   setState(entity: EcoEntity, state: string): void
   spawn(species: string, options?: EcoSpawnOptions): EcoEntity | null
   tally(key: string, delta?: number): number
@@ -153,6 +259,7 @@ export type EcoSpecies = {
   asset: string | (() => string)
   burnTime?: number
   countAs?: string | null
+  controls?: EcoControls
   hp?: number
   idle?: EcoIdle
   init?: (entity: EcoEntity, world: EcoWorld) => void
@@ -161,6 +268,8 @@ export type EcoSpecies = {
   rest?: (entity: EcoEntity, world: EcoWorld) => void
   size: readonly [number, number]
   state?: string
+  strongVs?: readonly string[]
+  weakTo?: readonly string[]
   style?: (entity: EcoEntity, world: EcoWorld) => Record<string, string>
   tags: readonly EcoTag[]
   tick: (entity: EcoEntity, world: EcoWorld, dt: number) => void
@@ -170,21 +279,80 @@ export type EcoSpeciesMap = Record<string, EcoSpecies>
 
 export type EcoEntityView = {
   anchor: EcoAnchor
+  aspect: number
   asset: string
+  controllable: boolean
+  buffs: readonly EcoControlBuffView[]
+  controlled: boolean
   dying: boolean
   fuel: boolean
+  health: number
+  healthMax: number
   id: number
   idle: EcoIdle
   layer: EcoLayer
+  label: string
   particles?: SpawnParticles
   rain: boolean
+  selected: boolean
   size: number
+  species: string
+  strong: readonly string[]
+  weak: readonly string[]
+}
+
+export type EcoControlBuffView = {
+  icon: string
+  name: string
+  progress: number
+}
+
+export type EcoControlAbilityView = {
+  archetype?: string
+  chargeProgress: number
+  chargeable: boolean
+  cooldown: number
+  cooldownLeft: number
+  description: string
+  icon?: string
+  locked: boolean
+  key: EcoControlAbilityKey
+  name: string
+  readyFlash: boolean
+  resourceFill: number
+  ultimate: boolean
+}
+
+export type EcoControlEntityView = {
+  abilities: readonly EcoControlAbilityView[]
+  buffs: readonly EcoControlBuffView[]
+  castKey: EcoControlAbilityKey | null
+  castPhase: EcoControlCastPhase | null
+  followCursor: boolean
+  health: number
+  healthMax: number
+  id: number
+  label: string
+  move: EcoControlMove
+  resource: number
   species: string
 }
 
+export type EcoSelectionView = {
+  health: number
+  healthMax: number
+  id: number
+  label: string
+  strong: readonly string[]
+  weak: readonly string[]
+}
+
 export type EcoSnapshot = {
+  controlled: EcoControlEntityView | null
   counts: Readonly<Record<string, number>>
   entities: readonly EcoEntityView[]
   scene: string
+  selected: EcoSelectionView | null
   tallies: Readonly<Record<string, number>>
+  toast: string
 }

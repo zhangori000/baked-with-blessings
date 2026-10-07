@@ -1,0 +1,36 @@
+<svg width="168" height="104" viewBox="0 0 168 104" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="82" cy="98" rx="58" ry="5" fill="#000000" opacity="0.1" />
+  <path d="M19 72C38 49 80 42 116 54C137 61 139 81 120 92C88 109 42 99 19 72Z" fill="#758f62" />
+  <path
+    d="M46 85C76 99 113 91 127 69C124 94 92 107 56 98C36 93 23 84 19 72C28 78 36 83 46 85Z"
+    fill="#5f774f"
+    opacity="0.82"
+  />
+  <path d="M37 52L49 22L59 55Z" fill="#d07b43" />
+  <path d="M58 47L73 12L83 50Z" fill="#e19450" />
+  <path d="M83 45L99 16L107 52Z" fill="#d07b43" />
+  <path d="M108 54L122 29L126 61Z" fill="#e19450" />
+  <path d="M120 59C135 51 151 52 163 63C157 76 140 81 124 72Z" fill="#758f62" />
+  <circle cx="151" cy="62" r="1.8" fill="#26312a" />
+  <path
+    d="M20 72C8 76 3 84 0 96"
+    fill="none"
+    stroke="#5f774f"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+  <path
+    d="M5 96L0 84M5 96L15 88M5 96L17 101"
+    fill="none"
+    stroke="#e6d7a3"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M55 90V103M91 92V103M116 84V101"
+    fill="none"
+    stroke="#5f774f"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+</svg>

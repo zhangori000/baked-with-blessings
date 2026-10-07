@@ -1,0 +1,122 @@
+.scenePickerPanel {
+  margin-top: 0.55rem;
+  width: min(17.5rem, calc(100vw - 2rem));
+}
+
+.scenePicker {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 250, 244, 0.96);
+  border: 1px solid rgba(25, 57, 95, 0.14);
+  border-radius: 1.08rem;
+  box-shadow:
+    0 18px 38px rgba(23, 21, 16, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  padding: 0.6rem;
+}
+
+.scenePickerTitle {
+  color: rgba(23, 58, 99, 0.62);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0.1rem 0.3rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.scenePickerList {
+  display: grid;
+  gap: 0.36rem;
+  max-height: min(32rem, calc(100svh - 12rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.scenePickerChoice {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid rgba(18, 18, 18, 0.08);
+  border-radius: 0.8rem;
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.32rem 0.6rem 0.32rem 0.32rem;
+  text-align: left;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+  width: 100%;
+}
+
+.scenePickerChoice:hover,
+.scenePickerChoice:focus-visible {
+  border-color: rgba(18, 18, 18, 0.28);
+  box-shadow: 0 8px 18px rgba(23, 21, 16, 0.08);
+  transform: translateY(-1px);
+}
+
+.scenePickerChoiceActive {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--home-scene-charge, rgba(255, 220, 124, 0.82)) 26%, white 74%) 0%,
+    #ffffff 100%
+  );
+  border-color: rgba(18, 18, 18, 0.32);
+}
+
+.scenePickerThumb {
+  border-radius: 0.55rem;
+  box-shadow: inset 0 0 0 1px rgba(23, 58, 99, 0.12);
+  flex: 0 0 auto;
+  height: 2.6rem;
+  overflow: hidden;
+  position: relative;
+  width: 4.2rem;
+}
+
+.scenePickerThumbSky,
+.scenePickerThumbMeadow {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.scenePickerThumbSky {
+  object-position: center 30%;
+}
+
+.scenePickerThumbMeadow {
+  height: 55%;
+  inset: auto 0 0;
+  object-position: center top;
+}
+
+.scenePickerLabel {
+  color: #173a63;
+  flex: 1 1 auto;
+  font-family: var(--font-rounded-display);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.scenePickerCheck {
+  color: #173a63;
+  flex: 0 0 auto;
+  height: 1rem;
+  width: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenePickerChoice {
+    transition: none;
+  }
+
+  .scenePickerChoice:hover,
+  .scenePickerChoice:focus-visible {
+    transform: none;
+  }
+}

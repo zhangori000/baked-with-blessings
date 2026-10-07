@@ -1,29 +1,114 @@
-<svg width="128" height="112" viewBox="0 0 128 112" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="61" cy="108" rx="38" ry="4" fill="#000000" opacity="0.1" />
-  <path d="M33 49C35 30 51 18 72 21C95 25 106 42 101 65C96 91 73 105 50 99C33 94 27 72 33 49Z" fill="#c62828" />
-  <path d="M72 25C91 33 97 55 88 76C83 89 71 97 58 100C77 82 81 51 72 25Z" fill="#8b2a6b" opacity="0.38" />
-  <path d="M43 24L36 4L59 18Z" fill="#fff6c8" />
-  <path d="M77 20L94 3L91 30Z" fill="#fff6c8" />
-  <g fill="#202033">
-    <ellipse cx="48" cy="22" rx="13" ry="9" />
-    <ellipse cx="64" cy="16" rx="15" ry="9" />
-    <ellipse cx="82" cy="23" rx="13" ry="9" />
+<svg width="160" height="140" viewBox="0 0 160 140" xmlns="http:&#47;&#47;www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .root {
+        transform-origin: 78px 119px;
+        animation: oniBounce 1.2s ease-in-out infinite;
+      }
+      .club {
+        transform-origin: 112px 62px;
+        animation: club 1.2s ease-in-out infinite;
+      }
+      .armL {
+        transform-origin: 50px 76px;
+      }
+      .armR {
+        transform-origin: 101px 72px;
+        animation: arm 1.2s ease-in-out infinite;
+      }
+      @keyframes oniBounce {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-1deg);
+        }
+        50% {
+          transform: translateY(-5px) rotate(2deg);
+        }
+      }
+      @keyframes club {
+        0%,
+        100% {
+          transform: rotate(-8deg);
+        }
+        50% {
+          transform: rotate(12deg);
+        }
+      }
+      @keyframes arm {
+        0%,
+        100% {
+          transform: rotate(0);
+        }
+        50% {
+          transform: rotate(-8deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .root,
+        .club,
+        .armR {
+          animation: none;
+        }
+      }
+    </style>
+  </defs>
+  <ellipse cx="78" cy="132" rx="48" ry="5" fill="#2d2433" opacity=".1" />
+  <g class="root">
+    <path d="M48 101C37 114 25 121 10 121C22 105 36 96 54 94Z" fill="#9d2428" />
+    <path d="M97 101C111 113 126 118 143 116C132 101 114 95 95 94Z" fill="#9d2428" />
+    <path
+      d="M39 61C44 38 63 28 83 31C111 35 126 56 119 85C113 111 94 126 72 125C48 124 32 100 37 75C38 70 38 65 39 61Z"
+      fill="#cf3535"
+    />
+    <path
+      d="M66 73C78 65 97 70 105 85C104 105 88 118 70 115C55 107 54 87 66 73Z"
+      fill="#ee7568"
+      opacity=".72"
+    />
+    <path class="armL" d="M42 70C26 68 14 79 11 95C29 101 44 88 52 73Z" fill="#cf3535" />
+    <g class="armR">
+      <path d="M105 67C118 58 136 60 149 73C139 88 117 86 101 73Z" fill="#cf3535" />
+      <path
+        class="club"
+        d="M112 62L145 21"
+        stroke="#2b2632"
+        stroke-width="10"
+        stroke-linecap="round"
+      />
+      <path
+        class="club"
+        d="M133 34L139 29M141 42L149 38M124 44L130 39"
+        stroke="#f1e4ba"
+        stroke-width="3"
+        stroke-linecap="round"
+      />
+    </g>
+    <path d="M51 89C65 97 91 98 108 89L103 113C88 124 62 123 46 112Z" fill="#f5c54e" />
+    <path
+      d="M55 89L63 105L70 91L78 107L87 91L95 106L104 89"
+      fill="none"
+      stroke="#3f2430"
+      stroke-width="4"
+      stroke-linecap="round"
+    />
+    <path d="M50 36L38 10L61 30Z" fill="#fff0ca" />
+    <path d="M94 34L114 10L106 40Z" fill="#fff0ca" />
+    <path d="M45 34C55 16 92 14 107 34C96 47 57 48 45 34Z" fill="#9d2428" />
+    <path d="M51 37C60 26 89 25 101 37C91 43 61 44 51 37Z" fill="#202033" opacity=".35" />
+    <path d="M49 48C56 39 72 37 80 49C71 58 57 58 49 48Z" fill="#fff7df" />
+    <path d="M80 50C89 39 106 40 113 51C104 60 88 60 80 50Z" fill="#fff7df" />
+    <circle cx="67" cy="48" r="2.5" fill="#202033" />
+    <circle cx="98" cy="50" r="2.5" fill="#202033" />
+    <path d="M54 43L75 39M87 40L109 44" stroke="#202033" stroke-width="4" stroke-linecap="round" />
+    <path
+      d="M70 62Q80 69 94 62"
+      stroke="#5b1f27"
+      stroke-width="3"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <path d="M73 66L77 80L84 67" fill="#fff7df" />
+    <circle cx="54" cy="59" r="4" fill="#ff8a9c" opacity=".45" />
+    <circle cx="111" cy="60" r="4" fill="#ff8a9c" opacity=".45" />
   </g>
-  <path d="M42 48C51 43 60 44 68 50C58 55 49 55 42 48Z" fill="#fff6c8" />
-  <circle cx="53" cy="48" r="2.2" fill="#202033" />
-  <path d="M72 50C81 45 90 46 98 53C88 58 79 57 72 50Z" fill="#fff6c8" />
-  <circle cx="83" cy="51" r="2.2" fill="#202033" />
-  <path d="M54 66Q67 77 84 66Q81 84 67 83Q55 82 54 66Z" fill="#202033" />
-  <path d="M58 68L63 80L68 68Z" fill="#fffdf7" />
-  <path d="M78 68L83 79L88 67Z" fill="#fffdf7" />
-  <path d="M96 35L114 90" stroke="#202033" stroke-width="8" stroke-linecap="round" />
-  <path d="M107 75L123 72" stroke="#202033" stroke-width="5" stroke-linecap="round" />
-  <path d="M109 84L125 84" stroke="#202033" stroke-width="5" stroke-linecap="round" />
-  <path d="M111 93L123 98" stroke="#202033" stroke-width="5" stroke-linecap="round" />
-  <path d="M36 64C24 67 17 76 16 91C28 91 38 82 41 68Z" fill="#c62828" />
-  <path d="M94 66C105 70 111 81 109 94C98 93 91 83 91 69Z" fill="#c62828" />
-  <path d="M50 82H84V96H50Z" fill="#ffd966" />
-  <path d="M53 82L60 96M65 82L72 96M78 82L85 96" stroke="#202033" stroke-width="3" stroke-linecap="round" />
-  <path d="M42 98Q34 105 22 106" fill="none" stroke="#5d4037" stroke-width="6" stroke-linecap="round" />
-  <path d="M73 100Q84 106 99 106" fill="none" stroke="#5d4037" stroke-width="6" stroke-linecap="round" />
 </svg>

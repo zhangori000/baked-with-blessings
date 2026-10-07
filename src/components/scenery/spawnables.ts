@@ -47,6 +47,7 @@ export const asteroidStarCount = 25
 
 export const spawnMilestoneByScene: Partial<Record<SceneTone, SpawnMilestone>> = {
   moonlit: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
+  prehistoric: { at: asteroidStarCount, noun: 'stars', tally: 'shooting-star' },
 }
 
 export type SceneSprite = {
@@ -107,6 +108,8 @@ const accentLabelByScene: Record<SceneTone, string> = {
   dawn: 'Flower',
   'fairy-castle': 'Cottage',
   moonlit: 'Flower',
+  prehistoric: 'Fern',
+  undersea: 'Coral',
   'under-tree': 'Flower',
 }
 
@@ -161,11 +164,11 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('dandelion', 'Dandelion', spawnableAsset('dandelion-bloom')),
     creature('bunny', 'Bunny'),
     creature('hawk', 'Hawk'),
+    creature('crow', 'Crow'),
     creature('balloon', 'Balloon'),
-    butterflyCreature,
     creature('carrot', 'Carrot'),
     creature('fox', 'Fox'),
-    creature('hedgehog', 'Hedgehog'),
+    creature('goose', 'Goose'),
     creature('scarecrow', 'Scarecrow'),
   ],
   'under-tree': [
@@ -199,6 +202,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('cat', 'Cat'),
     creature('beehive', 'Beehive'),
     creature('frog', 'Frog'),
+    creature('heron', 'Heron'),
     creature('mouse', 'Mouse'),
     creature('bear', 'Bear'),
   ],
@@ -211,10 +215,40 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
     creature('samurai', 'Samurai'),
     creature('oni', 'Oni'),
     creature('ninja', 'Ninja'),
-    creature('kitsune', 'Kitsune'),
-    creature('tanuki', 'Tanuki'),
-    creature('crane', 'Crane'),
+    creature('koi-pond', 'Koi pond'),
+    creature('kappa', 'Kappa'),
+    creature('sumo', 'Sumo'),
     creature('chochin', 'Lantern'),
+  ],
+  prehistoric: [
+    creatureCloud,
+    creature('fern', 'Fern', '/flowers/prehistoric-fern.svg'),
+    creature('araucaria-tree', 'Tree', spawnableAsset('araucaria-tree')),
+    creature('trex', 'T. rex', spawnableAsset('trex')),
+    creature('quetzalcoatlus', 'Quetzalcoatlus', spawnableAsset('quetzalcoatlus')),
+    creature('triceratops', 'Triceratops'),
+    creature('brachiosaurus', 'Brachiosaurus'),
+    creature('stegosaurus', 'Stegosaurus'),
+    creature('pterodactyl', 'Pterodactyl'),
+    creature('meganeura', 'Dragonfly'),
+    creature('dino-nest', 'Egg'),
+    creature('shooting-star', 'Shooting star', spawnableAsset('dino-shooting-star-icon')),
+    creature('eruption', 'Eruption', spawnableAsset('dino-eruption')),
+  ],
+  undersea: [
+    creature('fish-school', 'Fish school', spawnableAsset('sea-fish-school')),
+    creature('kelp-coral', 'Kelp coral', spawnableAsset('sea-kelp-coral')),
+    creature('boat', 'Boat', spawnableAsset('boat-rowboat')),
+    creature('jellyfish', 'Jellyfish', spawnableAsset('sea-jellyfish')),
+    creature('sea-turtle', 'Sea turtle', spawnableAsset('sea-turtle')),
+    creature('crab', 'Crab', spawnableAsset('sea-crab')),
+    creature('pufferfish', 'Pufferfish', spawnableAsset('sea-puffer')),
+    creature('shark', 'Shark', spawnableAsset('sea-shark')),
+    creature('swordfish', 'Swordfish', spawnableAsset('sea-swordfish')),
+    creature('octopus', 'Octopus', spawnableAsset('sea-octopus')),
+    creature('whale', 'Whale', spawnableAsset('sea-whale')),
+    creature('orca', 'Orca', spawnableAsset('sea-orca')),
+    creature('anglerfish', 'Anglerfish', spawnableAsset('sea-anglerfish')),
   ],
   'fairy-castle': [
     creatureCloud,
@@ -224,15 +258,16 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
       menuSpawnedAccentSourcesByScene['fairy-castle'][0] ?? '/sceneries/fairy-castle-house.svg',
     ),
     creature('dragon', 'Dragon', spawnableAsset('dragon-western-ember')),
+    creature('dread-dragon', 'Dread dragon', spawnableAsset('dragon-dread')),
     creature('knight', 'Knight'),
     creature('archer', 'Archer'),
-    creature('unicorn', 'Unicorn'),
     creature('frog-prince', 'Frog prince'),
-    creature('pennant', 'Pennant'),
     creature('princess', 'Princess'),
-    creature('wizard', 'Wizard'),
+    creature('pyro-wizard', 'Pyromancer', spawnableAsset('wizard-pyromancer')),
+    creature('frost-wizard', 'Frost wizard', spawnableAsset('wizard-frost')),
+    creature('plant-wizard', 'Plant wizard', spawnableAsset('wizard-druid')),
+    creature('dark-lord', 'Dark lord'),
     creature('ballista', 'Ballista'),
-    creature('treasure', 'Treasure'),
   ],
 }
 
@@ -261,7 +296,6 @@ const placementByMotion: Record<
 
 const driftDurationById: Record<string, readonly [number, number]> = {
   birds: [18, 26],
-  crane: [24, 32],
 }
 
 const createSprite = (item: SceneSpawnable, index: number): SceneSprite => {

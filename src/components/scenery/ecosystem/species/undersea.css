@@ -1,0 +1,155 @@
+.ecoThing[data-species='anglerfish'] .ecoArt {
+  filter: drop-shadow(0 0 calc(var(--undersea-glow, 0.7) * 0.55rem) rgba(255, 229, 138, 0.85));
+}
+
+.ecoThing[data-species='sea-bubble-ring'] .ecoArt {
+  animation: underseaBubbleRing 900ms ease-out both;
+}
+
+.ecoThing[data-species='sea-net'] .ecoArt {
+  opacity: 0.78;
+}
+
+.ecoThing[data-species='boat'] .ecoPose {
+  transform-origin: center 60%;
+}
+
+.ecoThing[data-species='boat'][data-state='airborne'] .ecoArt {
+  filter: drop-shadow(0 0.5rem 0.4rem rgba(16, 52, 74, 0.35));
+}
+
+.ecoThing[data-species='boat'][data-state='capsized'] .ecoArt,
+.ecoThing[data-species='boat'][data-state='sinking'] .ecoArt {
+  filter: saturate(0.82) brightness(0.9);
+}
+
+.ecoThing[data-species='boat'][data-state='sinking'] .ecoArt {
+  animation: underseaSinkWobble 1.4s ease-in-out infinite;
+}
+
+.ecoThing[data-species='boat'][data-state='wreck'] .ecoArt {
+  filter: saturate(0.7) brightness(0.72);
+  opacity: 0.9;
+}
+
+.ecoThing[data-species='fish-school'][data-state='scatter'] .ecoArt {
+  animation: underseaScatter 0.34s ease-in-out infinite alternate;
+}
+
+.ecoThing[data-species='jellyfish'][data-fx='sting'] .ecoArt {
+  filter: drop-shadow(0 0 0.55rem rgba(255, 178, 234, 0.9));
+}
+
+.ecoThing[data-species='kelp-coral'][data-fx='shelter'] .ecoArt {
+  filter: drop-shadow(0 0 0.55rem rgba(116, 224, 186, 0.44));
+}
+
+.ecoThing[data-species='octopus'][data-fx='ink'] .ecoArt {
+  filter: drop-shadow(0 0 0.8rem rgba(34, 42, 72, 0.75));
+}
+
+.ecoThing[data-species='pufferfish'][data-state='puffed'] .ecoArt {
+  animation: underseaPufferPulse 0.72s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 0.5rem rgba(255, 214, 120, 0.7));
+}
+
+.ecoThing[data-species='pufferfish'][data-state='deflate'] .ecoArt {
+  animation: underseaPufferSputter 0.16s linear infinite;
+}
+
+.ecoThing[data-species='whale'][data-fx='slap'] .ecoArt {
+  animation: underseaTailSlap 0.5s ease-out;
+  transform-origin: 62% 55%;
+}
+
+.ecoThing[data-species='whale'][data-state='breach'] .ecoArt {
+  filter: drop-shadow(0 0 0.72rem rgba(186, 240, 255, 0.55));
+}
+
+@keyframes underseaBubbleRing {
+  0% {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+
+  18% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+@keyframes underseaPufferPulse {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes underseaPufferSputter {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(-0.06rem, 0.04rem) rotate(-4deg);
+  }
+
+  75% {
+    transform: translate(0.06rem, -0.04rem) rotate(4deg);
+  }
+}
+
+@keyframes underseaTailSlap {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  30% {
+    transform: rotate(-9deg);
+  }
+
+  60% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes underseaScatter {
+  from {
+    transform: translateY(-0.08rem) rotate(-2deg);
+  }
+
+  to {
+    transform: translateY(0.08rem) rotate(2deg);
+  }
+}
+
+@keyframes underseaSinkWobble {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecoThing[data-species='sea-bubble-ring'] .ecoArt,
+  .ecoThing[data-species='boat'][data-state='sinking'] .ecoArt,
+  .ecoThing[data-species='fish-school'][data-state='scatter'] .ecoArt,
+  .ecoThing[data-species='pufferfish'][data-state='puffed'] .ecoArt,
+  .ecoThing[data-species='pufferfish'][data-state='deflate'] .ecoArt,
+  .ecoThing[data-species='whale'][data-fx='slap'] .ecoArt {
+    animation: none;
+  }
+}
