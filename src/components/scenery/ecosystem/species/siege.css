@@ -2889,31 +2889,6 @@
   width: 100%;
 }
 
-.ecoThing[data-species='spell-clash'] .ecoArt {
-  animation: siegeSpellClashPulse 0.24s ease-in-out infinite alternate;
-  filter: saturate(1.7) brightness(1.18) drop-shadow(0 0 0.75rem rgba(255, 246, 200, 0.96));
-}
-
-.ecoThing[data-species='spell-clash'][data-fx='push'] .ecoArt {
-  filter: saturate(2) brightness(1.24) drop-shadow(0 0 0.9rem rgba(255, 217, 102, 0.98));
-}
-
-@keyframes siegeSpellClashPulse {
-  from {
-    transform: scale(0.85) rotate(-6deg);
-  }
-
-  to {
-    transform: scale(1.14) rotate(8deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ecoThing[data-species='spell-clash'] .ecoArt {
-    animation: none;
-  }
-}
-
 /* Dragons: small Smolder-style fireball bursts */
 .ecoThing:is(
     [data-species='dragon'],

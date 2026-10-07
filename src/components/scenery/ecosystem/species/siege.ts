@@ -110,7 +110,6 @@ const worldlessSpecies = new Set([
   'spell-impact',
   'sword-arc',
   'vine-snare',
-  'spell-clash',
   'fire-seed',
   'plant-thorn',
   'thorn-spike',
@@ -3083,146 +3082,6 @@ function wizardSpellDescription(code: WizardCode) {
   return 'Rapid-fire a volley of tiny meteors from the wand.'
 }
 
-function activeSignatureCaster(entity: EcoEntity) {
-  return (
-    !entity.dying &&
-    !entity.removed &&
-    worldlessSpecies.has(entity.species) === false &&
-    (entity.countAs === 'wizard' ||
-      entity.species === 'wizard' ||
-      entity.species.endsWith('-wizard')) &&
-    entity.state === 'ice-beam' &&
-    entity.t > 0.58
-  )
-}
-
-let lastWizardClashAt = -1
-
-function updateWizardClashes(world: EcoWorld, dt: number) {
-  if (Math.abs(lastWizardClashAt - world.time) < 0.0001) return
-
-  lastWizardClashAt = world.time
-  const unit = world.unit
-  const casters = world.entities.filter(activeSignatureCaster)
-
-  for (const left of casters) {
-    if (left.facing !== 1) continue
-
-    const right = world.nearest(
-      left,
-      (other) =>
-        activeSignatureCaster(other) &&
-        other.facing === -1 &&
-        other.x > left.x &&
-        isEnemy(left, other),
-      unit * 38,
-    )
-
-    if (!right) continue
-
-    const leftTeam = teamOf(left)
-    const rightTeam = teamOf(right)
-    const existing = world.nearest(
-      { x: (left.x + right.x) * 0.5, y: world.groundY - unit * 4 },
-      (other) =>
-        other.species === 'spell-clash' &&
-        ((other.data.leftTeam === leftTeam && other.data.rightTeam === rightTeam) ||
-          (other.data.leftTeam === rightTeam && other.data.rightTeam === leftTeam)),
-      unit * 22,
-    )
-
-    if (!existing) {
-      world.spawn('spell-clash', {
-        data: { leftTeam, life: 4, rightTeam },
-        size: 2.8,
-        x: (left.x + right.x) * 0.5,
-        y: (staffPoint(left, world).y + staffPoint(right, world).y) * 0.5,
-      })
-    }
-  }
-
-  for (const clash of world.entities.filter((entity) => entity.species === 'spell-clash')) {
-    const leftTeam = clash.data.leftTeam ?? 0
-    const rightTeam = clash.data.rightTeam ?? 0
-    const leftCasters = casters.filter(
-      (caster) =>
-        teamOf(caster) === leftTeam &&
-        caster.facing === 1 &&
-        caster.x < clash.x + unit * 2 &&
-        Math.abs(caster.x - clash.x) < unit * 38,
-    )
-    const rightCasters = casters.filter(
-      (caster) =>
-        teamOf(caster) === rightTeam &&
-        caster.facing === -1 &&
-        caster.x > clash.x - unit * 2 &&
-        Math.abs(caster.x - clash.x) < unit * 38,
-    )
-
-    if (leftCasters.length === 0 || rightCasters.length === 0) {
-      spawnImpact(world, clash.x, clash.y, 2.2, 'duel', 0.32)
-      world.remove(clash)
-      continue
-    }
-
-    const leftAverage = leftCasters.reduce((sum, caster) => sum + staffPoint(caster, world).y, 0)
-    const rightAverage = rightCasters.reduce((sum, caster) => sum + staffPoint(caster, world).y, 0)
-    clash.y = (leftAverage / leftCasters.length + rightAverage / rightCasters.length) * 0.5
-    clash.x += (leftCasters.length - rightCasters.length) * unit * 1.6 * dt
-    if (leftCasters.length === rightCasters.length) {
-      clash.x += Math.sin(world.time * 18 + clash.id) * unit * 0.08
-    }
-    clash.fx = leftCasters.length === rightCasters.length ? 'hold' : 'push'
-
-    const rightEdge = Math.min(...rightCasters.map((caster) => caster.x))
-    const leftEdge = Math.max(...leftCasters.map((caster) => caster.x))
-
-    if (clash.x > rightEdge - unit * 1.2) {
-      for (const caster of rightCasters) {
-        caster.fx = 'stagger'
-        caster.vx += unit * 3.6
-        damageGroundTarget(caster, world, 0.65, leftCasters[0] ?? clash, 2.4)
-        world.setAsset(caster, wizardTypeFor(caster).asset)
-        world.setState(caster, 'wander')
-      }
-      spawnImpact(world, clash.x, clash.y, 3.4, 'duel', 0.62)
-      world.remove(clash)
-    } else if (clash.x < leftEdge + unit * 1.2) {
-      for (const caster of leftCasters) {
-        caster.fx = 'stagger'
-        caster.vx -= unit * 3.6
-        damageGroundTarget(caster, world, 0.65, rightCasters[0] ?? clash, 2.4)
-        world.setAsset(caster, wizardTypeFor(caster).asset)
-        world.setState(caster, 'wander')
-      }
-      spawnImpact(world, clash.x, clash.y, 3.4, 'duel', 0.62)
-      world.remove(clash)
-    } else if (clash.t > (clash.data.life ?? 4)) {
-      for (const caster of [...leftCasters, ...rightCasters]) {
-        caster.vx += (caster.x < clash.x ? -1 : 1) * unit * 2.8
-        caster.fx = 'stagger'
-        world.setAsset(caster, wizardTypeFor(caster).asset)
-        world.setState(caster, 'wander')
-      }
-      spawnImpact(world, clash.x, clash.y, 3.2, 'duel', 0.58)
-      world.remove(clash)
-    }
-  }
-}
-
-function wizardClashFor(entity: EcoEntity, world: EcoWorld) {
-  const team = teamOf(entity)
-
-  return world.nearest(
-    entity,
-    (other) =>
-      other.species === 'spell-clash' &&
-      (other.data.leftTeam === team || other.data.rightTeam === team) &&
-      Math.sign(other.x - entity.x || entity.facing) === entity.facing,
-    world.unit * 40,
-  )
-}
-
 // Meteor seeds fly 24u/s for 2.2s, so keep casts inside what they can actually reach.
 const wizardSpellRange = 44
 
@@ -3258,20 +3117,17 @@ function castMeteorSeed(entity: EcoEntity, world: EcoWorld, target: EcoEntity | 
 
 function pulseIceBeam(entity: EcoEntity, world: EcoWorld, target: EcoEntity | null) {
   const unit = world.unit
-  const clash = wizardClashFor(entity, world)
   const origin = staffPoint(entity, world)
-  const end = clash
-    ? { x: clash.x, y: clash.y }
-    : target
-      ? bodyPoint(target, world)
-      : { x: origin.x + entity.facing * unit * 18, y: origin.y }
+  const end = target
+    ? bodyPoint(target, world)
+    : { x: origin.x + entity.facing * unit * 18, y: origin.y }
 
   if ((entity.data.beamPulse ?? 0) <= world.time) {
     entity.data.beamPulse = world.time + 0.08
     spawnBeam(world, 'duel-beam-good', origin, end, 0.14, 'ice-beam')
   }
 
-  if (clash || !target || (entity.data.sigTick ?? 0) > world.time) return
+  if (!target || (entity.data.sigTick ?? 0) > world.time) return
 
   entity.data.sigTick = world.time + 0.28
   spawnImpact(world, end.x, end.y, 1.9, 'frost', 0.3)
@@ -3512,7 +3368,6 @@ const wizard: EcoSpecies = {
 
     refreshCasterTruce(world)
     runSpellCollisionPass(world)
-    updateWizardClashes(world, dt)
 
     entity.data.spellCool = (entity.data.spellCool ?? 0) - dt
 
@@ -3644,7 +3499,6 @@ const signatureWizardControlsFor = (code: WizardCode) =>
           startWizardSpell(entity, world, wizardSignatureStateForCode(code), target, 0.6)
         },
         onTick(entity, world) {
-          updateWizardClashes(world, 1 / 60)
           if (entity.t > 0.58 && isWizardCasting(entity.state)) {
             tickWizardSignature(entity, world)
           }
@@ -4728,22 +4582,6 @@ const skyVine: EcoSpecies = {
   },
 }
 
-const spellClash: EcoSpecies = {
-  anchor: 'center',
-  asset: ecoAsset('spell-impact'),
-  countAs: null,
-  idle: 'glow',
-  layer: 'front',
-  size: [2.4, 3.4],
-  state: 'clash',
-  strongVs: ['wizard'],
-  tags: [],
-  weakTo: ['wizard'],
-  tick(entity, world) {
-    entity.scale = 0.85 + Math.sin(world.time * 18 + entity.id) * 0.08
-  },
-}
-
 const spellImpact: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('spell-impact'),
@@ -4923,7 +4761,6 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   'pyro-wizard': pyroWizard,
   'frost-wizard': frostWizard,
   'plant-wizard': plantWizard,
-  'spell-clash': spellClash,
   'fire-seed': fireSeed,
   'plant-thorn': plantThorn,
   'thorn-sapling': thornSapling,
