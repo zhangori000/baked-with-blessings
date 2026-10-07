@@ -3380,7 +3380,8 @@ const wizard: EcoSpecies = {
     const type = wizardTypeFromAsset(entity.asset)
 
     entity.species = type.species
-    entity.countAs = 'wizard'
+    // Count each school under its own spawn tile so the tray badge tracks it.
+    entity.countAs = type.species
     entity.data.wizardType = type.code
     entity.data.team = wizardTeamBase + type.code
     entity.data.spellCool = between(0.4, 1)
