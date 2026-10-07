@@ -602,7 +602,7 @@ function tickDragonAilments(entity: EcoEntity, world: EcoWorld, dt: number) {
         if (world.has(other, 'fuel')) {
           other.data.burn = 0.01
         } else if (!world.has(other, 'knight')) {
-          world.kill(other)
+          scorchUnit(other, world, 2, entity)
         }
       }
 
@@ -1207,6 +1207,14 @@ function damageGroundTarget(
     if (target.hp <= 0) {
       world.kill(target)
     }
+  } else if (target.maxHp > 1) {
+    // Anything that shows a health bar loses health; it never vanishes while the bar looks full.
+    target.hp -= amount * edge
+    target.fx = impactFx
+
+    if (target.hp <= 0) {
+      world.kill(target)
+    }
   } else if (world.has(target, 'burnable') || world.has(target, 'target')) {
     if (amount >= 1 || Math.random() < Math.min(0.92, amount * world.edge(attacker, target))) {
       world.kill(target)
@@ -1219,6 +1227,15 @@ function damageGroundTarget(
     target.vx += Math.sign(target.x - attacker.x || attacker.facing || 1) * world.unit * knock
     target.vy -= world.unit * knock * 0.42
     target.lift = Math.max(target.lift, world.unit * Math.min(1.8, knock * 0.35))
+  }
+}
+
+function scorchUnit(target: EcoEntity, world: EcoWorld, amount: number, source: EcoEntity) {
+  // Units with a health bar burn down through it; one-hit props are destroyed outright.
+  if (target.maxHp > 1) {
+    damageGroundTarget(target, world, amount, source)
+  } else {
+    world.kill(target)
   }
 }
 
@@ -4699,7 +4716,7 @@ const greenFlame: EcoSpecies = {
         Math.abs(other.x - entity.x) < world.unit * 1.5 &&
         onGround(other, world)
       ) {
-        world.kill(other)
+        scorchUnit(other, world, 0.45, entity)
       }
     }
   },
