@@ -755,8 +755,8 @@ const dragon: EcoSpecies = {
 
 const dreadDragonAsset = ecoAsset('dragon-dread')
 const dreadDragonBreathAsset = ecoAsset('dragon-dread-breath')
-const dreadBreathDip = (40 * Math.PI) / 180
-const dreadStrafeHeight = 9
+const dreadBreathDip = (44 * Math.PI) / 180
+const dreadStrafeHeight = 14
 const dreadStrafeFor = 1.8
 
 function distanceToSegment(
@@ -777,7 +777,7 @@ function dreadJet(entity: EcoEntity, world: EcoWorld) {
   const from = dragonMouth(entity, world)
   const angle = entity.facing > 0 ? dreadBreathDip : Math.PI - dreadBreathDip
   const drop = Math.max(world.unit, world.groundY - world.unit * 0.2 - from.y)
-  const length = clamp(drop / Math.sin(dreadBreathDip), world.unit * 4, world.unit * 15)
+  const length = clamp(drop / Math.sin(dreadBreathDip), world.unit * 4, world.unit * 21)
 
   return {
     angle,
@@ -807,7 +807,8 @@ function pickDreadTarget(entity: EcoEntity, world: EcoWorld) {
 
 function startDreadSwoop(entity: EcoEntity, world: EcoWorld, target: EcoEntity) {
   const unit = world.unit
-  const lead = unit * 14
+  // Start far enough back that the angled jet sweeps across the target mid-strafe.
+  const lead = unit * (dreadStrafeHeight / Math.tan(dreadBreathDip) + 5)
   const low = unit * 3
   const high = world.width - unit * 3
   let dir: 1 | -1 = entity.x <= target.x ? 1 : -1
@@ -824,7 +825,7 @@ function startDreadSwoop(entity: EcoEntity, world: EcoWorld, target: EcoEntity) 
     }
   }
 
-  const toY = world.groundY - unit * dreadStrafeHeight
+  const toY = Math.max(world.skyTop + unit * 3, world.groundY - unit * dreadStrafeHeight)
   entity.targetId = target.id
   entity.data.diveDir = dir
   entity.data.diveFromX = entity.x
@@ -1019,6 +1020,10 @@ const dreadFlame: EcoSpecies = {
   size: [13, 13],
   state: 'burn',
   strongVs: [],
+  // Uniform scale would fatten a long jet, so squash it back to a 15u jet's thickness.
+  style: (entity) => ({
+    '--jet-thin': String(Math.min(1, 15 / Math.max(1, entity.size * entity.scale))),
+  }),
   tags: [],
   weakTo: [],
   tick(entity, world) {

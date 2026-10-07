@@ -3223,6 +3223,11 @@
   }
 }
 
+/* Long jets keep a 15u jet's thickness instead of fattening with length. */
+.ecoThing[data-species='dread-flame'] .ecoArt {
+  transform: scaleY(var(--jet-thin, 1));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ecoThing[data-species='thorn-sapling'] .ecoArt,
   .ecoThing[data-species='spell-impact'] .ecoArt,
