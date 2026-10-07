@@ -389,11 +389,14 @@ function controlAction(
   world.setState(entity, state)
 }
 
+// Small prey that a controlled dino should still be able to hit, despite only having 1 HP.
+const controlPreySpecies = new Set(['pterodactyl', 'meganeura', 'dino-nest'])
+
 function isControlTarget(entity: EcoEntity, other: EcoEntity) {
   return (
     other !== entity &&
     living(other) &&
-    other.maxHp > 1 &&
+    (other.maxHp > 1 || controlPreySpecies.has(other.species)) &&
     other.species !== 'dino-carcass' &&
     !worldlessEffectSpecies.has(other.species)
   )
