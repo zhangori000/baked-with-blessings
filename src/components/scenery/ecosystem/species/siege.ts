@@ -3067,6 +3067,9 @@ function wizardClashFor(entity: EcoEntity, world: EcoWorld) {
   )
 }
 
+// Meteor seeds fly 24u/s for 2.2s, so keep casts inside what they can actually reach.
+const wizardSpellRange = 44
+
 function wizardSpellTarget(entity: EcoEntity, world: EcoWorld) {
   const target = world.byId(entity.targetId)
 
@@ -3081,7 +3084,7 @@ function castMeteorSeed(entity: EcoEntity, world: EcoWorld, target: EcoEntity | 
   const speed = unit * 24
   const aim = target
     ? leadBody(target, world, origin, speed)
-    : { x: origin.x + entity.facing * unit * 16, y: origin.y - unit * 3 }
+    : { x: origin.x + entity.facing * unit * 16, y: origin.y }
   const angle = Math.atan2(aim.y - origin.y, aim.x - origin.x) + between(-0.07, 0.07)
 
   entity.data.beamPulse = world.time + 0.15
@@ -3244,8 +3247,28 @@ function castWildThorns(entity: EcoEntity, world: EcoWorld, target: EcoEntity | 
   spawnImpact(world, origin.x, origin.y, 0.9, 'thorn', 0.14)
 }
 
-function tickWizardSignature(entity: EcoEntity, world: EcoWorld) {
-  const target = wizardSpellTarget(entity, world)
+// When the first target dies or starts falling, swing to the next enemy instead of
+// firing blindly into the sky.
+function reacquireWizardTarget(entity: EcoEntity, world: EcoWorld) {
+  const unit = world.unit
+  const next = casterTruce
+    ? world.nearest(entity, isDragon(world), wizardSpellRange * unit)
+    : world.nearest(
+        entity,
+        (other) => isSpellDuelTarget(world, entity)(other) && other.state !== 'falling',
+        wizardSpellRange * unit,
+      )
+
+  entity.targetId = next?.id ?? null
+
+  return next
+}
+
+function tickWizardSignature(entity: EcoEntity, world: EcoWorld, retarget = false) {
+  const target =
+    wizardSpellTarget(entity, world) ?? (retarget ? reacquireWizardTarget(entity, world) : null)
+
+  if (retarget && !target) return false
 
   if (target) {
     entity.facing = target.x >= entity.x ? 1 : -1
@@ -3258,6 +3281,8 @@ function tickWizardSignature(entity: EcoEntity, world: EcoWorld) {
   } else if (entity.state === 'frenzy-plant') {
     castWildThorns(entity, world, target)
   }
+
+  return true
 }
 
 function duelSnapshot(world: EcoWorld, lord: EcoEntity) {
@@ -3415,11 +3440,9 @@ const wizard: EcoSpecies = {
         return
       }
 
-      if (entity.t > 0.58) {
-        tickWizardSignature(entity, world)
-      }
+      const lostTarget = entity.t > 0.58 && !tickWizardSignature(entity, world, true)
 
-      if (entity.t > wizardCastLength(entity.state)) {
+      if (lostTarget || entity.t > wizardCastLength(entity.state)) {
         entity.fx = ''
         entity.targetId = null
         entity.data.casted = 0
@@ -3437,7 +3460,10 @@ const wizard: EcoSpecies = {
       : null
 
     if (dragonFoe) {
-      if ((entity.data.spellCool ?? 0) <= 0) {
+      const inRange =
+        Math.hypot(dragonFoe.x - entity.x, dragonFoe.y - entity.y) < unit * wizardSpellRange
+
+      if ((entity.data.spellCool ?? 0) <= 0 && inRange) {
         entity.facing = dragonFoe.x >= entity.x ? 1 : -1
         startWizardSpell(
           entity,
@@ -4391,8 +4417,19 @@ function tickHomingShot(
   entity.facing = entity.vx >= 0 ? 1 : -1
   tiltToVelocity(entity, 90)
 
+  // A shot whose target died burns out quickly instead of sailing across the field.
+  if (!tracking && (entity.data.targetId ?? -1) >= 0) {
+    entity.data.orphanAt ??= entity.age
+
+    if (entity.age - entity.data.orphanAt > 0.3) {
+      spawnImpact(world, entity.x, entity.y, 0.9, fx, 0.18)
+      world.remove(entity)
+      return
+    }
+  }
+
   if (
-    entity.t > 1.7 ||
+    entity.age > 2.2 ||
     entity.x < -unit * 3 ||
     entity.x > world.width + unit * 3 ||
     entity.y < -unit * 3
