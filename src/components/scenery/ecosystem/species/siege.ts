@@ -2155,7 +2155,7 @@ const archer: EcoSpecies = {
 
         world.spawn('arrow', {
           ...launch,
-          data: { ownerId: entity.id, ownerTeam: teamOf(entity) },
+          data: { aimId: foe.id, ownerId: entity.id, ownerTeam: teamOf(entity) },
           x: originX,
           y: originY,
         })
@@ -2202,12 +2202,106 @@ const archer: EcoSpecies = {
   },
 }
 
+function arrowTip(entity: EcoEntity, world: EcoWorld) {
+  const speed = Math.hypot(entity.vx, entity.vy) || 1
+  const reach = world.widthOf(entity) * 0.48
+
+  return {
+    x: entity.x + (entity.vx / speed) * reach,
+    y: entity.y + (entity.vy / speed) * reach,
+  }
+}
+
+// Hit the painted body, not the whole art box, so arrows visibly land on scales and robes.
+function arrowStrikes(tip: { x: number; y: number }, foe: EcoEntity, world: EcoWorld) {
+  const body = bodyPoint(foe, world)
+  const width = world.widthOf(foe)
+  const height = world.heightOf(foe)
+
+  if (world.has(foe, 'dragon')) {
+    const dx = (tip.x - body.x) / (width * 0.36)
+    const dy = (tip.y - body.y - height * 0.06) / (height * 0.32)
+
+    return dx * dx + dy * dy <= 1
+  }
+
+  return Math.abs(tip.x - body.x) <= width * 0.3 && Math.abs(tip.y - body.y) <= height * 0.44
+}
+
+// Archers lead their shot; in the last few strides the arrow bends gently onto the mark.
+function steerArrow(entity: EcoEntity, world: EcoWorld, dt: number) {
+  const mark = world.byId(entity.data.aimId ?? null)
+
+  if (!mark || mark.dying || mark.removed || mark.state === 'falling') return
+
+  const goal = bodyPoint(mark, world)
+  const distance = Math.hypot(goal.x - entity.x, goal.y - entity.y)
+
+  if (distance > world.unit * 7) return
+
+  const heading = Math.atan2(entity.vy, entity.vx)
+  let turn = Math.atan2(goal.y - entity.y, goal.x - entity.x) - heading
+  turn = Math.atan2(Math.sin(turn), Math.cos(turn))
+
+  if (Math.abs(turn) > 1.3) return
+
+  const step = clamp(turn, -2.4 * dt, 2.4 * dt)
+  const speed = Math.hypot(entity.vx, entity.vy)
+  entity.vx = Math.cos(heading + step) * speed
+  entity.vy = Math.sin(heading + step) * speed
+}
+
+function lodgeArrow(
+  entity: EcoEntity,
+  host: EcoEntity,
+  world: EcoWorld,
+  tip: { x: number; y: number },
+) {
+  const speed = Math.hypot(entity.vx, entity.vy) || 1
+  const sink = world.widthOf(entity) * 0.16
+  const body = bodyPoint(host, world)
+
+  entity.x += (entity.vx / speed) * sink
+  entity.y += (entity.vy / speed) * sink
+  entity.targetId = host.id
+  entity.data.offX = entity.x - body.x
+  entity.data.offY = entity.y - body.y
+  entity.data.hostFacing = host.facing
+  entity.data.arrowFacing = entity.facing
+  entity.vx = 0
+  entity.vy = 0
+  spawnImpact(world, tip.x, tip.y, 1.5, 'arrow-hit', 0.32)
+  world.setState(entity, 'lodged')
+  tickLodgedArrow(entity, world)
+}
+
+function tickLodgedArrow(entity: EcoEntity, world: EcoWorld) {
+  const host = world.byId(entity.targetId)
+
+  if (!host || host.removed || entity.t > 0.7) {
+    world.remove(entity)
+    return
+  }
+
+  // Ride along with the target; if it turns around, mirror the arrow with it.
+  const flip = host.facing === entity.data.hostFacing ? 1 : -1
+  const body = bodyPoint(host, world)
+  entity.x = body.x + (entity.data.offX ?? 0) * flip
+  entity.y = body.y + (entity.data.offY ?? 0)
+  entity.facing = (entity.data.arrowFacing ?? 1) * flip >= 0 ? 1 : -1
+
+  const hostZ =
+    (host.anchor === 'bottom' ? host.y : host.y + world.heightOf(host) * 0.5) +
+    (host.data.zBoost ?? 0)
+  entity.data.zBoost = Math.max(0, hostZ - (entity.y + world.heightOf(entity) * 0.5) + 1)
+}
+
 const arrow: EcoSpecies = {
   anchor: 'center',
   asset: ecoAsset('arrow'),
   countAs: null,
   layer: 'front',
-  size: [2, 2.4],
+  size: [2.3, 2.7],
   state: 'fly',
   strongVs: ['dragon', 'wizard'],
   tags: ['projectile'],
@@ -2222,21 +2316,30 @@ const arrow: EcoSpecies = {
       return
     }
 
+    if (entity.state === 'lodged') {
+      tickLodgedArrow(entity, world)
+      return
+    }
+
     entity.vy += arrowGravity * unit * dt
+    steerArrow(entity, world, dt)
     integrate(entity, dt)
     entity.facing = entity.vx >= 0 ? 1 : -1
     tiltToVelocity(entity, 90)
 
+    const tip = arrowTip(entity, world)
     const foe = world.nearest(
       entity,
       (other) =>
-        (isDragonOrLord(world)(other) || world.has(other, 'wizard')) && isEnemy(entity, other),
-      unit * 5,
+        (isDragonOrLord(world)(other) || world.has(other, 'wizard')) &&
+        isEnemy(entity, other) &&
+        arrowStrikes(tip, other, world),
+      unit * 9,
     )
 
-    if (foe && Math.hypot(foe.x - entity.x, foe.y - entity.y) < world.widthOf(foe) * 0.46) {
+    if (foe) {
       damageGroundTarget(foe, world, 1, entity, 1.6)
-      world.remove(entity)
+      lodgeArrow(entity, foe, world, tip)
       return
     }
 
@@ -2773,7 +2876,9 @@ function spellMatter(entity: EcoEntity, world: EcoWorld) {
 
 function spellCollisionCandidate(entity: EcoEntity, world: EcoWorld) {
   return (
-    (world.has(entity, 'projectile') && !homingShots.has(entity.species)) ||
+    (world.has(entity, 'projectile') &&
+      !homingShots.has(entity.species) &&
+      entity.state !== 'lodged') ||
     entity.species === 'vine-snare' ||
     entity.species === 'sky-vine'
   )

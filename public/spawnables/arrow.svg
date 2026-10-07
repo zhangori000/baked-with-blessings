@@ -1,10 +1,9 @@
 <svg width="120" height="20" viewBox="0 0 120 20" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 10H104" stroke="#8b6a2c" stroke-width="3" stroke-linecap="round"/>
-  <path d="M2 10L4.2 3H12.6L22 10Z" fill="#e7f2f8"/>
-  <path d="M2 10L4.2 17H12.6L22 10Z" fill="#8fd2e6"/>
-  <path d="M23 7.8H27.4V12.2H23Z" fill="#e2508c"/>
-  <path d="M100 10L106 4.6L119.4 10L106 15.4Z" fill="#cfeeff"/>
-  <path d="M100 10H119.4L106 15.4Z" fill="#8fd2e6"/>
-  <path d="M104 6L108.6 1.6L109.4 6.4Z" fill="#cfeeff"/>
-  <path d="M104 14L108.6 18.4L109.4 13.6Z" fill="#8fd2e6"/>
+  <path d="M10 10H102" stroke="#5e3f17" stroke-width="5" stroke-linecap="round"/>
+  <path d="M12 9H100" stroke="#a9813c" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M1 10L3.4 1.6H13.6L24 10Z" fill="#e7f2f8" stroke="#5f8fb0" stroke-width="1"/>
+  <path d="M1 10L3.4 18.4H13.6L24 10Z" fill="#8fd2e6" stroke="#5f8fb0" stroke-width="1"/>
+  <path d="M24 7H29V13H24Z" fill="#e2508c"/>
+  <path d="M97 10L105 2.6L119.6 10L105 17.4Z" fill="#cfeeff" stroke="#3f6f92" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M97 10H119.6L105 17.4Z" fill="#8fd2e6"/>
 </svg>
