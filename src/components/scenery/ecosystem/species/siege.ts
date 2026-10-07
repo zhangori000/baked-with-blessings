@@ -39,6 +39,9 @@ registerViewBoxes({
   'shield-bubble': [124, 112],
   'spell-impact': [86, 86],
   'dragon-wyvern-glide': [180, 120],
+  'dragon-dread': [158, 98],
+  'dragon-dread-breath': [158, 98],
+  'dread-flame': [168, 56],
   'arrow-volley': [100, 72],
   'rally-banner': [72, 110],
   'sword-arc': [108, 82],
@@ -112,6 +115,7 @@ const worldlessSpecies = new Set([
   'plant-thorn',
   'thorn-spike',
   'sky-vine',
+  'dread-flame',
   'dark-tether',
   'dark-lord-serpent',
   'dark-lord-sigil',
@@ -227,7 +231,8 @@ function dragonMeleeVulnerable(entity: EcoEntity) {
     entity.state === 'sleep' ||
     entity.state === 'falling' ||
     entity.state === 'rooted' ||
-    entity.state === 'frozen'
+    entity.state === 'frozen' ||
+    entity.state === 'breath'
   )
 }
 
@@ -745,6 +750,295 @@ const dragon: EcoSpecies = {
 
       entity.data.cool = entity.species === 'eastern-dragon' ? between(0.5, 1) : between(1, 2)
     }
+  },
+}
+
+const dreadDragonAsset = ecoAsset('dragon-dread')
+const dreadDragonBreathAsset = ecoAsset('dragon-dread-breath')
+const dreadBreathDip = (40 * Math.PI) / 180
+const dreadStrafeHeight = 9
+const dreadStrafeFor = 1.8
+
+function distanceToSegment(
+  point: { x: number; y: number },
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+) {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const span = dx * dx + dy * dy || 1
+  const along = clamp(((point.x - from.x) * dx + (point.y - from.y) * dy) / span, 0, 1)
+
+  return Math.hypot(point.x - (from.x + dx * along), point.y - (from.y + dy * along))
+}
+
+// The jet leaves the mouth angled forward-down and stops where it licks the ground.
+function dreadJet(entity: EcoEntity, world: EcoWorld) {
+  const from = dragonMouth(entity, world)
+  const angle = entity.facing > 0 ? dreadBreathDip : Math.PI - dreadBreathDip
+  const drop = Math.max(world.unit, world.groundY - world.unit * 0.2 - from.y)
+  const length = clamp(drop / Math.sin(dreadBreathDip), world.unit * 4, world.unit * 15)
+
+  return {
+    angle,
+    from,
+    length,
+    to: { x: from.x + Math.cos(angle) * length, y: from.y + Math.sin(angle) * length },
+  }
+}
+
+function pickDreadTarget(entity: EcoEntity, world: EcoWorld) {
+  const targets = dragonShotTargets(entity, world)
+  const grounded = targets.filter((other) => onGround(other, world))
+  const pool = grounded.length > 0 ? grounded : targets
+
+  if (pool.length === 0) {
+    return undefined
+  }
+
+  if (Math.random() < 0.35) {
+    return pick(pool)
+  }
+
+  return pool.reduce((best, other) =>
+    Math.abs(other.x - entity.x) < Math.abs(best.x - entity.x) ? other : best,
+  )
+}
+
+function startDreadSwoop(entity: EcoEntity, world: EcoWorld, target: EcoEntity) {
+  const unit = world.unit
+  const lead = unit * 14
+  const low = unit * 3
+  const high = world.width - unit * 3
+  let dir: 1 | -1 = entity.x <= target.x ? 1 : -1
+  let startX = target.x - dir * lead
+
+  if (startX < low || startX > high) {
+    const flipped = target.x + dir * lead
+
+    if (flipped >= low && flipped <= high) {
+      dir = dir === 1 ? -1 : 1
+      startX = flipped
+    } else {
+      startX = clamp(startX, low, high)
+    }
+  }
+
+  const toY = world.groundY - unit * dreadStrafeHeight
+  entity.targetId = target.id
+  entity.data.diveDir = dir
+  entity.data.diveFromX = entity.x
+  entity.data.diveFromY = entity.y
+  entity.data.diveToX = startX
+  entity.data.diveToY = toY
+  entity.data.diveFor = clamp(Math.hypot(startX - entity.x, toY - entity.y) / (unit * 10), 0.9, 1.7)
+  world.setState(entity, 'swoop')
+}
+
+function startDreadBreath(entity: EcoEntity, world: EcoWorld) {
+  const mouth = dragonMouth(entity, world)
+  world.setState(entity, 'breath')
+  world.setAsset(entity, dreadDragonBreathAsset)
+  entity.data.breathTick = 0.2
+  entity.data.patchTick = 0.25
+  world.spawn('dread-flame', {
+    data: { ownerId: entity.id },
+    facing: 1,
+    size: 13,
+    x: mouth.x,
+    y: mouth.y,
+  })
+}
+
+function scorchUnderDreadJet(entity: EcoEntity, world: EcoWorld, jet: ReturnType<typeof dreadJet>) {
+  const unit = world.unit
+
+  for (const other of world.entities) {
+    if (
+      !isTargetableFoe(entity, other) ||
+      world.has(other, 'projectile') ||
+      other.species === 'fireball'
+    ) {
+      continue
+    }
+
+    const body = bodyPoint(other, world)
+    const inJet = distanceToSegment(body, jet.from, jet.to) < unit * 1.3
+    const inSplash = onGround(other, world) && Math.abs(other.x - jet.to.x) < unit * 1.9
+
+    if (!inJet && !inSplash) {
+      continue
+    }
+
+    if (world.has(other, 'fuel')) {
+      if ((other.data.burn ?? 0) <= 0) {
+        other.data.burn = 0.01
+      }
+      continue
+    }
+
+    damageGroundTarget(other, world, 0.3, entity, 0.35)
+    if (Math.random() < 0.4) {
+      spawnImpact(world, body.x, body.y, 1.5, 'curse', 0.22)
+    }
+  }
+}
+
+function tickDreadDragon(entity: EcoEntity, world: EcoWorld, dt: number) {
+  const unit = world.unit
+
+  if (entity.state !== 'breath' && entity.asset === dreadDragonBreathAsset) {
+    world.setAsset(entity, dreadDragonAsset)
+  }
+
+  if (tickDragonAilments(entity, world, dt)) {
+    return
+  }
+
+  const dir = (entity.data.diveDir ?? entity.facing) >= 0 ? 1 : -1
+
+  if (entity.state === 'swoop') {
+    const progress = clamp(entity.t / (entity.data.diveFor ?? 1.2), 0, 1)
+    const fromX = entity.data.diveFromX ?? entity.x
+    const fromY = entity.data.diveFromY ?? entity.y
+    const toX = entity.data.diveToX ?? entity.x
+    const toY = entity.data.diveToY ?? entity.y
+    // Drop steeply first, then level out into the strafe line.
+    const desiredX = fromX + (toX - fromX) * progress
+    const desiredY = fromY + (toY - fromY) * (1 - (1 - progress) ** 2)
+    moveTowardPoint(entity, world, dt, desiredX, desiredY, 1)
+    entity.facing = progress > 0.6 || Math.abs(toX - fromX) < unit ? dir : toX > fromX ? 1 : -1
+    const dive = (Math.atan2(entity.vy, Math.max(unit, Math.abs(entity.vx))) * 180) / Math.PI
+    entity.tilt += (clamp(dive * 0.7, -12, 34) - entity.tilt) * Math.min(1, dt * 8)
+
+    if (progress >= 1) {
+      startDreadBreath(entity, world)
+    }
+    return
+  }
+
+  if (entity.state === 'breath') {
+    const holdY = entity.data.diveToY ?? world.groundY - unit * dreadStrafeHeight
+    entity.facing = dir
+    entity.vx += (dir * unit * 6.5 - entity.vx) * Math.min(1, dt * 5)
+    entity.vy += ((holdY - entity.y) * 3 - entity.vy) * Math.min(1, dt * 5)
+    integrate(entity, dt)
+    entity.tilt += (9 + Math.sin(world.time * 16) * 1.5 - entity.tilt) * Math.min(1, dt * 8)
+    const jet = dreadJet(entity, world)
+    entity.data.breathTick = (entity.data.breathTick ?? 0) - dt
+    entity.data.patchTick = (entity.data.patchTick ?? 0) - dt
+
+    if ((entity.data.breathTick ?? 0) <= 0) {
+      entity.data.breathTick = 0.14
+      scorchUnderDreadJet(entity, world, jet)
+    }
+
+    if ((entity.data.patchTick ?? 0) <= 0) {
+      entity.data.patchTick = 0.3
+      const patch = world.spawn('green-flame', {
+        data: { ownerTeam: teamOf(entity) },
+        x: clamp(jet.to.x, unit, world.width - unit),
+      })
+      if (patch) patch.data.life = between(1.8, 2.8)
+    }
+
+    if (entity.t > dreadStrafeFor || entity.x < unit * 1.5 || entity.x > world.width - unit * 1.5) {
+      world.setState(entity, 'climb')
+    }
+    return
+  }
+
+  if (entity.state === 'climb') {
+    steer(
+      entity,
+      clamp(entity.x + dir * unit * 6, unit * 3, world.width - unit * 3),
+      world.skyTop + unit * 3,
+      unit * 7,
+      dt,
+      3,
+    )
+    integrate(entity, dt)
+    faceTravel(entity)
+    entity.tilt += (-14 - entity.tilt) * Math.min(1, dt * 6)
+
+    if (entity.t > 1.4 || entity.y < world.height * 0.3) {
+      entity.data.cool = between(4, 6)
+      world.setState(entity, 'patrol')
+    }
+    return
+  }
+
+  wander(
+    entity,
+    world,
+    dt,
+    unit * ((entity.data.angry ?? 0) > 0 ? 3.6 : 2.4),
+    world.skyTop + unit,
+    world.height * 0.32,
+    1.4,
+  )
+  integrate(entity, dt)
+  faceTravel(entity)
+  tiltToVelocity(entity, 12)
+  keepInSky(entity, world)
+  entity.data.cool = (entity.data.cool ?? 0) - dt
+
+  if ((entity.data.cool ?? 0) <= 0) {
+    const target = pickDreadTarget(entity, world)
+
+    if (target) {
+      startDreadSwoop(entity, world, target)
+    } else {
+      entity.data.cool = between(0.8, 1.4)
+    }
+  }
+}
+
+// One Clash-of-Clans-style dread dragon: swoops low and strafes with a green flamethrower.
+const dreadDragon: EcoSpecies = {
+  ...dragon,
+  asset: dreadDragonAsset,
+  init(entity, world) {
+    entity.countAs = 'dread-dragon'
+    entity.idle = 'flap'
+    entity.size = between(7, 7.6)
+    entity.data.team = wildTeam
+    entity.hp = 26
+    entity.maxHp = entity.hp
+    entity.data.cool = between(1.6, 2.6)
+    entity.y = between(world.skyTop + world.unit * 2, world.height * 0.3)
+  },
+  tick: tickDreadDragon,
+}
+
+const dreadFlame: EcoSpecies = {
+  anchor: 'center',
+  asset: ecoAsset('dread-flame'),
+  countAs: null,
+  layer: 'front',
+  size: [13, 13],
+  state: 'burn',
+  strongVs: [],
+  tags: [],
+  weakTo: [],
+  tick(entity, world) {
+    const owner = world.byId(entity.data.ownerId ?? -1)
+
+    if (!owner || owner.dying || owner.removed || owner.state !== 'breath') {
+      world.remove(entity)
+      return
+    }
+
+    const jet = dreadJet(owner, world)
+    const length = Math.max(
+      world.unit * 0.4,
+      jet.length * (1 - (1 - clamp(entity.age / 0.22, 0, 1)) ** 3),
+    )
+    entity.facing = 1
+    entity.x = jet.from.x + Math.cos(jet.angle) * length * 0.5
+    entity.y = jet.from.y + Math.sin(jet.angle) * length * 0.5
+    entity.tilt = (jet.angle * 180) / Math.PI
+    entity.scale = length / (entity.size * world.unit)
   },
 }
 
@@ -4532,6 +4826,8 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   'dark-lord-skeleton': darkLordSkeleton,
   'dark-lord-skull-bolt': darkLordSkullBolt,
   dragon,
+  'dread-dragon': dreadDragon,
+  'dread-flame': dreadFlame,
   'eastern-dragon': easternDragon,
   'ember-dragon': emberDragon,
   'emerald-dragon': emeraldDragon,

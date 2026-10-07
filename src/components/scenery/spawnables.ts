@@ -258,6 +258,7 @@ export const sceneSpawnablesByScene: Record<SceneTone, readonly SceneSpawnable[]
       menuSpawnedAccentSourcesByScene['fairy-castle'][0] ?? '/sceneries/fairy-castle-house.svg',
     ),
     creature('dragon', 'Dragon', spawnableAsset('dragon-western-ember')),
+    creature('dread-dragon', 'Dread dragon', spawnableAsset('dragon-dread')),
     creature('knight', 'Knight'),
     creature('archer', 'Archer'),
     creature('frog-prince', 'Frog prince'),
