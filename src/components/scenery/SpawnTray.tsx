@@ -88,7 +88,7 @@ type TrayPrefs = {
 
 type TrayPosition = { left: number; top: number }
 
-const defaultPrefs: TrayPrefs = { layout: null, seeThrough: false, side: 'right' }
+const defaultPrefs: TrayPrefs = { layout: null, seeThrough: true, side: 'right' }
 
 const layoutOptions: readonly { icon: typeof LayoutGrid; label: string; value: TrayLayout }[] = [
   { icon: LayoutGrid, label: 'Grid', value: 'float' },
@@ -278,7 +278,7 @@ function readPrefs(): TrayPrefs {
         parsed.layout === 'bar' || parsed.layout === 'float' || parsed.layout === 'side'
           ? parsed.layout
           : null,
-      seeThrough: parsed.seeThrough === true,
+      seeThrough: parsed.seeThrough !== false,
       side: parsed.side === 'left' ? 'left' : 'right',
     }
   } catch {
