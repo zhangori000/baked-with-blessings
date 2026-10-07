@@ -579,6 +579,7 @@
   .ecoThing[data-species='foxfire'] .ecoArt,
   .ecoThing[data-species='chochin'] .ecoArt,
   .ecoThing[data-species='sheep'] .ecoArt {
-    animation: none;
+    /* !important: state-specific animation rules are more specific than these. */
+    animation: none !important;
   }
 }

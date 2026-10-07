@@ -536,6 +536,7 @@
   .ecoThing[data-species='hawk'][data-state] .ecoArt,
   .ecoThing[data-species='hawk'][data-fx] .ecoArt,
   .ecoThing[data-species='hawk'][data-hit] .ecoArt {
-    animation: none;
+    /* !important: state-specific animation rules are more specific than these. */
+    animation: none !important;
   }
 }

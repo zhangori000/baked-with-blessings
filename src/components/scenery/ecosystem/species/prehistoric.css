@@ -1791,7 +1791,8 @@
   .ecoDinoRig::before,
   .ecoDinoRig::after,
   .ecoDinoPart {
-    animation: none;
+    /* !important: state-specific animation rules are more specific than these. */
+    animation: none !important;
   }
   .ecoThing[data-species='dino-impact'] .ecoAnchor::before,
   .ecoThing[data-species='dino-impact'] .ecoAnchor::after {

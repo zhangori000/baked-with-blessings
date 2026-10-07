@@ -221,6 +221,7 @@
   .ecoThing[data-species='frog'] .ecoPose::after,
   .ecoThing[data-species='heron'] .ecoArt,
   .ecoThing[data-species='mouse'] .ecoArt {
-    animation: none;
+    /* !important: state-specific animation rules are more specific than these. */
+    animation: none !important;
   }
 }
