@@ -1621,13 +1621,20 @@ const isGrazerRival = (other: EcoEntity) =>
   (other.data.baby ?? 0) <= 0
 
 function brachioBrowseX(entity: EcoEntity, tree: EcoEntity, world: EcoWorld) {
-  const side = entity.x <= tree.x ? -1 : 1
+  const reach = world.widthOf(entity) * 0.44 + world.widthOf(tree) * 0.16
+  const min = world.unit
+  const max = world.width - world.unit
+  const near = entity.x <= tree.x ? -1 : 1
 
-  return clamp(
-    tree.x + side * (world.widthOf(entity) * 0.44 + world.widthOf(tree) * 0.16),
-    world.unit,
-    world.width - world.unit,
-  )
+  // A tree at the scene edge leaves no room on the near side; clamping there would push the
+  // head past the foliage, so browse from the far side instead.
+  for (const side of [near, -near]) {
+    const x = tree.x + side * reach
+
+    if (x >= min && x <= max) return x
+  }
+
+  return clamp(tree.x + near * reach, min, max)
 }
 
 const brachiosaurus: EcoSpecies = {
@@ -1804,6 +1811,7 @@ const brachiosaurus: EcoSpecies = {
         walkToward(entity, world, brachioBrowseX(entity, tree, world), unit * 0.9, dt) <
         unit * 0.4
       ) {
+        face(entity, tree.x)
         world.setState(entity, 'tree-eat')
       }
 
