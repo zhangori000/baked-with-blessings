@@ -1,5 +1,11 @@
 .ecoLayer {
   --eco-scale: 1;
+  /* Fixed HUD colours: health must read the same over sky, grass, water and night scenes. */
+  --eco-hp-track: color-mix(in srgb, var(--sheep-ink) 80%, transparent);
+  --eco-hp-edge: var(--sheep-fleece);
+  --eco-hp-good: #5cc45a;
+  --eco-hp-warn: #f4b63f;
+  --eco-hp-danger: #e5484d;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -157,12 +163,12 @@
 }
 
 .ecoHealth {
-  background: color-mix(in srgb, var(--scene-text) 18%, transparent);
-  border: 0.06rem solid color-mix(in srgb, var(--scene-text) 34%, transparent);
+  background: var(--eco-hp-track);
+  border: 0.08rem solid var(--eco-hp-edge);
   border-radius: 999rem;
-  box-shadow: 0 0.08rem 0.28rem color-mix(in srgb, var(--scene-text) 14%, transparent);
+  box-shadow: 0 0 0 0.06rem var(--eco-hp-track);
   display: block;
-  height: 0.36rem;
+  height: 0.46rem;
   left: 0;
   opacity: 0;
   overflow: hidden;
@@ -187,8 +193,8 @@
 }
 
 .ecoThing[data-controlled] .ecoHealth {
-  border-width: 0.08rem;
-  height: 0.52rem;
+  border-width: 0.1rem;
+  height: 0.6rem;
   top: calc(-1 * var(--eco-size, 2) * var(--eco-aspect, 1) * 1rem * var(--eco-scale) - 1.05rem);
   width: clamp(3rem, 92%, 6rem);
 }
@@ -199,12 +205,7 @@
 
 .ecoHealthFill,
 .ecoControlPopoverHealthFill {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--success) 82%, var(--scene-text)),
-    color-mix(in srgb, var(--warning) 82%, var(--scene-text)) 55%,
-    color-mix(in srgb, var(--error) 82%, var(--scene-text))
-  );
+  background: var(--eco-hp-good);
   display: block;
   height: 100%;
   transform: scaleX(var(--eco-health, 1));
@@ -359,12 +360,12 @@
   transform: translate(-100%, -50%);
 }
 
-.ecoThing[data-health-tone='warn'] .ecoHealthFill {
-  filter: saturate(1.18);
+.ecoThing[data-health-tone='warn'] :is(.ecoHealthFill, .ecoControlPopoverHealthFill) {
+  background: var(--eco-hp-warn);
 }
 
-.ecoThing[data-health-tone='danger'] .ecoHealthFill {
-  filter: saturate(1.35) brightness(0.92);
+.ecoThing[data-health-tone='danger'] :is(.ecoHealthFill, .ecoControlPopoverHealthFill) {
+  background: var(--eco-hp-danger);
 }
 
 .ecoControlPopover {
@@ -429,10 +430,10 @@
 }
 
 .ecoControlPopoverHealth {
-  background: color-mix(in srgb, var(--scene-text) 16%, transparent);
+  background: var(--eco-hp-track);
   border-radius: 999rem;
   display: block;
-  height: 0.36rem;
+  height: 0.46rem;
   overflow: hidden;
 }
 
