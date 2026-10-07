@@ -245,6 +245,8 @@ export class EcosystemStore {
   clear = () => {
     this.releaseControl()
     this.selectedId = null
+    this.toast = ''
+    this.toastUntil = 0
     this.engine?.clear()
     this.publish()
   }
@@ -358,6 +360,12 @@ export class EcosystemStore {
   frame(dt: number) {
     const engine = this.engine
 
+    // Expire the toast before the empty-scene early return, or it can stick after the last creature goes.
+    if (engine && this.toast && performance.now() > this.toastUntil) {
+      this.toast = ''
+      engine.dirty = true
+    }
+
     if (!engine || engine.entities.length === 0) {
       if (engine?.dirty) {
         this.publish()
@@ -380,11 +388,6 @@ export class EcosystemStore {
       this.toastUntil = performance.now() + 2600
       engine.setControlled(null)
       engine.setControlInput({ followCursor: false, x: 0, y: 0 })
-      engine.dirty = true
-    }
-
-    if (this.toast && performance.now() > this.toastUntil) {
-      this.toast = ''
       engine.dirty = true
     }
 
