@@ -226,6 +226,20 @@ const isHazardTarget = (world: EcoWorld) => (other: EcoEntity) =>
 const isDragon = (world: EcoWorld) => (other: EcoEntity) =>
   world.has(other, 'dragon') && other.state !== 'falling'
 
+// Dragons are everyone's first target: an enemy dragon within reach outranks any closer foe.
+function dragonFirst(
+  entity: EcoEntity,
+  world: EcoWorld,
+  isFoe: (other: EcoEntity) => boolean,
+  range: number,
+  dragonRange = range,
+) {
+  return (
+    world.nearest(entity, (other) => isDragon(world)(other) && isFoe(other), dragonRange) ??
+    world.nearest(entity, isFoe, range)
+  )
+}
+
 function dragonMeleeVulnerable(entity: EcoEntity) {
   return (
     entity.state === 'sleep' ||
@@ -1985,10 +1999,40 @@ const knight: EcoSpecies = {
 
     const speedPenalty = (entity.data.slowUntil ?? 0) > world.time ? 0.45 : 1
 
-    walk(entity, world, dt, unit * 0.9 * speedScale * speedPenalty)
+    // While a dragon flies, knights march under it so they can strike the moment it dips low.
+    const skyDragon = world.nearest(
+      entity,
+      (other) => isDragon(world)(other) && isEnemy(entity, other),
+      Math.max(unit * 80, world.width * 1.5),
+    )
 
-    if (chance(0.06, dt)) {
+    if (skyDragon && Math.abs(skyDragon.x - entity.x) > unit * 4) {
+      entity.facing = skyDragon.x >= entity.x ? 1 : -1
+    }
+
+    const hustle = skyDragon && Math.abs(skyDragon.x - entity.x) > unit * 8 ? 1.8 : 1
+
+    walk(entity, world, dt, unit * 0.9 * speedScale * speedPenalty * hustle)
+
+    if (!skyDragon && chance(0.06, dt)) {
       entity.facing = entity.facing === 1 ? -1 : 1
+    }
+
+    const lowDragon = world.nearest(
+      entity,
+      (other) =>
+        world.has(other, 'dragon') &&
+        dragonMeleeVulnerable(other) &&
+        other.y > world.groundY - unit * 8 &&
+        Math.abs(other.x - entity.x) < unit * 3.5,
+    )
+
+    if (lowDragon && (entity.data.cool ?? 0) <= 0) {
+      entity.data.cool = 2.5
+      entity.data.struck = 0
+      entity.facing = lowDragon.x >= entity.x ? 1 : -1
+      world.setState(entity, Math.random() < 0.4 ? 'leap' : 'strike')
+      return
     }
 
     const fire = world.nearest(entity, isFireOrBurning(world), unit * 14)
@@ -2025,11 +2069,13 @@ const knight: EcoSpecies = {
         return
       }
 
-      const wizardFoe = world.nearest(
-        entity,
-        (other) => world.has(other, 'wizard') && isEnemy(entity, other),
-        mounted ? Math.max(world.width, unit * 48) : unit * 12,
-      )
+      const wizardFoe = skyDragon
+        ? null
+        : world.nearest(
+            entity,
+            (other) => world.has(other, 'wizard') && isEnemy(entity, other),
+            mounted ? Math.max(world.width, unit * 48) : unit * 12,
+          )
 
       if (wizardFoe) {
         entity.targetId = wizardFoe.id
@@ -2050,23 +2096,6 @@ const knight: EcoSpecies = {
     if (sleepingDragon && (entity.data.cool ?? 0) <= 0) {
       entity.targetId = sleepingDragon.id
       world.setState(entity, 'advance')
-      return
-    }
-
-    const lowDragon = world.nearest(
-      entity,
-      (other) =>
-        world.has(other, 'dragon') &&
-        dragonMeleeVulnerable(other) &&
-        other.y > world.groundY - unit * 8 &&
-        Math.abs(other.x - entity.x) < unit * 3.5,
-    )
-
-    if (lowDragon && (entity.data.cool ?? 0) <= 0) {
-      entity.data.cool = 2.5
-      entity.data.struck = 0
-      entity.facing = lowDragon.x >= entity.x ? 1 : -1
-      world.setState(entity, Math.random() < 0.4 ? 'leap' : 'strike')
     }
   },
 }
@@ -2151,14 +2180,16 @@ const archer: EcoSpecies = {
     }
 
     if ((entity.data.cool ?? 0) <= 0) {
-      const foe = world.nearest(
+      const foe = dragonFirst(
         entity,
+        world,
         (other) =>
           (isDarkLord(other) ||
             world.has(other, 'wizard') ||
             (world.has(other, 'dragon') && other.state !== 'falling')) &&
           isEnemy(entity, other),
         Math.max(unit * 45, world.height),
+        Math.max(unit * 58, world.width),
       )
 
       if (foe) {
@@ -3837,7 +3868,8 @@ const darkLord: EcoSpecies = {
         return
       }
 
-      const castleFoe = world.nearest(entity, isCastleVictim(world, entity), reach)
+      // Dragons come first; he only hexes castle folk who walk right up to him.
+      const castleFoe = world.nearest(entity, isCastleVictim(world, entity), unit * 8)
 
       if (ready && castleFoe && (entity.data.hexCool ?? 0) <= 0) {
         entity.data.hexCool = between(5, 7)
