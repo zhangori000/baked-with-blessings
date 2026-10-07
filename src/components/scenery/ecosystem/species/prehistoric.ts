@@ -2345,7 +2345,7 @@ const dinoNest: EcoSpecies = {
     '--dino-hatch-progress': `${clamp(entity.data.hatchProgress ?? 0, 0, 1)}`,
   }),
   tags: ['prey'],
-  tick(entity, world, _dt) {
+  tick(entity, world, dt) {
     const predator = world.nearest(
       entity,
       (other) => other.species === 'trex' || other.species === 'pterodactyl',
@@ -2358,15 +2358,19 @@ const dinoNest: EcoSpecies = {
       entity.fx = ''
     }
 
-    const hatchAt = (entity.data.hatchAt ?? 36) / ((entity.data.warm ?? 0) > 0 ? 2.7 : 1)
-    entity.data.hatchProgress = clamp(entity.t / hatchAt, 0, 1)
+    // Accumulate incubation separately: switching to the 'crack' state resets entity.t.
+    const incubation = (entity.data.incubation ?? 0) + dt * ((entity.data.warm ?? 0) > 0 ? 2.7 : 1)
+    const hatchAt = entity.data.hatchAt ?? 36
 
-    if (entity.t > hatchAt * 0.72) {
+    entity.data.incubation = incubation
+    entity.data.hatchProgress = clamp(incubation / hatchAt, 0, 1)
+
+    if (incubation > hatchAt * 0.72) {
       world.setAsset(entity, crackedNestAsset)
       world.setState(entity, 'crack')
     }
 
-    if (entity.t <= hatchAt) {
+    if (incubation <= hatchAt) {
       return
     }
 
