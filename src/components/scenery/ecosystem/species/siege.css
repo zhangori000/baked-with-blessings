@@ -2952,7 +2952,7 @@
 
 /* Dark lord kit */
 .ecoThing[data-species='dark-lord']:is(
-    [data-state='serpent'],
+    [data-state='curse'],
     [data-state='chains'],
     [data-state='thralls'],
     [data-state='hex'],
@@ -2965,7 +2965,7 @@
 }
 
 .ecoThing[data-species='dark-lord']:is(
-    [data-state='serpent'],
+    [data-state='curse'],
     [data-state='chains'],
     [data-state='thralls'],
     [data-state='hex'],
@@ -3001,7 +3001,7 @@
   width: 160%;
 }
 
-.ecoThing[data-species='dark-lord-serpent'] .ecoArt,
+.ecoThing[data-species='dark-lord-curse'] .ecoArt,
 .ecoThing[data-species='dark-lord-skull-bolt'] .ecoArt {
   filter: drop-shadow(0 0 0.4rem rgba(121, 211, 106, 0.9));
 }

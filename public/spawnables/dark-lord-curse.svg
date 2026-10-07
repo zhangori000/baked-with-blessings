@@ -1,0 +1,36 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <style>.ca{animation:crA .16s steps(1) infinite}.cb{animation:crB .16s steps(1) infinite}.co{transform-box:fill-box;transform-origin:100% 50%;animation:coP .12s ease-in-out infinite alternate}.fl{transform-box:fill-box;transform-origin:50% 50%;animation:flS .2s linear infinite}@keyframes crA{0%{opacity:1}50%{opacity:0}}@keyframes crB{0%{opacity:0}50%{opacity:1}}@keyframes coP{0%{transform:scale(1,1)}100%{transform:scale(1.05,.84)}}@keyframes flS{0%{transform:rotate(0) scale(1)}50%{transform:rotate(22deg) scale(.86)}100%{transform:rotate(45deg) scale(1)}}@media (prefers-reduced-motion: reduce){.ca,.cb,.co,.fl{animation:none}.cb{opacity:0}}</style>
+  <defs>
+    <radialGradient id="darkLordCurseGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#f2ffe0" />
+      <stop offset="38%" stop-color="#79d36a" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#79d36a" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="darkLordCurseTail" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#314229" stop-opacity="0" />
+      <stop offset="40%" stop-color="#3f8a35" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#79d36a" />
+    </linearGradient>
+  </defs>
+  <path d="M0 20C26 16 58 8.4 92 5C110 5 119 12 119 20C119 28 110 35 92 35C58 31.6 26 24 0 20Z" fill="url(#darkLordCurseTail)" />
+  <circle cx="98" cy="20" r="20" fill="url(#darkLordCurseGlow)" />
+  <g class="ca" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 18.6L26 13.8L36 18.4L48 9.8L60 15.8L72 6.8L86 12.6L98 4" stroke="#d8f4aa" stroke-width="2" />
+    <path d="M24 22.2L36 27.6L48 21.4L60 31L74 24.4L86 33.6L98 36" stroke="#79d36a" stroke-width="1.8" />
+  </g>
+  <g class="cb" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 21.4L24 27.2L36 18.6L48 29L60 12.8L74 27.4L86 8.4L98 33" stroke="#d8f4aa" stroke-width="2" />
+    <path d="M28 17.4L42 11.6L54 18.2L68 7.6L82 15.6L96 6.6" stroke="#79d36a" stroke-width="1.8" />
+  </g>
+  <g class="co">
+    <path d="M18 20C44 17 70 11.6 96 10.6C108 11.4 113.6 15.4 113.6 20C113.6 24.6 108 28.6 96 29.4C70 28.4 44 23 18 20Z" fill="#9fe878" />
+    <path d="M44 20C66 18.4 84 15.6 100 15.2C107 15.8 109.6 17.8 109.6 20C109.6 22.2 107 24.2 100 24.8C84 24.4 66 21.6 44 20Z" fill="#f2ffe0" />
+  </g>
+  <g class="fl">
+    <path d="M104 4L107.4 16.6L120 20L107.4 23.4L104 36L100.6 23.4L88 20L100.6 16.6Z" fill="#f2ffe0" opacity="0.9" />
+  </g>
+  <circle cx="62" cy="6.6" r="1.4" fill="#d8f4aa" />
+  <circle cx="40" cy="31.4" r="1.2" fill="#d8f4aa" />
+  <circle cx="80" cy="35" r="1.3" fill="#79d36a" />
+  <circle cx="84" cy="3.6" r="1.1" fill="#79d36a" />
+</svg>

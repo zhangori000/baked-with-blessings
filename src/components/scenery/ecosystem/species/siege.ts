@@ -65,7 +65,7 @@ registerViewBoxes({
   'dark-lord': [92, 104],
   'dark-lord-cast': [92, 104],
   'dark-lord-chain': [240, 10],
-  'dark-lord-serpent': [132, 56],
+  'dark-lord-curse': [120, 40],
   'dark-lord-sigil': [120, 40],
   'dark-lord-skeleton': [64, 84],
   'dark-lord-skull-bolt': [104, 44],
@@ -117,7 +117,7 @@ const worldlessSpecies = new Set([
   'sky-vine',
   'dread-flame',
   'dark-tether',
-  'dark-lord-serpent',
+  'dark-lord-curse',
   'dark-lord-sigil',
   'dark-lord-skull-bolt',
 ])
@@ -569,6 +569,20 @@ function tickDragonAilments(entity: EcoEntity, world: EcoWorld, dt: number) {
   if ((entity.data.hexBurn ?? 0) > 0) {
     entity.data.hexBurn = (entity.data.hexBurn ?? 0) - dt
     entity.hp -= 0.3 * dt
+    entity.data.hexFlicker = (entity.data.hexFlicker ?? 0) - dt
+
+    // Gravefire clings to the dragon as flickering green flames until it burns out.
+    if ((entity.data.hexFlicker ?? 0) <= 0) {
+      entity.data.hexFlicker = 0.2
+      spawnImpact(
+        world,
+        entity.x + between(-0.3, 0.3) * world.widthOf(entity),
+        entity.y + between(-0.2, 0.15) * world.heightOf(entity),
+        1.7,
+        'curse',
+        0.32,
+      )
+    }
   }
 
   if (entity.hp <= 0 && entity.state !== 'falling') {
@@ -2715,7 +2729,7 @@ function spellMatter(entity: EcoEntity, world: EcoWorld) {
   if (entity.species === 'vine-snare' || entity.species === 'sky-vine') return 'plant'
   if (
     entity.species === 'green-flame' ||
-    entity.species === 'dark-lord-serpent' ||
+    entity.species === 'dark-lord-curse' ||
     entity.species === 'dark-lord-skull-bolt'
   )
     return 'green-fire'
@@ -3517,7 +3531,7 @@ const frostWizard = wizardSpeciesFor(2)
 const plantWizard = wizardSpeciesFor(3)
 
 const darkLordToadAsset = ecoAsset('dark-lord-toad')
-const darkLordCastStates = ['serpent', 'chains', 'thralls', 'hex', 'green-fire', 'betray'] as const
+const darkLordCastStates = ['curse', 'chains', 'thralls', 'hex', 'green-fire', 'betray'] as const
 const maxThralls = 3
 
 const isLiveDragon = (world: EcoWorld) => (other: EcoEntity) =>
@@ -3647,7 +3661,7 @@ const darkLord: EcoSpecies = {
     entity.data.chainCool = between(0.6, 1.4)
     entity.data.fireCool = between(2, 3)
     entity.data.hexCool = between(2, 3.5)
-    entity.data.serpentCool = between(1.2, 2.4)
+    entity.data.curseCool = between(1.2, 2.4)
     entity.data.spellCool = between(0.7, 1.4)
     entity.data.thrallCool = between(3, 5)
   },
@@ -3666,7 +3680,7 @@ const darkLord: EcoSpecies = {
       'chainCool',
       'fireCool',
       'hexCool',
-      'serpentCool',
+      'curseCool',
       'spellCool',
       'teleportCool',
       'thrallCool',
@@ -3742,22 +3756,21 @@ const darkLord: EcoSpecies = {
         entity.data.casted = 1
         const origin = staffPoint(entity, world)
 
-        if (entity.state === 'serpent' && target) {
-          world.spawn('dark-lord-serpent', {
-            data: {
-              lordId: entity.id,
-              ownerId: entity.id,
-              ownerTeam: darkTeam,
-              prey: target.id,
-              sky: world.has(target, 'dragon') ? 1 : 0,
-            },
-            facing: entity.facing,
-            vx: entity.facing * unit * 4,
-            vy: world.has(target, 'dragon') ? -unit * 6 : 0,
+        if (entity.state === 'curse' && target) {
+          const aim = bodyPoint(target, world)
+          const angle = Math.atan2(aim.y - origin.y, aim.x - origin.x)
+
+          const curse = world.spawn('dark-lord-curse', {
+            data: { lordId: entity.id, ownerId: entity.id, ownerTeam: darkTeam, prey: target.id },
+            facing: 1,
+            vx: Math.cos(angle) * gravefireSpeed * unit,
+            vy: Math.sin(angle) * gravefireSpeed * unit,
             x: origin.x,
             y: origin.y,
           })
-          spawnImpact(world, origin.x, origin.y, 2.6, 'curse', 0.4)
+
+          if (curse) curse.tilt = (angle * 180) / Math.PI
+          spawnImpact(world, origin.x, origin.y, 2.8, 'curse-hit', 0.32)
         } else if (entity.state === 'hex' && target) {
           world.spawn('dark-lord-skull-bolt', {
             data: { lordId: entity.id, ownerId: entity.id, ownerTeam: darkTeam, prey: target.id },
@@ -3805,9 +3818,9 @@ const darkLord: EcoSpecies = {
 
       const skyFoe = world.nearest(entity, isLiveDragon(world), Math.max(unit * 80, world.width))
 
-      if (ready && skyFoe && (entity.data.serpentCool ?? 0) <= 0) {
-        entity.data.serpentCool = between(7, 9)
-        startDarkSpell(entity, world, 'serpent', skyFoe, 1.4)
+      if (ready && skyFoe && (entity.data.curseCool ?? 0) <= 0) {
+        entity.data.curseCool = between(7, 9)
+        startDarkSpell(entity, world, 'curse', skyFoe, 1.4)
         return
       }
 
@@ -3858,9 +3871,9 @@ const darkLord: EcoSpecies = {
       reach,
     )
 
-    if (ready && groundFoe && (entity.data.serpentCool ?? 0) <= 0) {
-      entity.data.serpentCool = between(7, 9)
-      startDarkSpell(entity, world, 'serpent', groundFoe, 1.4)
+    if (ready && groundFoe && (entity.data.curseCool ?? 0) <= 0) {
+      entity.data.curseCool = between(7, 9)
+      startDarkSpell(entity, world, 'curse', groundFoe, 1.4)
       return
     }
 
@@ -3920,90 +3933,104 @@ const darkLord: EcoSpecies = {
   },
 }
 
-const darkLordSerpent: EcoSpecies = {
+const gravefireSpeed = 30
+
+// Green fire takes hold where the curse lands; patches are owned by the lord's side.
+function igniteGravefire(world: EcoWorld, x: number, patches: number) {
+  const unit = world.unit
+
+  for (let index = 0; index < patches; index += 1) {
+    const offset = patches === 1 ? 0 : (index / (patches - 1) - 0.5) * unit * 2.8
+    const flame = world.spawn('green-flame', {
+      data: { ownerTeam: darkTeam },
+      x: clamp(x + offset + between(-0.3, 0.3) * unit, unit, world.width - unit),
+    })
+
+    if (flame) flame.data.life = between(2.4, 3.4)
+  }
+}
+
+// Gravefire curse: one fast, crackling jet of green light that bursts on its victim and sets
+// green fire, on the dragon it hits or on the ground around a walker.
+const darkLordCurse: EcoSpecies = {
   anchor: 'center',
-  asset: ecoAsset('dark-lord-serpent'),
+  asset: ecoAsset('dark-lord-curse'),
   countAs: null,
   layer: 'front',
-  size: [2.4, 2.8],
-  state: 'slither',
+  size: [4.4, 4.8],
+  state: 'fly',
   strongVs: ['dragon', 'wizard', 'knight'],
   tags: ['projectile'],
   weakTo: ['knight'],
   tick(entity, world, dt) {
     const unit = world.unit
     const lord = aliveTarget(world, entity.data.lordId)
-    const sky = (entity.data.sky ?? 0) > 0
-
-    if ((entity.data.fade ?? 0) > 0) {
-      entity.scale = Math.max(0, entity.scale - dt * 3)
-      integrate(entity, dt)
-      if (entity.scale <= 0.1) world.remove(entity)
-      return
-    }
-
     let prey = aliveTarget(world, entity.data.prey)
 
-    if (!prey || !isEnemy(entity, prey)) {
-      prey = sky
-        ? world.nearest(entity, isLiveDragon(world), world.width)
-        : world.nearest(
-            entity,
-            (other) => isTargetableFoe(entity, other) && onGround(other, world),
-            world.width,
-          )
-      entity.data.prey = prey?.id ?? -1
+    if (prey && !isEnemy(entity, prey)) prey = null
+
+    if (prey) {
+      const aim = bodyPoint(prey, world)
+      const gap = Math.max(1, Math.hypot(aim.x - entity.x, aim.y - entity.y))
+      const speed = gravefireSpeed * unit
+
+      entity.vx += (((aim.x - entity.x) / gap) * speed - entity.vx) * Math.min(1, dt * 9)
+      entity.vy += (((aim.y - entity.y) / gap) * speed - entity.vy) * Math.min(1, dt * 9)
     }
 
-    if (!prey || entity.t > 3.2) {
-      entity.data.fade = 1
-      spawnImpact(world, entity.x, entity.y, 2, 'curse', 0.4)
-      return
+    integrate(entity, dt)
+    entity.facing = 1
+    entity.tilt = (Math.atan2(entity.vy, entity.vx) * 180) / Math.PI
+
+    if ((entity.data.trail ?? 0) <= entity.age) {
+      entity.data.trail = entity.age + 0.08
+      spawnImpact(world, entity.x, entity.y, 0.9, 'curse', 0.18)
     }
 
-    if (sky) {
-      const grip = bodyPoint(prey, world)
-      steer(entity, grip.x, grip.y, unit * 9, dt, 2.2)
-      integrate(entity, dt)
-      entity.facing = entity.vx >= 0 ? 1 : -1
-      tiltToVelocity(entity, 50)
+    const grounded = entity.y >= world.groundY - unit * 0.5
 
-      if (fireballHits(entity, prey, world)) {
-        spawnImpact(world, grip.x, grip.y, 3.4, 'curse', 0.55)
-        hurt(prey, world, 2, true, entity)
-        prey.data.hexBurn = 3
-        if (prey.hp <= 0) soulHarvest(lord, world, prey)
-        entity.data.fade = 1
-      }
-      return
-    }
+    if (prey) {
+      const aim = bodyPoint(prey, world)
 
-    const dx = prey.x - entity.x
-    entity.vx = Math.sign(dx || entity.facing) * unit * 6
-    entity.vy = 0
-    entity.x += entity.vx * dt
-    entity.y = world.groundY - unit * 0.9 + Math.sin(entity.t * 9) * unit * 0.25
-    entity.facing = entity.vx >= 0 ? 1 : -1
-    entity.tilt = Math.sin(entity.t * 9) * 8
-
-    if ((entity.data.trail ?? 0) <= entity.t) {
-      entity.data.trail = entity.t + 0.35
-      const flame = world.spawn('green-flame', { data: { ownerTeam: darkTeam }, x: entity.x })
-      if (flame) flame.data.life = 1.2
-    }
-
-    if (Math.abs(dx) < unit * 1.4) {
       if (
-        world.has(prey, 'knight') &&
-        (prey.state === 'guard' || prey.state === 'parry') &&
-        Math.sign(entity.x - prey.x || 1) === prey.facing
+        Math.hypot(aim.x - entity.x, aim.y - entity.y) < unit * 1.3 ||
+        fireballHits(entity, prey, world)
       ) {
-        spawnImpact(world, entity.x, entity.y, 2.2, 'shield', 0.36)
-      } else {
-        damageGroundTarget(prey, world, 1, entity, 1.2)
-        if (prey.dying) soulHarvest(lord, world, prey)
+        spawnImpact(world, aim.x, aim.y, 3.6, 'curse-hit', 0.55)
+
+        if (world.has(prey, 'dragon')) {
+          hurt(prey, world, 2, true, entity)
+          prey.data.hexBurn = 3
+          if (prey.hp <= 0) soulHarvest(lord, world, prey)
+        } else if (
+          world.has(prey, 'knight') &&
+          (prey.state === 'guard' || prey.state === 'parry') &&
+          Math.sign(entity.x - prey.x || 1) === prey.facing
+        ) {
+          spawnImpact(world, aim.x, aim.y, 2.2, 'shield', 0.36)
+          igniteGravefire(world, prey.x + prey.facing * unit * 1.6, 1)
+        } else {
+          damageGroundTarget(prey, world, 1, entity, 1.2)
+          if (prey.dying) soulHarvest(lord, world, prey)
+          igniteGravefire(world, prey.x, 3)
+        }
+
+        world.remove(entity)
+        return
       }
-      entity.data.fade = 1
+    }
+
+    if (grounded || entity.age > 1.6 || entity.x < -unit * 4 || entity.x > world.width + unit * 4) {
+      spawnImpact(
+        world,
+        entity.x,
+        Math.min(entity.y, world.groundY - unit * 0.4),
+        2.4,
+        'curse-hit',
+        0.4,
+      )
+      if (grounded) igniteGravefire(world, entity.x, 2)
+      world.remove(entity)
     }
   },
 }
@@ -4730,7 +4757,7 @@ export const siegeSpecies = (cottageAssets: readonly string[]) => ({
   bolt,
   cottage: cottageSpecies(cottageAssets),
   'dark-lord': darkLord,
-  'dark-lord-serpent': darkLordSerpent,
+  'dark-lord-curse': darkLordCurse,
   'dark-lord-sigil': darkLordSigil,
   'dark-tether': darkTether,
   'dark-lord-skeleton': darkLordSkeleton,
