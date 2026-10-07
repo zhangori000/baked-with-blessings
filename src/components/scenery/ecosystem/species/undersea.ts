@@ -56,7 +56,6 @@ registerViewBoxes({
   'sea-swimmer': [70, 86],
   'sea-turtle': [132, 86],
   'sea-whale': [210, 96],
-  'sea-whale-breach': [180, 152],
 })
 
 const kelpAsset = ecoAsset('sea-kelp-coral')
@@ -72,7 +71,6 @@ const swordfishAsset = ecoAsset('sea-swordfish')
 const octopusAsset = ecoAsset('sea-octopus')
 const octopusInkAsset = ecoAsset('sea-octopus-ink')
 const whaleAsset = ecoAsset('sea-whale')
-const whaleBreachAsset = ecoAsset('sea-whale-breach')
 const orcaAsset = ecoAsset('sea-orca')
 const anglerAsset = ecoAsset('sea-anglerfish')
 const netAsset = ecoAsset('sea-net')
@@ -677,18 +675,15 @@ function startRam(
     waterBottom(world),
   )
   entity.data.ramDiveUntil = world.time + (quick ? 0.9 : 5)
+  entity.data.ramSplashAt = -1
   entity.targetId = null
   world.setState(entity, 'ram-dive')
 }
 
 function endRam(entity: EcoEntity, world: EcoWorld, kind: RamKind) {
   entity.data.ramBoatId = -1
+  entity.data.ramSplashAt = -1
   scheduleRam(entity, world, kind)
-
-  if (kind === 'whale') {
-    world.setAsset(entity, whaleAsset)
-  }
-
   world.setState(entity, ramProfiles[kind].rest)
 }
 
@@ -712,6 +707,48 @@ function maybeStartRam(entity: EcoEntity, world: EcoWorld, kind: RamKind) {
   }
 
   return false
+}
+
+// A whale is too big to clear the short sky, so it pivots over the top of its leap, crashes back in,
+// and levels out under the surface before cruising again; handing off mid-air would snap its tilt.
+function whaleFallBack(
+  entity: EcoEntity,
+  world: EcoWorld,
+  dt: number,
+  arc: { gravity: number; launch: number; margin: number; reach: number },
+) {
+  const unit = world.unit
+  const surface = surfaceY(world)
+  const splashAt = entity.data.ramSplashAt ?? -1
+
+  if (splashAt < 0) {
+    entity.vy += arc.gravity * dt
+    integrate(entity, dt)
+    entity.x = clamp(entity.x, arc.margin, world.width - arc.margin)
+    const goal = clamp(-28 + (entity.vy / arc.launch) * 40, -68, 14)
+
+    entity.tilt += (goal - entity.tilt) * Math.min(1, dt * 7)
+
+    if (entity.vy > 0 && entity.y - arc.reach * 0.75 > surface) {
+      spawnBurst(world, entity.x, surface + unit, 5.4)
+      world.shake(0.7)
+      entity.data.ramSplashAt = world.time
+    }
+
+    return true
+  }
+
+  entity.vx *= Math.max(0, 1 - dt * 3)
+  entity.vy += (unit * 1.5 - entity.vy) * Math.min(1, dt * 6)
+  integrate(entity, dt)
+  keepInWater(entity, world)
+  entity.tilt *= Math.max(0, 1 - dt * 6)
+
+  if (Math.abs(entity.tilt) < 3 || world.time - splashAt > 0.9) {
+    endRam(entity, world, 'whale')
+  }
+
+  return true
 }
 
 // Dive to build speed, rocket straight up under the boat, then arc through the air and splash back down.
@@ -743,17 +780,24 @@ function ramming(entity: EcoEntity, world: EcoWorld, dt: number, kind: RamKind) 
     integrate(entity, dt)
     keepInWater(entity, world)
     faceTravel(entity)
-    tiltToVelocity(entity, 30)
+
+    if (kind === 'whale') {
+      const angle = clamp(
+        (Math.atan2(entity.vy, Math.abs(entity.vx) + 0.001) * 180) / Math.PI,
+        -30,
+        30,
+      )
+
+      entity.tilt += (angle - entity.tilt) * Math.min(1, dt * 6)
+    } else {
+      tiltToVelocity(entity, 30)
+    }
 
     const lined = !target || Math.abs(aimX - entity.x) < unit * 4 + world.widthOf(target) * 0.3
 
     if ((entity.y >= depth - unit * 1.5 && lined) || world.time > (entity.data.ramDiveUntil ?? 0)) {
       world.setState(entity, 'ram-rise')
       entity.vy = Math.min(entity.vy, 0)
-
-      if (kind === 'whale') {
-        world.setAsset(entity, whaleBreachAsset)
-      }
     }
 
     return true
@@ -775,10 +819,14 @@ function ramming(entity: EcoEntity, world: EcoWorld, dt: number, kind: RamKind) 
       Math.min(1, dt * 8)
     integrate(entity, dt)
     entity.x = clamp(entity.x, margin, world.width - margin)
-    entity.tilt =
-      kind === 'whale'
-        ? clamp((entity.vx / burst) * 18 * entity.facing, -18, 18)
-        : -72 + clamp(((entity.vx * entity.facing) / burst) * 14, -14, 14)
+    const lean = clamp(((entity.vx * entity.facing) / burst) * 14, -14, 14)
+
+    if (kind === 'whale') {
+      // The big side-view body eases nose-up instead of snapping vertical.
+      entity.tilt += (-60 + lean - entity.tilt) * Math.min(1, dt * 9)
+    } else {
+      entity.tilt = -72 + lean
+    }
 
     if (entity.y - reach <= surface + unit * 0.3) {
       if (
@@ -801,17 +849,18 @@ function ramming(entity: EcoEntity, world: EcoWorld, dt: number, kind: RamKind) 
     return true
   }
 
+  if (kind === 'whale') {
+    return whaleFallBack(entity, world, dt, { gravity, launch, margin, reach })
+  }
+
   entity.vy += gravity * dt
   integrate(entity, dt)
   entity.x = clamp(entity.x, margin, world.width - margin)
-  entity.tilt =
-    kind === 'whale'
-      ? clamp(entity.t * 80, 0, 80)
-      : clamp((Math.atan2(entity.vy, Math.abs(entity.vx) + 1) * 180) / Math.PI, -80, 80)
+  entity.tilt = clamp((Math.atan2(entity.vy, Math.abs(entity.vx) + 1) * 180) / Math.PI, -80, 80)
 
   if (entity.vy > 0 && entity.y - reach * 0.2 > surface + unit) {
-    spawnBurst(world, entity.x, surface + unit, kind === 'whale' ? 5.4 : 3.2)
-    world.shake(kind === 'whale' ? 0.7 : 0.3)
+    spawnBurst(world, entity.x, surface + unit, 3.2)
+    world.shake(0.3)
     entity.vy *= 0.3
     endRam(entity, world, kind)
   }
