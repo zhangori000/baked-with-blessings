@@ -2592,7 +2592,6 @@ const wizardTypes = [
     glow: 'rgba(255, 166, 94, 0.98)',
     rune: 'rgba(255, 217, 102, 0.86)',
     species: 'pyro-wizard',
-    strength: 1.18,
   },
   {
     asset: ecoAsset('wizard-frost'),
@@ -2601,7 +2600,6 @@ const wizardTypes = [
     glow: 'rgba(216, 244, 255, 0.98)',
     rune: 'rgba(143, 210, 230, 0.84)',
     species: 'frost-wizard',
-    strength: 1.05,
   },
   {
     asset: ecoAsset('wizard-druid'),
@@ -2610,15 +2608,12 @@ const wizardTypes = [
     glow: 'rgba(168, 218, 130, 0.95)',
     rune: 'rgba(119, 170, 82, 0.84)',
     species: 'plant-wizard',
-    strength: 1.0,
   },
 ] as const
 
 type WizardCode = (typeof wizardTypes)[number]['code']
 
-const wizardSpellStates = ['meteor-seeds', 'ice-beam', 'frenzy-plant', 'duel'] as const
-
-const wizardSignatureStates = wizardSpellStates.filter((state) => state !== 'duel')
+const wizardSpellStates = ['meteor-seeds', 'ice-beam', 'frenzy-plant'] as const
 
 const isWizardCasting = (state: string) => wizardSpellStates.some((spell) => spell === state)
 
@@ -2810,6 +2805,8 @@ function runSpellCollisionPass(world: EcoWorld) {
   }
 }
 
+const darkLordWard = 0.35
+
 function hitDarkLord(
   entity: EcoEntity,
   world: EcoWorld,
@@ -2826,7 +2823,10 @@ function hitDarkLord(
     return
   }
 
-  const edge = (attacker ? world.edge(attacker, entity) : 1) * (entity.state === 'toad' ? 2 : 1)
+  // His ward soaks most ranged and spell damage; a knight's blade cuts straight through.
+  const ward = attacker && !world.has(attacker, 'knight') ? darkLordWard : 1
+  const edge =
+    (attacker ? world.edge(attacker, entity) : 1) * (entity.state === 'toad' ? 2 : 1) * ward
   entity.hp -= amount * edge
   if (attacker) {
     world.gainControlResource(attacker, amount * edge * 12)
@@ -2834,7 +2834,12 @@ function hitDarkLord(
   }
   entity.data.hurt = 0.55
   entity.fx = 'hurt'
-  spawnImpact(world, entity.x, entity.y - world.heightOf(entity) * 0.6, 2.8, 'curse-hit', 0.58)
+
+  // A stream of small shots shouldn't strobe a big burst on every hit.
+  if (world.time - (entity.data.hitFxAt ?? -9) > 0.4) {
+    entity.data.hitFxAt = world.time
+    spawnImpact(world, entity.x, entity.y - world.heightOf(entity) * 0.6, 2.8, 'curse-hit', 0.58)
+  }
 
   if (entity.hp <= 0) {
     entity.fx = 'ash'
@@ -2842,7 +2847,7 @@ function hitDarkLord(
     return
   }
 
-  if ((entity.data.teleportCool ?? 0) <= 0 && entity.state !== 'duel') {
+  if ((entity.data.teleportCool ?? 0) <= 0) {
     entity.data.teleportCool = between(2.8, 4.2)
     entity.data.smoke = 0.7
     entity.fx = 'smoke'
@@ -2881,32 +2886,11 @@ const isDarkLord = (other: EcoEntity) => other.species === 'dark-lord'
 const isDragonOrLord = (world: EcoWorld) => (other: EcoEntity) =>
   isDragon(world)(other) || isDarkLord(other)
 
-function releaseDuelWizards(world: EcoWorld, lord: EcoEntity | null) {
-  for (const other of world.entities) {
-    if (
-      world.has(other, 'wizard') &&
-      other.state === 'duel' &&
-      (!lord || other.targetId === lord.id)
-    ) {
-      other.targetId = null
-      other.data.casted = 0
-      other.fx = ''
-      other.lift = 0
-      world.setAsset(other, wizardTypeFor(other).asset)
-      world.setState(other, 'wander')
-    }
-  }
-}
-
 function wizardSignatureStateForCode(code: number) {
   if (code === 2) return 'ice-beam'
   if (code === 3) return 'frenzy-plant'
 
   return 'meteor-seeds'
-}
-
-function isWizardSignatureCasting(state: string) {
-  return wizardSignatureStates.some((spell) => spell === state)
 }
 
 function wizardCastLength(state: string) {
@@ -3290,47 +3274,6 @@ function tickWizardSignature(entity: EcoEntity, world: EcoWorld, retarget = fals
   return true
 }
 
-function duelSnapshot(world: EcoWorld, lord: EcoEntity) {
-  const challengers = world.entities.filter(
-    (other) =>
-      world.has(other, 'wizard') &&
-      other.state === 'duel' &&
-      other.targetId === lord.id &&
-      !other.dying &&
-      !other.removed,
-  )
-  const good = challengers.reduce(
-    (sum, other) => sum + wizardTypeFor(other).strength * world.edge(other, lord),
-    0,
-  )
-  const dark = 2.25 + Math.max(0, lord.hp - 1) * 0.13
-  const average = challengers.reduce(
-    (point, other) => {
-      const staff = staffPoint(other, world)
-
-      return { x: point.x + staff.x, y: point.y + staff.y }
-    },
-    { x: 0, y: 0 },
-  )
-  const from = challengers.length
-    ? { x: average.x / challengers.length, y: average.y / challengers.length }
-    : bodyPoint(lord, world)
-  const to = staffPoint(lord, world)
-  const progress = clamp(good / Math.max(0.1, good + dark), 0.18, 0.86)
-  const pulse = Math.sin(world.time * 12) * world.unit * 0.18
-
-  return {
-    challengers,
-    dark,
-    from,
-    good,
-    clash: {
-      x: from.x + (to.x - from.x) * progress + pulse,
-      y: from.y + (to.y - from.y) * progress + Math.sin(world.time * 9) * world.unit * 0.08,
-    },
-  }
-}
-
 function startWizardSpell(
   entity: EcoEntity,
   world: EcoWorld,
@@ -3418,33 +3361,6 @@ const wizard: EcoSpecies = {
       settle(entity, dt)
       entity.fx = entity.state
 
-      if (entity.state === 'duel') {
-        const lord = world.byId(entity.targetId)
-
-        if (!lord || lord.species !== 'dark-lord') {
-          releaseDuelWizards(world, lord)
-          return
-        }
-
-        entity.facing = lord.x >= entity.x ? 1 : -1
-        entity.data.beamPulse = (entity.data.beamPulse ?? 0) - dt
-
-        if ((entity.data.beamPulse ?? 0) <= 0) {
-          entity.data.beamPulse = 0.08
-          const snapshot = duelSnapshot(world, lord)
-          spawnBeam(world, 'duel-beam-good', staffPoint(entity, world), snapshot.clash, 0.14)
-          spawnImpact(world, snapshot.clash.x, snapshot.clash.y, 1.4, 'duel', 0.18)
-        }
-
-        if (entity.t > 2.8) {
-          entity.fx = ''
-          entity.targetId = null
-          world.setAsset(entity, type.asset)
-          world.setState(entity, 'wander')
-        }
-        return
-      }
-
       const lostTarget = entity.t > 0.58 && !tickWizardSignature(entity, world, true)
 
       if (lostTarget || entity.t > wizardCastLength(entity.state)) {
@@ -3492,18 +3408,6 @@ const wizard: EcoSpecies = {
       return
     }
 
-    const lord = world.nearest(entity, isDarkLord, Math.max(unit * 62, world.width))
-
-    if (lord && isEnemy(entity, lord) && (entity.data.spellCool ?? 0) <= 0) {
-      entity.facing = lord.x >= entity.x ? 1 : -1
-      startWizardSpell(entity, world, 'duel', lord, between(2.6, 3.8))
-
-      if (lord.state !== 'duel') {
-        startDarkSpell(lord, world, 'duel', entity, 2.2)
-      }
-      return
-    }
-
     const foe = world.nearest(
       entity,
       (other) =>
@@ -3514,6 +3418,13 @@ const wizard: EcoSpecies = {
 
     if (foe && (entity.data.spellCool ?? 0) <= 0) {
       entity.facing = foe.x >= entity.x ? 1 : -1
+
+      if (Math.hypot(foe.x - entity.x, foe.y - entity.y) > unit * wizardSpellRange) {
+        walkToward(entity, world, foe.x, unit * 1.4, dt)
+        hop(entity, dt, unit * 0.08, 3)
+        return
+      }
+
       startWizardSpell(
         entity,
         world,
@@ -3566,7 +3477,7 @@ const signatureWizardControlsFor = (code: WizardCode) =>
         },
         onTick(entity, world) {
           updateWizardClashes(world, 1 / 60)
-          if (entity.t > 0.58 && isWizardSignatureCasting(entity.state)) {
+          if (entity.t > 0.58 && isWizardCasting(entity.state)) {
             tickWizardSignature(entity, world)
           }
         },
@@ -3767,55 +3678,6 @@ const darkLord: EcoSpecies = {
       return
     }
 
-    if (entity.state === 'duel') {
-      world.setAsset(entity, darkLordCastAsset)
-      settle(entity, dt)
-      const snapshot = duelSnapshot(world, entity)
-
-      if (snapshot.challengers.length === 0) {
-        entity.fx = ''
-        world.setAsset(entity, darkLordAsset)
-        world.setState(entity, 'stalk')
-        return
-      }
-
-      const nearestWizard = snapshot.challengers[0]
-      entity.facing = nearestWizard && nearestWizard.x >= entity.x ? 1 : -1
-      entity.fx = 'duel'
-      entity.data.beamPulse = (entity.data.beamPulse ?? 0) - dt
-
-      if ((entity.data.beamPulse ?? 0) <= 0) {
-        entity.data.beamPulse = 0.08
-        spawnBeam(world, 'duel-beam-dark', staffPoint(entity, world), snapshot.clash, 0.14)
-        spawnImpact(world, snapshot.clash.x, snapshot.clash.y, 1.7, 'curse', 0.2)
-      }
-
-      if (entity.t > 2.12 && !(entity.data.casted ?? 0)) {
-        entity.data.casted = 1
-        const goodRoll = snapshot.good + Math.random() * 0.55
-        const darkRoll = snapshot.dark + Math.random() * 0.45
-
-        if (goodRoll >= darkRoll) {
-          spawnImpact(world, entity.x, entity.y - world.heightOf(entity) * 0.55, 3.8, 'duel', 0.72)
-          hitDarkLord(entity, world, snapshot.good >= 3.1 ? 2 : 1, snapshot.from.x)
-        } else {
-          const victim = pick(snapshot.challengers)
-          spawnImpact(world, victim.x, victim.y - world.heightOf(victim) * 0.55, 3.2, 'curse', 0.66)
-          world.kill(victim)
-          entity.data.smoke = 0.5
-          entity.fx = 'smoke'
-        }
-
-        releaseDuelWizards(world, entity)
-        entity.targetId = null
-        entity.data.spellCool = between(1.3, 2.2)
-        entity.data.casted = 0
-        world.setAsset(entity, darkLordAsset)
-        world.setState(entity, 'stalk')
-      }
-      return
-    }
-
     if (darkLordCastStates.some((spell) => spell === entity.state)) {
       world.setAsset(entity, darkLordCastAsset)
       settle(entity, dt)
@@ -3996,17 +3858,6 @@ const darkLord: EcoSpecies = {
     if (ready && hexVictim && (entity.data.hexCool ?? 0) <= 0) {
       entity.data.hexCool = between(5, 7)
       startDarkSpell(entity, world, 'hex', hexVictim, 1.4)
-      return
-    }
-
-    const wizardTarget = world.nearest(
-      entity,
-      (other) => world.has(other, 'wizard') && isEnemy(entity, other),
-      unit * 28,
-    )
-
-    if (wizardTarget && ready) {
-      startDarkSpell(entity, world, 'duel', wizardTarget, 2.4)
       return
     }
 
