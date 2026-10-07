@@ -1783,8 +1783,9 @@ const jellyfish: EcoSpecies = {
 
     const target = world.nearest(entity, (other) => isFish(other) || isShark(other), unit * 2.8)
 
-    if (target && world.edge(entity, target) >= 1) {
+    if (target && world.edge(entity, target) >= 1 && world.time >= (entity.data.stingAt ?? 0)) {
       hurt(target, world, isShark(target) ? 0.45 : 1)
+      entity.data.stingAt = world.time + 0.8
       entity.fx = 'sting'
       entity.data.fx = 0.38
       entity.data.fed = (entity.data.fed ?? 0) + 1
@@ -2679,7 +2680,8 @@ const boat: EcoSpecies = {
     const variant = boatVariants[variantIndex] ?? boatVariants[0]!
 
     entity.data.kind = variantIndex
-    entity.data.actionAt = world.time + between(2, 5)
+    // actionAt is a countdown in tick, not an absolute time.
+    entity.data.actionAt = between(2, 5)
     entity.data.waterline = variant.waterline
     entity.hp = variant.hp
     entity.size = between(variant.size[0], variant.size[1])
@@ -2802,7 +2804,7 @@ const boat: EcoSpecies = {
 
     wrapRight(entity, world, world.widthOf(entity) * 0.55)
 
-    entity.data.actionAt = (entity.data.actionAt ?? world.time + 4) - dt
+    entity.data.actionAt = (entity.data.actionAt ?? 4) - dt
 
     if ((entity.data.actionAt ?? 0) <= 0) {
       if (variantId === 'trawler') {
