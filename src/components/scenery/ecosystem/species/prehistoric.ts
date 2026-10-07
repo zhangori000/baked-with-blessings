@@ -964,9 +964,12 @@ function dinoAbility(config: DinoAbilityConfig): EcoControlAbility {
           continue
         }
 
+        const firstHitThisCast = context.cast.hitIds.size === 0
+
         context.cast.hitIds.add(target.id)
 
-        if (combo) {
+        // The combo advances once per swing, not once per creature the swing catches.
+        if (combo && firstHitThisCast) {
           const lastAt = entity.data['combo-q-at'] ?? 0
           const step = lastAt + 1.2 > world.time ? ((entity.data['combo-q'] ?? 0) % 3) + 1 : 1
 
