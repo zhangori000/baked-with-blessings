@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  Blend,
   Gamepad2,
   GalleryHorizontal,
   GripHorizontal,
@@ -231,6 +230,33 @@ const matchupSummary = (chips: readonly MatchupChip[]) =>
   chips.length > 0 ? chips.map((chip) => chip.label).join(', ') : 'nothing yet'
 
 const rememberedPositions: Partial<Record<TrayLayout, TrayPosition>> = {}
+
+// The checkerboard square design apps use for "transparent"; lucide has no equivalent.
+const checkerCells = [0, 1, 2, 3].flatMap((row) =>
+  [0, 1, 2, 3].filter((col) => (row + col) % 2 === 0).map((col) => ({ col, row })),
+)
+
+function SeeThroughIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" fill="none" height={size} viewBox="0 0 24 24" width={size}>
+      <clipPath id="spawn-tray-checker-clip">
+        <rect height="18" rx="2.5" width="18" x="3" y="3" />
+      </clipPath>
+      <g clipPath="url(#spawn-tray-checker-clip)" fill="currentColor">
+        {checkerCells.map(({ col, row }) => (
+          <rect
+            height="4.5"
+            key={`${row}-${col}`}
+            width="4.5"
+            x={3 + col * 4.5}
+            y={3 + row * 4.5}
+          />
+        ))}
+      </g>
+      <rect height="18" rx="2.5" stroke="currentColor" strokeWidth="2.2" width="18" x="3" y="3" />
+    </svg>
+  )
+}
 
 const clampNumber = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), Math.max(min, max))
@@ -789,7 +815,7 @@ export function SpawnTray({
                     title="See-through"
                     type="button"
                   >
-                    <Blend aria-hidden="true" size={15} strokeWidth={2.2} />
+                    <SeeThroughIcon />
                   </button>
                   <button
                     aria-label="Close spawn tray"
