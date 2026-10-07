@@ -81,7 +81,7 @@ function clearTimedFx(entity: EcoEntity, dt: number) {
   if ((entity.data.hurt ?? 0) > 0) {
     entity.data.hurt = (entity.data.hurt ?? 0) - dt
 
-    if ((entity.data.hurt ?? 0) <= 0 && entity.fx === 'hurt') {
+    if ((entity.data.hurt ?? 0) <= 0 && (entity.fx === 'hurt' || entity.fx === 'fed')) {
       entity.fx = ''
     }
   }
