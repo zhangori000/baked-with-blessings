@@ -382,7 +382,20 @@ function ControlHud({
         y: (pressed.has('ArrowDown') ? 1 : 0) - (pressed.has('ArrowUp') ? 1 : 0),
       })
     }
+    // Leave typing (cart, sign-in fields) and browser shortcuts like Cmd/Ctrl+R alone.
+    const ignoreKey = (event: KeyboardEvent) =>
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      (event.target instanceof Element &&
+        event.target.closest(
+          'input, textarea, select, [contenteditable=""], [contenteditable="true"]',
+        ) !== null)
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (ignoreKey(event)) {
+        return
+      }
+
       if (event.key === 'Escape') {
         event.preventDefault()
         store.releaseControl()
@@ -413,16 +426,24 @@ function ControlHud({
       }
     }
     const handleKeyUp = (event: KeyboardEvent) => {
+      const ignored = ignoreKey(event)
+
+      // Always let go of keys we picked up, even if focus moved into a text field meanwhile.
       if (pressed.delete(event.key)) {
-        event.preventDefault()
+        if (!ignored) event.preventDefault()
         sync()
       }
 
       const key = event.key.toLowerCase()
 
       if (key === 'q' || key === 'w' || key === 'e' || key === 'r') {
-        event.preventDefault()
-        abilityPressed.delete(key)
+        const held = abilityPressed.delete(key)
+
+        if (ignored && !held) {
+          return
+        }
+
+        if (!ignored) event.preventDefault()
         releaseAbilityRef.current(key)
       }
     }
