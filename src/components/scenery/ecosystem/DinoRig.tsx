@@ -43,24 +43,105 @@ const fallbackBySpecies: Record<string, string> = {
   triceratops: '/spawnables/triceratops.svg',
 }
 
+type NeckJoint = readonly [x: number, y: number, radius: number]
+
+// Joint centres and half-widths along the brachio neck, from inside the body up to the head.
+const brachioNeck: readonly NeckJoint[] = [
+  [156, 112, 18],
+  [178, 86, 14.3],
+  [194, 58, 10.8],
+  [206, 26, 6.5],
+]
+
+const roundTo = (value: number) => Math.round(value * 10) / 10
+
+// A tapered strip between two joints. Offsets are fractions of the joint half-width:
+// +1 is the back edge of the neck and -1 is the throat edge.
+function neckStrip(from: NeckJoint, to: NeckJoint, near: number, far: number, extend = 0) {
+  const [ax, ay, ar] = from
+  const [bx, by, br] = to
+  const length = Math.hypot(bx - ax, by - ay)
+  const dx = (bx - ax) / length
+  const dy = (by - ay) / length
+  const point = (x: number, y: number, r: number, offset: number, along: number) =>
+    `${roundTo(x + dx * along + dy * r * offset)} ${roundTo(y + dy * along - dx * r * offset)}`
+
+  return [
+    `M${point(ax, ay, ar, near, -extend * ar)}`,
+    `L${point(bx, by, br, near, extend * br)}`,
+    `L${point(bx, by, br, far, extend * br)}`,
+    `L${point(ax, ay, ar, far, -extend * ar)}Z`,
+  ].join('')
+}
+
+function BrachioNeckSegment({
+  child,
+  index,
+  overlay,
+  part,
+}: {
+  child?: ReactElement
+  index: number
+  overlay?: ReactElement
+  part: 'neckBase' | 'neckMid' | 'neckTip'
+}): ReactElement {
+  const from = brachioNeck[index]
+  const to = brachioNeck[index + 1]
+
+  // Every joint is a round cap that turns about its own centre, so bending never opens a gap.
+  // The child segment draws over this fill but under these stripes, so stripes stay continuous.
+  return (
+    <g className={`ecoDinoPart ecoDinoPart--${part}`}>
+      <circle cx={from[0]} cy={from[1]} fill="#8aa8b6" r={from[2]} />
+      <path d={neckStrip(from, to, -1, 1)} fill="#8aa8b6" />
+      {child}
+      <path d={neckStrip(from, to, 0.1, 0.88, 0.3)} fill="#adc4cc" />
+      <path d={neckStrip(from, to, -0.15, -0.6, 0.3)} fill="#7695a4" />
+      {overlay}
+    </g>
+  )
+}
+
 function BrachiosaurusRig(): ReactElement {
-  const neckPaths = (
-    <>
-      <path
-        d="M168.8 124.7 L171.5 121.4 L174.1 118 L176.7 114.6 L179.1 111.2 L181.5 107.8 L183.8 104.4 L186 101 L188.2 97.5 L190.2 94.1 L192.2 90.6 L194 87.1 L195.8 83.6 L197.5 80.2 L199.1 76.7 L200.6 73.2 L202 69.6 L203.4 66.1 L204.6 62.6 L205.8 59.1 L206.9 55.6 L207.8 52.1 L208.8 48.5 L209.6 45 L210.3 41.5 L210.9 38 L211.5 34.4 L212 30.9 L212.3 27.4 L199.7 24.6 L198.5 27.7 L197.3 30.7 L196.1 33.6 L194.8 36.6 L193.4 39.5 L191.9 42.3 L190.4 45.2 L188.8 48 L187.2 50.8 L185.4 53.6 L183.7 56.3 L181.8 59 L179.9 61.7 L177.9 64.3 L175.9 67 L173.8 69.6 L171.6 72.2 L169.3 74.7 L167 77.3 L164.7 79.8 L162.2 82.3 L159.7 84.8 L157.1 87.2 L154.5 89.7 L151.8 92.1 L149 94.5 L146.2 96.9 L143.2 99.3Z"
-        fill="#8aa8b6"
-      />
-      <path
-        d="M154.5 110.5 L157.3 107.7 L160.1 104.9 L162.8 102.1 L165.4 99.2 L167.9 96.3 L170.4 93.5 L172.8 90.6 L175.1 87.6 L177.3 84.7 L179.5 81.8 L181.5 78.8 L183.5 75.8 L185.5 72.8 L187.3 69.8 L189.1 66.8 L190.8 63.7 L192.4 60.7 L194 57.6 L195.5 54.5 L196.9 51.4 L198.2 48.3 L199.5 45.1 L200.7 42 L201.8 38.8 L202.8 35.6 L203.7 32.4 L204.6 29.1 L205.4 25.9 L201.5 25 L200.4 28.1 L199.2 31.1 L197.9 34.2 L196.6 37.1 L195.2 40.1 L193.7 43 L192.2 45.9 L190.6 48.7 L188.9 51.6 L187.2 54.4 L185.4 57.1 L183.5 59.9 L181.6 62.6 L179.6 65.3 L177.5 68 L175.4 70.6 L173.2 73.2 L170.9 75.8 L168.6 78.4 L166.2 80.9 L163.7 83.5 L161.2 86 L158.6 88.5 L155.9 90.9 L153.2 93.4 L150.4 95.8 L147.5 98.2 L144.6 100.6Z"
-        fill="#b9cdd4"
-        opacity="0.75"
-      />
-      <path
-        d="M163.4 119.3 L166.1 116.2 L168.8 113 L171.4 109.9 L173.9 106.7 L176.4 103.5 L178.8 100.3 L181 97 L183.2 93.8 L185.3 90.5 L187.4 87.3 L189.3 84 L191.2 80.7 L193 77.4 L194.7 74.1 L196.3 70.8 L197.8 67.4 L199.3 64.1 L200.7 60.7 L201.9 57.4 L203.1 54 L204.3 50.6 L205.3 47.3 L206.3 43.9 L207.1 40.5 L207.9 37.1 L208.6 33.7 L209.3 30.2 L209.8 26.8 L206.9 26.2 L206.2 29.5 L205.4 32.8 L204.5 36.1 L203.6 39.4 L202.6 42.6 L201.5 45.9 L200.3 49.1 L199.1 52.3 L197.7 55.5 L196.3 58.7 L194.8 61.9 L193.3 65 L191.6 68.2 L189.9 71.3 L188.1 74.5 L186.3 77.6 L184.3 80.6 L182.3 83.7 L180.2 86.8 L178 89.8 L175.7 92.9 L173.4 95.9 L171 98.9 L168.5 101.9 L165.9 104.9 L163.2 107.8 L160.5 110.8 L157.7 113.7Z"
-        fill="#607f90"
-        opacity="0.45"
-      />
-    </>
+  const head = (
+    <g className="ecoDinoPart ecoDinoPart--head">
+      <g transform="translate(206 26) rotate(-6)">
+        <path
+          d="M-7 3C-9 -9 0 -15 8 -13C11 -20 20 -21 24 -14C31 -12 37 -6 37 0C37 5 32 7 24 7L0 9C-4 9 -6 7 -7 3Z"
+          fill="#8aa8b6"
+        />
+        <path d="M9 -13C12 -19 19 -20 23 -14C19 -15 14 -14 9 -13Z" fill="#607f90" opacity="0.7" />
+        <path
+          d="M20 4C26 4 31 3 36 1"
+          fill="none"
+          stroke="#607f90"
+          strokeLinecap="round"
+          strokeWidth="1.8"
+        />
+        <circle cx="12" cy="-5" fill="#f6f1e4" r="2.6" />
+        <circle cx="12.6" cy="-4.8" fill="#26312a" r="1.7" />
+        <ellipse cx="24" cy="-10" fill="#4d6470" rx="2" ry="1.2" />
+        <g className="ecoDinoPart ecoDinoPart--sprig" opacity="0">
+          <path
+            d="M27 3C34 3 41 4 47 8"
+            fill="none"
+            stroke="#4f6b35"
+            strokeLinecap="round"
+            strokeWidth="1.4"
+          />
+          <path d="M37 3C40 -2 45 -4 51 -3C47 0 42 2 37 3Z" fill="#3f8250" />
+          <path d="M33 3C33 9 36 14 40 17C41 11 38 6 33 3Z" fill="#2f6b45" />
+          <path d="M38 4C40 10 44 15 50 16C48 10 44 6 38 4Z" fill="#3f8250" />
+          <path d="M42 6C46 11 51 14 57 13C54 8 49 5 42 6Z" fill="#5f9f52" />
+        </g>
+        <g className="ecoDinoPart ecoDinoPart--jaw" transform="rotate(0 20 5)">
+          <path d="M15 4C22 6 30 5 36 1C34 7 25 10 17 8Z" fill="#b9cdd4" opacity="0.88" />
+        </g>
+        <g className="ecoDinoPart ecoDinoPart--cheek">
+          <ellipse cx="6" cy="2" fill="#b9cdd4" opacity="0" rx="7" ry="5.5" />
+        </g>
+      </g>
+    </g>
   )
 
   return (
@@ -72,17 +153,6 @@ function BrachiosaurusRig(): ReactElement {
         width="260"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          <clipPath id="brachioNeckBase">
-            <path d="M139 88H179V129H139Z" />
-          </clipPath>
-          <clipPath id="brachioNeckMid">
-            <path d="M158 56H199V103H158Z" />
-          </clipPath>
-          <clipPath id="brachioNeckTip">
-            <path d="M178 20H217V69H178Z" />
-          </clipPath>
-        </defs>
         <ellipse
           className="ecoDinoShadow"
           cx="104"
@@ -115,28 +185,30 @@ function BrachiosaurusRig(): ReactElement {
             opacity="0.55"
           />
         </g>
-        <g
-          className="ecoDinoPart ecoDinoPart--neckBase"
-          clipPath="url(#brachioNeckBase)"
-          transform="rotate(0 144 101)"
-        >
-          {neckPaths}
-        </g>
-        <g
-          className="ecoDinoPart ecoDinoPart--neckMid"
-          clipPath="url(#brachioNeckMid)"
-          transform="rotate(0 166 79)"
-        >
-          {neckPaths}
-        </g>
-        <g
-          className="ecoDinoPart ecoDinoPart--neckTip"
-          clipPath="url(#brachioNeckTip)"
-          transform="rotate(0 199 31)"
-        >
-          {neckPaths}
-        </g>
-        <g className="ecoDinoPart ecoDinoPart--body" transform="rotate(0 112 142)">
+        <g className="ecoDinoPart ecoDinoPart--body">
+          <BrachioNeckSegment
+            child={
+              <BrachioNeckSegment
+                child={
+                  <BrachioNeckSegment
+                    child={<circle cx="206" cy="26" fill="#8aa8b6" r="6.5" />}
+                    index={2}
+                    overlay={head}
+                    part="neckTip"
+                  />
+                }
+                index={1}
+                part="neckMid"
+              />
+            }
+            index={0}
+            overlay={
+              <g className="ecoDinoPart ecoDinoPart--gulpLump">
+                <ellipse cx="207" cy="42" fill="#9db8c4" opacity="0" rx="6" ry="5" />
+              </g>
+            }
+            part="neckBase"
+          />
           <path
             d="M54 132C66 100 120 86 164 100C186 108 190 140 174 158C148 182 84 182 60 164C48 155 48 142 54 132Z"
             fill="#8aa8b6"
@@ -185,32 +257,6 @@ function BrachiosaurusRig(): ReactElement {
             strokeLinecap="round"
             strokeWidth="2"
           />
-        </g>
-        <g className="ecoDinoPart ecoDinoPart--head" transform="translate(206 26) rotate(-6)">
-          <path
-            d="M-7 3C-9 -9 0 -15 8 -13C11 -20 20 -21 24 -14C31 -12 37 -6 37 0C37 5 32 7 24 7L0 9C-4 9 -6 7 -7 3Z"
-            fill="#8aa8b6"
-          />
-          <path d="M9 -13C12 -19 19 -20 23 -14C19 -15 14 -14 9 -13Z" fill="#607f90" opacity="0.7" />
-          <path
-            d="M20 4C26 4 31 3 36 1"
-            fill="none"
-            stroke="#607f90"
-            strokeLinecap="round"
-            strokeWidth="1.8"
-          />
-          <circle cx="12" cy="-5" fill="#f6f1e4" r="2.6" />
-          <circle cx="12.6" cy="-4.8" fill="#26312a" r="1.7" />
-          <ellipse cx="24" cy="-10" fill="#4d6470" rx="2" ry="1.2" />
-          <g className="ecoDinoPart ecoDinoPart--jaw" transform="rotate(0 20 5)">
-            <path d="M15 4C22 6 30 5 36 1C34 7 25 10 17 8Z" fill="#b9cdd4" opacity="0.88" />
-          </g>
-          <g className="ecoDinoPart ecoDinoPart--cheek">
-            <ellipse cx="6" cy="2" fill="#b9cdd4" opacity="0" rx="7" ry="5.5" />
-          </g>
-        </g>
-        <g className="ecoDinoPart ecoDinoPart--gulpLump">
-          <ellipse cx="204" cy="36" fill="#d7e8b0" opacity="0" rx="9" ry="7" />
         </g>
       </svg>
     </span>
