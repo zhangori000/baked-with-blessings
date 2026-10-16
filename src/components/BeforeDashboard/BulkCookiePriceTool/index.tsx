@@ -70,7 +70,7 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
   )
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [price, setPrice] = useState('7.00')
+  const [price, setPrice] = useState('5.00')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [updateMiniPrices, setUpdateMiniPrices] = useState(true)
 

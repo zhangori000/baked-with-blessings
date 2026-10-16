@@ -11,11 +11,13 @@ export type CookieSeedSpec = {
 }
 
 /**
- * Flat single-cookie pricing the owner set: every large is $7.00, every mini is
+ * Flat single-cookie pricing the owner set: every large is $5.00, every mini is
  * $3.00. Mini is its own stored value (NOT "half of large") so $3 is the source
  * of truth — the 50% rule in sizeVariants is only a fallback for empty fields.
+ * Keep this matching the live admin prices: `pnpm update:cookie-prices` writes
+ * these values over whatever the database holds.
  */
-const defaultCookiePriceInUSD = 700
+const defaultCookiePriceInUSD = 500
 export const defaultCookieMiniPriceInUSD = 300
 
 export const cookieCategory = {
@@ -161,7 +163,7 @@ export const cookieCatalog: CookieSeedSpec[] = [
     mediaAlt: 'Red Velvet Cheesecake cookie',
     metaDescription:
       'Red velvet cookie with a cheesecake-rich center — soft, a little tangy, and not too sweet.',
-    priceInUSD: 700,
+    priceInUSD: defaultCookiePriceInUSD,
     slug: 'red-velvet-cheesecake',
     sourceFilename: 'red-velvet-cheesecake.png',
     summary:
@@ -172,7 +174,7 @@ export const cookieCatalog: CookieSeedSpec[] = [
     mediaAlt: 'Toasted and Tasseled graduation cookie',
     metaDescription:
       'A cookie with a graduation hat created out of chocolate. Grad Hat: chocolate covered graham cracker and marshmallow and fruit roll up.',
-    priceInUSD: 700,
+    priceInUSD: defaultCookiePriceInUSD,
     slug: 'toasted-and-tasseled',
     sourceFilename: 'toasted-and-tasseled.png',
     summary:
@@ -183,7 +185,7 @@ export const cookieCatalog: CookieSeedSpec[] = [
     mediaAlt: 'Sticky Mango Rice Krispy Treats cookie',
     metaDescription:
       'Sticky Mango Rice Krispy Treats with homemade mochi pieces, dried mango, rice krispy treats, marshmallow.',
-    priceInUSD: 700,
+    priceInUSD: defaultCookiePriceInUSD,
     slug: 'sticky-mango-rice-krispy-treats',
     sourceFilename: 'sticky-mango-rice-krispy-treats.png',
     summary:
@@ -194,7 +196,7 @@ export const cookieCatalog: CookieSeedSpec[] = [
     mediaAlt: 'Dirty Chai cookie',
     metaDescription:
       'Freshly baked Dirty Chai with a brown butter chai-infused base, espresso white chocolate, caramelized white chocolate, and flaky sea salt. The sophisticated way to handle your morning caffeine fix.',
-    priceInUSD: 700,
+    priceInUSD: defaultCookiePriceInUSD,
     slug: 'dirty-chai',
     sourceFilename: 'dirty-chai.png',
     summary:
