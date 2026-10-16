@@ -6,6 +6,12 @@ const BUNDLE_SIZE_BY_SLUG = {
   'build-your-own-half-dozen': 'large',
   'build-your-own-mini-box': 'mini',
   'cookie-tray': 'large',
+  'large-cookie-catering-large': 'large',
+  'large-cookie-catering-small': 'large',
+  'large-cookie-catering-xl': 'large',
+  'mini-cookie-catering-large': 'mini',
+  'mini-cookie-catering-small': 'mini',
+  'mini-cookie-catering-xl': 'mini',
   'mini-cookie-tray': 'mini',
 } as const
 

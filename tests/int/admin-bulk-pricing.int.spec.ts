@@ -149,6 +149,32 @@ describe('admin bulk pricing safety check', () => {
     })
   })
 
+  it('recognizes the catering packages, so the live menu can be fully checked', () => {
+    const slugs = [
+      'large-cookie-catering-small',
+      'large-cookie-catering-large',
+      'large-cookie-catering-xl',
+      'mini-cookie-catering-small',
+      'mini-cookie-catering-large',
+      'mini-cookie-catering-xl',
+    ]
+    const result = parseBundlePricingResponse({
+      docs: slugs.map((slug) => ({ ...validBundle, slug, title: slug })),
+      hasNextPage: false,
+      totalDocs: slugs.length,
+    })
+
+    expect(result.complete).toBe(true)
+    expect(result.bundles.map((bundle) => bundle.size)).toEqual([
+      'large',
+      'large',
+      'large',
+      'mini',
+      'mini',
+      'mini',
+    ])
+  })
+
   it('does not warn about unchanged mini prices', () => {
     const miniBundle: BundlePricing = {
       count: 4,
