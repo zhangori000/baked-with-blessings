@@ -37,6 +37,7 @@ import {
 } from './catering-menu-scenery'
 import type {
   MenuPanelBackdrop,
+  BundleSuggestion,
   BundleSuggestions,
   MenuSection,
   MenuSceneryTone,
@@ -98,12 +99,23 @@ const menuPersuasionPanelClassNames = {
 const cateringDisplayOrder = [
   'build-your-own-mini-box',
   'build-your-own-cookie-box',
+  'build-your-own-half-dozen',
+  'build-your-own-dozen',
   'cookie-tray',
   'mini-cookie-tray',
   'banana-pudding-10-pack',
   'sticky-toffee-pudding-10-pack',
   'focaccia-tray',
 ] as const
+
+// Large-cookie bundles a stack of singles can be nudged toward. The retired
+// one-flavor tray stays listed so it is offered again if it is republished.
+const largeBundleSlugs = [
+  'build-your-own-cookie-box',
+  'build-your-own-half-dozen',
+  'build-your-own-dozen',
+  'cookie-tray',
+]
 
 const normalizeImage = (product: Partial<Product>) => {
   const firstGalleryItem = product.gallery?.[0]
@@ -679,12 +691,12 @@ export function CateringMenuSection({
     () => new Set(regularItems.map((item) => item.id)),
     [regularItems],
   )
-  // The 4-pack mix box and 10-pack one-flavor tray for each size, used to nudge
-  // a customer who is stacking up single cookies toward the cheaper bundle.
-  // Read from the live bundle products so the per-cookie math is always current.
+  // The bundles for each size, used to nudge a customer who is stacking up
+  // single cookies toward a cheaper box. Read from the live bundle products so
+  // the per-cookie math is always current.
   const bundleSuggestions = useMemo<BundleSuggestions>(() => {
     const bySlug = new Map(products.map((product) => [product.slug, product]))
-    const toSuggestion = (slug: string) => {
+    const toSuggestion = (slug: string): BundleSuggestion | null => {
       const product = bySlug.get(slug)
       if (!product || typeof product.priceInUSD !== 'number') {
         return null
@@ -701,8 +713,10 @@ export function CateringMenuSection({
     }
     return {
       large: {
-        box: toSuggestion('build-your-own-cookie-box'),
-        tray: toSuggestion('cookie-tray'),
+        boxes: largeBundleSlugs
+          .map(toSuggestion)
+          .filter((suggestion): suggestion is BundleSuggestion => Boolean(suggestion?.count))
+          .sort((left, right) => (left.count ?? 0) - (right.count ?? 0)),
       },
       mini: {
         box: toSuggestion('build-your-own-mini-box'),

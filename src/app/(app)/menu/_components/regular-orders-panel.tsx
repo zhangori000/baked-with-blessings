@@ -140,12 +140,12 @@ function RegularOrderRow({
       }
     }
 
-    if (group.tray?.count && quantity >= group.tray.count) {
-      return dealFor(group.tray as { count: number; price: number; slug: string; title: string })
-    }
-
-    if (group.box?.count && quantity >= group.box.count) {
-      return dealFor(group.box as { count: number; price: number; slug: string; title: string })
+    // The biggest box this many singles already fills is the best deal.
+    const filledBox = [...group.boxes]
+      .reverse()
+      .find((bundle) => bundle.count && quantity >= bundle.count)
+    if (filledBox) {
+      return dealFor(filledBox as { count: number; price: number; slug: string; title: string })
     }
 
     const miniBox = bundleSuggestions.mini.box
@@ -158,7 +158,7 @@ function RegularOrderRow({
       }
     }
 
-    const fallback = group.box ?? group.tray
+    const fallback = group.boxes[0]
     if (!fallback) {
       return null
     }

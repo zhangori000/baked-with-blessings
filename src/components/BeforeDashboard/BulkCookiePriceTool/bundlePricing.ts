@@ -2,6 +2,8 @@ import { defaultMiniPriceInUSD } from '@/features/products/sizeVariants'
 
 const BUNDLE_SIZE_BY_SLUG = {
   'build-your-own-cookie-box': 'large',
+  'build-your-own-dozen': 'large',
+  'build-your-own-half-dozen': 'large',
   'build-your-own-mini-box': 'mini',
   'cookie-tray': 'large',
   'mini-cookie-tray': 'mini',

@@ -41,4 +41,28 @@ export const MIX_BOX_SPECS: MixBoxSpec[] = [
     title: 'Build-Your-Own Cookie Box',
     unit: 'large',
   },
+  {
+    capacity: 6,
+    pitchParagraphs: [
+      'Build a box of six full-size cookies and mix the flavors however you like — two each of three favorites, or six of one.',
+      'Six cookies cost less per cookie than a Cookie Box, so it is the better deal for a family or a small gift.',
+    ],
+    portionLabel: '6 large cookies · mix & match',
+    priceCents: 2100,
+    slug: 'build-your-own-half-dozen',
+    title: 'Build-Your-Own Half-Dozen',
+    unit: 'large',
+  },
+  {
+    capacity: 12,
+    pitchParagraphs: [
+      'Build a dozen full-size cookies and mix the flavors however you like — enough for a party, a classroom, or the week.',
+      'A dozen costs less per cookie than any smaller box. For more than twelve, Catering goes cheaper still and offers every flavor.',
+    ],
+    portionLabel: '12 large cookies · mix & match',
+    priceCents: 3900,
+    slug: 'build-your-own-dozen',
+    title: 'Build-Your-Own Dozen',
+    unit: 'large',
+  },
 ]

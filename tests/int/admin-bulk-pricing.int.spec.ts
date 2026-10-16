@@ -118,6 +118,37 @@ describe('admin bulk pricing safety check', () => {
     })
   })
 
+  it('recognizes the Half-Dozen and Dozen boxes as large-cookie bundles', () => {
+    expect(
+      parseBundlePricingResponse({
+        docs: [
+          {
+            ...validBundle,
+            priceInUSD: 2100,
+            requiredSelectionCount: 6,
+            slug: 'build-your-own-half-dozen',
+            title: 'Half-Dozen',
+          },
+          {
+            ...validBundle,
+            priceInUSD: 3900,
+            requiredSelectionCount: 12,
+            slug: 'build-your-own-dozen',
+            title: 'Dozen',
+          },
+        ],
+        hasNextPage: false,
+        totalDocs: 2,
+      }),
+    ).toEqual({
+      bundles: [
+        { count: 6, price: 2100, size: 'large', title: 'Half-Dozen' },
+        { count: 12, price: 3900, size: 'large', title: 'Dozen' },
+      ],
+      complete: true,
+    })
+  })
+
   it('does not warn about unchanged mini prices', () => {
     const miniBundle: BundlePricing = {
       count: 4,
