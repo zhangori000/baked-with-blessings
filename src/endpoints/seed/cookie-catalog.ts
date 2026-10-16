@@ -17,7 +17,7 @@ export type CookieSeedSpec = {
  * Keep this matching the live admin prices: `pnpm update:cookie-prices` writes
  * these values over whatever the database holds.
  */
-const defaultCookiePriceInUSD = 500
+export const defaultCookiePriceInUSD = 500
 export const defaultCookieMiniPriceInUSD = 300
 
 export const cookieCategory = {

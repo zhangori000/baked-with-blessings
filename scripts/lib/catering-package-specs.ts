@@ -28,11 +28,13 @@ const buildSpec = (
   }
 }
 
+// Prices in cents. Bigger packages cost less per cookie, up to 45% off a single
+// large cookie at 60; see documentation/pricing.md.
 export const CATERING_PACKAGE_SPECS: CateringPackageSpec[] = [
   buildSpec('mini', 'small', 30, 4500),
   buildSpec('mini', 'large', 60, 8500),
   buildSpec('mini', 'xl', 100, 14000),
-  buildSpec('large', 'small', 18, 7500),
-  buildSpec('large', 'large', 36, 15000),
-  buildSpec('large', 'xl', 60, 24000),
+  buildSpec('large', 'small', 18, 5600),
+  buildSpec('large', 'large', 36, 10400),
+  buildSpec('large', 'xl', 60, 16500),
 ]

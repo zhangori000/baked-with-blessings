@@ -2,10 +2,11 @@ import { loadScriptEnv } from './lib/load-script-env'
 
 loadScriptEnv()
 
+import { MIX_BOX_SPECS } from './lib/mix-box-specs'
+
 /**
- * Provisions the two "Build-Your-Own" mix-and-match boxes:
- *   - Build-Your-Own Mini Box   (6 mini cookies,  $10)
- *   - Build-Your-Own Cookie Box (3 large cookies, $12)
+ * Provisions the "Build-Your-Own" mix-and-match boxes listed in
+ * `scripts/lib/mix-box-specs.ts` (sizes and prices live there).
  *
  * It also moves the retired one-flavor 10-packs (Cookie Tray, Mini Cookie
  * Tray) back to draft. Any-flavor orders now go through Catering.
@@ -23,40 +24,6 @@ loadScriptEnv()
  * other fields alone. Hosted databases are owner-managed; only run this
  * against preview/prod when explicitly asked.
  */
-
-type BoxSpec = {
-  capacity: number
-  portionLabel: string
-  priceCents: number
-  slug: string
-  title: string
-  pitchParagraphs: string[]
-}
-
-const BOX_SPECS: BoxSpec[] = [
-  {
-    capacity: 6,
-    portionLabel: '6 mini cookies · mix & match',
-    priceCents: 1000,
-    slug: 'build-your-own-mini-box',
-    title: 'Build-Your-Own Mini Box',
-    pitchParagraphs: [
-      'Build a box of six mini cookies and mix the flavors however you like — all six the same or six different, your call.',
-      'Add the box to your cart, then build another. Each box is its own order line, so the kitchen sees exactly which minis to bake.',
-    ],
-  },
-  {
-    capacity: 3,
-    portionLabel: '3 large cookies · mix & match',
-    priceCents: 1200,
-    slug: 'build-your-own-cookie-box',
-    title: 'Build-Your-Own Cookie Box',
-    pitchParagraphs: [
-      'Build a box of three full-size cookies and mix the flavors however you like — one of each or three of a favorite.',
-      'Add the box to your cart, then build another. Each box is its own order line, so the kitchen knows exactly what to bake.',
-    ],
-  },
-]
 
 const RETIRED_TRAY_SLUGS = ['cookie-tray', 'mini-cookie-tray']
 
@@ -158,7 +125,7 @@ const run = async () => {
       return
     }
 
-    for (const spec of BOX_SPECS) {
+    for (const spec of MIX_BOX_SPECS) {
       const coreData = {
         _status: 'published' as const,
         categories: [cateringCategoryID],
