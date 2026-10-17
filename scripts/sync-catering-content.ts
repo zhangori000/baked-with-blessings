@@ -20,7 +20,7 @@ loadScriptEnv()
  * intact. Products that do not exist in the target environment are skipped with
  * a warning (run `pnpm seed:prod` first if the catalog was never seeded there).
  *
- * The two build-your-own mix boxes live in `pnpm seed:mix-boxes`; the cookie
+ * The build-your-own mix boxes live in `pnpm seed:mix-boxes`; the cookie
  * flavor lineup / rotation lives in `pnpm update:flavor-lineup`.
  */
 

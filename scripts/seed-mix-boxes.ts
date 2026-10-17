@@ -13,7 +13,10 @@ import { MIX_BOX_SPECS } from './lib/mix-box-specs'
  *
  *   pnpm seed:mix-boxes            (local Docker database)
  *
- * Both are batch-builder products with flavorSelection 'mixAndMatch'. Their
+ * A box missing from the database is created and published, with no gallery
+ * image or summary (add those in the admin panel).
+ *
+ * All of them are batch-builder products with flavorSelection 'mixAndMatch'. Their
  * selectableProducts is the FULL cookie catalog; the storefront restricts the
  * pickable flavors to the currently-available ones (always + active rotation)
  * at render/validation time, so the box auto-includes new in-rotation flavors

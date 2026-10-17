@@ -4,7 +4,9 @@
  * them against the single-cookie price and the catering packages.
  *
  * Prices are in cents. Every bigger box must cost less per cookie than the one
- * before it; see `documentation/pricing.md`.
+ * before it; see `documentation/pricing.md`. Keep prices out of the pitch text:
+ * the owner edits prices in the admin panel, and stored copy that compares
+ * prices goes stale when they do.
  */
 export type MixBoxSpec = {
   capacity: number
@@ -45,7 +47,7 @@ export const MIX_BOX_SPECS: MixBoxSpec[] = [
     capacity: 6,
     pitchParagraphs: [
       'Build a box of six full-size cookies and mix the flavors however you like — two each of three favorites, or six of one.',
-      'Six cookies cost less per cookie than a Cookie Box, so it is the better deal for a family or a small gift.',
+      'Add the box to your cart, then build another. It is a good size for a family or a small gift.',
     ],
     portionLabel: '6 large cookies · mix & match',
     priceCents: 2100,
@@ -57,7 +59,7 @@ export const MIX_BOX_SPECS: MixBoxSpec[] = [
     capacity: 12,
     pitchParagraphs: [
       'Build a dozen full-size cookies and mix the flavors however you like — enough for a party, a classroom, or the week.',
-      'A dozen costs less per cookie than any smaller box. For more than twelve, Catering goes cheaper still and offers every flavor.',
+      'Need more than twelve, or a past favorite? Catering offers every flavor we have ever baked.',
     ],
     portionLabel: '12 large cookies · mix & match',
     priceCents: 3900,
