@@ -70,7 +70,7 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
   )
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [price, setPrice] = useState('7.00')
+  const [price, setPrice] = useState('5.00')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [updateMiniPrices, setUpdateMiniPrices] = useState(true)
 
@@ -84,10 +84,13 @@ export const BulkCookiePriceTool: React.FC<BulkCookiePriceToolProps> = ({ messag
 
   useEffect(() => {
     let active = true
+    // Only bundles a customer can buy: an admin's request would otherwise also
+    // return retired trays that sit in draft.
     const query = new URLSearchParams({
       depth: '0',
       draft: 'false',
       limit: '100',
+      'where[_status][equals]': 'published',
       'where[menuBehavior][equals]': 'batchBuilder',
     })
 

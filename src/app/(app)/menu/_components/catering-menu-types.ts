@@ -41,9 +41,13 @@ export type BundleSuggestion = {
   title: string
 }
 
-/** Per-size bundle options: a 4-pack mix box and a 10-pack one-flavor tray. */
+/**
+ * Bundles offered to a customer who is stacking up single cookies. `large.boxes`
+ * runs from the fewest cookies to the most, so the panel can offer the biggest
+ * box the customer's quantity already fills.
+ */
 export type BundleSuggestions = {
-  large: { box: BundleSuggestion | null; tray: BundleSuggestion | null }
+  large: { boxes: BundleSuggestion[] }
   mini: { box: BundleSuggestion | null; tray: BundleSuggestion | null }
 }
 

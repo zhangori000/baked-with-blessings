@@ -118,6 +118,63 @@ describe('admin bulk pricing safety check', () => {
     })
   })
 
+  it('recognizes the Half-Dozen and Dozen boxes as large-cookie bundles', () => {
+    expect(
+      parseBundlePricingResponse({
+        docs: [
+          {
+            ...validBundle,
+            priceInUSD: 2100,
+            requiredSelectionCount: 6,
+            slug: 'build-your-own-half-dozen',
+            title: 'Half-Dozen',
+          },
+          {
+            ...validBundle,
+            priceInUSD: 3900,
+            requiredSelectionCount: 12,
+            slug: 'build-your-own-dozen',
+            title: 'Dozen',
+          },
+        ],
+        hasNextPage: false,
+        totalDocs: 2,
+      }),
+    ).toEqual({
+      bundles: [
+        { count: 6, price: 2100, size: 'large', title: 'Half-Dozen' },
+        { count: 12, price: 3900, size: 'large', title: 'Dozen' },
+      ],
+      complete: true,
+    })
+  })
+
+  it('recognizes the catering packages, so the live menu can be fully checked', () => {
+    const slugs = [
+      'large-cookie-catering-small',
+      'large-cookie-catering-large',
+      'large-cookie-catering-xl',
+      'mini-cookie-catering-small',
+      'mini-cookie-catering-large',
+      'mini-cookie-catering-xl',
+    ]
+    const result = parseBundlePricingResponse({
+      docs: slugs.map((slug) => ({ ...validBundle, slug, title: slug })),
+      hasNextPage: false,
+      totalDocs: slugs.length,
+    })
+
+    expect(result.complete).toBe(true)
+    expect(result.bundles.map((bundle) => bundle.size)).toEqual([
+      'large',
+      'large',
+      'large',
+      'mini',
+      'mini',
+      'mini',
+    ])
+  })
+
   it('does not warn about unchanged mini prices', () => {
     const miniBundle: BundlePricing = {
       count: 4,
