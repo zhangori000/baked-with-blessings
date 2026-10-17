@@ -2,6 +2,7 @@ import { loadScriptEnv } from './lib/load-script-env'
 
 loadScriptEnv()
 
+import { defaultCookiePriceInUSD } from '../src/endpoints/seed/cookie-catalog'
 import { WEEKLY_ROTATION_LABELS } from '../src/endpoints/seed/flavor-rotations'
 import { defaultMiniPriceInUSD } from '../src/features/products/sizeVariants'
 import { ensureSizeAxis } from '../src/features/products/sizeVariantProvisioning'
@@ -38,7 +39,9 @@ type FlavorSpec = {
   title: string
 }
 
-const COOKIE_LARGE_PRICE_IN_USD = 500
+// The single large-cookie price comes from the cookie catalog, so changing it
+// there changes it everywhere the scripts write it.
+const COOKIE_LARGE_PRICE_IN_USD = defaultCookiePriceInUSD
 
 const ROTATION_FLAVORS: FlavorSpec[] = [
   {

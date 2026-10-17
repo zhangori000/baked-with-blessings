@@ -12,8 +12,9 @@ export type CookieSeedSpec = {
 
 /**
  * Flat single-cookie pricing the owner set: every large is $5.00, every mini is
- * $3.00. Mini is its own stored value (NOT "half of large") so $3 is the source
- * of truth — the 50% rule in sizeVariants is only a fallback for empty fields.
+ * $3.00 except Dirty Chai's $2.50. Mini is its own stored value (NOT "half of
+ * large") so $3 is the source of truth — the 50% rule in sizeVariants is only a
+ * fallback for empty fields.
  * Keep this matching the live admin prices: `pnpm update:cookie-prices` writes
  * these values over whatever the database holds.
  */
@@ -196,6 +197,7 @@ export const cookieCatalog: CookieSeedSpec[] = [
     mediaAlt: 'Dirty Chai cookie',
     metaDescription:
       'Freshly baked Dirty Chai with a brown butter chai-infused base, espresso white chocolate, caramelized white chocolate, and flaky sea salt. The sophisticated way to handle your morning caffeine fix.',
+    miniPriceInUSD: 250,
     priceInUSD: defaultCookiePriceInUSD,
     slug: 'dirty-chai',
     sourceFilename: 'dirty-chai.png',
