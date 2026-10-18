@@ -14,9 +14,12 @@ import styles from './index.module.css'
 import { attentionOrdersHref } from './orderQueue'
 
 export const AdminDashboard = async ({ initPageResult }: AdminViewServerProps) => {
-  const { req } = initPageResult
+  const req = initPageResult?.req
 
-  if (!req.user) {
+  // Logged-out visitors never reach this view (the payload layout renders
+  // a standalone login first). Still fail closed instead of throwing —
+  // a thrown dashboard is a blank /admin.
+  if (!req || !req.user) {
     redirect('/admin/login')
   }
 
