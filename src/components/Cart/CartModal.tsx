@@ -675,7 +675,7 @@ export function CartModal({ renderTrigger = true }: { renderTrigger?: boolean })
           }
 
           .cartAuthHint {
-            color: rgba(31, 43, 77, 0.6);
+            color: rgba(23, 21, 16, 0.6);
           }
 
           @media (max-width: 767px) {

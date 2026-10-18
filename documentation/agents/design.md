@@ -14,6 +14,10 @@ Build with `src/design-system/bakery` and the CSS variables it already publishes
 
 Do not introduce a one-off hex or a new font because a screenshot used it. Map the reference onto an existing token. The black cookie-name pill is the cart action. Cream fills are paper. Cocoa is ink. Scenery yellow is a meadow control, not a checkout button.
 
+Ink is warm: cocoa `#2f2414`, near-black `#171510`, muted `rgba(23, 21, 16, 0.64)`, and gold-brown `#7d5512` for links and tags. No blue or navy text, borders, or tag fills; blue belongs to the sky art only.
+
+The storefront is light-only. It does not follow the OS dark setting or the admin's `payload-theme` key, because the pages are built on cream surfaces. Moonlit is a scenery tone, not a dark mode.
+
 The site has multiple scenery tones (dawn, blossom, night, and the rest in `menuHeroScenery`). New chrome must survive a scenery change. Prefer `var(--scene-panel-fill)` and `var(--scene-text)` over a color that only works on dawn.
 
 ## Research order

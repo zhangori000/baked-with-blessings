@@ -355,7 +355,7 @@
 }
 
 .discussionGraphHeader {
-  background: rgba(210, 232, 246, 0.96);
+  background: rgba(247, 234, 210, 0.96);
   border: 1px solid rgba(8, 12, 26, 0.08);
   border-radius: 8px;
   grid-template-columns: minmax(0, 1fr);
@@ -498,7 +498,7 @@
 }
 
 .discussionNodeCard[data-node-type='question'] {
-  background: linear-gradient(180deg, rgba(255, 253, 246, 0.96), rgba(235, 244, 250, 0.94));
+  background: linear-gradient(180deg, rgba(255, 253, 246, 0.96), rgba(255, 248, 230, 0.94));
 }
 
 .discussionNodeCard h2 {
@@ -519,7 +519,7 @@
 }
 
 .discussionNodeCard p a {
-  color: #0b65b9;
+  color: #7d5512;
   font-weight: 800;
   text-decoration: underline;
 }
@@ -537,8 +537,8 @@
 }
 
 .discussionInlineMark-premise {
-  background: #dff0fb;
-  color: #204e72;
+  background: #fff8e6;
+  color: #7d5512;
 }
 
 .discussionNodeContent {
@@ -570,7 +570,7 @@
 }
 
 .discussionContentBlock[data-block-type='evidence'] {
-  border-color: rgba(42, 99, 143, 0.16);
+  border-color: rgba(125, 85, 18, 0.16);
 }
 
 .discussionContentBlock[data-block-type='uncertainty'] {
@@ -583,7 +583,7 @@
 }
 
 .discussionSourceList a {
-  color: #204e72;
+  color: #7d5512;
   font-size: 0.78rem;
   font-weight: 750;
   overflow-wrap: anywhere;
@@ -692,7 +692,7 @@
 
 .discussionReadMoreText,
 .discussionReadLessText {
-  color: #204e72;
+  color: #7d5512;
   font-size: 0.68rem;
   font-weight: 900;
 }
@@ -700,9 +700,9 @@
 .discussionReadLessBottom {
   align-self: start;
   background: #fffdf6;
-  border: 1px solid rgba(42, 99, 143, 0.22);
+  border: 1px solid rgba(125, 85, 18, 0.22);
   border-radius: 7px;
-  color: #204e72;
+  color: #7d5512;
   font-size: 0.72rem;
   font-weight: 900;
   justify-self: start;
@@ -788,8 +788,8 @@
 }
 
 .discussionNodeActions button[data-edge='asks_about'] {
-  border-color: rgba(42, 99, 143, 0.32);
-  color: #204e72;
+  border-color: rgba(125, 85, 18, 0.32);
+  color: #7d5512;
 }
 
 .discussionEdgeGroups {
@@ -854,8 +854,8 @@
 }
 
 .discussionEdgeGroup[data-edge='asks_about'] .discussionEdgeLabel {
-  background: #e2f0f8;
-  color: #204e72;
+  background: #fff8e6;
+  color: #7d5512;
 }
 
 .discussionChildren {
@@ -931,8 +931,8 @@
 
 .discussionReplyComposer .discussionTextTools button {
   background: #fffdf6;
-  border-color: rgba(42, 99, 143, 0.2);
-  color: #204e72;
+  border-color: rgba(125, 85, 18, 0.2);
+  color: #7d5512;
   min-height: 1.75rem;
   padding: 0.25rem 0.45rem;
 }
@@ -1058,10 +1058,10 @@
 }
 
 .discussionLoginNote {
-  background: #e2f0f8;
-  border: 1px solid rgba(42, 99, 143, 0.22);
+  background: #fff8e6;
+  border: 1px solid rgba(125, 85, 18, 0.22);
   border-radius: 7px;
-  color: #204e72;
+  color: #7d5512;
   font-size: 0.88rem;
   font-weight: 800;
   margin: 0;
@@ -1069,10 +1069,10 @@
 }
 
 .discussionFieldHelp {
-  background: #e2f0f8;
-  border: 1px solid rgba(42, 99, 143, 0.22);
+  background: #fff8e6;
+  border: 1px solid rgba(125, 85, 18, 0.22);
   border-radius: 7px;
-  color: #204e72;
+  color: #7d5512;
   font-size: 0.86rem;
   font-weight: 750;
   line-height: 1.45;
@@ -1095,10 +1095,10 @@
 
 .discussionHelpText button {
   align-items: center;
-  background: #e2f0f8;
-  border: 1px solid rgba(42, 99, 143, 0.28);
+  background: #fff8e6;
+  border: 1px solid rgba(125, 85, 18, 0.28);
   border-radius: 999px;
-  color: #204e72;
+  color: #7d5512;
   cursor: pointer;
   display: inline-flex;
   font-size: 0.72rem;
