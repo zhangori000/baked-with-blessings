@@ -2363,8 +2363,10 @@ body:has(.accountSceneryRoute) .siteHeaderViewport::after {
 }
 
 .announcementsPortal {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
   z-index: 400;
   display: flex;
   align-items: flex-start;
@@ -2374,7 +2376,7 @@ body:has(.accountSceneryRoute) .siteHeaderViewport::after {
 }
 
 .announcementsPortalBackdrop {
-  position: absolute;
+  position: fixed;
   top: clamp(4.6rem, 10svh, 6.6rem);
   right: 0;
   bottom: 0;
